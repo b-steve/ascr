@@ -1,14 +1,6 @@
 TOP_OF_MAIN_SECTION
   arrmblsize=1500000;
 
-DATA_SECTION
-  init_int n
-  init_int ntraps
-  init_int nmask
-  init_number A
-  init_matrix capt(1,n,1,ntraps)
-  init_matrix dist(1,ntraps,1,nmask)
-
 PARAMETER_SECTION
   // Potential problems with setting up g0 or sigma on link scale
   // Parameter sigma can be sensitive to start values
