@@ -1,0 +1,55 @@
+func.dir="/home/ben/SECR/R/" # change this to wherever secracfuns.r and frogID.r are kept
+dat.dir="/home/ben/SECR/Data/Frogs" # change this to wherever data are kept
+
+# get library
+library(secr)
+
+# get frog-specific SECR functions
+setwd(func.dir) # set working directory to that with the functions
+source("admbsecr.r")
+source("helpers.r")
+source("frogID.r")
+
+# Get and manipulate data
+# -----------------------
+setwd(dat.dir) # set working directory to that with the data
+# get trap locations:
+mics=read.csv(file="array1a-top.csv")  # output from calclocs(): must be in increasing order of microphone number
+micnames=1:dim(mics)[1] 
+mics=cbind(micnames,mics)
+names(mics)=c("name","x","y")
+add=max(diff(mics$x),diff(mics$y))
+trap.xlim=range(mics$x)+0.5*c(-add,add)
+trap.ylim=range(mics$y)+0.5*c(-add,add)
+alldat=read.csv("array1a-top-data.csv") # get detection data (from PAMguard)
+dat=alldat
+#dat$tim=dat$UTCMilliseconds
+dat$tim=alldat$startSeconds*1000 # times in milliseconds
+dat$tim=dat$tim-dat$tim[1] # start at time zero
+dat$mic=log2(alldat$channelMap)+1
+dat$ss=alldat$amplitude
+keep=c("tim","mic","ss")
+dat=dat[,keep]
+# extract time and microphone and arrange in order of increasing time:
+ord=order(dat$tim)
+dat=dat[ord,]
+n=length(dat$tim)
+# Create objects for secr analysis (initially without time-of-arrival (TOA or TDOA D being "difference") data)
+sspd=330/1000 # speed of sound in metres per millisecond
+dloc=as.matrix(dist(mics))
+dt=dloc/sspd # time it takes sound to get between each microphone (in milliseconds)
+# make trap object for secr analysis:
+traps=read.traps(data=mics,detector="proximity")
+border=max(dist(traps))/4 # set border for plotting to be 1/4 max dist between traps
+# make capture history object with times of detection
+clicks=data.frame(session=rep(1,n),ID=1:n,occasion=rep(1,n),trap=dat$mic,tim=dat$tim)
+#clicks=clicks[-1,] # remove 1st record which is zero, as next record is >11,000
+clicks$tim=clicks$tim-clicks$tim[1]+1 # reset times so start at 1
+captures=make.frog.captures(traps,clicks,dt) # clicks reformatted as input for make.capthis, with dup ID rule
+capt=make.capthist(captures,traps,fmt="trapID",noccasions=1) # make capture history object
+buffer=border*8 # guess at buffer size - need to experiment with this
+mask=make.mask(traps,buffer=buffer,type="trapbuffer")
+
+## Carry out SECR analysis
+fit=secr.fit(capt,model=list(D~1, g0~1, sigma~1),mask=mask,verify=FALSE) 
+fit2=admbsecr(capt, mask, sv = c(0, 0.5, 1), admbwd = "/home/ben/SECR/ADMB", "simplesecr")
