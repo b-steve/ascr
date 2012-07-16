@@ -33,7 +33,7 @@ PROCEDURE_SECTION
   p2=1-p1;
   logp1=log(p1);
   logp2=log(p2);
-  // Probability of detection at any trap for each location
+  // Probability of detection at any trap for each location.
   for(i=1; i<=nmask; i++){
     p=1;
     for(j=1; j<=ntraps; j++){
@@ -42,13 +42,13 @@ PROCEDURE_SECTION
     pm(i)=1-p;
   }
   L1=0;
-  // Probability of capture histories for each animal
+  // Probability of capture histories for each animal.
   for(i=1; i<=n; i++){
     wi1=capt(i)(1,ntraps);
     wi2=1-wi1;
     L1+=log(D*sum(mfexp(wi1*logp1+wi2*logp2)));
   }
-  // Putting log-likelihood together
+  // Putting log-likelihood together.
   lambda=A*D*sum(pm);
   L2=-n*log(D*sum(pm));
   L3=log_density_poisson(n,lambda);
