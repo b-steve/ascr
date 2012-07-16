@@ -25,8 +25,8 @@ admbsecr <- function(capt, mask, sv = c(0, 0.5, 1), admbwd = NULL, prefix){
   params <- list(logD = sv[1], g0 = sv[2], logsigma = sv[3])
   bounds <- list(g0 = c(0, 1))
   ## Fitting the model.
-  fit <- do_admb(prefix, data = data, params = params,
-                 run.opts = run.control(checkdata = "write"))
+  fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
+                 run.opts = run.control(checkdata = "write", checkparam = "write"))
   setwd(currwd)
   fit
 }

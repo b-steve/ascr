@@ -1,20 +1,10 @@
 TOP_OF_MAIN_SECTION
   arrmblsize=1500000;
 
-PARAMETER_SECTION
-  // Potential problems with setting up g0 or sigma on link scale
-  // Parameter sigma can be sensitive to start values
-  init_number logD
-  init_bounded_number g0(0,1)
-  init_number logsigma
-  sdreport_number D
-  sdreport_number sigma
-  objective_function_value nll
-
 PROCEDURE_SECTION
   // Setting up variables
   int i,j;
-  dvariable p,lambda,L1,L2,L3;
+  dvariable sigma,D,p,lambda,L1,L2,L3;
   dvar_matrix p1(1,ntraps,1,nmask);
   dvar_matrix p2(1,ntraps,1,nmask);
   dvar_matrix logp1(1,ntraps,1,nmask);
@@ -52,6 +42,6 @@ PROCEDURE_SECTION
   lambda=A*D*sum(pm);
   L2=-n*log(D*sum(pm));
   L3=log_density_poisson(n,lambda);
-  nll=-(L1+L2+L3);
+  f=-(L1+L2+L3);
 
 REPORT_SECTION
