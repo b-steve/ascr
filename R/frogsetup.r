@@ -50,6 +50,18 @@ capt=make.capthist(captures,traps,fmt="trapID",noccasions=1) # make capture hist
 buffer=border*8 # guess at buffer size - need to experiment with this
 mask=make.mask(traps,buffer=buffer,type="trapbuffer")
 
-## Carry out SECR analysis
-fit=secr.fit(capt,model=list(D~1, g0~1, sigma~1),mask=mask,verify=FALSE) 
-fit2=admbsecr(capt, mask, sv = c(0, 0.5, 1), admbwd = "/home/ben/SECR/ADMB", "simplesecr")
+## Setting things up for TOA analysis.
+capt.toa=capt # make copy of capture object to which times will be added
+for(i in 1:length(captures$tim)) capt.toa[captures$ID[i],,captures$trap[i]]=captures$tim[i] # put TOA into capture history
+capt.toa=capt.toa/1000 # convert from milliseconds to seconds
+dists=distances(traps,mask) # pre-calculate distances from each trap to each grid point in mask
+
+## Carry out simple SECR analysis
+#fit=secr.fit(capt,model=list(D~1, g0~1, sigma~1),mask=mask,verify=FALSE) 
+#fit2=admbsecr(capt, mask, sv = c(0, 0.5, 1), admbwd = "/home/ben/SECR/ADMB", "simplesecr")
+
+## Carry out TOA analysis
+#ssqtoa<-apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
+#sigma.toa=0.0025 # starting value for toa measurement error std. err.
+#start.beta=c(fit$fit$estimate,log(sigma.toa)) # add sigma.toa to parameters to be estimated
+#toafit<-nlm(f=secrlikelihood.toa1,p=start.beta,capthist=capt.toa,mask=mask,dists=dists,ssqtoa=ssqtoa,trace=TRUE) # do estimation with TOA data
