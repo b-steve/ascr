@@ -1,6 +1,6 @@
 ## admbsecr() takes capture history and mask objects from the secr
 ## package and fits an SECR model using ADMB.
-admbsecr <- function(capt, mask, sv = c(0, 0.5, 1, 1), admbwd = NULL, method = "simple"){
+admbsecr <- function(capt, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL, admbwd = NULL, method = "simple"){
   require(R2admb)
   require(secr)
   ## Warnings for incurrect input.
@@ -32,19 +32,21 @@ admbsecr <- function(capt, mask, sv = c(0, 0.5, 1, 1), admbwd = NULL, method = "
   ## Setting up parameters for do_admb.
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt, dist = dist)
-    params <- list(logD = sv[1], g0 = sv[2], logsigma = sv[3])
+    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
   } else if (method == "toa"){
-    ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
-    data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt, toassq = ssqtoa, dist = dist)
-    params <- list(logD = sv[1], g0 = sv[2], logsigma = sv[3], logsigmatoa = sv[4])
+    if (is.null(ssqtoa)){
+      ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
+    }
+    data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt, toassq = t(ssqtoa), dist = dist)
+    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
   } else {
     stop('method must be either "simple" or "toa"')
   }
   ## Adding bounds to the g0 parameter.
-  bounds <- list(g0 = c(0, 1))
+  bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000))
   ## Fitting the model.
   fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
-                 run.opts = run.control(checkdata = "write", checkparam = "write"))
+                 run.opts = run.control(checkdata = "write", checkparam = "write", clean = TRUE))
   setwd(currwd)
   fit
 }
