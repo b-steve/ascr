@@ -3,7 +3,6 @@ TOP_OF_MAIN_SECTION
 
 DATA_SECTION
   matrix capt(1,n,1,ntraps)
-  vector caughttwice(1,n)
   !!for(int i=1;i<=n;i++){
   !!  for(int j=1;j<=ntraps;j++){
   !!    if(toacapt(i,j)>0){
@@ -13,30 +12,21 @@ DATA_SECTION
   !!      capt(i,j)=0;
   !!    }
   !!  }
-  !!  if(sum(capt(i)(1,ntraps))>1){
-  !!    caughttwice(i)=1;
-  !!  }
   !!}
 
 PROCEDURE_SECTION
   // Setting up variables
   int i,j;
-  dvariable sigma,sigmatoa,D,p,lambda,L1,L2,L3,nnz;
+  dvariable p,lambda,L1,L2,L3,nzz;
   dvar_matrix p1(1,ntraps,1,nmask);
   dvar_matrix p2(1,ntraps,1,nmask);
   dvar_matrix logp1(1,ntraps,1,nmask);
-  dvar_matrix logp2(1,ntraps,1,nmask); 
+  dvar_matrix logp2(1,ntraps,1,nmask);
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
   dvar_vector wi2(1,ntraps);
-  dvar_vector logftoa(1,nmask);
-  // Setting up parameter values on their proper scales
-  // Comment out appropriate lines depending on link
-  //g0=mfexp(logitg0)/(1+mfexp(logitg0));
-  //g0=1;
-  sigma=mfexp(logsigma);
-  sigmatoa=mfexp(logsigmatoa);
-  D=exp(logD);
+  dvar_vector rowsum(1,n);
+  dvar_vector toall(1,nmask);
   // Probabilities of caputure at each location for each trap.
   p1=g0*mfexp(-square(dist)/(2*square(sigma)));
   p2=1-p1;
@@ -55,11 +45,11 @@ PROCEDURE_SECTION
   for(i=1; i<=n; i++){
     wi1=capt(i)(1,ntraps);
     wi2=1-wi1;
-    nnz=sum(wi1)-1;
-    logftoa=caughttwice(i)*((1-nnz)*logsigmatoa+(toassq(i)(1,ntraps)/(-2*square(sigmatoa))));
-    // Part in brackets is prwi.s in equivalent R code.
-    L1+=log(sum(mfexp(D*(wi1*logp1+wi2*logp2)+logftoa)));
+    nzz=sum(wi1);
+    toall=(1-nzz)*log(sigmatoa)-((row(toassq, i))/(2*square(sigmatoa)));
+    rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+toall));
   }
+  L1=sum(log(rowsum));
   // Putting log-likelihood together.
   lambda=A*D*sum(pm);
   L2=-n*log(D*sum(pm));
