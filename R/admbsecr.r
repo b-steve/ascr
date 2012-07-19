@@ -33,17 +33,20 @@ admbsecr <- function(capt, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL, admbwd
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt, dist = dist)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
+    bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000))
   } else if (method == "toa"){
     if (is.null(ssqtoa)){
       ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
     }
-    data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt, toassq = t(ssqtoa), dist = dist)
+    data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
+                 toassq = t(ssqtoa), dist = dist)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
+    bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000), sigmatoa = c(0, 100000))
   } else {
     stop('method must be either "simple" or "toa"')
   }
   ## Adding bounds to the g0 parameter.
-  bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000))
+
   ## Fitting the model.
   fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
                  run.opts = run.control(checkdata = "write", checkparam = "write", clean = TRUE))
