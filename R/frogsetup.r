@@ -58,7 +58,7 @@ dists=distances(traps,mask) # pre-calculate distances from each trap to each gri
 
 ## Carry out simple SECR analysis
 #ts1 = system.time({fit=secr.fit(capt,model=list(D~1, g0~1, sigma~1),mask=mask,verify=FALSE)}) 
-#ts2 = system.time({fit2=admbsecr(capt, mask, sv = c(2000, 0.5, 3), admbwd = "/home/ben/SECR/ADMB", method = "simple")})
+ts2 = system.time({fit2=admbsecr(capt, traps = traps, mask, sv = c(2000, 0.5, 3), admbwd = "/home/ben/SECR/ADMB", method = "simple")})
 
 ## Carry out TOA analysis
 #ssqtoa<-apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
