@@ -308,7 +308,7 @@ log.Dprwi.ang <- function (wit) {
   log(D) + prwi.s
 }
 
-log.vmCH=function(x,mu,kappa) {
+log.vmCH <- function(x,mu,kappa) {
   ## returns log-likelihood for one capture history over all cols in mu - i.e. it sums over the detectors (all k)
   ## uses library(CircStats) for von Mises density
   dvm1=function(mu,x,kappa) {dvm(x,mu,k=kappa)}
