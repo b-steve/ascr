@@ -39,10 +39,10 @@ start.hn$kappa <- start.hr$kappa <- 10 # von Mises
 start.hn$rho <- start.hr$rho <- 0.75 # wrapped Cauchy
 
 p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
-time1 <- system.time({fit <- nlm(f = secrlikelihood.angs.dk.v1, detectfn = 0, g0.fixed = F,
+##time1 <- system.time({fit <- nlm(f = secrlikelihood.angs.dk.v1, detectfn = 0, g0.fixed = F,
                                  p = p, capthist = radians, mask = mask, dists = mask.dists,
                                  angs = mask.angs, trace=TRUE)})
-time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
+##time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
                                        sv = c(0.1125153, 0.95, 750, 10), angs = mask.angs,
                                        admbwd = "/home/ben/SECR/ADMB", method = "ang")})
 
