@@ -66,5 +66,5 @@ ts2 = system.time({fit2=admbsecr(capt, traps = traps, mask, sv = c(2000, 0.5, 3)
 #start.beta=c(fit$fit$estimate,log(sigma.toa)) # add sigma.toa to parameters to be estimated
 #ttoa1 = system.time({toafit<-nlm(f=secrlikelihood.toa1,p=start.beta,capthist=capt.toa,mask=mask,dists=dists,ssqtoa=ssqtoa,trace=TRUE)}) # do estimation with TOA data
 #start.beta2=c(coef(fit2), sigma.toa)
-#ttoa2 = system.time({toafit2 = admbsecr(capt = capt.toa, mask = mask, sv = start.beta2, ssqtoa = ssqtoa, admbwd = "/home/ben/SECR/ADMB", method = "toa")})
+#ttoa2 = system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = start.beta2, ssqtoa = ssqtoa, admbwd = "/home/ben/SECR/ADMB", method = "toa")})
 
