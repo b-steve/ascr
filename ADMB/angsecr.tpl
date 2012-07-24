@@ -1,5 +1,5 @@
 TOP_OF_MAIN_SECTION
-  arrmblsize=10000000;
+  arrmblsize=7000000;
 
 DATA_SECTION
   matrix capt(1,n,1,ntraps)
