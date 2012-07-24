@@ -16,6 +16,8 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   if (!is.null(admbwd)){
     setwd(admbwd)
   }
+  ## If NAs are present in capture history object, change to zeros.
+  capt[is.na(capt)] <- 0
   ## Extracting no. animals trapped (n) and traps (k) from capture history array.
   ## Only currently works with one capture session.
   n <- dim(capt)[1]
@@ -43,8 +45,10 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
     bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000), sigmatoa = c(0, 100000))
   } else if (method == "ang"){
-    ang <- angles(traps, mask)
-    data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt, ang = ang, dist = dist)
+    if (is.null(angs)){
+      angs <- angles(traps, mask)
+    }
+    data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt, ang = angs, dist = dist)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
     bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000), kappa = c(0, 100000))
   } else {
