@@ -48,9 +48,11 @@ PROCEDURE_SECTION
     wi2=1-wi1;
     nzz=sum(wi1);
     angll=0;
+    // Likelihood due to angles.
     for(j=1; j<=ntraps; j++){
-      angll+=capt(i)(j)*(kappa*cos(angcapt(i)(j)-row(ang,j))-log(2*pi*bessi0(kappa)));
+      angll+=capt(i)(j)*(kappa*cos(angcapt(i)(j)-row(ang,j)));
     }
+    angll-=sum(row(capt,i))*log(2*pi*bessi0(kappa));
     rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+angll));
   }
   L1=sum(log(rowsum));
