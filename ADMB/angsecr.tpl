@@ -18,7 +18,7 @@ PROCEDURE_SECTION
   // Setting up variables
   int i,j;
   const double pi=3.14159265359;
-  dvariable p,lambda,L1,L2,L3,nzz;
+  dvariable p,lambda,L1,L2,L3;
   dvar_matrix p1(1,ntraps,1,nmask);
   dvar_matrix p2(1,ntraps,1,nmask);
   dvar_matrix logp1(1,ntraps,1,nmask);
@@ -44,15 +44,14 @@ PROCEDURE_SECTION
   L1=0;
   // Probability of capture histories for each animal.
   for(i=1; i<=n; i++){
-    wi1=capt(i)(1,ntraps);
+    wi1=row(capt,i);
     wi2=1-wi1;
-    nzz=sum(wi1);
     angll=0;
     // Likelihood due to angles.
     for(j=1; j<=ntraps; j++){
       angll+=capt(i)(j)*(kappa*cos(angcapt(i)(j)-row(ang,j)));
     }
-    angll-=sum(row(capt,i))*log(2*pi*bessi0(kappa));
+    angll-=sum(wi1)*log(2*pi*bessi0(kappa));
     rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+angll));
   }
   L1=sum(log(rowsum));
@@ -63,7 +62,6 @@ PROCEDURE_SECTION
   f=-(L1+L2+L3);
 
 GLOBALS_SECTION
-  #include <math.h>
   #include <bessel.cxx>
 
 REPORT_SECTION
