@@ -1,6 +1,8 @@
 ## admbsecr() takes capture history and mask objects from the secr
 ## package and fits an SECR model using ADMB.
-admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL, angs = NULL, admbwd = NULL, method = "simple"){
+admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
+                     angs = NULL, admbwd = NULL, method = "simple",
+                     profpars = NULL){
   require(R2admb)
   require(secr)
   ## Warnings for incurrect input.
@@ -54,11 +56,15 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   } else {
     stop('method must be either "simple" or "toa"')
   }
-  ## Adding bounds to the g0 parameter.
-  
   ## Fitting the model.
-  fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
-                 run.opts = run.control(checkdata = "write", checkparam = "write", clean = TRUE))
+  if (!is.null(profpars)){
+    fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
+                   profile = TRUE, profpars = profpars,
+                   run.opts = run.control(checkdata = "write", checkparam = "write", clean = TRUE))
+  } else {
+    fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
+                   run.opts = run.control(checkdata = "write", checkparam = "write", clean = TRUE))
+  }
   setwd(currwd)
   fit
 }
