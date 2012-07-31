@@ -49,8 +49,10 @@ PROCEDURE_SECTION
     angll=0;
     // Likelihood due to angles.
     for(j=1; j<=ntraps; j++){
+      // Von-Mises density contribution for each trap.
       angll+=capt(i)(j)*(kappa*cos(angcapt(i)(j)-row(ang,j)));
     }
+    // Term in Von-Mises density not dependent on data.
     angll-=sum(wi1)*log(2*pi*bessi0(kappa));
     rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+angll));
   }
