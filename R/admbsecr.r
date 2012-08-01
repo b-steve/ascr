@@ -33,6 +33,11 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   nm <- nrow(mask)
   ## Distances between traps and mask locations.
   dist <- distances(traps, mask)
+  ## Calculating sensible start values.
+  if (any(sv == "auto")){
+    sv <- autosv(n, nm, A, dist, method)
+    print(sv)
+  }
   ## Setting up parameters for do_admb.
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt, dist = dist)
@@ -67,4 +72,19 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   }
   setwd(currwd)
   fit
+}
+
+autosv <- function(n, nm, A, dist, method){
+  g0 <- 0.9
+  sigma <- sqrt(-max(dist)^2/(2*log(1e-100/g0)))
+  D <- n/(sum(pdot(mask, traps, 0, list(g0 = g0, sigma = sigma), 1))*A)
+  sv <- c(D, g0, sigma)
+  if (method == "toa"){
+    sigmatoa <- 0.0025
+    sv <- c(sv, sigmatoa)
+  } else if (method == "ang"){
+    kappa <- 10
+    sv <- c(sv, kappa)
+  }
+  sv
 }
