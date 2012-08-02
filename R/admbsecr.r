@@ -88,3 +88,53 @@ autosv <- function(n, nm, A, dist, method){
   }
   sv
 }
+
+
+
+g0 <- 1
+sigma <- 3
+t1 <- -1
+t2 <- 1
+
+x <- seq(-20, 20, length.out = 500)
+d1 <- g0*exp(-(x - t1)^2/(2*sigma^2))
+d2 <- g0*exp(-(x - t2)^2/(2*sigma^2))
+
+plot(x, d1, type = "l", col = "blue")
+lines(x, d2, col = "red")
+lines(x, d1*d2, col = "green")
+
+sh <- numeric(1000)
+for (j in 1:1000){
+  x <- runif(100000, -20, 20)
+  p1 <- g0*exp(-(x - t1)^2/(2*sigma^2))
+  p2 <- g0*exp(-(x - t2)^2/(2*sigma^2))
+  
+  s1 <- numeric(100000)
+  s2 <- numeric(100000)
+  
+  for (i in 1:100000){
+    s1[i] <- rbinom(1, 1, p1[i])
+    s2[i] <- rbinom(1, 1, p2[i])
+  }
+  
+  n1 <- sum(s1)
+  n2 <- sum(s2)
+  n3 <- sum(s1*s2)
+  
+  s[j] <- sigmahat(n1, n2, n3, t)
+}
+
+defint <- function(sigma){
+  2*sigma*sqrt(pi/2)
+}
+
+jointdefint <- function(sigma, t){
+  sigma*sqrt(pi)*exp(-t^2/sigma^2)*exp(t^2/sigma^2)^0.75
+}
+
+sigmahat <- function(n1, n2, n3, t){
+  n <- n1 + n2
+  N <- 2*n3
+  sqrt(-t^2/(4*log(N*sqrt(2)/n)))
+}
