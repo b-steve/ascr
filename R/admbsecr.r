@@ -5,7 +5,7 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
                      profpars = NULL){
   require(R2admb)
   require(secr)
-  ## Warnings for incurrect input.
+  ## Warnings for incorrect input.
   if (length(method) != 1){
     stop("method must be of length 1")
   }
@@ -26,6 +26,22 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   k <- dim(capt)[3]
   ## Area covered by each mask location.
   A <- attr(mask, "area")
+  ## Setting sensible start values if elements of sv are "auto".
+  if (length(sv) == 1 & sv[1] == "auto"){
+    bincapt <- capt
+    bincapt[capt > 0] <- 1
+    s <- autoini(bincapt, mask)$sigma
+    g <- 0.95
+    d <- n/(sum(pdot(mask, traps, 0,
+                     list(g0 = g, sigma = s), 1))*
+            attr(mask, 'area'))
+    sv <- c(d, g, s)
+    if (method == "toa"){
+      sv <- c(sv, 0.0025)
+    } else if (method == "ang"){
+      sv <- c(sv, 10)
+    }
+  }
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
   capt <- matrix(as.vector(capt), nrow = n, ncol = k)
   mask <- as.matrix(mask)
@@ -33,11 +49,6 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   nm <- nrow(mask)
   ## Distances between traps and mask locations.
   dist <- distances(traps, mask)
-  ## Calculating sensible start values.
-  if (any(sv == "auto")){
-    sv <- autosv(n, nm, A, dist, method)
-    print(sv)
-  }
   ## Setting up parameters for do_admb.
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt, dist = dist)
@@ -87,54 +98,4 @@ autosv <- function(n, nm, A, dist, method){
     sv <- c(sv, kappa)
   }
   sv
-}
-
-
-
-g0 <- 1
-sigma <- 3
-t1 <- -1
-t2 <- 1
-
-x <- seq(-20, 20, length.out = 500)
-d1 <- g0*exp(-(x - t1)^2/(2*sigma^2))
-d2 <- g0*exp(-(x - t2)^2/(2*sigma^2))
-
-plot(x, d1, type = "l", col = "blue")
-lines(x, d2, col = "red")
-lines(x, d1*d2, col = "green")
-
-sh <- numeric(1000)
-for (j in 1:1000){
-  x <- runif(100000, -20, 20)
-  p1 <- g0*exp(-(x - t1)^2/(2*sigma^2))
-  p2 <- g0*exp(-(x - t2)^2/(2*sigma^2))
-  
-  s1 <- numeric(100000)
-  s2 <- numeric(100000)
-  
-  for (i in 1:100000){
-    s1[i] <- rbinom(1, 1, p1[i])
-    s2[i] <- rbinom(1, 1, p2[i])
-  }
-  
-  n1 <- sum(s1)
-  n2 <- sum(s2)
-  n3 <- sum(s1*s2)
-  
-  s[j] <- sigmahat(n1, n2, n3, t)
-}
-
-defint <- function(sigma){
-  2*sigma*sqrt(pi/2)
-}
-
-jointdefint <- function(sigma, t){
-  sigma*sqrt(pi)*exp(-t^2/sigma^2)*exp(t^2/sigma^2)^0.75
-}
-
-sigmahat <- function(n1, n2, n3, t){
-  n <- n1 + n2
-  N <- 2*n3
-  sqrt(-t^2/(4*log(N*sqrt(2)/n)))
 }
