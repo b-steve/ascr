@@ -70,12 +70,12 @@ dists=distances(traps,mask) # pre-calculate distances from each trap to each gri
 ##                    admbwd = admb.dir, method = "simple")})
 
 ## Carry out TOA analysis
-##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
+ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
 ##sigma.toa <- 0.0025 # starting value for toa measurement error std. err.
 ##start.beta <- c(fit$fit$estimate,log(sigma.toa)) # add sigma.toa to parameters to be estimated
 ##ttoa1 <- system.time({toafit = nlm(f = secrlikelihood.toa1, p = start.beta, capthist=capt.toa,
 ##                      mask = mask, dists = dists, ssqtoa = ssqtoa, trace = TRUE)})
 ##start.beta2 <- c(coef(fit2), sigma.toa)
 ##ttoa2 <- system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
-##                      sv = start.beta2, ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa")})
+##                      sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa")})
 
