@@ -15,7 +15,7 @@ if (.Platform$OS == "unix"){
 library("secr")
 library("CircStats")
 
-gibbons <- read.table(file = "/home/ben/SECR/Data/Gibbons/gibbons.txt", header = TRUE)
+gibbons <- read.table(file = dat.dir, header = TRUE)
 npoints <- length(unique(gibbons$point))
 ntraps <- 3
 traps <- make.grid(nx=ntraps, ny=1, spacing=500, detector="proximity")
