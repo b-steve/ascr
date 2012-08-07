@@ -322,13 +322,13 @@ log.vmCH <- function(x,mu,kappa) {
 
 ## Automatically generates starting value for sigma.
 
-autosigma <- function(capt, traps){
-    obsRPSV <- RPSV.mod(capt, traps)
+autosigma <- function(capthist, traps, mask){
+    obsRPSV <- RPSV.mod(capthist, traps)
     secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
 }
 
-RPSV.mod <- function(capt, traps){
-    w <- split(trapvec(capt), animalIDvec(capt))
+RPSV.mod <- function(capthist, traps){
+    w <- split(trapvec(capthist), animalIDvec(capthist))
     temp <- lapply(w, RPSVx)
     temp <- matrix(unlist(temp), nrow = 3)
     temp <- apply(temp, 1, sum, na.rm = TRUE)
@@ -354,14 +354,14 @@ RPSVxy <- function(xy) {
 }
 
 ## Returns capture trap numbers.
-trapvec <- function(capt){
-    x <- apply(capt, 3, function(x) sum(x > 0))
+trapvec <- function(capthist){
+    x <- apply(capthist, 3, function(x) sum(x > 0))
     rep(1:length(x), times = x)
 }
 
 ## Returns capture animal ID numbers.
-animalIDvec <- function(capt){
-    x <- c(apply(capt, 3, function(x) which(x > 0)), recursive = TRUE)
+animalIDvec <- function(capthist){
+    x <- c(apply(capthist, 3, function(x) which(x > 0)), recursive = TRUE)
     names(x) <- NULL
     as.character(x)
 }

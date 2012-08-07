@@ -30,11 +30,10 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   if (length(sv) == 1 & sv[1] == "auto"){
     bincapt <- capt
     bincapt[capt > 0] <- 1
-    s <- autoini.mod(bincapt, traps, mask)$sigma
+    s <- autosigma(bincapt, traps, mask)
     g <- 0.95
     d <- n/(sum(pdot(mask, traps, 0,
-                     list(g0 = g, sigma = s), 1))*
-            attr(mask, 'area'))
+                     list(g0 = g, sigma = s), 1))*A)
     sv <- c(d, g, s)
     if (method == "toa"){
       sv <- c(sv, 0.0025)
