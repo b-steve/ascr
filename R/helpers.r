@@ -12,8 +12,8 @@ distances <- function (X, Y) {
 angles <- function (X, Y) {
 #-------------------------------------------------------------------------------
 # X and Y are 2-column matrices of coordinates
-# Returns angles (0,360] from points in X to points in Y 
-#         in matrix of dimension nrow(X) x nrow(Y) 
+# Returns angles (0,360] from points in X to points in Y
+#         in matrix of dimension nrow(X) x nrow(Y)
   onerow <- function (xy) {
     d <- function(xy2) {
       denom=sqrt(sum((xy2-xy)^2))
@@ -36,46 +36,46 @@ angles <- function (X, Y) {
 secrlikelihood <- function (beta, capthist, mask, dist = NULL, trace = FALSE) {
   ## Compute negative log likelihood for halfnormal proximity model
   ## Murray Efford 2011-02-27
-  
+
   ## Inputs
   ##     beta  -  parameter vector on link scale (D, g0, sigma)
   ##     capthist - capthist object (n x S x K binary array)
   ##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
   ##     dist - K x M matrix of distances between each detector and each mask point
   ##     trace - logical TRUE for output of each evaluation
-  
+
   ## where K = number of detectors, M = number of mask points
-  
+
   if (!all(capthist %in% c(0,1)))
     stop ('secrlikelihood requires binary data')
-  
+
   ## 'real' parameter values
   D <- exp(beta[1])
   ## if D is modelled, expand here to a vector of length
   ## equal to number of rows in mask
   g0 <- invlogit(beta[2])
   sigma <- exp(beta[3])
-  
+
   n <- nrow(capthist)        ## number observed
   S <- ncol(capthist)        ## number of occasions
   A <- attr( mask, 'area')   ## area of one cell
-  
+
   ## distances if not passed as argument
   if (is.null(dist)) {
     traps <- traps(capthist)
     dist <- distances(traps, mask)
   }
-  
+
   ## precompute probabilities for each detector and each mask point
   ## gk is K x M matrix
   gk <- g0 * exp(-dist^2 / 2 / sigma^2)
   log.gk <- log(gk)
   log.gk1 <- log(1-gk)
-  
+
   ## probability of being caught at least once if at mask site m
   p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
   sumDp <- sum(p.m * D)                ## scalar
-  
+
   L1 <- sum ( apply(capthist, 1, Dprwi) )
 
 
@@ -121,7 +121,7 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
   ## Murray Efford 2011-02-27
   ## DLB added TOA 2011-10-15;
   ##     update for efficiency (added ssqtoa): 07/11/11
-  
+
   ## Limitations -
   ##     halfnormal detection function
   ##     'proximity' detector type
@@ -132,7 +132,7 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
   ##     no groups, covariates, time variation or trap response
   ##     all detectors used
   ##     link functions D = log, g0 = logit, sigma = log
-  
+
   ## Inputs
   ##     beta  -  parameter vector on link scale (D, g0, sigma, sigma.toa)
   ##     capthist - capthist object with TOAs insteand of 1s (n x S x K binary array)
@@ -140,13 +140,13 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
   ##     dists - K x M matrix of distances between each detector and each mask point
   ##     ssqtoa - M x n matrix: sum over detectors for each detection, of (toa-transmission time)^2
   ##     trace - logical TRUE for output of each evaluation
-  
+
   ## where K = number of detectors, M = number of mask points
-  
+
   # DLB removed this check when put TOA into capture histories
   #    if (!all(capthist %in% c(0,1)))
   #        stop ('secrlikelihood requires binary data')
-  
+
   ## 'real' parameter values
   D <- exp(beta[1])
   ## if D is modelled, expand here to a vector of length
@@ -154,32 +154,32 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
   g0 <- invlogit(beta[2])
   sigma <- exp(beta[3])
   sigma.toa=exp(beta[4]) # std. dev. of arrival time measurement error
-  
+
   n <- nrow(capthist)        ## number observed
   S <- ncol(capthist)        ## number of occasions
   A <- attr( mask, 'area')   ## area of one cell
-  
+
   ## distances if not passed as argument
   if (is.null(dists)) {
     traps <- traps(capthist)
     dists <- distances(traps, mask)
   }
-  
+
   ## toassq if not passed as argument
   if (is.null(ssqtoa)) {
     ssqtoa <- apply(capthist,1,toa.ssq,dists=dists)
   }
-  
+
   ## precompute probabilities for each detector and each mask point
   ## gk is K x M matrix
   gk <- g0 * exp(-dists^2 / 2 / sigma^2)
   log.gk <- log(gk)
   log.gk1 <- log(1-gk)
-  
+
   ## probability of being caught at least once if at mask site m
   p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
   sumDp <- sum(p.m * D)                ## scalar
-  
+
   log.Dprwi <- function (wit) {
     wi=(wit>0)*1 # wit has detection times and zeros for non-detection
     ## wi is S x K, log.gk is K x M, prwi.s is S x M
@@ -195,7 +195,7 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
     #        log (D * exp(prwi.s)) # log(D*Pr(wi|X)) at each X)
     log(D) + prwi.s # log(D*Pr(wi|X)) at each X): S x M matrix
   }
-  
+
   L1.X=apply(capthist,1,log.Dprwi)
   L1.X.toa=log.ftoa(capthist,ssqtoa,sigma.toa)
   #    L1 <- sum (exp(L1.X+L1.X.toa))
@@ -282,7 +282,7 @@ secrlikelihood.angs <- function (beta, capthist, mask, dists=NULL, angs=NULL, tr
     ## probability of being caught at least once if at mask site m
     p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
     sumDp <- sum(p.m * D)                ## scalar
-    
+
     L1.X=apply(capthist,1,log.Dprwi.ang)
     L1.X.a=apply(capthist,1,log.vmCH,mu=angs,kappa=kappa)
     L1 <- sum(log(apply(exp(L1.X+L1.X.a),2,sum)))
@@ -302,8 +302,8 @@ secrlikelihood.angs <- function (beta, capthist, mask, dists=NULL, angs=NULL, tr
 ## Function to calculate log[D*Bern(wi)])=log[D]+log[Bern(wi)] for capture i for each maskpoint
 ## Works with angle data as missing values are coded with NA in this case.
 log.Dprwi.ang <- function (wit) {
-  wi <- (!is.na(wit))*1 
-  prwi.s <- wi %*% log.gk + (1-wi) %*% log.gk1 
+  wi <- (!is.na(wit))*1
+  prwi.s <- wi %*% log.gk + (1-wi) %*% log.gk1
   prwi.s <-apply(prwi.s,2,sum)
   log(D) + prwi.s
 }
@@ -320,93 +320,48 @@ log.vmCH <- function(x,mu,kappa) {
   return(apply(logvmCH,2,sum))
 }
 
-autoini.mod <- function(capthist, trps, mask, detectfn = 0, thin = 0.2) {
-  naivedcall <- function(sigma) {
-    temp <- .C("naived", PACKAGE = "secr", as.double(sigma), 
-               as.integer(k), as.integer(m), as.double(unlist(trps)), 
-               as.double(unlist(mask)), as.integer(detectfn), value = double(1))
-    db - temp$value
-  }
-  naivecap2 <- function(g0, sigma, cap) {
-    temp <- .C("naivecap2", PACKAGE = "secr", as.integer(prox), 
-               as.double(g0), as.double(sigma), as.integer(s), as.integer(k), 
-               as.integer(m), as.double(unlist(trps)), as.double(unlist(mask)), 
-               as.integer(detectfn), value = double(1))
-    cap - temp$value
-  }
-  naiveesa <- function(g0, sigma) {
-    nc <- 1
-    g0sigma0 <- matrix(rep(c(g0, sigma), c(2, 2)), nrow = 2)
-    gs0 <- rep(1, 2 * s * k)
-    area <- attr(mask, "area")
-    param <- 0
-    miscparm <- 1
-    temp <- try(.C("integralprw1", PACKAGE = "secr", as.integer(dettype), 
-                   as.integer(param), as.double(g0sigma0), as.integer(nc), 
-                   as.integer(s), as.integer(k), as.integer(m), as.integer(1), 
-                   as.double(unlist(trps)), as.double(unlist(mask)), 
-                   as.integer(nrow(g0sigma0)), as.integer(gs0), as.integer(1), 
-                   as.double(area), as.double(miscparm), as.integer(detectfn), 
-                   as.integer(0), as.integer(0), a = double(nc), resultcode = integer(1)))
-    if (temp$resultcode != 0) 
-      stop("error in external function 'integralprw1'; ", 
-           "possibly the mask is too large")
-    temp$a
-  }
-  if (nrow(capthist) < 5) 
-    stop("too few values in session 1 to determine start; set manually")
-  if (is.character(detectfn)) 
-    detectfn <- detectionfunctionnumber(detectfn)
-  if (!(detectfn %in% c(0))) 
-    stop("only halfnormal detection function implemented in 'autoini'")
-  prox <- detector(trps) %in% c("proximity", "count", "signal", 
-                                "times")
-  n <- nrow(capthist)
-  s <- ncol(capthist)
-  k <- nrow(trps)
-  if ((nrow(mask) > 100) & (thin > 0) & (thin < 1)) 
-    mask <- mask[runif(nrow(mask)) < thin, ]
-  else thin <- 1
-  m <- nrow(mask)
-  if (length(dim(capthist)) > 2) 
-    cpa <- sum(abs(capthist))/n
-  else cpa <- sum(abs(capthist) > 0)/n
-  obsRPSV <- RPSV(capthist)
-  if (is.na(obsRPSV) | (obsRPSV < 1e-10)) {
-    db <- dbar(capthist)
-    if (!is.null(attr(trps, "spacing"))) {
-      if (is.na(db)) {
-        warning("could not calculate 'dbar'; using detector spacing")
-        db <- attr(trps, "spacing")
-      }
-      if (db < (attr(trps, "spacing")/100)) {
-        warning("'dbar' close to zero; using detector spacing instead")
-        db <- attr(trps, "spacing")
-      }
-    }
-    if (is.na(db) | is.nan(db) | (db < 1e+10)) 
-      return(list(D = NA, g0 = NA, sigma = NA))
-    else tempsigma <- uniroot(naivedcall, lower = db/10, 
-                              upper = db * 10, tol = 0.001)$root
-  }
-  else {
-    tempsigma <- naivesigma(obsRPSV = obsRPSV, trps = trps, 
-                            mask = mask, detectfn = detectfn, z = 1)
-  }
-  low <- naivecap2(0.001, sigma = tempsigma, cap = cpa)
-  upp <- naivecap2(0.999, sigma = tempsigma, cap = cpa)
-  badinput <- FALSE
-  if (is.na(low) | is.na(upp)) 
-    badinput <- TRUE
-  else if (sign(low) == sign(upp)) 
-    badinput <- TRUE
-  if (badinput) {
-    warning("'autoini' failed to find g0; setting initial g0 = 0.1")
-    tempg0 <- 0.1
-  }
-  else tempg0 <- uniroot(naivecap2, lower = 0.001, upper = 0.999, 
-                         f.lower = low, f.upper = upp, tol = 0.001, sigma = tempsigma, 
-                         cap = cpa)$root
-  esa <- naiveesa(tempg0, tempsigma)
-  list(D = n/esa * thin, g0 = tempg0, sigma = tempsigma)
+## Automatically generates starting value for sigma.
+
+autosigma <- function(capt, traps){
+    obsRPSV <- RPSV.mod(capt, traps)
+    secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
+}
+
+RPSV.mod <- function(capt, traps){
+    w <- split(trapvec(capt), animalIDvec(capt))
+    temp <- lapply(w, RPSVx)
+    temp <- matrix(unlist(temp), nrow = 3)
+    temp <- apply(temp, 1, sum, na.rm = TRUE)
+    temp <- sqrt((temp[2] + temp[3])/(temp[1] - 1))
+    attr(temp, "names") <- NULL
+    temp
+}
+
+RPSVx <- function(cx) {
+    cx <- abs(cx)
+    x <- traps$x[cx]
+    y <- traps$y[cx]
+    n <- length(x)
+    c(n = n - 1, ssx = sum(x^2) - (sum(x))^2/n, ssy = sum(y^2) -
+      (sum(y))^2/n)
+}
+RPSVxy <- function(xy) {
+    x <- xy$x
+    y <- xy$y
+    n <- length(x)
+    c(n = n - 1, ssx = sum(x^2) - (sum(x))^2/n, ssy = sum(y^2) -
+      (sum(y))^2/n)
+}
+
+## Returns capture trap numbers.
+trapvec <- function(capt){
+    x <- apply(capt, 3, function(x) sum(x > 0))
+    rep(1:length(x), times = x)
+}
+
+## Returns capture animal ID numbers.
+animalIDvec <- function(capt){
+    x <- c(apply(capt, 3, function(x) which(x > 0)), recursive = TRUE)
+    names(x) <- NULL
+    as.character(x)
 }
