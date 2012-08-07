@@ -30,7 +30,7 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   if (length(sv) == 1 & sv[1] == "auto"){
     bincapt <- capt
     bincapt[capt > 0] <- 1
-    s <- autoini(bincapt, mask)$sigma
+    s <- autoini.mod(bincapt, traps, mask)$sigma
     g <- 0.95
     d <- n/(sum(pdot(mask, traps, 0,
                      list(g0 = g, sigma = s), 1))*
@@ -83,19 +83,4 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
   }
   setwd(currwd)
   fit
-}
-
-autosv <- function(n, nm, A, dist, method){
-  g0 <- 0.9
-  sigma <- sqrt(-max(dist)^2/(2*log(1e-100/g0)))
-  D <- n/(sum(pdot(mask, traps, 0, list(g0 = g0, sigma = sigma), 1))*A)
-  sv <- c(D, g0, sigma)
-  if (method == "toa"){
-    sigmatoa <- 0.0025
-    sv <- c(sv, sigmatoa)
-  } else if (method == "ang"){
-    kappa <- 10
-    sv <- c(sv, kappa)
-  }
-  sv
 }
