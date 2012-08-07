@@ -1,5 +1,12 @@
-func.dir="/home/ben/SECR/R/" # change this to wherever secracfuns.r and frogID.r are kept
-dat.dir="/home/ben/SECR/Data/Frogs" # change this to wherever data are kept
+if (.Platform$OS == "unix"){
+    func.dir <- "/home/ben/SECR/R" # change this to wherever secracfuns.r and frogID.r are kept.
+    dat.dir <- "/home/ben/SECR/Data/Frogs" # change this to wherever data are kept.
+    admb.dir <- "/home/ben/SECR/ADMB"
+} else if (.Platform$OS == "windows") {
+    func.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\R"
+    dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Frogs"
+    admb.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\ADMB"
+}
 
 # get library
 library(secr)
@@ -15,7 +22,7 @@ source("frogID.r")
 setwd(dat.dir) # set working directory to that with the data
 # get trap locations:
 mics=read.csv(file="array1a-top.csv")  # output from calclocs(): must be in increasing order of microphone number
-micnames=1:dim(mics)[1] 
+micnames=1:dim(mics)[1]
 mics=cbind(micnames,mics)
 names(mics)=c("name","x","y")
 add=max(diff(mics$x),diff(mics$y))
@@ -57,14 +64,18 @@ capt.toa=capt.toa/1000 # convert from milliseconds to seconds
 dists=distances(traps,mask) # pre-calculate distances from each trap to each grid point in mask
 
 ## Carry out simple SECR analysis
-#ts1 = system.time({fit=secr.fit(capt,model=list(D~1, g0~1, sigma~1),mask=mask,verify=FALSE)}) 
-ts2 = system.time({fit2=admbsecr(capt, traps = traps, mask, sv = c(2000, 0.5, 3), admbwd = "/home/ben/SECR/ADMB", method = "simple")})
+##ts1 <- system.time({fit = secr.fit(capt,model=list(D~1, g0~1, sigma~1),
+##                    mask = mask, verify = FALSE)})
+##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
+##                    admbwd = admb.dir, method = "simple")})
 
 ## Carry out TOA analysis
-#ssqtoa<-apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
-#sigma.toa=0.0025 # starting value for toa measurement error std. err.
-#start.beta=c(fit$fit$estimate,log(sigma.toa)) # add sigma.toa to parameters to be estimated
-#ttoa1 = system.time({toafit<-nlm(f=secrlikelihood.toa1,p=start.beta,capthist=capt.toa,mask=mask,dists=dists,ssqtoa=ssqtoa,trace=TRUE)}) # do estimation with TOA data
-#start.beta2=c(coef(fit2), sigma.toa)
-#ttoa2 = system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = start.beta2, ssqtoa = ssqtoa, admbwd = "/home/ben/SECR/ADMB", method = "toa")})
+##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
+##sigma.toa <- 0.0025 # starting value for toa measurement error std. err.
+##start.beta <- c(fit$fit$estimate,log(sigma.toa)) # add sigma.toa to parameters to be estimated
+##ttoa1 <- system.time({toafit = nlm(f = secrlikelihood.toa1, p = start.beta, capthist=capt.toa,
+##                      mask = mask, dists = dists, ssqtoa = ssqtoa, trace = TRUE)})
+##start.beta2 <- c(coef(fit2), sigma.toa)
+##ttoa2 <- system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
+##                      sv = start.beta2, ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa")})
 

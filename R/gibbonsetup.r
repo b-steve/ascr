@@ -1,9 +1,20 @@
+if (.Platform$OS == "unix"){
+    source("/home/ben/SECR/R/helpers.r")
+    source("/home/ben/SECR/R/admbsecr.r")
+    load("/home/ben/SECR/Data/Gibbons/gibbons_data.RData")
+    admb.dir <- "/home/ben/SECR/ADMB"
+    dat.dir <- "/home/ben/SECR/Data/Gibbons/gibbons.txt"
+} else if (.Platform$OS == "windows"){
+    source("C:\\Documents and Settings\\Ben\\My Documents\\SECR\\R\\helpers.r")
+    source("C:\\Documents and Settings\\Ben\\My Documents\\SECR\\R\\admbsecr.r")
+    load("C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Gibbons\\gibbons_data.RData")
+    admb.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\ADMB"
+    dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Gibbons\\gibbons.txt"
+}
+
 library("secr")
 library("CircStats")
-#library("clim.pact")
-source("/home/ben/SECR/R/helpers.r")
-source("/home/ben/SECR/R/admbsecr.r")
-load("/home/ben/SECR/Data/Gibbons/gibbons_data.RData")
+
 gibbons <- read.table(file = "/home/ben/SECR/Data/Gibbons/gibbons.txt", header = TRUE)
 npoints <- length(unique(gibbons$point))
 ntraps <- 3
@@ -35,7 +46,7 @@ start.hr <- list(g0=0.95, sigma=1000, z=5)
 start.hn$D <- ncues/(sum(pdot(mask, traps, 0, start.hn, 1))*attr(mask, 'area'))
 start.hr$D <- ncues/(sum(pdot(mask, traps, 1, start.hr, 1))*attr(mask, 'area'))
 ## angles distribution shape parameter
-start.hn$kappa <- start.hr$kappa <- 10 # von Mises 
+start.hn$kappa <- start.hr$kappa <- 10 # von Mises
 start.hn$rho <- start.hr$rho <- 0.75 # wrapped Cauchy
 
 p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
@@ -44,5 +55,5 @@ p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
 ##                                 angs = mask.angs, trace=TRUE)})
 ##time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
 ##                                       sv = c(0.1125153, 0.95, 750, 10), angs = mask.angs,
-##                                       admbwd = "/home/ben/SECR/ADMB", method = "ang")})
+##                                       admbwd = admb.dir, method = "ang")})
 
