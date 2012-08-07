@@ -319,3 +319,94 @@ log.vmCH <- function(x,mu,kappa) {
   if(dim(logvmCH)[1]==dim(mu)[2] & dim(logvmCH)[2]==1) logvmCH=t(logvmCH) # undo annoying feature of R: turns 1 x K matrices into K x 1 matrices!
   return(apply(logvmCH,2,sum))
 }
+
+autoini.mod <- function(capthist, trps, mask, detectfn = 0, thin = 0.2) {
+  naivedcall <- function(sigma) {
+    temp <- .C("naived", PACKAGE = "secr", as.double(sigma), 
+               as.integer(k), as.integer(m), as.double(unlist(trps)), 
+               as.double(unlist(mask)), as.integer(detectfn), value = double(1))
+    db - temp$value
+  }
+  naivecap2 <- function(g0, sigma, cap) {
+    temp <- .C("naivecap2", PACKAGE = "secr", as.integer(prox), 
+               as.double(g0), as.double(sigma), as.integer(s), as.integer(k), 
+               as.integer(m), as.double(unlist(trps)), as.double(unlist(mask)), 
+               as.integer(detectfn), value = double(1))
+    cap - temp$value
+  }
+  naiveesa <- function(g0, sigma) {
+    nc <- 1
+    g0sigma0 <- matrix(rep(c(g0, sigma), c(2, 2)), nrow = 2)
+    gs0 <- rep(1, 2 * s * k)
+    area <- attr(mask, "area")
+    param <- 0
+    miscparm <- 1
+    temp <- try(.C("integralprw1", PACKAGE = "secr", as.integer(dettype), 
+                   as.integer(param), as.double(g0sigma0), as.integer(nc), 
+                   as.integer(s), as.integer(k), as.integer(m), as.integer(1), 
+                   as.double(unlist(trps)), as.double(unlist(mask)), 
+                   as.integer(nrow(g0sigma0)), as.integer(gs0), as.integer(1), 
+                   as.double(area), as.double(miscparm), as.integer(detectfn), 
+                   as.integer(0), as.integer(0), a = double(nc), resultcode = integer(1)))
+    if (temp$resultcode != 0) 
+      stop("error in external function 'integralprw1'; ", 
+           "possibly the mask is too large")
+    temp$a
+  }
+  if (nrow(capthist) < 5) 
+    stop("too few values in session 1 to determine start; set manually")
+  if (is.character(detectfn)) 
+    detectfn <- detectionfunctionnumber(detectfn)
+  if (!(detectfn %in% c(0))) 
+    stop("only halfnormal detection function implemented in 'autoini'")
+  prox <- detector(trps) %in% c("proximity", "count", "signal", 
+                                "times")
+  n <- nrow(capthist)
+  s <- ncol(capthist)
+  k <- nrow(trps)
+  if ((nrow(mask) > 100) & (thin > 0) & (thin < 1)) 
+    mask <- mask[runif(nrow(mask)) < thin, ]
+  else thin <- 1
+  m <- nrow(mask)
+  if (length(dim(capthist)) > 2) 
+    cpa <- sum(abs(capthist))/n
+  else cpa <- sum(abs(capthist) > 0)/n
+  obsRPSV <- RPSV(capthist)
+  if (is.na(obsRPSV) | (obsRPSV < 1e-10)) {
+    db <- dbar(capthist)
+    if (!is.null(attr(trps, "spacing"))) {
+      if (is.na(db)) {
+        warning("could not calculate 'dbar'; using detector spacing")
+        db <- attr(trps, "spacing")
+      }
+      if (db < (attr(trps, "spacing")/100)) {
+        warning("'dbar' close to zero; using detector spacing instead")
+        db <- attr(trps, "spacing")
+      }
+    }
+    if (is.na(db) | is.nan(db) | (db < 1e+10)) 
+      return(list(D = NA, g0 = NA, sigma = NA))
+    else tempsigma <- uniroot(naivedcall, lower = db/10, 
+                              upper = db * 10, tol = 0.001)$root
+  }
+  else {
+    tempsigma <- naivesigma(obsRPSV = obsRPSV, trps = trps, 
+                            mask = mask, detectfn = detectfn, z = 1)
+  }
+  low <- naivecap2(0.001, sigma = tempsigma, cap = cpa)
+  upp <- naivecap2(0.999, sigma = tempsigma, cap = cpa)
+  badinput <- FALSE
+  if (is.na(low) | is.na(upp)) 
+    badinput <- TRUE
+  else if (sign(low) == sign(upp)) 
+    badinput <- TRUE
+  if (badinput) {
+    warning("'autoini' failed to find g0; setting initial g0 = 0.1")
+    tempg0 <- 0.1
+  }
+  else tempg0 <- uniroot(naivecap2, lower = 0.001, upper = 0.999, 
+                         f.lower = low, f.upper = upp, tol = 0.001, sigma = tempsigma, 
+                         cap = cpa)$root
+  esa <- naiveesa(tempg0, tempsigma)
+  list(D = n/esa * thin, g0 = tempg0, sigma = tempsigma)
+}
