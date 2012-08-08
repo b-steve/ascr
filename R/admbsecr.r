@@ -28,19 +28,10 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
   A <- attr(mask, "area")
   ## Setting sensible start values if elements of sv are "auto".
   if (length(sv) == 1 & sv[1] == "auto"){
-    bincapt <- capt
-    bincapt[capt > 0] <- 1
-    s <- autosigma(bincapt, traps, mask)
-    g <- 0.95
-    d <- n/(sum(pdot(mask, traps, 0,
-                     list(g0 = g, sigma = s), 1))*A)
-    sv <- c(d, g, s)
-    if (method == "toa"){
-      sv <- c(sv, 0.0025)
-    } else if (method == "ang"){
-      sv <- c(sv, 10)
-    }
-  } else if (any(sv == "auto")){
+      npars <- 3 + sum(method != "simple")
+      sv <- rep("auto", npars)
+  }
+  if (any(sv == "auto")){
       ## Give sv vector names if it doesn't have them.
       if (is.null(names(sv))){
           names(sv) <- c("D", "g0", "sigma", "sigmatoa"[method == "toa"],
@@ -60,7 +51,6 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
       }
       sv <- as.numeric(sv)
   }
-  print(sv)
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
   capt <- matrix(as.vector(capt), nrow = n, ncol = k)
   mask <- as.matrix(mask)
