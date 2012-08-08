@@ -1,6 +1,6 @@
 ## admbsecr() takes capture history and mask objects from the secr
 ## package and fits an SECR model using ADMB.
-admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
+admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                      angs = NULL, admbwd = NULL, method = "simple",
                      profpars = NULL){
   require(R2admb)
@@ -40,7 +40,27 @@ admbsecr <- function(capt, traps, mask, sv = c(2000, 0.9, 10, 5), ssqtoa = NULL,
     } else if (method == "ang"){
       sv <- c(sv, 10)
     }
+  } else if (any(sv == "auto")){
+      ## Give sv vector names if it doesn't have them.
+      if (is.null(names(sv))){
+          names(sv) <- c("D", "g0", "sigma", "sigmatoa"[method == "toa"],
+                         "kappa"[method == "ang"])
+      } else {
+          ## Reordering sv vector if names are provided.
+          sv <- sv[c("D", "g0", "sigma", "sigmatoa"[method == "toa"],
+                         "kappa"[method == "ang"])]
+      }
+      bincapt <- capt
+      bincapt[capt > 0] <- 1
+      autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
+                       "sigmatoa" = autosigmatoa, "kappa" = autokappa)
+      ## Replacing "auto" elements of sv vector.
+      for (i in rev(which(sv == "auto"))){
+          sv[i] <- autofuns[[names(sv)[i]]](bincapt, traps, mask, sv)
+      }
+      sv <- as.numeric(sv)
   }
+  print(sv)
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
   capt <- matrix(as.vector(capt), nrow = n, ncol = k)
   mask <- as.matrix(mask)

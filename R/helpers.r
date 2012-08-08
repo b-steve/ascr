@@ -322,7 +322,7 @@ log.vmCH <- function(x,mu,kappa) {
 
 ## Automatically generates starting value for sigma.
 
-autosigma <- function(capthist, traps, mask){
+autosigma <- function(capthist, traps, mask, sv = NULL){
     obsRPSV <- RPSV.mod(capthist, traps)
     secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
 }
@@ -364,4 +364,23 @@ animalIDvec <- function(capthist){
     x <- c(apply(capthist, 3, function(x) which(x > 0)), recursive = TRUE)
     names(x) <- NULL
     as.character(x)
+}
+
+autoD <- function(capthist, traps, mask, sv){
+    n <- dim(capthist)[1]
+    A <- attr(mask, "area")
+    n/(sum(pdot(mask, traps, 0,
+                     list(g0 = sv[2], sigma = sv[3]), 1))*A)
+}
+
+autog0 <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
+    0.95
+}
+
+autosigmatoa <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
+    0.0025
+}
+
+autokappa <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
+    10
 }
