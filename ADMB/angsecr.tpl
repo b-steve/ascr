@@ -1,5 +1,5 @@
 TOP_OF_MAIN_SECTION
-  arrmblsize=7000000;
+  arrmblsize=10000000;
 
 DATA_SECTION
   matrix capt(1,n,1,ntraps)
@@ -16,8 +16,8 @@ DATA_SECTION
 
 PROCEDURE_SECTION
   // Setting up variables
-  int i,j;
   const double pi=3.14159265359;
+  int i,j;
   dvariable p,lambda,L1,L2,L3;
   dvar_matrix p1(1,ntraps,1,nmask);
   dvar_matrix p2(1,ntraps,1,nmask);
@@ -29,7 +29,8 @@ PROCEDURE_SECTION
   dvar_vector rowsum(1,n);
   dvar_vector angll(1,nmask);
   // Probabilities of caputure at each location for each trap.
-  p1=g0*mfexp(-square(dist)/(2*square(sigma)));
+  // Add a small amount to prevent zeros.
+  p1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;
   p2=1-p1;
   logp1=log(p1);
   logp2=log(p2);
@@ -44,10 +45,10 @@ PROCEDURE_SECTION
   L1=0;
   // Probability of capture histories for each animal.
   for(i=1; i<=n; i++){
-    wi1=row(capt,i);
+    wi1=capt(i)(1,ntraps);
     wi2=1-wi1;
     angll=0;
-    // Likelihood due to angles.
+        // Likelihood due to angles.
     for(j=1; j<=ntraps; j++){
       // Von-Mises density contribution for each trap.
       angll+=capt(i)(j)*(kappa*cos(angcapt(i)(j)-row(ang,j)));
@@ -64,6 +65,7 @@ PROCEDURE_SECTION
   f=-(L1+L2+L3);
 
 GLOBALS_SECTION
+  #include <float.h>
   #include <bessel.cxx>
 
 REPORT_SECTION

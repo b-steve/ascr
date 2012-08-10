@@ -28,7 +28,8 @@ PROCEDURE_SECTION
   dvar_vector rowsum(1,n);
   dvar_vector toall(1,nmask);
   // Probabilities of caputure at each location for each trap.
-  p1=g0*mfexp(-square(dist)/(2*square(sigma)));
+  // Add a small amount to prevent zeros.
+  p1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;
   p2=1-p1;
   logp1=log(p1);
   logp2=log(p2);
@@ -43,7 +44,7 @@ PROCEDURE_SECTION
   L1=0;
   // Probability of capture histories for each animal.
   for(i=1; i<=n; i++){
-    wi1=capt(i)(1,ntraps);
+    wi1=row(capt,i);
     wi2=1-wi1;
     nzz=sum(wi1);
     toall=(1-nzz)*log(sigmatoa)-((row(toassq, i))/(2*square(sigmatoa)));
@@ -55,5 +56,8 @@ PROCEDURE_SECTION
   L2=-n*log(D*sum(pm));
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
+
+GLOBALS_SECTION
+  #include <float.h>
 
 REPORT_SECTION
