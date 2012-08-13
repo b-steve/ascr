@@ -49,11 +49,12 @@ dt=dloc/sspd # time it takes sound to get between each microphone (in millisecon
 traps=read.traps(data=mics,detector="proximity")
 border=max(dist(traps))/4 # set border for plotting to be 1/4 max dist between traps
 # make capture history object with times of detection
-clicks=data.frame(session=rep(1,n),ID=1:n,occasion=rep(1,n),trap=dat$mic,tim=dat$tim)
+clicks=data.frame(session=rep(1,n),ID=1:n,occasion=rep(1,n),trap=dat$mic,tim=dat$tim,ss=dat$ss)
 #clicks=clicks[-1,] # remove 1st record which is zero, as next record is >11,000
 clicks$tim=clicks$tim-clicks$tim[1]+1 # reset times so start at 1
 captures=make.frog.captures(traps,clicks,dt) # clicks reformatted as input for make.capthis, with dup ID rule
 capt=make.capthist(captures,traps,fmt="trapID",noccasions=1) # make capture history object
+captures$ss=clicks$ss
 buffer=border*8 # guess at buffer size - need to experiment with this
 mask=make.mask(traps,buffer=buffer,type="trapbuffer")
 
@@ -63,11 +64,18 @@ for(i in 1:length(captures$tim)) capt.toa[captures$ID[i],,captures$trap[i]]=capt
 capt.toa=capt.toa/1000 # convert from milliseconds to seconds
 dists=distances(traps,mask) # pre-calculate distances from each trap to each grid point in mask
 
+## Setting things up for signal strength analysis.
+capt.ss <- capt
+for (i in 1:length(captures$ss)){
+    capt.ss[captures$ID[i], , captures$trap[i]] = captures$ss[i]
+}
+
+
 ## Carry out simple SECR analysis
 ##ts1 <- system.time({fit = secr.fit(capt,model=list(D~1, g0~1, sigma~1),
 ##                    mask = mask, verify = FALSE)})
-##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = sv,
-##                    admbwd = admb.dir, method = "simple")})
+##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
+##                   admbwd = admb.dir, method = "simple")})
 
 ## Carry out TOA analysis
 ##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
@@ -78,4 +86,8 @@ dists=distances(traps,mask) # pre-calculate distances from each trap to each gri
 ##start.beta2 <- c(coef(fit2), sigma.toa)
 ##ttoa2 <- system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
 ##                      sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa")})
+
+## Carry out signal strength analysis
+##tss <- admbsecr(capt = capt.ss, traps = traps, mask = mask, sv = "auto", admbwd = admb.dir,
+                method = "ss")
 

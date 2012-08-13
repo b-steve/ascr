@@ -384,3 +384,15 @@ autosigmatoa <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
 autokappa <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
     10
 }
+
+autossb0 <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
+    150
+}
+
+autossb1 <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
+    0
+}
+
+autosigmass <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
+    2
+}
