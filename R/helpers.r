@@ -322,10 +322,7 @@ log.vmCH <- function(x,mu,kappa) {
 
 ## Automatically generates starting value for sigma.
 
-autosigma <- function(capthist, traps, mask, sv = NULL){
-    obsRPSV <- RPSV.mod(capthist, traps)
-    secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
-}
+
 
 RPSV.mod <- function(capthist, traps){
     w <- split(trapvec(capthist), animalIDvec(capthist))
@@ -366,33 +363,38 @@ animalIDvec <- function(capthist){
     as.character(x)
 }
 
-autoD <- function(capthist, traps, mask, sv){
-    n <- dim(capthist)[1]
+autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL){
+    obsRPSV <- RPSV.mod(bincapt, traps)
+    secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
+}
+
+autoD <- function(capthist = NULL, bincapt, traps, mask, sv){
+    n <- dim(bincapt)[1]
     A <- attr(mask, "area")
     n/(sum(pdot(mask, traps, 0,
                      list(g0 = sv[2], sigma = sv[3]), 1))*A)
 }
 
-autog0 <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
+autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
     0.95
 }
 
-autosigmatoa <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
+autosigmatoa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
     0.0025
 }
 
-autokappa <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
+autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
     10
 }
 
-autossb0 <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
-    160
+autossb0 <- function(capthist = NULL, bincapt, traps = NULL, mask = NULL, sv = NULL){
+    159.9514
 }
 
-autossb1 <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
+autossb1 <- function(capthist = NULL, bincapt, traps = NULL, mask = NULL, sv = NULL){
     0
 }
 
-autosigmass <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
-    4
+autosigmass <- function(capthist = NULL, bincapt, traps = NULL, mask = NULL, sv = NULL){
+    4.095078
 }

@@ -54,7 +54,7 @@ PROCEDURE_SECTION
       ess=ssb0+ssb1*row(dist,j);
       ssll+=capt(i)(j)*(-log(sigmass)-(square(sscapt(i)(j)-ess)/(2*square(sigmass))));
     }
-    rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+ssll));
+    rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+ssll))+DBL_MIN;
   }
   L1=sum(log(rowsum));
   // Putting log-likelihood together.

@@ -88,6 +88,6 @@ for (i in 1:length(captures$ss)){
 ##                      sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa")})
 
 ## Carry out signal strength analysis
-##tss <- admbsecr(capt = capt.ss, traps = traps, mask = mask, sv = "auto", admbwd = admb.dir,
-                method = "ss")
+##tss <- system.time({ssfit = admbsecr(capt = capt.ss, traps = traps, mask = mask, sv = "auto",
+##                    admbwd = admb.dir, method = "ss")})
 

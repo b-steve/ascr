@@ -54,7 +54,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                          "sigmass" = autosigmass)
         ## Replacing "auto" elements of sv vector.
         for (i in rev(which(sv == "auto"))){
-            sv[i] <- autofuns[[names(sv)[i]]](bincapt, traps, mask, sv)
+            sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv)
         }
         sv <- as.numeric(sv)
     }
@@ -95,7 +95,6 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
         stop('method must be either "simple", "toa", "ang" or "ss"')
     }
     ## Fitting the model.
-    print(prefix)
     if (!is.null(profpars)){
         fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
                        profile = TRUE, profpars = profpars,
