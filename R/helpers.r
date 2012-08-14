@@ -387,14 +387,16 @@ autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL
     10
 }
 
-autossb0 <- function(capthist = NULL, bincapt, traps = NULL, mask = NULL, sv = NULL){
-    159.9514
+autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
+    ss <- capthist[capthist != 0]
+    mean(ss)
 }
 
-autossb1 <- function(capthist = NULL, bincapt, traps = NULL, mask = NULL, sv = NULL){
+autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
     0
 }
 
-autosigmass <- function(capthist = NULL, bincapt, traps = NULL, mask = NULL, sv = NULL){
-    4.095078
+autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
+    ss <- capthist[capthist != 0]
+    sd(ss)
 }
