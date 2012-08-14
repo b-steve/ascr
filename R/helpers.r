@@ -386,7 +386,7 @@ autokappa <- function(capthist = NULL, traps = NULL, mask = NULL, sv = NULL){
 }
 
 autossb0 <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
-    150
+    160
 }
 
 autossb1 <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
@@ -394,5 +394,5 @@ autossb1 <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
 }
 
 autosigmass <- function(capthist, traps = NULL, mask = NULL, sv = NULL){
-    2
+    4
 }

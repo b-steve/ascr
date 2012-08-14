@@ -51,10 +51,8 @@ PROCEDURE_SECTION
     ssll=0;
     // Likelihood due to signal strengths.
     for(j=1; j<=ntraps; j++){
-      // Expected signal strength for each mask point.
       ess=ssb0+ssb1*row(dist,j);
-      // Normal density contribution for each trap.
-      ssll+=capt(i)(j)*(-log(sigmass)-square(sscapt(i)(j)-ess)/(2*square(sigmass)));
+      ssll+=capt(i)(j)*(-log(sigmass)-(square(sscapt(i)(j)-ess)/(2*square(sigmass))));
     }
     rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+ssll));
   }
