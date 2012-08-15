@@ -69,7 +69,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     if (method == "simple"){
         data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt, dist = dist)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
-        bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000))
+        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000))
     } else if (method == "toa"){
         if (is.null(ssqtoa)){
             ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
@@ -77,20 +77,20 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
         data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
                      toassq = t(ssqtoa), dist = dist)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
-        bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000), sigmatoa = c(0, 100000))
+        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000), sigmatoa = c(0, 100000))
     } else if (method == "ang"){
         if (is.null(angs)){
             angs <- angles(traps, mask)
         }
         data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt, ang = angs, dist = dist)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
-        bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000), kappa = c(0, 100000))
+        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000), kappa = c(0, 100000))
     } else if (method == "ss"){
         data <- list(n = n, ntraps = k, nmask = nm, A = A, sscapt = capt, dist = dist)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3],
                        ssb0 = sv[4], ssb1 = sv[5], sigmass = sv[6])
-        bounds <- list(D = c(0, 100000), g0 = c(0, 1), sigma = c(0, 100000),
-                       sigmass = c(0, 100000))
+        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 600000),
+                       sigmass = c(0, 600000))
     } else {
         stop('method must be either "simple", "toa", "ang" or "ss"')
     }
