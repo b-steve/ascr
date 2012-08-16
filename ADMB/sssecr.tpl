@@ -26,7 +26,6 @@ PROCEDURE_SECTION
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
   dvar_vector wi2(1,ntraps);
-  dvar_vector rowsum(1,n);
   dvar_vector ssll(1,nmask);
   dvar_vector ess(1,nmask);
   // Probabilities of caputure at each location for each trap.
@@ -56,9 +55,8 @@ PROCEDURE_SECTION
         ssll+=-log(sigmass)-(square(sscapt(i)(j)-ess)/(2*square(sigmass)));
       }
     }
-    rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+ssll))+DBL_MIN;
+    L1+=log(sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+ssll))+DBL_MIN);
   }
-  L1=sum(log(rowsum));
   // Putting log-likelihood together.
   lambda=A*D*sum(pm);
   L2=-n*log(D*sum(pm));
@@ -67,6 +65,5 @@ PROCEDURE_SECTION
 
 GLOBALS_SECTION
   #include <float.h>
-  #include <bessel.cxx>
 
 REPORT_SECTION
