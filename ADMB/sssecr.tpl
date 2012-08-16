@@ -51,8 +51,10 @@ PROCEDURE_SECTION
     ssll=0;
     // Likelihood due to signal strengths.
     for(j=1; j<=ntraps; j++){
-      ess=ssb0+ssb1*row(dist,j);
-      ssll+=capt(i)(j)*(-log(sigmass)-(square(sscapt(i)(j)-ess)/(2*square(sigmass))));
+      if (capt(i)(j)==1){
+        ess=ssb0+ssb1*row(dist,j);
+        ssll+=-log(sigmass)-(square(sscapt(i)(j)-ess)/(2*square(sigmass)));
+      }
     }
     rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+ssll))+DBL_MIN;
   }
