@@ -2,7 +2,7 @@
 ## package and fits an SECR model using ADMB.
 admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                      angs = NULL, admbwd = NULL, method = "simple",
-                     profpars = NULL){
+                     profpars = NULL, clean = TRUE, verbose = TRUE){
     require(R2admb)
     require(secr)
     ## Warnings for incorrect input.
@@ -96,12 +96,14 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     }
     ## Fitting the model.
     if (!is.null(profpars)){
-        fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
+        fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
                        profile = TRUE, profpars = profpars,
-                       run.opts = run.control(checkdata = "write", checkparam = "write", clean = TRUE))
+                       run.opts = run.control(checkdata = "write", checkparam = "write",
+                         clean = clean))
     } else {
-        fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = TRUE,
-                       run.opts = run.control(checkdata = "write", checkparam = "write", clean = TRUE))
+        fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
+                       run.opts = run.control(checkdata = "write", checkparam = "write",
+                         clean = clean))
     }
     setwd(currwd)
     fit
