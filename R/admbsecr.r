@@ -3,7 +3,7 @@
 admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                      angs = NULL, admbwd = NULL, method = "simple",
                      memory = NULL, profpars = NULL, clean = TRUE,
-                     verbose = TRUE){
+                     verbose = TRUE, autogen = FALSE){
     require(R2admb)
     require(secr)
     ## Warnings for incorrect input.
@@ -13,11 +13,16 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     if (method == "simple" & any(capt != 1 & capt != 0)){
         stop('capt must be binary when using the "simple" method')
     }
-    prefix <- paste(method, "secr", sep = "")
     currwd <- getwd()
     ## Moving to ADMB working directory.
     if (!is.null(admbwd)){
         setwd(admbwd)
+    }
+    if (autogen){
+      prefix <- "secr"
+      make.all.tpl(memory = memory, methods = method)
+    } else {
+      prefix <- paste(method, "secr", sep = "")
     }
     ## If NAs are present in capture history object, change to zeros.
     capt[is.na(capt)] <- 0
@@ -105,6 +110,9 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
         fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
                        run.opts = run.control(checkdata = "write", checkparam = "write",
                          clean = clean))
+    }
+    if (autogen){
+      file.remove("secr.tpl")
     }
     setwd(currwd)
     fit

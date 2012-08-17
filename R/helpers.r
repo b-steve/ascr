@@ -498,7 +498,7 @@ autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv 
 
 make.top.of.main <- function(memory){
   if (!is.null(memory)){
-    cat("TOP_OF_MAIN_SECTION\n  arrmblsize=", memory, file = "secr.tpl", sep = "") 
+    cat("TOP_OF_MAIN_SECTION\n  arrmblsize=", memory, ";", file = "secr.tpl", sep = "") 
   }
 }
 
@@ -594,7 +594,7 @@ make.globals <- function(methods){
   common.string <- "\n\nGLOBALS_SECTION
   #include <float.h>"
   ss.string <- "\n  #include <bessel.cxx>"["ss" %in% methods]
-  cat(common.string, ss.string, file = "secr.tpl", sep = "", append = TRUE)
+  cat(common.string, ss.string, "\n\n", file = "secr.tpl", sep = "", append = TRUE)
 }
 
 make.all.tpl <- function(memory, methods){
