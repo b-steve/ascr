@@ -14,6 +14,8 @@ if (.Platform$OS == "unix"){
 
 library("secr")
 library("CircStats")
+library("inline")
+library("Rcpp")
 
 gibbons <- read.table(file = dat.dir, header = TRUE)
 npoints <- length(unique(gibbons$point))
@@ -48,14 +50,32 @@ start.hr$D <- ncues/(sum(pdot(mask, traps, 1, start.hr, 1))*attr(mask, 'area'))
 ## angles distribution shape parameter
 start.hn$kappa <- start.hr$kappa <- 10 # von Mises
 start.hn$rho <- start.hr$rho <- 0.75 # wrapped Cauchy
+n <- ncues
+S <- 1 
+K <- ntraps
+A <- attr(mask, "area")
+M <- nrow(mask)
+capthist <- radians
+capthist[capthist > 0] <- 1
+capthist[is.na(capthist)] <- 0
+hash1 <- which(capthist[,1,]==1, arr.ind=T)-1
+hash0 <- which(capthist[,1,]==0, arr.ind=T)-1
+mask.dists <- distances(traps, mask)
 
 p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
-time1 <- system.time({fit <- nlm(f = secrlikelihood.angs.dk.v1, detectfn = 0, g0.fixed = F,
-                                 p = p, capthist = radians, mask = mask, dists = mask.dists,
-                                 angs = mask.angs, trace=TRUE)})
-## For same start values:
-sv <- c("D" = start.hn$D, "g0" = start.hn$g0, "sigma" = start.hn$sigma, "kappa" = start.hn$kappa)
-time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
-                                       sv = sv, angs = mask.angs,
-                                       admbwd = admb.dir, method = "ang")})
+##time1 <- system.time({fit <- nlm(f = secrlikelihood.angs.dk.v1, detectfn = 0, g0.fixed = F,
+##                                 p = p, capthist = radians, mask = mask, dists = mask.dists,
+##                                 angs = mask.angs, trace=TRUE)})
 
+## For same start values:
+##sv <- c("D" = start.hn$D, "g0" = start.hn$g0, "sigma" = start.hn$sigma,
+##        "kappa" = start.hn$kappa)
+##time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
+##                                       sv = "auto", angs = mask.angs,
+##                                       admbwd = admb.dir, method = "ang")})
+
+##time3 <- system.time({fit3 <- nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
+##                                  ntraps = K, npoints = M, radians = radians[, 1, ],
+##                                  hash1 = hash1, hash0 = hash0, mask_area = A,
+##                                  mask_dists = mask.dists, mask_angs = mask.angs,
+##                                  hessian = TRUE)})
