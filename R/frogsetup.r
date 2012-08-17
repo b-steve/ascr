@@ -10,6 +10,8 @@ if (.Platform$OS == "unix"){
 
 # get library
 library(secr)
+library(Rcpp)
+library(inline)
 
 # get frog-specific SECR functions
 setwd(func.dir) # set working directory to that with the functions
@@ -74,11 +76,11 @@ for (i in 1:length(captures$ss)){
 ## Carry out simple SECR analysis
 ##ts1 <- system.time({fit = secr.fit(capt,model=list(D~1, g0~1, sigma~1),
 ##                    mask = mask, verify = FALSE)})
-##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
-##                   admbwd = admb.dir, method = "simple")})
+ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
+                   admbwd = admb.dir, method = "simple")})
 
 ## Carry out TOA analysis
-##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # creat ssq matrix in advance
+##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # create ssq matrix in advance
 ##sigma.toa <- 0.0025 # starting value for toa measurement error std. err.
 ##start.beta <- c(fit$fit$estimate,log(sigma.toa)) # add sigma.toa to parameters to be estimated
 ##ttoa1 <- system.time({toafit = nlm(f = secrlikelihood.toa1, p = start.beta, capthist=capt.toa,
