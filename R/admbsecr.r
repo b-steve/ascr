@@ -2,7 +2,8 @@
 ## package and fits an SECR model using ADMB.
 admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                      angs = NULL, admbwd = NULL, method = "simple",
-                     profpars = NULL, clean = TRUE, verbose = TRUE){
+                     memory = NULL, profpars = NULL, clean = clean,
+                     verbose = verbose){
     require(R2admb)
     require(secr)
     ## Warnings for incorrect input.
