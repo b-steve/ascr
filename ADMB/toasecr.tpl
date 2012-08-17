@@ -25,7 +25,6 @@ PROCEDURE_SECTION
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
   dvar_vector wi2(1,ntraps);
-  dvar_vector rowsum(1,n);
   dvar_vector toall(1,nmask);
   // Probabilities of caputure at each location for each trap.
   // Add a small amount to prevent zeros.
@@ -48,9 +47,8 @@ PROCEDURE_SECTION
     wi2=1-wi1;
     nzz=sum(wi1);
     toall=(1-nzz)*log(sigmatoa)-((row(toassq, i))/(2*square(sigmatoa)));
-    rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+toall));
+    L1+=log(sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+toall)));
   }
-  L1=sum(log(rowsum));
   // Putting log-likelihood together.
   lambda=A*D*sum(pm);
   L2=-n*log(D*sum(pm));

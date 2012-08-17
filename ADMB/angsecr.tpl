@@ -26,7 +26,6 @@ PROCEDURE_SECTION
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
   dvar_vector wi2(1,ntraps);
-  dvar_vector rowsum(1,n);
   dvar_vector angll(1,nmask);
   // Probabilities of caputure at each location for each trap.
   // Add a small amount to prevent zeros.
@@ -48,7 +47,7 @@ PROCEDURE_SECTION
     wi1=capt(i)(1,ntraps);
     wi2=1-wi1;
     angll=0;
-        // Likelihood due to angles.
+    // Likelihood due to angles.
     for(j=1; j<=ntraps; j++){
       // Von-Mises density contribution for each trap.
       if(capt(i)(j)==1){
@@ -57,9 +56,8 @@ PROCEDURE_SECTION
     }
     // Term in Von-Mises density not dependent on data.
     angll-=sum(wi1)*log(2*pi*bessi0(kappa));
-    rowsum(i)=sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+angll));
+    L1+=log(sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+angll)));
   }
-  L1=sum(log(rowsum));
   // Putting log-likelihood together.
   lambda=A*D*sum(pm);
   L2=-n*log(D*sum(pm));
