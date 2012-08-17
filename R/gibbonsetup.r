@@ -68,8 +68,8 @@ p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
 ##                                 angs = mask.angs, trace=TRUE)})
 
 ## For same start values:
-##sv <- c("D" = start.hn$D, "g0" = start.hn$g0, "sigma" = start.hn$sigma,
-##        "kappa" = start.hn$kappa)
+sv <- c("D" = start.hn$D, "g0" = start.hn$g0, "sigma" = start.hn$sigma,
+        "kappa" = start.hn$kappa)
 ##time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
 ##                                       sv = "auto", angs = mask.angs,
 ##                                       admbwd = admb.dir, method = "ang")})
