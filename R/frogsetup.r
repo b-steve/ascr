@@ -77,8 +77,8 @@ for (i in 1:length(captures$ss)){
 ##ts1 <- system.time({fit = secr.fit(capt,model=list(D~1, g0~1, sigma~1),
 ##                    mask = mask, verify = FALSE)})
 ##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
-##                      admbwd = NULL, method = "simple",
-##                      memory = 1500000, autogen = TRUE)})
+##                      admbwd = admb.dir, method = "simple",
+                      memory = 1500000, autogen = TRUE)})
 
 ## Carry out TOA analysis
 ##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # create ssq matrix in advance
@@ -87,10 +87,11 @@ for (i in 1:length(captures$ss)){
 ##ttoa1 <- system.time({toafit = nlm(f = secrlikelihood.toa1, p = start.beta, capthist=capt.toa,
 ##                      mask = mask, dists = dists, ssqtoa = ssqtoa, trace = TRUE)})
 ##start.beta2 <- c(coef(fit2), sigma.toa)
-##ttoa2 <- system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
-##                      sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa")})
+##ttoa2 <- system.time({toafit3 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
+##                        sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa",
+##                        memory = 1500000, autogen = FALSE)})
 
 ## Carry out signal strength analysis
-##tss <- system.time({ssfit = admbsecr(capt = capt.ss, traps = traps, mask = mask, sv = "auto",
-##                    admbwd = admb.dir, method = "ss")})
+##tss2 <- system.time({ssfit2 = admbsecr(capt = capt.ss, traps = traps, mask = mask, sv = "auto",
+##                    admbwd = admb.dir, method = "ss", autogen = FALSE)})
 

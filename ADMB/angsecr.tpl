@@ -1,19 +1,6 @@
 TOP_OF_MAIN_SECTION
   arrmblsize=10000000;
 
-DATA_SECTION
-  matrix capt(1,n,1,ntraps)
-  !!for(int i=1;i<=n;i++){
-  !!  for(int j=1;j<=ntraps;j++){
-  !!    if(angcapt(i,j)>0){
-  !!      capt(i,j)=1;
-  !!    }
-  !!    else{
-  !!      capt(i,j)=0;
-  !!    }
-  !!  }
-  !!}
-
 PROCEDURE_SECTION
   // Setting up variables
   const double pi=3.14159265359;

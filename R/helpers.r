@@ -553,7 +553,8 @@ make.L1.likelihood <- function(methods){
     wi1=capt(i)(1,ntraps);
     wi2=1-wi1;"
   toastring <-
-    "\n    toall=(1-nzz)*log(sigmatoa)-((row(toassq, i))/(2*square(sigmatoa)));"["toa" %in% methods]
+    "\n    nzz=sum(wi1);
+    toall=(1-nzz)*log(sigmatoa)-((row(toassq, i))/(2*square(sigmatoa)));"["toa" %in% methods]
   angstring <-
     "\n    angll=0;
     // Likelihood due to angles.
@@ -593,7 +594,7 @@ make.together.likelihood <- function(){
 make.globals <- function(methods){
   common.string <- "\n\nGLOBALS_SECTION
   #include <float.h>"
-  ss.string <- "\n  #include <bessel.cxx>"["ss" %in% methods]
+  ss.string <- "\n  #include <bessel.cxx>"["ang" %in% methods]
   cat(common.string, ss.string, "\n\n", file = "secr.tpl", sep = "", append = TRUE)
 }
 

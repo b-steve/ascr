@@ -1,5 +1,5 @@
-pref <- c("Silvermine")
-no <- 1
+pref <- c("Somiedo")
+no <- 2
 
 detsname <- paste(pref, paste("dets", no, sep = ""), "csv", sep = ".")
 micsname <- paste(pref, paste("mics", no, sep = ""), "csv", sep = ".")
@@ -47,10 +47,9 @@ for (i in 1:length(captures$ss)){
 ## Carry out simple SECR analysis
 ##ts1 <- system.time({fit = secr.fit(capt,model=list(D~1, g0~1, sigma~1),
 ##                    mask = mask, verify = FALSE)})
-##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
-##                   admbwd = admb.dir, method = "simple")})
+##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask = mask, sv = "auto",
+                   admbwd = admb.dir, method = "simple", autogen = TRUE)})
 
 ## Carry out signal strength analysis
-##tss <- system.time({ssfit = admbsecr(capt = capt.ss, traps = traps, mask = mask,
-##                    sv = "auto",
-##                    admbwd = admb.dir, method = "ss")})
+##tss2 <- system.time({ssfit2 = admbsecr(capt = capt.ss, traps = traps, mask = mask,
+##                      sv = "auto", admbwd = admb.dir, method = "ss", autogen = TRUE)})

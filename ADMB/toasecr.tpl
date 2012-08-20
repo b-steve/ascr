@@ -1,19 +1,6 @@
 TOP_OF_MAIN_SECTION
   arrmblsize=1500000;
 
-DATA_SECTION
-  matrix capt(1,n,1,ntraps)
-  !!for(int i=1;i<=n;i++){
-  !!  for(int j=1;j<=ntraps;j++){
-  !!    if(toacapt(i,j)>0){
-  !!      capt(i,j)=1;
-  !!    }
-  !!    else{
-  !!      capt(i,j)=0;
-  !!    }
-  !!  }
-  !!}
-
 PROCEDURE_SECTION
   // Setting up variables
   int i,j;

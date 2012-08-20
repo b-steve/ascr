@@ -32,6 +32,8 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     k <- dim(capt)[3]
     ## Area covered by each mask location.
     A <- attr(mask, "area")
+    bincapt <- capt
+    bincapt[capt > 0] <- 1
     ## Setting sensible start values if elements of sv are "auto".
     if (length(sv) == 1 & sv[1] == "auto"){
         npars <- 3 + sum(method != "simple")
@@ -52,8 +54,6 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                        "kappa"[method == "ang"], "ssb0"[method == "ss"],
                        "ssb1"[method == "ss"], "sigmass"[method = "ss"])]
         }
-        bincapt <- capt
-        bincapt[capt > 0] <- 1
         autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
                          "sigmatoa" = autosigmatoa, "kappa" = autokappa,
                          "ssb0" = autossb0, "ssb1" = autossb1,
@@ -65,6 +65,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
         sv <- as.numeric(sv)
     }
     ## Removing attributes from capt and mask objects as do_admb cannot handle them.
+    bincapt <- matrix(as.vector(bincapt), nrow = n, ncol = k)
     capt <- matrix(as.vector(capt), nrow = n, ncol = k)
     mask <- as.matrix(mask)
     ## No. of mask locations.
@@ -81,18 +82,21 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
             ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
         }
         data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
-                     toassq = t(ssqtoa), dist = dist)
+                     toassq = t(ssqtoa), dist = dist, capt = bincapt)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
-        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000), sigmatoa = c(0, 100000))
+        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
+                       sigmatoa = c(0, 100000))
     } else if (method == "ang"){
         if (is.null(angs)){
             angs <- angles(traps, mask)
         }
-        data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt, ang = angs, dist = dist)
+        data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
+                     ang = angs, dist = dist, capt = bincapt)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
         bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000), kappa = c(0, 100000))
     } else if (method == "ss"){
-        data <- list(n = n, ntraps = k, nmask = nm, A = A, sscapt = capt, dist = dist)
+        data <- list(n = n, ntraps = k, nmask = nm, A = A, sscapt = capt,
+                     dist = dist, capt = bincapt)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3],
                        ssb0 = sv[4], ssb1 = sv[5], sigmass = sv[6])
         bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 600000),
