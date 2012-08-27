@@ -29,7 +29,7 @@ PROCEDURE_SECTION
   L1=0;
   // Probability of capture histories for each animal.
   for(i=1; i<=n; i++){
-    wi1=capt(i)(1,ntraps);
+    wi1=row(capt,i);
     wi2=1-wi1;
     L1+=log(D*sum(mfexp(wi1*logp1+wi2*logp2)));
   }
