@@ -389,7 +389,7 @@ autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL
 
 autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
     ss <- capthist[capthist != 0]
-    mean(ss)
+    log(mean(ss))
 }
 
 autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
@@ -398,7 +398,7 @@ autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL,
 
 autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
     ss <- capthist[capthist != 0]
-    sd(ss)
+    var(ss)/mean(ss)^2
 }
 
 ## Darren's C++ stuff:
