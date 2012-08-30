@@ -76,7 +76,7 @@ secrlikelihood <- function (beta, capthist, mask, dist = NULL, trace = FALSE) {
   p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
   sumDp <- sum(p.m * D)                ## scalar
 
-  L1 <- sum ( apply(capthist, 1, Dprwi) )
+  L1 <- sum ( apply(capthist, 1, Dprwi,  prwi.s, log.gk, log.gk1, D) )
 
 
   L2 <- - n * log(sumDp)
@@ -92,7 +92,7 @@ secrlikelihood <- function (beta, capthist, mask, dist = NULL, trace = FALSE) {
     -LL   ## return negative log likelihood
 }
 
-Dprwi <- function (wi) {
+Dprwi <- function (wi, prwi.s, log.gk, log.gk1, D) {
   ## wi is S x K, log.gk is K x M, prwi.s is S x M
   prwi.s <- wi %*% log.gk + (1-wi) %*% log.gk1
   ## sum log(p) over occasions, result is M-vector
@@ -610,4 +610,90 @@ make.all.tpl <- function(memory, methods){
   make.L1.likelihood(methods)
   make.together.likelihood()
   make.globals(methods)
+}
+
+secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=FALSE) {
+## Compute negative log likelihood for halfnormal proximity model with signal strength data
+## Murray Efford 2011-02-27
+## BCS updated secrlikelihood.toa1 to deal with signal strength instead of TOA 29/08/12
+
+## Limitations -
+##     halfnormal detection function
+##     'proximity' detector type
+##     no deaths
+##     full likelihood
+##     no competing risk model
+##     one session
+##     no groups, covariates, time variation or trap response
+##     all detectors used
+##     link functions D = log, g0 = logit, sigma = log
+
+## Inputs
+##     beta  -  parameter vector on link scale (D, g0, sigma, kappa)
+##     capthist - capthist object with angeles  (radians) instead of 1s (n x S x K array)
+##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
+##     dists - K x M matrix of distances between each detector and each mask point
+##     angles - K x M matrix: angles from detectors to each X in mask
+##     trace - logical TRUE for output of each evaluation
+
+## where K = number of detectors, M = number of mask points
+
+    ## 'real' parameter values
+    D <- exp(beta[1])
+    ## if D is modelled, expand here to a vector of length
+    ## equal to number of rows in mask
+    b0ss <- beta[2]
+    b1ss <- beta[3]
+    sigmass <- exp(beta[4]) # std. dev. of arrival time measurement error
+
+    n <- nrow(capthist)        ## number observed
+    S <- ncol(capthist)        ## number of occasions
+    A <- attr( mask, 'area')   ## area of one cell
+
+    ## distances if not passed as argument
+    if (is.null(dists)) {
+        traps <- traps(capthist)
+        dists <- distances(traps, mask)
+    }
+
+    bincapt <- capthist
+    bincapt[bincapt > 0] <- 1
+    ## precompute probabilities for each detector and each mask point
+    ## gk is K x M matrix
+    muss <- b0ss + b1ss*dists
+    gk <- 1 - pnorm(cutoff, muss, sigmass)
+    log.gk <- log(gk + .Machine$double.xmin)
+    log.gk1 <- log(1-gk + .Machine$double.xmin)
+
+    ## probability of being caught at least once if at mask site m
+    p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
+    sumDp <- sum(p.m * D)                ## scalar
+
+    L1.X <- apply(capthist,1,log.Dprwi.ss, D, muss, sigmass, log.gk1)
+    L1 <- sum(log(apply(exp(L1.X),2,sum)))
+    print(log(apply(exp(L1.X),2,sum))[1])
+    L2 <- - n * log(sumDp)
+    L3 <- dpois (n, sumDp * A, log = TRUE)
+    LL <- L1+L2+L3
+    if (trace) {
+        cat (D, b0ss, b1ss, sigmass, LL, '\n')
+        cat(L1, L2, L3, '\n')
+        flush.console()
+    }
+    if (!is.finite(LL))
+        1e10
+    else
+        -LL   ## return negative log likelihood
+}
+
+log.Dprwi.ss <- function (wi, D, muss, sigmass, log.gk1) {
+  ci <- wi
+  ci[ci > 0] <- 1
+  dens <- matrix(0, nrow = nrow(traps), ncol = nrow(mask))
+  for (i in 1:nrow(traps)){
+    dens[i, ] <- dnorm(wi[i], muss[i, ], sigmass, log = TRUE)
+  }          
+  prwi.s <- ci %*% dens + (1-ci) %*% log.gk1
+  prwi.s <-apply(prwi.s,2,sum)
+  log(D) + prwi.s
 }
