@@ -15,8 +15,8 @@ PARAMETER_SECTION
 
   objective_function_value f
   init_bounded_number D(0,1e+07)
-  init_bounded_number g0(0,1)
-  init_bounded_number sigma(0,1e+07)
+  //init_bounded_number g0(0,1)
+  //init_bounded_number sigma(0,1e+07)
   init_number ssb0
   init_number ssb1
   init_bounded_number sigmass(0,6e+05)
@@ -36,7 +36,7 @@ PROCEDURE_SECTION
     p=1;
     for(j=1; j<=ntraps; j++){
       muss=ssb0+ssb1*dist(j,i);
-      p*=cumd_norm((log(c)-muss)/sigmass);
+      p*=cumd_norm((c-muss)/sigmass);
       //p*=1-(g0*mfexp(-square(dist(j,i))/(2*square(sigma)))+DBL_MIN);
     }
     pm(i)=1-p;
@@ -54,25 +54,27 @@ PROCEDURE_SECTION
         muss=ssb0+ssb1*dist(k,j);
         if(ci1(k)==0){
           //p*=1-(g0*mfexp(-square(dist(k,j))/(2*square(sigma)))+DBL_MIN);
-          p*=cumd_norm((log(c)-muss)/sigmass);
+          p*=cumd_norm((c-muss)/sigmass);
         }else{
           //p*=g0*mfexp(-square(dist(k,j))/(2*square(sigma)))+DBL_MIN;
-          //p*=1-cumd_norm((log(c)-muss)/sigmass);
-          p*=mfexp(square(log(wi1(k))-muss)/(2*square(sigmass)))/(sigmass*sqrt(2*pi));
+          //p*=1-cumd_norm((c-muss)/sigmass);
+          p*=mfexp(square(wi1(k)-muss)/(-2*square(sigmass)))/(sigmass*sqrt(2*pi));
         }
-        //p*=1-cumd_norm((log(c)-muss)/sigmass);
+        //p*=1-cumd_norm((c-muss)/sigmass);
         //p*=g0*mfexp(-square(dist(k,j))/(2*square(sigma)))+DBL_MIN;
       }
       ssll(j)=D*p;
     }
     L1+=log(sum(ssll)+DBL_MIN);
+    if (i == 1) cout << L1 << endl;
   }
   // Putting log-likelihood together.
   lambda=A*D*sum(pm)+DBL_MIN;
   L2=-n*log(D*sum(pm)+DBL_MIN);
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
-  cout << L1 << " " << L2 << " " << L3 << endl;
+  //cout << D << " " << ssb0 << " " << ssb1 << " " << sigmass << endl;
+  cout << L1 << " " << L2 << " " << L3 << " f " << f << endl;
 
 GLOBALS_SECTION
   #include <float.h>
