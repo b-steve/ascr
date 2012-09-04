@@ -80,8 +80,7 @@ for (i in 1:length(captures$ss)){
 ## Carry out simple SECR analysis
 ##ts1 <- system.time({fit = secr.fit(capt,model=list(D~1, g0~1, sigma~1),
 ##                    mask = mask, verify = FALSE)})
-##ts1 <- system.time({ssfit = secr.fit(sscapt,model=list(D~1, g0~1, sigma~1),
-##                    detectfn = 10, mask = mask, verify = FALSE, steptol = 1e-4)})
+
 ##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
 ##                      admbwd = admb.dir, method = "simple",
 ##                      memory = 1500000, clean = TRUE, autogen = TRUE)})
@@ -102,7 +101,14 @@ for (i in 1:length(captures$ss)){
 ##                    admbwd = admb.dir, method = "ss", autogen = FALSE)})
 
 ## Fitting signal strength analysis with nlm().
-##startval <- c(log(7000), 190, 0, log(20))
+##startval <- c(log(7000), 190, 0, log(6))
 ##ssfit2 <- nlm(f = secrlikelihood.ss, p = startval, capthist = capt.ss, mask = mask,
 ##              dists = dists, cutoff = 150, trace = TRUE)
 ##ests <- c(exp(ssfit2$estimate[1]), ssfit2$estimate[2:3], exp(ssfit2$estimate[4]))
+## Fitting signal strength analysis with secr.fit().
+##tss1 <- system.time({ssfit = secr.fit(sscapt,model=list(D~1, g0~1, sigma~1),
+##                       detectfn = 10, mask = mask, verify = FALSE, steptol = 1e-4)})
+## Fitting signal strength analysis with admbsecr().
+##tss2 <- system.time({ssfit2 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto",
+##                                        admbwd = admb.dir, method = "ss", clean = FALSE,
+##                                        autogen = FALSE)})

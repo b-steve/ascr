@@ -225,78 +225,78 @@ log.ftoa=function(capthist,ssqtoa,sigma.toa) {
 }
 
 secrlikelihood.angs <- function (beta, capthist, mask, dists=NULL, angs=NULL, trace=FALSE) {
-## Compute negative log likelihood for halfnormal proximity model with TOA data
-## Murray Efford 2011-02-27
-## DLB updated secrlikelihood.toa1 to deal with angles instead of TOA 09/11/11
+  ## Compute negative log likelihood for halfnormal proximity model with TOA data
+  ## Murray Efford 2011-02-27
+  ## DLB updated secrlikelihood.toa1 to deal with angles instead of TOA 09/11/11
 
-## Limitations -
-##     halfnormal detection function
-##     'proximity' detector type
-##     no deaths
-##     full likelihood
-##     no competing risk model
-##     one session
-##     no groups, covariates, time variation or trap response
-##     all detectors used
-##     link functions D = log, g0 = logit, sigma = log
+  ## Limitations -
+  ##     halfnormal detection function
+  ##     'proximity' detector type
+  ##     no deaths
+  ##     full likelihood
+  ##     no competing risk model
+  ##     one session
+  ##     no groups, covariates, time variation or trap response
+  ##     all detectors used
+  ##     link functions D = log, g0 = logit, sigma = log
+  
+  ## Inputs
+  ##     beta  -  parameter vector on link scale (D, g0, sigma, kappa)
+  ##     capthist - capthist object with angeles  (radians) instead of 1s (n x S x K array)
+  ##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
+  ##     dists - K x M matrix of distances between each detector and each mask point
+  ##     angles - K x M matrix: angles from detectors to each X in mask
+  ##     trace - logical TRUE for output of each evaluation
+  
+  ## where K = number of detectors, M = number of mask points
 
-## Inputs
-##     beta  -  parameter vector on link scale (D, g0, sigma, kappa)
-##     capthist - capthist object with angeles  (radians) instead of 1s (n x S x K array)
-##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
-##     dists - K x M matrix of distances between each detector and each mask point
-##     angles - K x M matrix: angles from detectors to each X in mask
-##     trace - logical TRUE for output of each evaluation
-
-## where K = number of detectors, M = number of mask points
-
-    ## 'real' parameter values
-    D <- exp(beta[1])
-    ## if D is modelled, expand here to a vector of length
-    ## equal to number of rows in mask
-    g0 <- invlogit(beta[2])
-    sigma <- exp(beta[3])
-    kappa=exp(beta[4]) # std. dev. of arrival time measurement error
-
-    n <- nrow(capthist)        ## number observed
-    S <- ncol(capthist)        ## number of occasions
-    A <- attr( mask, 'area')   ## area of one cell
-
-    ## distances if not passed as argument
-    if (is.null(dists)) {
-        traps <- traps(capthist)
-        dists <- distances(traps, mask)
+  ## 'real' parameter values
+  D <- exp(beta[1])
+  ## if D is modelled, expand here to a vector of length
+  ## equal to number of rows in mask
+  g0 <- invlogit(beta[2])
+  sigma <- exp(beta[3])
+  kappa=exp(beta[4]) # std. dev. of arrival time measurement error
+  
+  n <- nrow(capthist)        ## number observed
+  S <- ncol(capthist)        ## number of occasions
+  A <- attr( mask, 'area')   ## area of one cell
+  
+  ## distances if not passed as argument
+  if (is.null(dists)) {
+    traps <- traps(capthist)
+    dists <- distances(traps, mask)
     }
-
-    ## angs if not passed as argument
-    if (is.null(angs)) {
-        angs <- angles(traps(capthist),mask)
-    }
-
-    ## precompute probabilities for each detector and each mask point
-    ## gk is K x M matrix
-    gk <- g0 * exp(-dists^2 / 2 / sigma^2)
-    log.gk <- log(gk)
-    log.gk1 <- log(1-gk)
-
-    ## probability of being caught at least once if at mask site m
-    p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
-    sumDp <- sum(p.m * D)                ## scalar
-
-    L1.X=apply(capthist,1,log.Dprwi.ang)
-    L1.X.a=apply(capthist,1,log.vmCH,mu=angs,kappa=kappa)
-    L1 <- sum(log(apply(exp(L1.X+L1.X.a),2,sum)))
-    L2 <- - n * log(sumDp)
-    L3 <- dpois (n, sumDp * A, log = TRUE)
-    LL <- L1+L2+L3
-    if (trace) {
-        cat (D, g0, sigma, kappa, LL, '\n')
-        flush.console()
-    }
-    if (!is.finite(LL))
-        1e10
-    else
-        -LL   ## return negative log likelihood
+  
+  ## angs if not passed as argument
+  if (is.null(angs)) {
+    angs <- angles(traps(capthist),mask)
+  }
+  
+  ## precompute probabilities for each detector and each mask point
+  ## gk is K x M matrix
+  gk <- g0 * exp(-dists^2 / 2 / sigma^2)
+  log.gk <- log(gk)
+  log.gk1 <- log(1-gk)
+  
+  ## probability of being caught at least once if at mask site m
+  p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
+  sumDp <- sum(p.m * D)                ## scalar
+  
+  L1.X=apply(capthist,1,log.Dprwi.ang)
+  L1.X.a=apply(capthist,1,log.vmCH,mu=angs,kappa=kappa)
+  L1 <- sum(log(apply(exp(L1.X+L1.X.a),2,sum)))
+  L2 <- - n * log(sumDp)
+  L3 <- dpois (n, sumDp * A, log = TRUE)
+  LL <- L1+L2+L3
+  if (trace) {
+    cat (D, g0, sigma, kappa, LL, '\n')
+    flush.console()
+  }
+  if (!is.finite(LL))
+    1e10
+  else
+    -LL   ## return negative log likelihood
 }
 
 ## Function to calculate log[D*Bern(wi)])=log[D]+log[Bern(wi)] for capture i for each maskpoint
@@ -325,84 +325,97 @@ log.vmCH <- function(x,mu,kappa) {
 
 
 RPSV.mod <- function(capthist, traps){
-    w <- split(trapvec(capthist), animalIDvec(capthist))
-    temp <- lapply(w, RPSVx)
-    temp <- matrix(unlist(temp), nrow = 3)
-    temp <- apply(temp, 1, sum, na.rm = TRUE)
-    temp <- sqrt((temp[2] + temp[3])/(temp[1] - 1))
-    attr(temp, "names") <- NULL
-    temp
+  w <- split(trapvec(capthist), animalIDvec(capthist))
+  temp <- lapply(w, RPSVx)
+  temp <- matrix(unlist(temp), nrow = 3)
+  temp <- apply(temp, 1, sum, na.rm = TRUE)
+  temp <- sqrt((temp[2] + temp[3])/(temp[1] - 1))
+  attr(temp, "names") <- NULL
+  temp
 }
 
 RPSVx <- function(cx) {
-    cx <- abs(cx)
-    x <- traps$x[cx]
-    y <- traps$y[cx]
-    n <- length(x)
-    c(n = n - 1, ssx = sum(x^2) - (sum(x))^2/n, ssy = sum(y^2) -
-      (sum(y))^2/n)
+  cx <- abs(cx)
+  x <- traps$x[cx]
+  y <- traps$y[cx]
+  n <- length(x)
+  c(n = n - 1, ssx = sum(x^2) - (sum(x))^2/n, ssy = sum(y^2) -
+    (sum(y))^2/n)
 }
 RPSVxy <- function(xy) {
-    x <- xy$x
-    y <- xy$y
-    n <- length(x)
-    c(n = n - 1, ssx = sum(x^2) - (sum(x))^2/n, ssy = sum(y^2) -
-      (sum(y))^2/n)
+  x <- xy$x
+  y <- xy$y
+  n <- length(x)
+  c(n = n - 1, ssx = sum(x^2) - (sum(x))^2/n, ssy = sum(y^2) -
+    (sum(y))^2/n)
 }
 
 ## Returns capture trap numbers.
 trapvec <- function(capthist){
-    x <- apply(capthist, 3, function(x) sum(x > 0))
-    rep(1:length(x), times = x)
+  x <- apply(capthist, 3, function(x) sum(x > 0))
+  rep(1:length(x), times = x)
 }
 
 ## Returns capture animal ID numbers.
 animalIDvec <- function(capthist){
-    x <- c(apply(capthist, 3, function(x) which(x > 0)), recursive = TRUE)
-    names(x) <- NULL
-    as.character(x)
+  x <- c(apply(capthist, 3, function(x) which(x > 0)), recursive = TRUE)
+  names(x) <- NULL
+  as.character(x)
 }
 
-autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL){
-    obsRPSV <- RPSV.mod(bincapt, traps)
-    secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
+autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL, method = NULL){
+  obsRPSV <- RPSV.mod(bincapt, traps)
+  secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
 }
 
-autoD <- function(capthist = NULL, bincapt, traps, mask, sv){
-    n <- dim(bincapt)[1]
-    A <- attr(mask, "area")
-    n/(sum(pdot(mask, traps, 0,
-                     list(g0 = sv[2], sigma = sv[3]), 1))*A)
+autoD <- function(capthist = NULL, bincapt, traps, mask, sv, method = NULL){ 
+  n <- dim(bincapt)[1]
+  A <- attr(mask, "area")
+  if (method == "ss"){
+    g0 <- 0.95
+    sigma <- autosigma(capthist, bincapt, traps, mask, sv, method)
+  } else {
+    g0 <- sv[2]
+    sigma <- sv[3]
+  }
+  n/(sum(pdot(mask, traps, 0,
+              list(g0 = g0, sigma = sigma), 1))*A)
 }
 
-autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
-    0.95
+autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                   method = NULL){
+  0.95
 }
 
-autosigmatoa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
-    0.0025
+autosigmatoa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                         method = NULL){
+  0.0025
 }
 
-autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
-    10
+autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                      method = NULL){
+  10
 }
 
-autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
-    ss <- capthist[capthist != 0]
-    log(mean(ss))
+autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                     method = NULL){
+  ss <- capthist[capthist != 0]
+  max(ss)
 }
 
-autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
-    0
+autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                     method = NULL){
+  0
 }
 
-autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL){
-    ss <- capthist[capthist != 0]
-    var(ss)/mean(ss)^2
+autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                        method = NULL){
+  ss <- capthist[capthist != 0]
+  sd(ss)
 }
 
 ## Darren's C++ stuff:
-	code <- '
+code <- '
 
 	NumericVector BETA(beta);
 	double D     = exp(BETA[0]);
@@ -482,17 +495,17 @@ autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv 
 	}
 	'
 	
-	secrlikelihood.cpp <- cxxfunction(signature(beta="numeric",
-																								 method="integer",
-																								 ncues="integer",
-																								 ntraps="integer",
-																								 npoints="integer",
-																								 radians="numeric",
-																								 hash1="integer",
-																								 hash0="integer",
-																								 mask_area="numeric",
-																								 mask_dists="numeric",
-																								 mask_angs="numeric") , body=code, plugin = "Rcpp")
+secrlikelihood.cpp <- cxxfunction(signature(beta="numeric",
+                                            method="integer",
+                                            ncues="integer",
+                                            ntraps="integer",
+                                            npoints="integer",
+                                            radians="numeric",
+                                            hash1="integer",
+                                            hash0="integer",
+                                            mask_area="numeric",
+                                            mask_dists="numeric",
+                                            mask_angs="numeric") , body=code, plugin = "Rcpp")
 
 ## Functions for making a .tpl.
 
@@ -613,77 +626,77 @@ make.all.tpl <- function(memory, methods){
 }
 
 secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=FALSE) {
-## Compute negative log likelihood for halfnormal proximity model with signal strength data
-## Murray Efford 2011-02-27
-## BCS updated secrlikelihood.toa1 to deal with signal strength instead of TOA 29/08/12
-
-## Limitations -
-##     halfnormal detection function
-##     'proximity' detector type
-##     no deaths
-##     full likelihood
-##     no competing risk model
-##     one session
-##     no groups, covariates, time variation or trap response
-##     all detectors used
-##     link functions D = log, g0 = logit, sigma = log
-
-## Inputs
-##     beta  -  parameter vector on link scale (D, g0, sigma, kappa)
-##     capthist - capthist object with angeles  (radians) instead of 1s (n x S x K array)
-##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
-##     dists - K x M matrix of distances between each detector and each mask point
-##     angles - K x M matrix: angles from detectors to each X in mask
-##     trace - logical TRUE for output of each evaluation
-
-## where K = number of detectors, M = number of mask points
-
-    ## 'real' parameter values
-    D <- exp(beta[1])
-    ## if D is modelled, expand here to a vector of length
-    ## equal to number of rows in mask
-    b0ss <- beta[2]
-    b1ss <- beta[3]
-    sigmass <- exp(beta[4]) # std. dev. of arrival time measurement error
-
-    n <- nrow(capthist)        ## number observed
-    S <- ncol(capthist)        ## number of occasions
-    A <- attr( mask, 'area')   ## area of one cell
-
-    ## distances if not passed as argument
-    if (is.null(dists)) {
-        traps <- traps(capthist)
-        dists <- distances(traps, mask)
-    }
-
-    bincapt <- capthist
-    bincapt[bincapt > 0] <- 1
-    ## precompute probabilities for each detector and each mask point
-    ## gk is K x M matrix
-    muss <- b0ss + b1ss*dists
-    gk <- 1 - pnorm(cutoff, muss, sigmass)
-    log.gk <- log(gk + .Machine$double.xmin)
-    log.gk1 <- log(1-gk + .Machine$double.xmin)
-
-    ## probability of being caught at least once if at mask site m
-    p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
-    sumDp <- sum(p.m * D)                ## scalar
-
-    L1.X <- apply(capthist,1,log.Dprwi.ss, D, muss, sigmass, log.gk1)
-    L1 <- sum(log(apply(exp(L1.X),2,sum)))
-    print(log(apply(exp(L1.X),2,sum))[1])
-    L2 <- - n * log(sumDp)
-    L3 <- dpois (n, sumDp * A, log = TRUE)
-    LL <- L1+L2+L3
-    if (trace) {
-        cat (D, b0ss, b1ss, sigmass, LL, '\n')
-        cat(L1, L2, L3, '\n')
-        flush.console()
-    }
-    if (!is.finite(LL))
-        1e10
-    else
-        -LL   ## return negative log likelihood
+  ## Compute negative log likelihood for halfnormal proximity model with signal strength data
+  ## Murray Efford 2011-02-27
+  ## BCS updated secrlikelihood.toa1 to deal with signal strength instead of TOA 29/08/12
+  
+  ## Limitations -
+  ##     halfnormal detection function
+  ##     'proximity' detector type
+  ##     no deaths
+  ##     full likelihood
+  ##     no competing risk model
+  ##     one session
+  ##     no groups, covariates, time variation or trap response
+  ##     all detectors used
+  ##     link functions D = log, g0 = logit, sigma = log
+  
+  ## Inputs
+  ##     beta  -  parameter vector on link scale (D, g0, sigma, kappa)
+  ##     capthist - capthist object with angeles  (radians) instead of 1s (n x S x K array)
+  ##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
+  ##     dists - K x M matrix of distances between each detector and each mask point
+  ##     angles - K x M matrix: angles from detectors to each X in mask
+  ##     trace - logical TRUE for output of each evaluation
+  
+  ## where K = number of detectors, M = number of mask points
+  
+  ## 'real' parameter values
+  D <- exp(beta[1])
+  ## if D is modelled, expand here to a vector of length
+  ## equal to number of rows in mask
+  b0ss <- beta[2]
+  b1ss <- beta[3]
+  sigmass <- exp(beta[4]) # std. dev. of arrival time measurement error
+  
+  n <- nrow(capthist)        ## number observed
+  S <- ncol(capthist)        ## number of occasions
+  A <- attr( mask, 'area')   ## area of one cell
+  
+  ## distances if not passed as argument
+  if (is.null(dists)) {
+    traps <- traps(capthist)
+    dists <- distances(traps, mask)
+  }
+  
+  bincapt <- capthist
+  bincapt[bincapt > 0] <- 1
+  ## precompute probabilities for each detector and each mask point
+  ## gk is K x M matrix
+  muss <- b0ss + b1ss*dists
+  gk <- 1 - pnorm(cutoff, muss, sigmass)
+  log.gk <- log(gk + .Machine$double.xmin)
+  log.gk1 <- log(1-gk + .Machine$double.xmin)
+  
+  ## probability of being caught at least once if at mask site m
+  p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
+  sumDp <- sum(p.m * D)                ## scalar
+  
+  L1.X <- apply(capthist,1,log.Dprwi.ss, D, muss, sigmass, log.gk1)
+  print(apply(exp(L1.X),2,sum))
+  L1 <- sum(log(apply(exp(L1.X),2,sum)+.Machine$double.xmin))
+  L2 <- - n * log(sumDp)
+  L3 <- dpois (n, sumDp * A, log = TRUE)
+  LL <- L1+L2+L3
+  print(c(L1, L2, L3, -LL))
+  if (trace) {
+    cat(D, b0ss, b1ss, sigmass, LL, '\n')
+    flush.console()
+  }
+  if (!is.finite(LL))
+    1e10
+  else
+    -LL   ## return negative log likelihood
 }
 
 log.Dprwi.ss <- function (wi, D, muss, sigmass, log.gk1) {
@@ -692,7 +705,7 @@ log.Dprwi.ss <- function (wi, D, muss, sigmass, log.gk1) {
   dens <- matrix(0, nrow = nrow(traps), ncol = nrow(mask))
   for (i in 1:nrow(traps)){
     dens[i, ] <- dnorm(wi[i], muss[i, ], sigmass, log = TRUE)
-  }          
+  }
   prwi.s <- ci %*% dens + (1-ci) %*% log.gk1
   prwi.s <-apply(prwi.s,2,sum)
   log(D) + prwi.s

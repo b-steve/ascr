@@ -34,25 +34,25 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     A <- attr(mask, "area")
     bincapt <- capt
     bincapt[capt > 0] <- 1
+    ## Setting number of model parameters.
+    npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss")])
     ## Setting sensible start values if elements of sv are "auto".
     if (length(sv) == 1 & sv[1] == "auto"){
-        npars <- 3 + sum(method != "simple")
         sv <- rep("auto", npars)
-        if (method == "ss"){
-            sv <- c(sv, rep("auto", 2))
-        }
     }
     if (any(sv == "auto")){
         ## Give sv vector names if it doesn't have them.
         if (is.null(names(sv))){
-            names(sv) <- c("D", "g0", "sigma", "sigmatoa"[method == "toa"],
-                           "kappa"[method == "ang"], "ssb0"[method == "ss"],
-                           "ssb1"[method == "ss"], "sigmass"[method == "ss"])
+            names(sv) <- c("D", "g0"[method != "ss"], "sigma"[method != "ss"],
+                           "sigmatoa"[method == "toa"], "kappa"[method == "ang"],
+                           "ssb0"[method == "ss"], "ssb1"[method == "ss"],
+                           "sigmass"[method == "ss"])
         } else {
             ## Reordering sv vector if names are provided.
-            sv <- sv[c("D", "g0", "sigma", "sigmatoa"[method == "toa"],
-                       "kappa"[method == "ang"], "ssb0"[method == "ss"],
-                       "ssb1"[method == "ss"], "sigmass"[method = "ss"])]
+            sv <- sv[c("D", "g0"[method != "ss"], "sigma"[method != "ss"],
+                       "sigmatoa"[method == "toa"], "kappa"[method == "ang"],
+                       "ssb0"[method == "ss"], "ssb1"[method == "ss"],
+                       "sigmass"[method = "ss"])]
         }
         autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
                          "sigmatoa" = autosigmatoa, "kappa" = autokappa,
@@ -60,7 +60,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                          "sigmass" = autosigmass)
         ## Replacing "auto" elements of sv vector.
         for (i in rev(which(sv == "auto"))){
-            sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv)
+            sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, method)
         }
         sv <- as.numeric(sv)
     }
@@ -72,9 +72,11 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     nm <- nrow(mask)
     ## Distances between traps and mask locations.
     dist <- distances(traps, mask)
+    traps <- as.matrix(traps)
     ## Setting up parameters for do_admb.
     if (method == "simple"){
-        data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt, dist = dist)
+        data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,
+                     dist = dist, traps = traps)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
         bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000))
     } else if (method == "toa"){
@@ -97,23 +99,23 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     } else if (method == "ss"){
         data <- list(n = n, ntraps = k, nmask = nm, A = A, sscapt = capt,
                      dist = dist, capt = bincapt)
-        params <- list(D = sv[1], g0 = sv[2], sigma = sv[3],
-                       ssb0 = sv[4], ssb1 = sv[5], sigmass = sv[6])
-        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 600000),
-                       sigmass = c(0, 600000))
+        params <- list(D = sv[1], ssb0 = sv[2], ssb1 = sv[3], sigmass = sv[4])
+        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
+                       sigmass = c(0, 100000))
     } else {
         stop('method must be either "simple", "toa", "ang" or "ss"')
     }
     ## Fitting the model.
     if (!is.null(profpars)){
-        fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
-                       profile = TRUE, profpars = profpars,
-                       run.opts = run.control(checkdata = "write", checkparam = "write",
-                         clean = clean))
+      fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
+                     profile = TRUE, profpars = profpars, safe = FALSE,
+                     run.opts = run.control(checkdata = "write", checkparam = "write",
+                       clean = clean))
     } else {
-        fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
-                       run.opts = run.control(checkdata = "write", checkparam = "write",
-                         clean = clean))
+      fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
+                     safe = FALSE,
+                     run.opts = run.control(checkdata = "write", checkparam = "write",
+                       clean = clean))
     }
     if (autogen){
       file.remove("secr.tpl")
