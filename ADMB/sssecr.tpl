@@ -2,53 +2,50 @@ TOP_OF_MAIN_SECTION
   arrmblsize=10000000;
 
 PROCEDURE_SECTION
-  // Setting up variables
+    // Setting up variables
   const double pi=3.14159265359;
-  int i,j;
+  const double c=150;
+  int i,j,k;
   dvariable p,lambda,L1,L2,L3;
-  dvar_matrix p1(1,ntraps,1,nmask);
-  dvar_matrix p2(1,ntraps,1,nmask);
-  dvar_matrix logp1(1,ntraps,1,nmask);
-  dvar_matrix logp2(1,ntraps,1,nmask);
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
-  dvar_vector wi2(1,ntraps);
+  dvar_vector ci1(1,ntraps);
   dvar_vector ssll(1,nmask);
-  dvar_vector ess(1,nmask);
-  // Probabilities of caputure at each location for each trap.
-  // Add a small amount to prevent zeros.
-  p1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;
-  p2=1-p1;
-  logp1=log(p1);
-  logp2=log(p2);
-  // Probability of detection at any trap for each location.
+  dvar_matrix muss(1,ntraps,1,nmask);
+  dvar_matrix logp1(1,ntraps,1,nmask);
+  dvar_matrix p2(1,ntraps,1,nmask);
+  dvar_matrix logp2(1,ntraps,1,nmask);
+  muss=ssb0+ssb1*dist;
   for(i=1; i<=nmask; i++){
     p=1;
     for(j=1; j<=ntraps; j++){
-      p*=p2(j)(i);
+      p2(j,i)=cumd_norm((c-muss(j,i))/sigmass);
+      p*=p2(j,i);
     }
     pm(i)=1-p;
   }
+  logp2=log(p2+DBL_MIN);
   L1=0;
   // Probability of capture histories for each animal.
   for(i=1; i<=n; i++){
-    wi1=capt(i)(1,ntraps);
-    wi2=1-wi1;
+    logp1=0;
     ssll=0;
-    // Likelihood due to signal strengths.
+    wi1=row(sscapt,i);
+    ci1=row(capt,i);
     for(j=1; j<=ntraps; j++){
-      if (capt(i)(j)==1){
-        ess=ssb0+ssb1*row(dist,j);
-        ssll+=-log(sigmass)-(square(sscapt(i)(j)-ess)/(2*square(sigmass)));
+      if (ci1(j)==1){
+        logp1(j)(1,nmask)=-log(sigmass)-log(sqrt(2*pi))+(square(wi1(j)-row(muss,j))/(-2*square(sigmass)));
       }
     }
-    L1+=log(sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+ssll))+DBL_MIN);
+    L1+=log(D*sum(mfexp(ci1*logp1+(1-ci1)*logp2)+DBL_MIN));
   }
   // Putting log-likelihood together.
-  lambda=A*D*sum(pm);
-  L2=-n*log(D*sum(pm));
+  lambda=A*D*sum(pm)+DBL_MIN;
+  L2=-n*log(D*sum(pm)+DBL_MIN);
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
+  cout << D << " " << ssb0 << " " << ssb1 << " " << sigmass << endl;
+  cout << L1 << " " << L2 << " " << L3 << " " << f << endl;
 
 GLOBALS_SECTION
   #include <float.h>
