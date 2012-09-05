@@ -83,7 +83,7 @@ for (i in 1:length(captures$ss)){
 
 ##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
 ##                      admbwd = admb.dir, method = "simple",
-##                      memory = 1500000, clean = TRUE, autogen = TRUE)})
+##                      memory = 1500000, clean = TRUE, trace = FALSE, autogen = FALSE)})
 
 ## Carry out TOA analysis
 ##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # create ssq matrix in advance
@@ -92,9 +92,9 @@ for (i in 1:length(captures$ss)){
 ##ttoa1 <- system.time({toafit = nlm(f = secrlikelihood.toa1, p = start.beta, capthist=capt.toa,
 ##                      mask = mask, dists = dists, ssqtoa = ssqtoa, trace = TRUE)})
 ##start.beta2 <- c(coef(fit2), sigma.toa)
-##ttoa2 <- system.time({toafit3 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
+##ttoa2 <- system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
 ##                        sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa",
-##                        memory = 1500000, autogen = FALSE)})
+##                        memory = 1500000, trace = FALSE, autogen = FALSE)})
 
 ## Carry out signal strength analysis
 ##tss2 <- system.time({ssfit2 = admbsecr(capt = capt.ss, traps = traps, mask = mask, sv = "auto",
@@ -109,6 +109,8 @@ for (i in 1:length(captures$ss)){
 ##tss1 <- system.time({ssfit = secr.fit(sscapt,model=list(D~1, g0~1, sigma~1),
 ##                       detectfn = 10, mask = mask, verify = FALSE, steptol = 1e-4)})
 ## Fitting signal strength analysis with admbsecr().
-##tss2 <- system.time({ssfit2 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto",
-##                                        admbwd = admb.dir, method = "ss", clean = FALSE,
+##sv <- c(7000, "auto", -0.5, "auto")
+##tss2 <- system.time({ssfit2 <- admbsecr(capt.ss, traps = traps, mask, sv = sv,
+##                                        cutoff = 150, admbwd = admb.dir,
+##                                        method = "ss", clean = TRUE, trace = TRUE, 
 ##                                        autogen = FALSE)})
