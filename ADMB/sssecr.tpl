@@ -2,7 +2,7 @@ TOP_OF_MAIN_SECTION
   arrmblsize=10000000;
 
 PROCEDURE_SECTION
-    // Setting up variables
+  // Setting up variables
   const double pi=3.14159265359;
   const double dmin=DBL_MIN;
   int i,j,k;
