@@ -3,7 +3,7 @@
 admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                      angs = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
                      memory = NULL, profpars = NULL, clean = TRUE,
-                     verbose = TRUE, autogen = FALSE){
+                     verbose = TRUE, trace = FALSE, autogen = FALSE){
     require(R2admb)
     require(secr)
     ## Warnings for incorrect input.
@@ -16,6 +16,10 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     if (method == "ss" & is.null(cutoff)){
       stop("cutoff must be supplied for signal strength analysis")
     }
+    if (trace){
+      verbose <- TRUE
+    }
+    trace <- as.numeric(trace)
     currwd <- getwd()
     ## Moving to ADMB working directory.
     if (!is.null(admbwd)){
@@ -79,7 +83,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     ## Setting up parameters for do_admb.
     if (method == "simple"){
         data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,
-                     dist = dist, traps = traps)
+                     dist = dist, traps = traps, trace = trace)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
         bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000))
     } else if (method == "toa"){
@@ -87,7 +91,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
             ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
         }
         data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
-                     toassq = t(ssqtoa), dist = dist, capt = bincapt)
+                     toassq = t(ssqtoa), dist = dist, capt = bincapt, trace = trace)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
         bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
                        sigmatoa = c(0, 100000))
@@ -96,12 +100,12 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
             angs <- angles(traps, mask)
         }
         data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
-                     ang = angs, dist = dist, capt = bincapt)
+                     ang = angs, dist = dist, capt = bincapt, trace = trace)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
         bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000), kappa = c(0, 100000))
     } else if (method == "ss"){
         data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt,
-                     dist = dist, capt = bincapt)
+                     dist = dist, capt = bincapt, trace = trace)
         params <- list(D = sv[1], ssb0 = sv[2], ssb1 = sv[3], sigmass = sv[4])
         bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0))
     } else {
@@ -110,7 +114,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     ## Fitting the model.
     if (!is.null(profpars)){
       fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
-                     profile = TRUE, profpars = profpars, safe = FALSE,
+                     profile = FALSE, profpars = profpars, safe = TRUE,
                      run.opts = run.control(checkdata = "write", checkparam = "write",
                        clean = clean))
     } else {

@@ -70,12 +70,12 @@ p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
 ## For same start values:
 sv <- c("D" = start.hn$D, "g0" = start.hn$g0, "sigma" = start.hn$sigma,
         "kappa" = start.hn$kappa)
-##time3 <- system.time({fit3 <- admbsecr(capt = radians, traps = traps, mask = mask,
+##time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
 ##                                       sv = "auto", angs = mask.angs,
-##                                       admbwd = admb.dir, method = "ang", autogen = TRUE)})
+##                                       admbwd = admb.dir, method = "ang", autogen = FALSE, trace = TRUE)})
 
 ##time3 <- system.time({fit3 <- nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
 ##                                  ntraps = K, npoints = M, radians = radians[, 1, ],
 ##                                  hash1 = hash1, hash0 = hash0, mask_area = A,
 ##                                  mask_dists = mask.dists, mask_angs = mask.angs,
-##                                  hessian = TRUE)})
+##                                 hessian = TRUE)})

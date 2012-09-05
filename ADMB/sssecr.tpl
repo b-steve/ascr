@@ -44,7 +44,9 @@ PROCEDURE_SECTION
   L2=-n*log(D*sum(pm)+dmin);
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
-  cout << "D: " << D << ", ssb0: " << ssb0 << ", ssb1: " << ssb1 << ", sigmass: " << sigmass << ", loglik: " << -f << endl;
+  if (trace==1){
+    cout << "D: " << D << ", ssb0: " << ssb0 << ", ssb1: " << ssb1 << ", sigmass: " << sigmass << ", loglik: " << -f << endl;
+  }
 
 GLOBALS_SECTION
   #include <float.h>
