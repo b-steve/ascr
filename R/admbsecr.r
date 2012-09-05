@@ -1,17 +1,20 @@
 ## admbsecr() takes capture history and mask objects from the secr
 ## package and fits an SECR model using ADMB.
 admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
-                     angs = NULL, admbwd = NULL, method = "simple",
+                     angs = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
                      memory = NULL, profpars = NULL, clean = TRUE,
                      verbose = TRUE, autogen = FALSE){
     require(R2admb)
     require(secr)
     ## Warnings for incorrect input.
     if (length(method) != 1){
-        stop("method must be of length 1")
+      stop("method must be of length 1")
     }
     if (method == "simple" & any(capt != 1 & capt != 0)){
-        stop('capt must be binary when using the "simple" method')
+      stop('capt must be binary when using the "simple" method')
+    }
+    if (method == "ss" & is.null(cutoff)){
+      stop("cutoff must be supplied for signal strength analysis")
     }
     currwd <- getwd()
     ## Moving to ADMB working directory.
@@ -97,11 +100,10 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
         bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000), kappa = c(0, 100000))
     } else if (method == "ss"){
-        data <- list(n = n, ntraps = k, nmask = nm, A = A, sscapt = capt,
+        data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt,
                      dist = dist, capt = bincapt)
         params <- list(D = sv[1], ssb0 = sv[2], ssb1 = sv[3], sigmass = sv[4])
-        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
-                       sigmass = c(0, 100000))
+        bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0))
     } else {
         stop('method must be either "simple", "toa", "ang" or "ss"')
     }
