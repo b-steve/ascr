@@ -4,7 +4,7 @@ TOP_OF_MAIN_SECTION
 PROCEDURE_SECTION
     // Setting up variables
   const double pi=3.14159265359;
-  const double c=150;
+  const double dmin=DBL_MIN;
   int i,j,k;
   dvariable p,lambda,L1,L2,L3;
   dvar_vector pm(1,nmask);
@@ -24,7 +24,7 @@ PROCEDURE_SECTION
     }
     pm(i)=1-p;
   }
-  logp2=log(p2+DBL_MIN);
+  logp2=log(p2+dmin);
   L1=0;
   // Probability of capture histories for each animal.
   for(i=1; i<=n; i++){
@@ -37,15 +37,14 @@ PROCEDURE_SECTION
         logp1(j)(1,nmask)=-log(sigmass)-log(sqrt(2*pi))+(square(wi1(j)-row(muss,j))/(-2*square(sigmass)));
       }
     }
-    L1+=log(D*sum(mfexp(ci1*logp1+(1-ci1)*logp2)+DBL_MIN));
+    L1+=log(D*sum(mfexp(ci1*logp1+(1-ci1)*logp2)+dmin));
   }
   // Putting log-likelihood together.
-  lambda=A*D*sum(pm)+DBL_MIN;
-  L2=-n*log(D*sum(pm)+DBL_MIN);
+  lambda=A*D*sum(pm)+dmin;
+  L2=-n*log(D*sum(pm)+dmin);
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
-  cout << D << " " << ssb0 << " " << ssb1 << " " << sigmass << endl;
-  cout << L1 << " " << L2 << " " << L3 << " " << f << endl;
+  cout << "D: " << D << ", ssb0: " << ssb0 << ", ssb1: " << ssb1 << ", sigmass: " << sigmass << ", loglik: " << -f << endl;
 
 GLOBALS_SECTION
   #include <float.h>
