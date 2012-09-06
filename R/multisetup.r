@@ -1,4 +1,4 @@
-pref <- c("Silvermine")
+pref <- c("Somiedo")
 no <- 1
 
 detsname <- paste(pref, paste("dets", no, sep = ""), "csv", sep = ".")
