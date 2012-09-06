@@ -400,12 +400,12 @@ autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL
 autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      method = NULL){
   ss <- capthist[capthist != 0]
-  max(ss)
+  mean(ss)
 }
 
 autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      method = NULL){
-  0
+  -0.1
 }
 
 autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
@@ -683,12 +683,10 @@ secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=F
   sumDp <- sum(p.m * D)                ## scalar
   
   L1.X <- apply(capthist,1,log.Dprwi.ss, D, muss, sigmass, log.gk1)
-  print(apply(exp(L1.X),2,sum))
   L1 <- sum(log(apply(exp(L1.X),2,sum)+.Machine$double.xmin))
   L2 <- - n * log(sumDp)
   L3 <- dpois (n, sumDp * A, log = TRUE)
   LL <- L1+L2+L3
-  print(c(L1, L2, L3, -LL))
   if (trace) {
     cat(D, b0ss, b1ss, sigmass, LL, '\n')
     flush.console()

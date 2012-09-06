@@ -102,15 +102,14 @@ for (i in 1:length(captures$ss)){
 
 ## Fitting signal strength analysis with nlm().
 ##startval <- c(log(7000), 190, 0, log(6))
-##ssfit2 <- nlm(f = secrlikelihood.ss, p = startval, capthist = capt.ss, mask = mask,
+##ssfit1 <- nlm(f = secrlikelihood.ss, p = startval, capthist = capt.ss, mask = mask,
 ##              dists = dists, cutoff = 150, trace = TRUE)
 ##ests <- c(exp(ssfit2$estimate[1]), ssfit2$estimate[2:3], exp(ssfit2$estimate[4]))
 ## Fitting signal strength analysis with secr.fit().
 ##tss1 <- system.time({ssfit = secr.fit(sscapt,model=list(D~1, g0~1, sigma~1),
 ##                       detectfn = 10, mask = mask, verify = FALSE, steptol = 1e-4)})
 ## Fitting signal strength analysis with admbsecr().
-##sv <- c(7000, "auto", -0.5, "auto")
-##tss2 <- system.time({ssfit2 <- admbsecr(capt.ss, traps = traps, mask, sv = sv,
+##tss2 <- system.time({ssfit2 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto",
 ##                                        cutoff = 150, admbwd = admb.dir,
 ##                                        method = "ss", clean = TRUE, trace = TRUE, 
 ##                                        autogen = FALSE)})
