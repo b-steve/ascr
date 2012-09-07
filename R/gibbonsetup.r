@@ -27,7 +27,8 @@ spacing <- 50
 mask <- make.mask(traps, buffer, spacing, type="trapbuffer") ; head(mask) ; dim(mask)
 area.ha <- attr(mask, 'area') * nrow(mask)
 mask.dists <- distances(traps, mask)
-mask.angs  <- angles(traps, mask)
+##mask.angs  <- system.time(angles(traps, mask))
+mask.angs <- angles.cpp(as.matrix(traps), as.matrix(mask))
 ndets <- nrow(gibbons)
 ncues <- length(unique(gibbons$group.id))
 radians <- array(NA, dim=c(ncues,1,ntraps),
@@ -60,7 +61,8 @@ capthist[capthist > 0] <- 1
 capthist[is.na(capthist)] <- 0
 hash1 <- which(capthist[,1,]==1, arr.ind=T)-1
 hash0 <- which(capthist[,1,]==0, arr.ind=T)-1
-mask.dists <- distances(traps, mask)
+##mask.dists <- distances(traps, mask)
+mask.dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
 
 p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
 ##time1 <- system.time({fit <- nlm(f = secrlikelihood.angs.dk.v1, detectfn = 0, g0.fixed = F,
