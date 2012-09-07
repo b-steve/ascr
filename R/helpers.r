@@ -9,6 +9,22 @@ distances <- function (X, Y) {
   t(apply(X, 1, onerow))
 }
 
+distcode <- '
+  NumericMatrix TRAPS(traps);
+  NumericMatrix MASK(mask);
+  int K = TRAPS.nrow();
+  int M = MASK.nrow();
+  NumericMatrix DISTANCES(K,M);
+  for (int m=0; m<M; m++) {
+  	for (int k=0; k<K; k++) {
+      DISTANCES(k,m) = pow(pow(TRAPS(k,0)-MASK(m,0),2)+pow(TRAPS(k,1)-MASK(m,1),2),0.5);
+    }
+  }
+  return wrap(DISTANCES);
+'
+distances.cpp <-  cxxfunction(signature(traps = "numeric", mask = "numeric"),
+                              body = distcode, plugin = "Rcpp")
+
 angles <- function (X, Y) {
 #-------------------------------------------------------------------------------
 # X and Y are 2-column matrices of coordinates
@@ -31,6 +47,29 @@ angles <- function (X, Y) {
   }
   t(apply(X, 1, onerow))
 }
+
+angcode <- '
+  NumericMatrix TRAPS(traps);
+	NumericMatrix MASK(mask);
+	int K = TRAPS.nrow();
+	int M = MASK.nrow();
+	NumericMatrix ANGLES(K,M);
+	double X;
+	double Y;
+	double pi = 3.14159265359;
+	for (int k=0; k<K; k++) {
+		for (int m=0; m<M; m++) {
+			X = MASK(m,0)-TRAPS(k,0);
+			Y = MASK(m,1)-TRAPS(k,1);
+			ANGLES(k,m) = atan(X/Y);
+			if(Y<0) ANGLES(k,m) += pi;
+			if(X<0 & Y>=0) ANGLES(k,m) += 2*pi;
+		}
+	}
+	return wrap(ANGLES);
+	'
+angles.cpp <-  cxxfunction(signature(traps = "numeric", mask = "numeric") ,
+                           body = angcode, plugin = "Rcpp")
 
 
 secrlikelihood <- function (beta, capthist, mask, dist = NULL, trace = FALSE) {
