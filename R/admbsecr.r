@@ -102,7 +102,8 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
         data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
                      ang = angs, dist = dist, capt = bincapt, trace = trace)
         params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
-        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000), kappa = c(0, 100000))
+        bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
+                       kappa = c(0, 700))
     } else if (method == "ss"){
         data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt,
                      dist = dist, capt = bincapt, trace = trace)
