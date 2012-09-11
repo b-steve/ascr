@@ -43,7 +43,7 @@ PROCEDURE_SECTION
     }
     // Term in Von-Mises density not dependent on data.
     angll-=sum(wi1)*log(2*pi*bessi0(kappa));
-    L1+=log(sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+angll)));
+    L1+=log(sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+angll))+DBL_MIN);
   }
   // Putting log-likelihood together.
   lambda=A*D*sum(pm);
