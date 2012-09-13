@@ -18,10 +18,11 @@ if (.Platform$OS == "unix"){
     dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Gibbons\\gibbons.txt"
 }
 
-nsims <- 1000
+nsims <- 1
 buffer <- 6000
 mask.spacing <- 100
 trap.spacing <- 2500
+
 
 ## True parameter values:
 D <- 0.0416
@@ -44,6 +45,8 @@ simprobs <- NULL
 angprobs <- NULL
 simpleres <- matrix(0, nrow = nsims, ncol = 3)
 angres <- matrix(0, nrow = nsims, ncol = 4)
+asimpleres <- matrix(0, nrow = nsims, ncol = 3)
+aangres <- matrix(0, nrow = nsims, ncol = 4)
 colnames(simpleres) <- c("D", "g0", "sigma")
 colnames(angres) <- c("D", "g0", "sigma", "kappa")
 for (i in 1:nsims){
@@ -99,8 +102,39 @@ for (i in 1:nsims){
   }
   simpleres[i, ] <- simplecoef
   angres[i, ] <- angcoef
+  hash1 <- which(capthist[,1,]==1, arr.ind=T)-1
+  hash0 <- which(capthist[,1,]==0, arr.ind=T)-1
+  p <- c(log(D), logit(g0), log(sigma), log(kappa))
+  sfit <- try(secr.fit(capthist, model = list(D ~ 1, g0 ~ 1, sigma ~ 1),
+                       mask = mask, verify = FALSE, trace = FALSE), silent = TRUE)
+  dfit <- try(nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
+                  ntraps = ntraps, npoints = nmask, radians = radhist[, 1, ],
+                  hash1 = hash1, hash0 = hash0, mask_area = A,
+                  mask_dists = mask.dists, mask_angs = mask.angs,
+                  hessian = TRUE), silent = TRUE)
+  if (class(sfit) == "try-error"){
+    asimpleres[i, ] <- NA
+  } else {
+    ests <- sfit$fit$estimate
+    asimpleres[i, ] <- c(exp(ests[1]), invlogit(ests[2]), exp(ests[3]))
+  }
+  if (class(dfit) == "try-error"){
+    aangres[i, ] <- NA
+  } else {
+    ests <- dfit$estimate
+    aangres[i, ] <- c(exp(ests[1]), invlogit(ests[2]), exp(ests[3:4]))
+  }
   if (i == nsims){
     print(c("end", date()))
   }
 }
 
+simpleD <- simpleres[, 1]
+angD <- angres[, 1]
+
+
+probres <- angres[angres[, 4] > 699.9, ]
+
+probs <- which(angres[, 2] < 0.99 | simpleres[, 2] < 0.99 | angres[, 4] > 300)
+cutsim <- simpleres[-probs, ]
+cutang <- angres[-probs, ]
