@@ -1,3 +1,8 @@
+library("secr")
+library("CircStats")
+library("inline")
+library("Rcpp")
+
 if (.Platform$OS == "unix"){
     source("/home/ben/SECR/R/helpers.r")
     source("/home/ben/SECR/R/admbsecr.r")
@@ -11,11 +16,6 @@ if (.Platform$OS == "unix"){
     admb.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\ADMB"
     dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Gibbons\\gibbons.txt"
 }
-
-library("secr")
-library("CircStats")
-library("inline")
-library("Rcpp")
 
 gibbons <- read.table(file = dat.dir, header = TRUE)
 npoints <- length(unique(gibbons$point))
@@ -72,12 +72,12 @@ p <- with(start.hn, c(log(D),logit(g0),log(sigma),log(kappa)))
 ## For same start values:
 sv <- c("D" = start.hn$D, "g0" = start.hn$g0, "sigma" = start.hn$sigma,
         "kappa" = start.hn$kappa)
-##time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
-##                                       sv = "auto", angs = mask.angs,
-##                                       admbwd = admb.dir, method = "ang", autogen = FALSE, trace = TRUE)})
+time2 <- system.time({fit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
+                                       sv = "auto", angs = mask.angs,
+                                       admbwd = admb.dir, method = "ang", autogen = FALSE, trace = TRUE)})
 
-##time3 <- system.time({fit3 <- nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
-##                                  ntraps = K, npoints = M, radians = radians[, 1, ],
-##                                  hash1 = hash1, hash0 = hash0, mask_area = A,
-##                                  mask_dists = mask.dists, mask_angs = mask.angs,
-##                                 hessian = TRUE)})
+time3 <- system.time({fit3 <- nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
+                                  ntraps = K, npoints = M, radians = radians[, 1, ],
+                                  hash1 = hash1, hash0 = hash0, mask_area = A,
+                                  mask_dists = mask.dists, mask_angs = mask.angs,
+                                 hessian = TRUE)})
