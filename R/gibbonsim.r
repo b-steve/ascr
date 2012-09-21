@@ -18,17 +18,17 @@ if (.Platform$OS == "unix"){
     dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Gibbons\\gibbons.txt"
 }
 
-nsims <- 1
+nsims <- 500
 buffer <- 6000
-mask.spacing <- 100
-trap.spacing <- 2500
+mask.spacing <- 50
+trap.spacing <- 500
 
 
 ## True parameter values:
 D <- 0.0416
 g0 <- 0.99999
 sigma <- 1250
-kappa <- 140
+kappa <- 70
 truepars <- c(D = D, g0 = g0, sigma = sigma, kappa = kappa)
 detectpars <- list(g0 = g0, sigma = sigma)
 
@@ -40,15 +40,13 @@ nmask <- nrow(mask)
 A <- attr(mask, "area")
 mask.dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
 mask.angs <- angles.cpp(as.matrix(traps), as.matrix(mask))
-
 simprobs <- NULL
 angprobs <- NULL
 simpleres <- matrix(0, nrow = nsims, ncol = 3)
-angres <- matrix(0, nrow = nsims, ncol = 4)
-asimpleres <- matrix(0, nrow = nsims, ncol = 3)
-aangres <- matrix(0, nrow = nsims, ncol = 4)
+angres <- matrix(0, nrow = nsims, ncol = 5)
+aangres <- matrix(0, nrow = nsims, ncol = 5)
 colnames(simpleres) <- c("D", "g0", "sigma")
-colnames(angres) <- c("D", "g0", "sigma", "kappa")
+colnames(angres) <- colnames(aangres) <- c("D", "g0", "sigma", "kappa", "logLik")
 for (i in 1:nsims){
   if (i == 1){
     print(c("start", date()))
@@ -98,43 +96,33 @@ for (i in 1:nsims){
     angcoef <- NA
     angprobs <- c(angprobs, i)
   } else {
-    angcoef <- coef(angfit)
+    angcoef <- c(coef(angfit), logLik(angfit))
   }
   simpleres[i, ] <- simplecoef
   angres[i, ] <- angcoef
-  hash1 <- which(capthist[,1,]==1, arr.ind=T)-1
-  hash0 <- which(capthist[,1,]==0, arr.ind=T)-1
-  p <- c(log(D), logit(g0), log(sigma), log(kappa))
-  sfit <- try(secr.fit(capthist, model = list(D ~ 1, g0 ~ 1, sigma ~ 1),
-                       mask = mask, verify = FALSE, trace = FALSE), silent = TRUE)
-  dfit <- try(nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
-                  ntraps = ntraps, npoints = nmask, radians = radhist[, 1, ],
-                  hash1 = hash1, hash0 = hash0, mask_area = A,
-                  mask_dists = mask.dists, mask_angs = mask.angs,
-                  hessian = TRUE), silent = TRUE)
-  if (class(sfit) == "try-error"){
-    asimpleres[i, ] <- NA
-  } else {
-    ests <- sfit$fit$estimate
-    asimpleres[i, ] <- c(exp(ests[1]), invlogit(ests[2]), exp(ests[3]))
-  }
-  if (class(dfit) == "try-error"){
-    aangres[i, ] <- NA
-  } else {
-    ests <- dfit$estimate
-    aangres[i, ] <- c(exp(ests[1]), invlogit(ests[2]), exp(ests[3:4]))
-  }
   if (i == nsims){
     print(c("end", date()))
   }
 }
 
-simpleD <- simpleres[, 1]
-angD <- angres[, 1]
+for (i in colnames(simpleres)){
+  name <- paste("sim", i, sep = "")
+  assign(name, simpleres[, i])
+}
+for (i in colnames(angres)){
+  name <- paste("ang", i, sep = "")
+  assign(name, angres[, i])
+}
+
+dsimD <- density(simD)
+dangD <- density(angD)
+xs <- c(dsimD$x, dangD$x)
+ys <- c(dsimD$y, dangD$y)
+
+plot(dsimD, type = "l", col = "blue", xlim = range(xs), ylim = c(0, max(ys)))
+lines(dangD, col = "red")
+abline(v = D, lty = "dotted")
 
 
-probres <- angres[angres[, 4] > 699.9, ]
-
-probs <- which(angres[, 2] < 0.99 | simpleres[, 2] < 0.99 | angres[, 4] > 300)
-cutsim <- simpleres[-probs, ]
-cutang <- angres[-probs, ]
+##write.table(angres, "/home/ben/SECR/Results/3/angres.txt", row.names = FALSE)
+##write.table(simpleres, "/home/ben/SECR/Results/3/simpleres.txt", row.names = FALSE)
