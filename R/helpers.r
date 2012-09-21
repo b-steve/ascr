@@ -26,10 +26,9 @@ distances.cpp <-  cxxfunction(signature(traps = "numeric", mask = "numeric"),
                               body = distcode, plugin = "Rcpp")
 
 angles <- function (X, Y) {
-#-------------------------------------------------------------------------------
-# X and Y are 2-column matrices of coordinates
-# Returns angles (0,360] from points in X to points in Y
-#         in matrix of dimension nrow(X) x nrow(Y)
+# X and Y are 2-column matrices of coordinates Returns angles (0,360]
+# from points in X to points in Y in matrix of dimension nrow(X) x
+# nrow(Y)
   onerow <- function (xy) {
     d <- function(xy2) {
       denom=sqrt(sum((xy2-xy)^2))
@@ -73,17 +72,6 @@ angles.cpp <-  cxxfunction(signature(traps = "numeric", mask = "numeric") ,
 
 
 secrlikelihood <- function (beta, capthist, mask, dist = NULL, trace = FALSE) {
-  ## Compute negative log likelihood for halfnormal proximity model
-  ## Murray Efford 2011-02-27
-
-  ## Inputs
-  ##     beta  -  parameter vector on link scale (D, g0, sigma)
-  ##     capthist - capthist object (n x S x K binary array)
-  ##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
-  ##     dist - K x M matrix of distances between each detector and each mask point
-  ##     trace - logical TRUE for output of each evaluation
-
-  ## where K = number of detectors, M = number of mask points
 
   if (!all(capthist %in% c(0,1)))
     stop ('secrlikelihood requires binary data')
@@ -139,14 +127,14 @@ Dprwi <- function (wi, prwi.s, log.gk, log.gk1, D) {
   log (sum(D * exp(prwi.s)))
 }
 
+## returns sum over detectors on which animal was detected, of squared
+## (t0hat-mean(t0hat)), where t0hat_m=toa_m-dists_m/v, # toa_m is time
+## of arrival at detector m, dists_m is distance from detector m to
+## each mask point.
+##
+## Returns vecor of length=number of mask points
 toa.ssq=function(wit,dists) {
-  #-------------------------------------------------------------------------------
-  # returns sum over detectors on which animal was detected, of squared
-  # (t0hat-mean(t0hat)), where t0hat_m=toa_m-dists_m/v, # toa_m is time of arrival
-  # at detector m, dists_m is distance from detector m to each mask point.
-  #
-  # Returns vecor of length=number of mask points
-  #-------------------------------------------------------------------------------
+
   ssq=function(x) sum((x-mean(x))^2)
   v=330 # speed of sound
   wit.na=wit; wit.na[wit==0]=NA # mark those with no capture
@@ -156,36 +144,6 @@ toa.ssq=function(wit,dists) {
 }
 
 secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, trace=FALSE) {
-  ## Compute negative log likelihood for halfnormal proximity model with TOA data
-  ## Murray Efford 2011-02-27
-  ## DLB added TOA 2011-10-15;
-  ##     update for efficiency (added ssqtoa): 07/11/11
-
-  ## Limitations -
-  ##     halfnormal detection function
-  ##     'proximity' detector type
-  ##     no deaths
-  ##     full likelihood
-  ##     no competing risk model
-  ##     one session
-  ##     no groups, covariates, time variation or trap response
-  ##     all detectors used
-  ##     link functions D = log, g0 = logit, sigma = log
-
-  ## Inputs
-  ##     beta  -  parameter vector on link scale (D, g0, sigma, sigma.toa)
-  ##     capthist - capthist object with TOAs insteand of 1s (n x S x K binary array)
-  ##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
-  ##     dists - K x M matrix of distances between each detector and each mask point
-  ##     ssqtoa - M x n matrix: sum over detectors for each detection, of (toa-transmission time)^2
-  ##     trace - logical TRUE for output of each evaluation
-
-  ## where K = number of detectors, M = number of mask points
-
-  # DLB removed this check when put TOA into capture histories
-  #    if (!all(capthist %in% c(0,1)))
-  #        stop ('secrlikelihood requires binary data')
-
   ## 'real' parameter values
   D <- exp(beta[1])
   ## if D is modelled, expand here to a vector of length
@@ -225,13 +183,6 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
     prwi.s <- wi %*% log.gk + (1-wi) %*% log.gk1
     ## sum log(p) over occasions, result is M-vector
     prwi.s <- apply(prwi.s,2,sum) # log(Pr(wis|X)) = log(product over occasions of Pr(wis|X)): log(Eq (4) of Efford, Borchers, Byrom)
-    #        if(sum(wi)>1) log.ft=logft(wit,dists,sigma.toa) # log-likelihood for this animal's TOA at each X
-    #        else log.ft=0
-    #        nc=sum(wi) # number captures
-    #        if(nc>1) log.ft=logft(wit,dists,sigma.toa) # log-likelihood for this animal's TOA at each X
-    #        else log.ft=0 # so don't add anything for TOA likelihood component for this animal
-    #        log (sum(D * exp(prwi.s+log.ft))) # log("integral" of D*Pr(wi|X)*f(toa) over X))
-    #        log (D * exp(prwi.s)) # log(D*Pr(wi|X)) at each X)
     log(D) + prwi.s # log(D*Pr(wi|X)) at each X): S x M matrix
   }
 
@@ -259,36 +210,10 @@ log.ftoa=function(capthist,ssqtoa,sigma.toa) {
   M2plus=which(M>1)
   madd=matrix(((1-M[M2plus])*log(sigma.toa)),nrow=dim(logftoa)[1],ncol=length(M2plus),byrow=TRUE)
   logftoa[,M2plus]=ssqtoa[,M2plus]/(-2*sigma.toa^2) + madd
-  #  logftoa[,M2plus]=t(ssqtoa[,M2plus]/(-2*sigma.toa^2)) + t((1-M[M2plus])*log(sigma.toa)) # omitting terms without parameters
   return(logftoa)
 }
 
 secrlikelihood.angs <- function (beta, capthist, mask, dists=NULL, angs=NULL, trace=FALSE) {
-  ## Compute negative log likelihood for halfnormal proximity model with TOA data
-  ## Murray Efford 2011-02-27
-  ## DLB updated secrlikelihood.toa1 to deal with angles instead of TOA 09/11/11
-
-  ## Limitations -
-  ##     halfnormal detection function
-  ##     'proximity' detector type
-  ##     no deaths
-  ##     full likelihood
-  ##     no competing risk model
-  ##     one session
-  ##     no groups, covariates, time variation or trap response
-  ##     all detectors used
-  ##     link functions D = log, g0 = logit, sigma = log
-  
-  ## Inputs
-  ##     beta  -  parameter vector on link scale (D, g0, sigma, kappa)
-  ##     capthist - capthist object with angeles  (radians) instead of 1s (n x S x K array)
-  ##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
-  ##     dists - K x M matrix of distances between each detector and each mask point
-  ##     angles - K x M matrix: angles from detectors to each X in mask
-  ##     trace - logical TRUE for output of each evaluation
-  
-  ## where K = number of detectors, M = number of mask points
-
   ## 'real' parameter values
   D <- exp(beta[1])
   ## if D is modelled, expand here to a vector of length
@@ -359,10 +284,7 @@ log.vmCH <- function(x,mu,kappa) {
   return(apply(logvmCH,2,sum))
 }
 
-## Automatically generates starting value for sigma.
-
-
-
+## Following are helper functions for naive sigma estimation.
 RPSV.mod <- function(capthist, traps){
   w <- split(trapvec(capthist), animalIDvec(capthist))
   temp <- lapply(w, RPSVx)
@@ -402,6 +324,7 @@ animalIDvec <- function(capthist){
   as.character(x)
 }
 
+## The following are functions for automatic start value generation.
 autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL, method = NULL){
   obsRPSV <- RPSV.mod(bincapt, traps)
   secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
@@ -665,31 +588,6 @@ make.all.tpl <- function(memory, methods){
 }
 
 secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=FALSE) {
-  ## Compute negative log likelihood for halfnormal proximity model with signal strength data
-  ## Murray Efford 2011-02-27
-  ## BCS updated secrlikelihood.toa1 to deal with signal strength instead of TOA 29/08/12
-  
-  ## Limitations -
-  ##     halfnormal detection function
-  ##     'proximity' detector type
-  ##     no deaths
-  ##     full likelihood
-  ##     no competing risk model
-  ##     one session
-  ##     no groups, covariates, time variation or trap response
-  ##     all detectors used
-  ##     link functions D = log, g0 = logit, sigma = log
-  
-  ## Inputs
-  ##     beta  -  parameter vector on link scale (D, g0, sigma, kappa)
-  ##     capthist - capthist object with angeles  (radians) instead of 1s (n x S x K array)
-  ##     mask - mask object (M x 2 matrix of x-y coords, with attribute 'area')
-  ##     dists - K x M matrix of distances between each detector and each mask point
-  ##     angles - K x M matrix: angles from detectors to each X in mask
-  ##     trace - logical TRUE for output of each evaluation
-  
-  ## where K = number of detectors, M = number of mask points
-  
   ## 'real' parameter values
   D <- exp(beta[1])
   ## if D is modelled, expand here to a vector of length
