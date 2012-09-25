@@ -113,3 +113,15 @@ for (i in 1:length(captures$ss)){
 ##                                        cutoff = 150, admbwd = admb.dir,
 ##                                        method = "ss", clean = TRUE, trace = TRUE, 
 ##                                        autogen = FALSE)})
+
+set.seed(9425)
+keep <- sample(1:nrow(capt), size = 20)
+smallcaptures <- captures[captures$ID %in% keep, ]
+smallcapt <- make.capthist(smallcaptures,traps,fmt="trapID",noccasions=1)
+smallcapt[, 1,]
+ts1 <- system.time({fit = secr.fit(smallcapt, model=list(D~1, g0~1, sigma~1),
+                    mask = mask, verify = FALSE)})
+
+ts2 <- system.time({fit2 = admbsecr(smallcapt, traps = traps, mask, sv = "auto",
+                      admbwd = admb.dir, method = "simple",
+                      memory = 1500000, clean = TRUE, trace = TRUE, autogen = FALSE)})
