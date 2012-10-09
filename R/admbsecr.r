@@ -46,7 +46,6 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
   } else if (length(dim(bincapt)) > 4){
     stop("capt array cannot have more than 4 dimensions.")
   }
-  print(dim(bincapt))
   ## Setting number of model parameters.
   npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss")], 5[method == "sstoa"])
   ## Setting sensible start values if elements of sv are "auto".
