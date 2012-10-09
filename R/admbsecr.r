@@ -1,6 +1,6 @@
 ## admbsecr() takes capture history and mask objects from the secr
 ## package and fits an SECR model using ADMB.
-admbsecr <- function(capt, capt2 = NULL, traps, mask, sv = "auto", ssqtoa = NULL,
+admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                      angs = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
                      memory = NULL, profpars = NULL, clean = TRUE,
                      verbose = TRUE, trace = FALSE, autogen = FALSE){
@@ -41,8 +41,13 @@ admbsecr <- function(capt, capt2 = NULL, traps, mask, sv = "auto", ssqtoa = NULL
   A <- attr(mask, "area")
   bincapt <- capt
   bincapt[capt > 0] <- 1
+  if (length(dim(bincapt)) == 4){
+    bincapt <- bincapt[, , , 1]
+  } else if (length(dim(bincapt)) > 4){
+    stop("capt array cannot have more than 4 dimensions.")
+  }
   ## Setting number of model parameters.
-  npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss")])
+  npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss")], 5[method == "sstoa"])
   ## Setting sensible start values if elements of sv are "auto".
   if (length(sv) == 1 & sv[1] == "auto"){
     sv <- rep("auto", npars)
@@ -56,7 +61,7 @@ admbsecr <- function(capt, capt2 = NULL, traps, mask, sv = "auto", ssqtoa = NULL
                      "kappa"[method == "ang"],
                      "ssb0"[method == "ss" | method == "sstoa"],
                      "ssb1"[method == "ss" | method == "sstoa"],
-                     "sigmass"[method == "ss" | method = "sstoa"])
+                     "sigmass"[method == "ss" | method == "sstoa"])
     } else {
       ## Reordering sv vector if names are provided.
       sv <- sv[c("D", "g0"[!(method == "ss" | method == "sstoa")],
@@ -79,7 +84,7 @@ admbsecr <- function(capt, capt2 = NULL, traps, mask, sv = "auto", ssqtoa = NULL
   }
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
   bincapt <- matrix(as.vector(bincapt), nrow = n, ncol = k)
-  capt <- matrix(as.vector(capt), nrow = n, ncol = k)
+  capt <- array(as.vector(capt), dim = c(n, k, dim(capt)[4][length(dim(capt)) == 4]))
   mask <- as.matrix(mask)
   ## No. of mask locations.
   nm <- nrow(mask)
@@ -123,7 +128,7 @@ admbsecr <- function(capt, capt2 = NULL, traps, mask, sv = "auto", ssqtoa = NULL
     bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0),
                    sigmatoa = c(0, 100000))
   } else {
-    stop('method must be either "simple", "toa", "ang" or "ss"')
+    stop('method must be either "simple", "toa", "ang", "ss", or "sstoa"')
   }
   ## Fitting the model.
   if (!is.null(profpars)){

@@ -83,7 +83,8 @@ for (i in 1:length(captures$ss)){
 
 ##ts2 <- system.time({fit2 = admbsecr(capt, traps = traps, mask, sv = "auto",
 ##                      admbwd = admb.dir, method = "simple",
-##                      memory = 1500000, clean = TRUE, trace = FALSE, autogen = FALSE)})
+##                      memory = 1500000, clean = TRUE, verbose = FALSE, trace = FALSE,
+##                      autogen = FALSE)})
 
 ## Carry out TOA analysis
 ##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists) # create ssq matrix in advance
@@ -93,12 +94,12 @@ for (i in 1:length(captures$ss)){
 ##                      mask = mask, dists = dists, ssqtoa = ssqtoa, trace = TRUE)})
 ##start.beta2 <- c(coef(fit2), sigma.toa)
 ##ttoa2 <- system.time({toafit2 = admbsecr(capt = capt.toa, traps = traps, mask = mask,
-##                        sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa",
-##                        memory = 1500000, trace = FALSE, autogen = FALSE)})
+##                       sv = "auto", ssqtoa = ssqtoa, admbwd = admb.dir, method = "toa",
+##                       memory = 1500000, trace = FALSE, autogen = FALSE)})
 
 ## Carry out signal strength analysis
 ##tss2 <- system.time({ssfit2 = admbsecr(capt = capt.ss, traps = traps, mask = mask, sv = "auto",
-##                    admbwd = admb.dir, method = "ss", autogen = FALSE)})
+##                     cutoff = 150, admbwd = admb.dir, method = "ss", autogen = FALSE)})
 
 ## Fitting signal strength analysis with nlm().
 ##startval <- c(log(7000), 190, 0, log(6))
@@ -114,11 +115,20 @@ for (i in 1:length(captures$ss)){
 ##                                        method = "ss", clean = TRUE, trace = TRUE, 
 ##                                        autogen = FALSE)})
 
-set.seed(9425)
-keep <- sample(1:nrow(capt), size = 20)
-smallcaptures <- captures[captures$ID %in% keep, ]
-smallcapt <- make.capthist(smallcaptures,traps,fmt="trapID",noccasions=1)
+##set.seed(9425)
+##keep <- sample(1:nrow(capt), size = 20)
+##smallcaptures <- captures[captures$ID %in% keep, ]
+##smallcapt <- make.capthist(smallcaptures,traps,fmt="trapID",noccasions=1)
 ##fit <- secr.fit(smallcapt, model=list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE)
 ##fit2 <- admbsecr(smallcapt, traps = traps, mask, sv = "auto", admbwd = admb.dir,
 ##                 method = "simple", memory = 1500000, clean = TRUE, trace = TRUE,
 ##                 autogen = FALSE)
+
+##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists)
+##capt.joint <- array(c(capt.ss, capt.toa), dim = c(dim(capt), 2))
+##jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
+##                     sv = c(4000, 0.01, 190, -0.1, 10), cutoff = 150, ssqtoa = ssqtoa,
+##                     admbwd = admb.dir, method = "sstoa", memory = 1500000, clean = FALSE,
+##                     trace = TRUE)
+
+
