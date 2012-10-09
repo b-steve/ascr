@@ -127,8 +127,7 @@ for (i in 1:length(captures$ss)){
 ##ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists)
 ##capt.joint <- array(c(capt.ss, capt.toa), dim = c(dim(capt), 2))
 ##jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
-##                     sv = c(4000, 0.01, 190, -0.1, 10), cutoff = 150, ssqtoa = ssqtoa,
-##                     admbwd = admb.dir, method = "sstoa", memory = 1500000, clean = FALSE,
+##                     sv = "auto", cutoff = 150, ssqtoa = ssqtoa,
+##                     admbwd = admb.dir, method = "sstoa", memory = 1500000, clean = TRUE,
 ##                     trace = TRUE)
-
 

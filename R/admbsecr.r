@@ -78,7 +78,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
                      "sigmass" = autosigmass)
     ## Replacing "auto" elements of sv vector.
     for (i in rev(which(sv == "auto"))){
-      sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, method)
+      sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method)
     }
     sv <- as.numeric(sv)
   }
