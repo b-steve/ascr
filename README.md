@@ -1,4 +1,4 @@
-# SECR
+# admbsecr
 
 Analysis of capture-recapture data is generally carried out with the implicit assumption of constant capture probability between animals. This ignores an obvious spatial component; organisms close to traps are more likely to be captured than those that are far away. Explicitly accounting for an individual's location provides additional information from which to infer animal density. Spatially explicit capture-recapture (SECR) methods have been developed for this purpose. An advantage of these over traditional capture-recapture methodology is that they allow for animal density estimation using passive detectors (e.g., cameras or microphones) over a single sampling occasion.
 
