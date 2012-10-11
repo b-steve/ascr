@@ -1,11 +1,3 @@
-if (.Platform$OS == "unix"){
-    func.dir <- "/home/ben/admbsecr/R" # change this to wherever R functions are kept.
-    dat.dir <- "/home/ben/admbsecr/Data/Frogs" # change this to wherever data are kept.
-} else if (.Platform$OS == "windows") {
-    func.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\R"
-    dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\Data\\Frogs"
-}
-
 ## Get required libraries.
 library(secr)
 library(Rcpp)

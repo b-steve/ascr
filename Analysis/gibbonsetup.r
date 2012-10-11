@@ -1,13 +1,3 @@
-if (.Platform$OS == "unix"){
-    func.dir <- "/home/ben/admbsecr/R" # change this to wherever R functions are kept.
-    admb.dir <- "/home/ben/admbsecr/ADMB"
-    dat.dir <- "/home/ben/admbsecr/Data/Gibbons/gibbons.txt"
-} else if (.Platform$OS == "windows"){
-    func.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\R"
-    admb.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\ADMB"
-    dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\Data\\Gibbons\\gibbons.txt"
-}
-
 library("secr")
 library("CircStats")
 library("inline")
@@ -22,7 +12,8 @@ source("helpers.r")
 source("lhoodfuns.r")
 source("tplmake.r")
 
-gibbons <- read.table(file = dat.dir, header = TRUE)
+setwd(dat.dir)
+gibbons <- read.table(file = "gibbons.txt", header = TRUE)
 npoints <- length(unique(gibbons$point))
 ntraps <- 3
 traps <- make.grid(nx = ntraps, ny = 1, spacing = 500, detector = "proximity")

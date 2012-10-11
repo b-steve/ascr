@@ -1,11 +1,16 @@
+## Letting R know where everything is.
+admbsecr.dir <- "/home/ben/admbsecr" # Point this to the admbsecr file.
 if (.Platform$OS == "unix"){
-    admb.dir <- "/home/ben/admbsecr/ADMB" # change this to wherever the ADMB directory is.
-    work.dir <- "/home/ben/admbsecr/Analysis" # change this to this file's directory.
+  sep <- "/"
 } else if (.Platform$OS == "windows") {
-    admb.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\ADMB"
-    work.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\Analysis"
+  sep <- "\\"
 }
+admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
+work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
+func.dir <- paste(admbsecr.dir, "R", sep = sep)
+dat.dir <- paste(admbsecr.dir, "Data", "Frogs", sep = sep)
 
+## Running setup code.
 setwd(work.dir)
 source("frogsetup.r")
 

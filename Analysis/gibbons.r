@@ -1,11 +1,16 @@
+## Letting R know where everything is.
+admbsecr.dir <- "/home/ben/admbsecr" # Point this to the admbsecr file.
 if (.Platform$OS == "unix"){
-    admb.dir <- "/home/ben/admbsecr/ADMB" # change this to wherever the ADMB directory is.
-    work.dir <- "/home/ben/admbsecr/Analysis" # change this to this file's directory.
+  sep <- "/"
 } else if (.Platform$OS == "windows") {
-    admb.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\ADMB"
-    work.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\admbsecr\\Analysis"
+  sep <- "\\"
 }
+admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
+work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
+func.dir <- paste(admbsecr.dir, "R", sep = sep)
+dat.dir <- paste(admbsecr.dir, "Data", "Gibbons", sep = sep)
 
+## Running setup code.
 setwd(work.dir)
 source("gibbonsetup.r")
 
@@ -21,5 +26,5 @@ anglefit1 <- nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
 ## above provided, need to change to sv = sv.
 sv <- c("D" = exp(p[1]), "g0" = invlogit(p[2]), "sigma" = exp(p[3]), "kappa" = exp(p[4]))
 anglefit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
-                 sv = "auto", angs = mask.angs, admbwd = admb.dir,
-                 method = "ang", autogen = FALSE, trace = TRUE)
+                      sv = "auto", angs = mask.angs, admbwd = admb.dir,
+                      method = "ang", autogen = FALSE, trace = TRUE)
