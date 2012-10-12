@@ -70,10 +70,10 @@ capt.toa <- capt
 for(i in 1:length(captures$tim)){
   capt.toa[captures$ID[i], , captures$trap[i]] <- captures$tim[i]
 }
-## Conversion to milliseconds.
+## Conversion to seconds.
 capt.toa <- capt.toa/1000
 ## Pre-calculate distances from each trap to each grid point in the mask.
-dists <- distances(traps,mask)
+dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
 
 ## Set things up for signal strength analysis.
 capt.ss <- capt
