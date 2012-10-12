@@ -24,8 +24,9 @@ source("helpers.r")
 source("lhoodfuns.r")
 source("tplmake.r")
 
+setwd(work.dir)
 ## Setup for simulations.
-nsims <- 2
+nsims <- 500
 buffer <- 6000
 mask.spacing <- 50
 trap.spacing <- 500
@@ -50,19 +51,20 @@ simprobs <- NULL
 angprobs <- NULL
 simpleres <- matrix(0, nrow = nsims, ncol = 3)
 angres <- matrix(0, nrow = nsims, ncol = 5)
-aangres <- matrix(0, nrow = nsims, ncol = 5)
 colnames(simpleres) <- c("D", "g0", "sigma")
-colnames(angres) <- colnames(aangres) <- c("D", "g0", "sigma", "kappa", "logLik")
+colnames(angres) <- c("D", "g0", "sigma", "kappa", "logLik")
+
+## Carrying out simulation.
 for (i in 1:nsims){
   if (i == 1){
     print(c("start", date()))
   } else if (i %% 100 == 0){
     print(c(i, date()))
   }
-  ## Simulating data and setting things up for analysis
+  ## Simulating data and setting things up for analysis.
   popn <- sim.popn(D = D, core = traps, buffer = buffer)
-  capthist <- sim.capthist(traps, popn, detectfn = 0, detectpar = detectpars, noccasions = 1,
-                           renumber = FALSE)
+  capthist <- sim.capthist(traps, popn, detectfn = 0, detectpar = detectpars,
+                           noccasions = 1, renumber = FALSE)
   n <- nrow(capthist)
   ndets <- sum(capthist)
   cue.ids <- unique(as.numeric(rownames(capthist)))
@@ -75,9 +77,9 @@ for (i in 1:nsims){
   radhist <- capthist
   radhist[radhist == 1] <- radians[radhist == 1]
   ## Straightforward SECR model using admbsecr()
-  simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, sv = truepars[1:3],
-                        admbwd = admb.dir, method = "simple", verbose = FALSE, autogen = FALSE),
-                   silent = TRUE)
+  simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+                            sv = truepars[1:3], admbwd = admb.dir, method = "simple",
+                            verbose = FALSE, autogen = FALSE), silent = TRUE)
   if (class(simplefit) == "try-error"){
     simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, sv = "auto",
                               admbwd = admb.dir, method = "simple", verbose = FALSE,
@@ -116,10 +118,10 @@ for (i in 1:nsims){
 ##write.table(simpleres, "/home/ben/SECR/Results/3/simpleres.txt", row.names = FALSE)
 
 ## To read in simulation results from a file.
-##resfile <- "/home/ben/SECR/Results/3/"
-##source(paste(resfile, "pars.r", sep = ""))
-##angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
-##simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
+resfile <- "/home/ben/admbsecr/Results/3/"
+source(paste(resfile, "pars.r", sep = ""))
+angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
+simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
 
 ## Assigning the columns to vectors.
 for (i in colnames(simpleres)){
@@ -131,13 +133,18 @@ for (i in colnames(angres)){
   assign(name, angres[, i])
 }
 
+
 ## Two different bandwidth selections.
 ##dsimD <- density(simD)
 ##dangD <- density(angD)
 dsimD <- density(simD, bw = "bcv")
 dangD <- density(angD, bw = "bcv")
-xs <- c(dsimD$x, dangD$x)
-ys <- c(dsimD$y, dangD$y)
+dlogsimD <- density(log(simD))
+dlogangD <- density(log(angD))
+##xs <- c(dsimD$x, dangD$x)
+##ys <- c(dsimD$y, dangD$y)
+xs <- exp(c(dlogsimD$x, dlogangD$x))
+ys <- c(dlogsimD$y, dlogangD$y)
 
 
 ##pdf(file = paste(resfile, "fig", sep = ""))
@@ -146,8 +153,10 @@ plot.window(xlim = range(xs), ylim = c(0, max(ys)))
 axis(1)
 axis(2, las = 1)
 abline(v = D, lty = "dotted")
-lines(dsimD, col = "blue")
-lines(dangD, col = "red")
+lines(dsimD, col = "green")
+lines(dangD, col = "yellow")
+lines(exp(dlogsimD$x), dlogsimD$y, col = "blue")
+lines(exp(dlogangD$x), dlogangD$y, col = "red") 
 abline(h = 0, col = "grey")
 box()
 title(main = "Simulated sampling distributions of animal density", xlab = expression(hat(D)), ylab = "Density")
