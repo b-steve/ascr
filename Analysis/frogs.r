@@ -46,7 +46,7 @@ ssfit1 <- nlm(f = secrlikelihood.ss, p = startval, capthist = capt.ss, mask = ma
               dists = dists, cutoff = 150, trace = TRUE)
 ests <- c(exp(ssfit1$estimate[1]), ssfit1$estimate[2:3], exp(ssfit1$estimate[4]))
 ## Fitting with secr.fit().
-ssfit2 <- secr.fit(sscapt,model=list(D~1, g0~1, sigma~1), detectfn = 10, mask = mask,
+ssfit2 <- secr.fit(sscapt, model = list(D~1, g0~1, sigma~1), detectfn = 10, mask = mask,
                    verify = FALSE, steptol = 1e-4)
 ## Fitting with admbsecr().
 ssfit3 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto", cutoff = 150,
@@ -55,9 +55,8 @@ ssfit3 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto", cutoff = 150,
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
 ## Only possible with admbsecr().
-ssqtoa <- apply(capt.toa,1,toa.ssq,dists=dists)
+ssqtoa <- apply(capt.toa, 1, toa.ssq, dists = dists)
 jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                      sv = "auto", cutoff = 150, ssqtoa = ssqtoa,
                      admbwd = admb.dir, method = "sstoa", verbose = TRUE,
                      trace = FALSE)
-
