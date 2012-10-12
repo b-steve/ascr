@@ -1,30 +1,36 @@
+## Letting R know where everything is.
+admbsecr.dir <- "/home/ben/admbsecr" # Point this to the admbsecr file.
+if (.Platform$OS == "unix"){
+  sep <- "/"
+} else if (.Platform$OS == "windows") {
+  sep <- "\\"
+}
+admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
+work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
+func.dir <- paste(admbsecr.dir, "R", sep = sep)
+dat.dir <- paste(admbsecr.dir, "Data", "Gibbons", sep = sep)
+
 library("secr")
 library("CircStats")
 library("inline")
 library("Rcpp")
-library("R2adb")
 
-if (.Platform$OS == "unix"){
-    source("/home/ben/SECR/R/helpers.r")
-    source("/home/ben/SECR/R/admbsecr.r")
-    load("/home/ben/SECR/Data/Gibbons/gibbons_data.RData")
-    admb.dir <- "/home/ben/SECR/ADMB"
-    dat.dir <- "/home/ben/SECR/Data/Gibbons/gibbons.txt"
-} else if (.Platform$OS == "windows"){
-    source("C:\\Documents and Settings\\Ben\\My Documents\\SECR\\R\\helpers.r")
-    source("C:\\Documents and Settings\\Ben\\My Documents\\SECR\\R\\admbsecr.r")
-    load("C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Gibbons\\gibbons_data.RData")
-    admb.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\ADMB"
-    dat.dir <- "C:\\Documents and Settings\\Ben\\My Documents\\SECR\\Data\\Gibbons\\gibbons.txt"
-}
+## Set working directory to that with the functions.
+setwd(func.dir)
+## Get SECR functions.
+source("admbsecr.r")
+source("autofuns.r")
+source("helpers.r")
+source("lhoodfuns.r")
+source("tplmake.r")
 
-nsims <- 500
+## Setup for simulations.
+nsims <- 2
 buffer <- 6000
 mask.spacing <- 50
 trap.spacing <- 500
 
-
-## True parameter values:
+## True parameter values.
 D <- 0.0416
 g0 <- 0.99999
 sigma <- 1250
@@ -32,7 +38,7 @@ kappa <- 70
 truepars <- c(D = D, g0 = g0, sigma = sigma, kappa = kappa)
 detectpars <- list(g0 = g0, sigma = sigma)
 
-## Setting up mask and traps
+## Setting up mask and traps.
 traps <- make.grid(nx = 3, ny = 1, spacing = trap.spacing, detector = "proximity")
 ntraps <- nrow(traps)
 mask <- make.mask(traps, spacing = mask.spacing, type = "trapbuffer", buffer = buffer)
@@ -105,33 +111,15 @@ for (i in 1:nsims){
   }
 }
 
-for (i in colnames(simpleres)){
-  name <- paste("sim", i, sep = "")
-  assign(name, simpleres[, i])
-}
-for (i in colnames(angres)){
-  name <- paste("ang", i, sep = "")
-  assign(name, angres[, i])
-}
-
-dsimD <- density(simD)
-dangD <- density(angD)
-xs <- c(dsimD$x, dangD$x)
-ys <- c(dsimD$y, dangD$y)
-
-plot(dsimD, type = "l", col = "blue", xlim = range(xs), ylim = c(0, max(ys)))
-lines(dangD, col = "red")
-abline(v = D, lty = "dotted")
-
-
+## To write the simulation results to a file.
 ##write.table(angres, "/home/ben/SECR/Results/3/angres.txt", row.names = FALSE)
 ##write.table(simpleres, "/home/ben/SECR/Results/3/simpleres.txt", row.names = FALSE)
 
-## Folder containing angres.txt, simres.txt, pars.r.
-resfile <- "/home/ben/SECR/Results/3/"
-source(paste(resfile, "pars.r", sep = ""))
-angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
-simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
+## To read in simulation results from a file.
+##resfile <- "/home/ben/SECR/Results/3/"
+##source(paste(resfile, "pars.r", sep = ""))
+##angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
+##simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
 
 ## Assigning the columns to vectors.
 for (i in colnames(simpleres)){
@@ -152,7 +140,7 @@ xs <- c(dsimD$x, dangD$x)
 ys <- c(dsimD$y, dangD$y)
 
 
-pdf(file = paste(resfile, "fig", sep = ""))
+##pdf(file = paste(resfile, "fig", sep = ""))
 plot.new()
 plot.window(xlim = range(xs), ylim = c(0, max(ys)))
 axis(1)
@@ -164,4 +152,4 @@ abline(h = 0, col = "grey")
 box()
 title(main = "Simulated sampling distributions of animal density", xlab = expression(hat(D)), ylab = "Density")
 legend(x = "topright", legend = c("SECR", "SECR + angles"), col = c("blue", "red"), lty = 1)
-dev.off()
+##dev.off()
