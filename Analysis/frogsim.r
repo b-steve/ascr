@@ -1,5 +1,5 @@
 ## Letting R know where everything is.
-admbsecr.dir <- "/home/ben/admbsecr" # Point this to the admbsecr file.
+admbsecr.dir <- "~/admbsecr" # Point this to the admbsecr file.
 if (.Platform$OS == "unix"){
   sep <- "/"
 } else if (.Platform$OS == "windows") {
@@ -33,15 +33,15 @@ traps <- read.traps(data = mics, detector = "signal")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 2000
+nsims <- 1
 buffer <- 35
 mask.spacing <- 50
 
 ## True parameter values.
 set.seed(5253)
 D <- 4450
-##g0 <- 0.99999
-##sigma <- 5.60
+g0 <- 0.99999
+sigma <- 5.60
 sigmatoa <- 0.002
 ssb0 <- 170
 ssb1 <- -2.50

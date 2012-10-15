@@ -1,5 +1,5 @@
 ## Letting R know where everything is.
-admbsecr.dir <- "/home/ben/admbsecr" # Point this to the admbsecr file.
+admbsecr.dir <- "~/admbsecr" # Point this to the admbsecr file.
 if (.Platform$OS == "unix"){
   sep <- "/"
 } else if (.Platform$OS == "windows") {
