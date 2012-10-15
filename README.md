@@ -7,3 +7,5 @@ In the simplest case, distances between traps provide the spatial information re
 AD Model Builder (ADMB) is a statisical software package most widely used for nonlinear modelling, and appears to be well suited to the implementation of maximum likelihood SECR methods. Although growing in popularity since becoming freely available, open-source software in 2008, ADMB is used by a minority of statisticians and ecologists, who, in general, are far more comfortable with the popular programming language and software environment R.
 
 The aim of admbsecr is to bridge both of these gaps. Using the R function `admbsecr()`, a user is able to fit SECR models that incorporate additional spatial information. This calls ADMB (through use of the package R2admb) to fit the model and return the results to the R session.
+
+Test.
