@@ -82,10 +82,12 @@
 #' \code{FALSE} for development purposes.
 #' @return An object of class 'admb'.
 #' @author Ben Stevenson
+#' @seealso \code{\link[R2admb]{do_admb}}, \code{\link[secr]{secr.fit}},
+#' \code{\link[secr]{make.capthist}}, \code{\link[secr]{read.traps}}.
 #' @export
 admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NULL,
                      admbwd = NULL, method = "simple", memory = NULL, profpars = NULL,
-                     clean = TRUE, verbose = TRUE, trace = FALSE, autogen = FALSE){
+                     clean = TRUE, verbose = FALSE, trace = FALSE, autogen = TRUE){
   require(R2admb)
   require(secr)
   ## Warnings for incorrect input.
@@ -109,7 +111,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
   }
   if (autogen){
     prefix <- "secr"
-    make.all.tpl(memory = memory, methods = method)
+    make.all.tpl.easy(memory = memory, methods = method)
   } else {
     prefix <- paste(method, "secr", sep = "")
   }
@@ -201,6 +203,9 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
     params <- list(D = sv[1], ssb0 = sv[2], ssb1 = sv[3], sigmass = sv[4])
     bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0))
   } else if (method == "sstoa"){
+    if (is.null(ssqtoa)){
+      ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
+    }
     data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt[, , 1],
                  toacapt = capt[, , 2], toassq = t(ssqtoa), dist = dist, capt = bincapt,
                  trace = trace)
