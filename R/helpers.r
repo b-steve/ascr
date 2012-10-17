@@ -1,14 +1,21 @@
-## Miscellaneous helpful functions.
-
-distances <- function (X, Y) {
-  ## X and Y are 2-column matrices of coordinates
+#' Calculating distances between mask points and traps for SECR models
+#'
+#' Calculates pairwise distances between traps and mask points.
+#'
+#' @param traps matrix containing trap coordinates.
+#' @param mask matrix containing mask point coordinates.
+#' @return A matrix.
+#' @export
+distances <- function (traps, mask) {
+  traps <- as.matrix(traps)
+  mask <- as.matrix(mask)
   onerow <- function (xy) {
     d <- function(xy2) {
       sqrt(sum((xy2 - xy)^2))
     }
-    apply(Y, 1, d)
+    apply(mask, 1, d)
   }
-  t(apply(X, 1, onerow))
+  t(apply(traps, 1, onerow))
 }
 
 distcode <- '
@@ -24,14 +31,21 @@ distcode <- '
   }
   return wrap(DISTANCES);
 '
-
 distances.cpp <- cxxfunction(signature(traps = "numeric", mask = "numeric"),
                               body = distcode, plugin = "Rcpp")
 
-angles <- function (X, Y) {
-# X and Y are 2-column matrices of coordinates Returns angles (0,360]
-# from points in X to points in Y in matrix of dimension nrow(X) x
-# nrow(Y)
+
+#' Calculating angles between mask points and traps for SECR models
+#'
+#' Calculates angles from each trap to each mask point.
+#'
+#' @param traps matrix containing trap coordinates.
+#' @param mask matrix containing mask coordinates.
+#' @return A matrix.
+#' @export
+angles <- function (traps, mask) {
+  traps <- as.matrix(traps)
+  mask <- as.matrix(mask)
   onerow <- function (xy) {
     d <- function(xy2) {
       denom=sqrt(sum((xy2-xy)^2))
@@ -45,9 +59,9 @@ angles <- function (X, Y) {
       if(xy2[2]>=xy[2] & xy2[1]<xy[1]) theta=2*pi + theta
       return(theta)
     }
-    apply(Y, 1, d)
+    apply(mask, 1, d)
   }
-  t(apply(X, 1, onerow))
+  t(apply(traps, 1, onerow))
 }
 
 angcode <- '
