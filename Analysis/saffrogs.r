@@ -27,7 +27,7 @@ source("saffrogsetup.r")
 simplefit1 <- secr.fit(capt,model=list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE)
 ## With admbsecr().
 simplefit2 <- admbsecr(capt, traps = traps, mask = mask, sv = "auto", admbwd = admb.dir,
-                       method = "simple", verbose = TRUE)
+                       method = "simple")
 
 ## Carrying out signal strength analysis.
 
@@ -41,4 +41,4 @@ ssfit2 <- secr.fit(sscapt,model=list(D~1, g0~1, sigma~1), detectfn = 10, mask = 
                   verify = FALSE, steptol = 1e-4)
 ## With admbsecr().
 ssfit3 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto", cutoff = 150,
-                   admbwd = admb.dir, method = "ss", trace = TRUE)
+                   admbwd = admb.dir, method = "ss")

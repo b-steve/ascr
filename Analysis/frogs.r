@@ -19,9 +19,8 @@ source("frogsetup.r")
 ## With secr package.
 simplefit1 <- secr.fit(capt, model = list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE)
 ## With admbsecr().
-simplefit2 <- admbsecr(capt, traps = traps, mask, sv = "auto",
-                       admbwd = admb.dir, method = "simple", clean = TRUE,
-                       verbose = TRUE, trace = FALSE)
+simplefit2 <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir,
+                       method = "simple")
 
 ## Carrying out TOA analysis.
 
@@ -35,8 +34,8 @@ start.beta <- c(simplefit1$fit$estimate, log(sigma.toa))
 toafit1 <- nlm(f = secrlikelihood.toa1, p = start.beta, capthist=capt.toa,
                       mask = mask, dists = dists, ssqtoa = ssqtoa, trace = TRUE)
 ## Fitting with admbsecr(). Doesn't require start values.
-toafit2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto", ssqtoa = ssqtoa,
-                    admbwd = admb.dir, method = "toa", verbose =  TRUE, trace = FALSE)
+toafit2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto", 
+                    admbwd = admb.dir, method = "toa")
 
 ## Carrying out signal strength analysis.
 
@@ -50,13 +49,9 @@ ssfit2 <- secr.fit(sscapt, model = list(D~1, g0~1, sigma~1), detectfn = 10, mask
                    verify = FALSE, steptol = 1e-4)
 ## Fitting with admbsecr().
 ssfit3 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto", cutoff = 150,
-                   admbwd = admb.dir, method = "ss", clean = TRUE, trace = TRUE, 
-                   autogen = FALSE)
+                   admbwd = admb.dir, method = "ss")
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
 ## Only possible with admbsecr().
-ssqtoa <- apply(capt.toa, 1, toa.ssq, dists = dists)
-jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
-                     sv = "auto", cutoff = 150, ssqtoa = ssqtoa,
-                     admbwd = admb.dir, method = "sstoa", verbose = TRUE,
-                     trace = FALSE)
+jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask, sv = "auto",
+                     cutoff = 150, admbwd = admb.dir, method = "sstoa")

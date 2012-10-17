@@ -26,5 +26,4 @@ anglefit1 <- nlm(f = secrlikelihood.cpp, p = p, method = 1, ncues = n,
 ## above provided, need to change to sv = sv.
 sv <- c("D" = exp(p[1]), "g0" = invlogit(p[2]), "sigma" = exp(p[3]), "kappa" = exp(p[4]))
 anglefit2 <- admbsecr(capt = radians, traps = traps, mask = mask,
-                      sv = "auto", admbwd = admb.dir,
-                      method = "ang", autogen = FALSE, trace = TRUE)
+                      sv = "auto", admbwd = admb.dir, method = "ang")
