@@ -58,7 +58,7 @@ ntraps <- nrow(traps)
 mask <- make.mask(traps, buffer = buffer, type = "trapbuffer")
 nmask <- nrow(mask)
 A <- attr(mask, "area")
-mask.dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
+mask.dists <- distances(as.matrix(traps), as.matrix(mask))
 simprobs <- NULL
 toaprobs <- NULL
 ssprobs <- NULL
@@ -90,7 +90,7 @@ for (i in 1:nsims){
   ## Cartesian coordinates of detected animals.
   detections <- popn[cue.ids, ]
   ## Distances from detected animals to traps.
-  distances <- t(distances.cpp(as.matrix(traps), as.matrix(detections)))
+  distances <- t(distances(as.matrix(traps), as.matrix(detections)))
   capthist.ss <- array(0, dim = dim(capthist))
   capthist.ss[capthist == 1] <- attr(capthist, "signalframe")[, 1]
   ## Generating times of arrival.  

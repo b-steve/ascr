@@ -45,7 +45,7 @@ ntraps <- nrow(traps)
 mask <- make.mask(traps, spacing = mask.spacing, type = "trapbuffer", buffer = buffer)
 nmask <- nrow(mask)
 A <- attr(mask, "area")
-mask.dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
+mask.dists <- distances(as.matrix(traps), as.matrix(mask))
 mask.angs <- angles(as.matrix(traps), as.matrix(mask))
 simprobs <- NULL
 angprobs <- NULL

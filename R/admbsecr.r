@@ -172,7 +172,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
   nm <- nrow(mask)
   traps <- as.matrix(traps)
   ## Distances between traps and mask locations.
-  dist <- distances.cpp(traps, mask)
+  dist <- distances(traps, mask)
   ## Setting up parameters for do_admb.
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,

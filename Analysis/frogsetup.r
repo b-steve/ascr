@@ -73,7 +73,7 @@ for(i in 1:length(captures$tim)){
 ## Conversion to seconds.
 capt.toa <- capt.toa/1000
 ## Pre-calculate distances from each trap to each grid point in the mask.
-dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
+dists <- distances(as.matrix(traps), as.matrix(mask))
 
 ## Set things up for signal strength analysis.
 capt.ss <- capt
