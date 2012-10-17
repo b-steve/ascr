@@ -189,7 +189,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
     bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
                    sigmatoa = c(0, 100000))
   } else if (method == "ang"){
-    angs <- angles.cpp(traps, mask)
+    angs <- angles(traps, mask)
     data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
                  ang = angs, dist = dist, capt = bincapt, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])

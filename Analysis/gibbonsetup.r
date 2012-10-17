@@ -22,7 +22,7 @@ buffer <- 5000
 spacing <- 50
 mask <- make.mask(traps, buffer, spacing, type = "trapbuffer")
 mask.dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
-mask.angs <- angles.cpp(as.matrix(traps), as.matrix(mask))
+mask.angs <- angles(as.matrix(traps), as.matrix(mask))
 ndets <- nrow(gibbons)
 ncues <- length(unique(gibbons$group.id))
 radians <- array(NA, dim = c(ncues, 1, ntraps),

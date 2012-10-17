@@ -46,7 +46,7 @@ mask <- make.mask(traps, spacing = mask.spacing, type = "trapbuffer", buffer = b
 nmask <- nrow(mask)
 A <- attr(mask, "area")
 mask.dists <- distances.cpp(as.matrix(traps), as.matrix(mask))
-mask.angs <- angles.cpp(as.matrix(traps), as.matrix(mask))
+mask.angs <- angles(as.matrix(traps), as.matrix(mask))
 simprobs <- NULL
 angprobs <- NULL
 simpleres <- matrix(0, nrow = nsims, ncol = 3)
@@ -69,7 +69,7 @@ for (i in 1:nsims){
   ndets <- sum(capthist)
   cue.ids <- unique(as.numeric(rownames(capthist)))
   detections <- popn[cue.ids, ]
-  radians <- t(angles.cpp(as.matrix(traps), as.matrix(detections)))
+  radians <- t(angles(as.matrix(traps), as.matrix(detections)))
   radians <- array(radians, c(dim(radians), 1))
   errors <- array(rvm(ntraps*n, mean = 0, k = kappa), dim(radians))
   radians <- (radians + errors) %% (2*pi)
@@ -93,12 +93,12 @@ for (i in 1:nsims){
   }
   ## SECR model using supplementary angle data
   angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask, sv = truepars,
-                     angs = mask.angs, admbwd = admb.dir, method = "ang", verbose = FALSE,
-                     autogen = FALSE), silent = TRUE)
+                         admbwd = admb.dir, method = "ang", verbose = FALSE,
+                         autogen = FALSE), silent = TRUE)
   if (class(angfit) == "try-error"){
     angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask, sv = "auto",
-                       angs = mask.angs, admbwd = admb.dir, method = "ang", verbose = FALSE,
-                       autogen = FALSE), silent = TRUE)
+                           admbwd = admb.dir, method = "ang", verbose = FALSE,
+                           autogen = FALSE), silent = TRUE)
   }
   if (class(angfit) == "try-error"){
     angcoef <- NA
