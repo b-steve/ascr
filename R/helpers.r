@@ -112,7 +112,7 @@ animalIDvec <- function(capthist){
 #' @param clicks a data frame containing (at least): (i) \code{$tim$}, the precise
 #' time of arrival of the received sound, and (ii) \code{$trap} the trap at which
 #' the sound was recorded.
-#' @dt a \code{K} by \code{K} matrix (where \code{K} is the number of traps)
+#' @param dt a \code{K} by \code{K} matrix (where \code{K} is the number of traps)
 #' containing the time taken for sound to travel between each pair of traps.
 #' @return A data frame. Specifically, the \code{clicks} dataframe, now with a new
 #' variable, \code{ID}.
