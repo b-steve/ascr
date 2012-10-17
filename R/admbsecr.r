@@ -9,34 +9,58 @@
 #'
 #'    * \code{"simple"}: Normal SECR with no additional information. Parameters to
 #'      estimate are:
+#'
 #'          * D:      Animal density.
+#'
 #'          * g0:     Probability of detection at distance 0.
+#'
 #'          * sigma:  'Standard deviation' parameter for halfnormal detection function.
+#'
 #'    * \code{"toa"}: SECR with precise time of arrival (TOA) recorded. Parameters to
 #'      estimate are:
+#'
 #'          * D:        As above.
+#'
 #'          * g0:       As above.
+#'
 #'          * sigma:    As above.
+#'
 #'          * sigmatoa: Error term associated with TOA.
+#'
 #'    * \code{"ang"}: SECR with estimates of angle to animal recorded. Parameters to
 #'      estimate are:
+#'
 #'          * D:        As above.
+#'
 #'          * g0:       As above.
+#'
 #'          * sigma:    As above.
+#'
 #'          * kappa:    Error term associated with angle estimation.
+#'
 #'    * \code{"ss"}: SECR with received signal strengths at traps recorded. Parameters
 #'      to estimate are:
+#'
 #'          * D:        As above.
+#'
 #'          * ssb0:     Average signal strength at sound source.
+#'
 #'          * ssb1:     Decrease in signal strength per unit distance due to sound
 #'                      propagation.
+#'
 #'          * sigmass:  Error term associated with signal strength.
+#'
 #'    * \code{"sstoa"}: SECR with precise TOA and received signal strengths at traps
 #'      recorded. Parameters to estimate are:
+#'
 #'          * D:        As above.
+#'
 #'          * sigmatoa: As above.
+#'
 #'          * ssb0:     As above.
+#'
 #'          * ssb1:     As above.
+#'
 #'          * sigmass:  As above.
 #'
 #' @param capt an array of dimension \code{(n, S, K)}, where \code{n} is the number of
