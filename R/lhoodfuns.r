@@ -1,39 +1,42 @@
-## Likelihood function for simple SECR.
+#' Likelihood function for simple SECR.
+#'
+#' Calculates the likelihood for a simple SECR model given a set of parameter
+#' values.
+#'
+#' @param beta beta.
+#' @param capthist capthist.
+#' @param mask mask.
+#' @param dist dist.
+#' @param trace trace.
+#' @return The negative log-likelihood.
+#' @author Murray Efford, David Borchers, Ben Stevenson
+#' @export
 secrlikelihood <- function (beta, capthist, mask, dist = NULL, trace = FALSE) {
-
   if (!all(capthist %in% c(0,1)))
     stop ('secrlikelihood requires binary data')
-
   ## 'real' parameter values
   D <- exp(beta[1])
   ## if D is modelled, expand here to a vector of length
   ## equal to number of rows in mask
   g0 <- invlogit(beta[2])
   sigma <- exp(beta[3])
-
   n <- nrow(capthist)        ## number observed
   S <- ncol(capthist)        ## number of occasions
   A <- attr( mask, 'area')   ## area of one cell
-
   ## distances if not passed as argument
   if (is.null(dist)) {
     traps <- traps(capthist)
     dist <- distances(traps, mask)
   }
-
   ## precompute probabilities for each detector and each mask point
   ## gk is K x M matrix
   gk <- g0 * exp(-dist^2 / 2 / sigma^2)
   log.gk <- log(gk)
   log.gk1 <- log(1-gk)
-
   ## probability of being caught at least once if at mask site m
   p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
   sumDp <- sum(p.m * D)                ## scalar
-
   L1 <- sum ( apply(capthist, 1, Dprwi,  prwi.s, log.gk, log.gk1, D) )
-
-
   L2 <- - n * log(sumDp)
   L3 <- dpois (n, sumDp * A, log = TRUE)
   LL <- L1+L2+L3
@@ -56,7 +59,20 @@ Dprwi <- function (wi, prwi.s, log.gk, log.gk1, D) {
   log (sum(D * exp(prwi.s)))
 }
 
-## Likelihood function for SECR with TOA information.
+#' Likelihood function for SECR with TOA information.
+#'
+#' Calculates the likelihood for a SECR model with TOA information given a set of parameter
+#' values.
+#'
+#' @param beta beta.
+#' @param capthist capthist.
+#' @param mask mask.
+#' @param dists dists.
+#' @param ssqtoa ssqtoa.
+#' @param trace trace.
+#' @return The negative log-likelihood.
+#' @author David Borchers, Murray Efford, Ben Stevenson
+#' @export
 secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, trace=FALSE) {
   ## 'real' parameter values
   D <- exp(beta[1])
@@ -65,32 +81,26 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
   g0 <- invlogit(beta[2])
   sigma <- exp(beta[3])
   sigma.toa=exp(beta[4]) # std. dev. of arrival time measurement error
-
   n <- nrow(capthist)        ## number observed
   S <- ncol(capthist)        ## number of occasions
   A <- attr( mask, 'area')   ## area of one cell
-
   ## distances if not passed as argument
   if (is.null(dists)) {
     traps <- traps(capthist)
     dists <- distances(traps, mask)
   }
-
   ## toassq if not passed as argument
   if (is.null(ssqtoa)) {
     ssqtoa <- apply(capthist,1,toa.ssq,dists=dists)
   }
-
   ## precompute probabilities for each detector and each mask point
   ## gk is K x M matrix
   gk <- g0 * exp(-dists^2 / 2 / sigma^2)
   log.gk <- log(gk)
   log.gk1 <- log(1-gk)
-
   ## probability of being caught at least once if at mask site m
   p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
   sumDp <- sum(p.m * D)                ## scalar
-
   log.Dprwi <- function (wit) {
     wi=(wit>0)*1 # wit has detection times and zeros for non-detection
     ## wi is S x K, log.gk is K x M, prwi.s is S x M
@@ -99,7 +109,6 @@ secrlikelihood.toa1 <- function (beta, capthist, mask, dists=NULL, ssqtoa=NULL, 
     prwi.s <- apply(prwi.s,2,sum) # log(Pr(wis|X)) = log(product over occasions of Pr(wis|X)): log(Eq (4) of Efford, Borchers, Byrom)
     log(D) + prwi.s # log(D*Pr(wi|X)) at each X): S x M matrix
   }
-
   L1.X=apply(capthist,1,log.Dprwi)
   L1.X.toa=log.ftoa(capthist,ssqtoa,sigma.toa)
   #    L1 <- sum (exp(L1.X+L1.X.toa))
@@ -128,7 +137,15 @@ log.ftoa=function(capthist,ssqtoa,sigma.toa) {
   return(logftoa)
 }
 
-toa.ssq=function(wit,dists) {
+#' Sum of Squares TOA matrix
+#'
+#' Calculates ssqtoa matrix for a SECR model with TOA information.
+#'
+#' @param wit capture history.
+#' @param dists distances.
+#' @return A matrix.
+#' @export
+toa.ssq=function(wit, dists) {
   ssq=function(x) sum((x-mean(x))^2)
   v=330 # speed of sound
   wit.na=wit; wit.na[wit==0]=NA # mark those with no capture
@@ -137,7 +154,20 @@ toa.ssq=function(wit,dists) {
   return(toassq)
 }
 
-## Likelihood function for SECR with angle information.
+#' Likelihood function for SECR with angle information.
+#'
+#' Calculates the likelihood for a SECR model with angle information given a set of parameter
+#' values.
+#'
+#' @param beta beta.
+#' @param capthist capthist.
+#' @param mask mask.
+#' @param dists dists.
+#' @param angs angs.
+#' @param trace trace.
+#' @return The negative log-likelihood.
+#' @author Darren Kidney, Murray Efford, Ben Stevenson
+#' @export
 secrlikelihood.angs <- function (beta, capthist, mask, dists=NULL, angs=NULL, trace=FALSE) {
   ## 'real' parameter values
   D <- exp(beta[1])
@@ -146,32 +176,26 @@ secrlikelihood.angs <- function (beta, capthist, mask, dists=NULL, angs=NULL, tr
   g0 <- invlogit(beta[2])
   sigma <- exp(beta[3])
   kappa=exp(beta[4]) # std. dev. of arrival time measurement error
-  
   n <- nrow(capthist)        ## number observed
   S <- ncol(capthist)        ## number of occasions
   A <- attr( mask, 'area')   ## area of one cell
-  
   ## distances if not passed as argument
   if (is.null(dists)) {
     traps <- traps(capthist)
     dists <- distances(traps, mask)
     }
-  
   ## angs if not passed as argument
   if (is.null(angs)) {
     angs <- angles(traps(capthist),mask)
   }
-  
   ## precompute probabilities for each detector and each mask point
   ## gk is K x M matrix
   gk <- g0 * exp(-dists^2 / 2 / sigma^2)
   log.gk <- log(gk)
   log.gk1 <- log(1-gk)
-  
   ## probability of being caught at least once if at mask site m
   p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
   sumDp <- sum(p.m * D)                ## scalar
-  
   L1.X=apply(capthist,1,log.Dprwi.ang)
   L1.X.a=apply(capthist,1,log.vmCH,mu=angs,kappa=kappa)
   L1 <- sum(log(apply(exp(L1.X+L1.X.a),2,sum)))
@@ -208,7 +232,20 @@ log.vmCH <- function(x,mu,kappa) {
   return(apply(logvmCH,2,sum))
 }
 
-## Likelihood function for SECR with signal strength information.
+#' Likelihood function for SECR with signal strength information.
+#'
+#' Calculates the likelihood for a SECR model with signal strength information given a
+#' set of parameter values.
+#'
+#' @param beta beta.
+#' @param capthist capthist.
+#' @param mask mask.
+#' @param dists dists.
+#' @param cutoff cutoff.
+#' @param trace trace.
+#' @return The negative log-likelihood.
+#' @author Ben Stevenson, Murray Efford
+#' @export
 secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=FALSE) {
   ## 'real' parameter values
   D <- exp(beta[1])
@@ -216,8 +253,7 @@ secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=F
   ## equal to number of rows in mask
   b0ss <- beta[2]
   b1ss <- beta[3]
-  sigmass <- exp(beta[4]) # std. dev. of arrival time measurement error
-  
+  sigmass <- exp(beta[4]) # std. dev. of arrival time measurement error 
   n <- nrow(capthist)        ## number observed
   S <- ncol(capthist)        ## number of occasions
   A <- attr( mask, 'area')   ## area of one cell
@@ -227,7 +263,6 @@ secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=F
     traps <- traps(capthist)
     dists <- distances(traps, mask)
   }
-  
   bincapt <- capthist
   bincapt[bincapt > 0] <- 1
   ## precompute probabilities for each detector and each mask point
@@ -236,11 +271,9 @@ secrlikelihood.ss <- function (beta, capthist, mask, dists=NULL, cutoff, trace=F
   gk <- 1 - pnorm(cutoff, muss, sigmass)
   log.gk <- log(gk + .Machine$double.xmin)
   log.gk1 <- log(1-gk + .Machine$double.xmin)
-  
   ## probability of being caught at least once if at mask site m
   p.m <- 1 - apply(1-gk, 2, prod) ^ S  ## vector of length M
-  sumDp <- sum(p.m * D)                ## scalar
-  
+  sumDp <- sum(p.m * D)                ## scalar  
   L1.X <- apply(capthist,1,log.Dprwi.ss, D, muss, sigmass, log.gk1)
   L1 <- sum(log(apply(exp(L1.X),2,sum)+.Machine$double.xmin))
   L2 <- - n * log(sumDp)
