@@ -53,7 +53,7 @@ clicks <- data.frame(session = rep(1, n), ID = 1:n, occasion = rep(1, n), trap =
 ## Reset times to start at 1.
 clicks$tim <- clicks$tim - clicks$tim[1] + 1
 ## Clicks reformatted as input for make.capthist, with duplicate ID rule.
-captures <- make.frog.captures(traps, clicks, dt)
+captures <- make.acoustic.captures(traps, clicks, dt)
 captures[5:6] <- captures[6:5]
 colnames(captures)[5:6] <- colnames(captures)[6:5]
 ## Make capture history objects.
