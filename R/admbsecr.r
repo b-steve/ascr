@@ -48,7 +48,7 @@
 #' \code{"sstoa"}, this array must be of dimension \code{(n, S, K, 2)}, where
 #' \code{capt[, , , 1]} provides the signal strength information and
 #' \code{capt[, , , 2]} provides the time of arrival information.
-#' @param traps a matrix providing the coordinates of trap locations. The object
+#' @param traps a matrix containing the coordinates of trap locations. The object
 #' returned by \code{read.traps()} is suitable.
 #' @param mask a mask object. The object returned by \code{make.mask()} is suitable.
 #' @param sv either "auto", or a named vector of starting values for each of the model's
@@ -73,7 +73,7 @@
 #' @param clean logical, if \code{TRUE} ADMB files are cleaned after fitting of the model.
 #' @param verbose logical, if \code{TRUE} ADMB details, along with error messages, are
 #' printed to the R session.
-#' @paramtrace logical, if \code{TRUE} parameter values at each step of the fitting
+#' @param trace logical, if \code{TRUE} parameter values at each step of the fitting
 #' algorithm are printed to the R session.
 #' @param autogen logical, if \code{TRUE}, the appropriate \code{.tpl} file is written
 #' to \code{admbwd} (or the current working directory if \code{admbwd} is \code{NULL}).
