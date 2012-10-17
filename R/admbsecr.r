@@ -1,9 +1,91 @@
-## admbsecr() takes capture history and mask objects from the secr
-## package and fits an SECR model using ADMB.
-admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
-                     angs = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
-                     memory = NULL, profpars = NULL, clean = TRUE,
-                     verbose = TRUE, trace = FALSE, autogen = FALSE){
+#' Fitting SECR models in ADMB
+#'
+#' Fits an SECR model, with our without supplementary information relevant to animal
+#' location. Parameter estimation is done by maximum likelihood in ADMB.
+#'
+#' ADMB is called to fit an SECR model through use of the R2admb package. Different
+#' methods are used depending on the additional information on animal location that is
+#' collected. These are:
+#'
+#'    * \code{"simple"}: Normal SECR with no additional information. Parameters to
+#'      estimate are:
+#'          * D:      Animal density.
+#'          * g0:     Probability of detection at distance 0.
+#'          * sigma:  'Standard deviation' parameter for halfnormal detection function.
+#'    * \code{"toa"}: SECR with precise time of arrival (TOA) recorded. Parameters to
+#'      estimate are:
+#'          * D:        As above.
+#'          * g0:       As above.
+#'          * sigma:    As above.
+#'          * sigmatoa: Error term associated with TOA.
+#'    * \code{"ang"}: SECR with estimates of angle to animal recorded. Parameters to
+#'      estimate are:
+#'          * D:        As above.
+#'          * g0:       As above.
+#'          * sigma:    As above.
+#'          * kappa:    Error term associated with angle estimation.
+#'    * \code{"ss"}: SECR with received signal strengths at traps recorded. Parameters
+#'      to estimate are:
+#'          * D:        As above.
+#'          * ssb0:     Average signal strength at sound source.
+#'          * ssb1:     Decrease in signal strength per unit distance due to sound
+#'                      propagation.
+#'          * sigmass:  Error term associated with signal strength.
+#'    * \code{"sstoa"}: SECR with precise TOA and received signal strengths at traps
+#'      recorded. Parameters to estimate are:
+#'          * D:        As above.
+#'          * sigmatoa: As above.
+#'          * ssb0:     As above.
+#'          * ssb1:     As above.
+#'          * sigmass:  As above.
+#'
+#' @param capt an array of dimension \code{(n, S, K)}, where \code{n} is the number of
+#' detected animals, \code{S} is number of individual sampling sessions, and \code{K}
+#' is the number of deployed traps. The object returned by  \code{make.capthist()} is
+#' suitable if \code{method} is \code{"simple"}. Otherwise, the \code{1} values in
+#' this array must be changed to the value of the recorded supplementary information,
+#' which will depend on \code{method} (see 'Details'). When \code{method} is
+#' \code{"sstoa"}, this array must be of dimension \code{(n, S, K, 2)}, where
+#' \code{capt[, , , 1]} provides the signal strength information and
+#' \code{capt[, , , 2]} provides the time of arrival information.
+#' @param traps a matrix providing the coordinates of trap locations. The object
+#' returned by \code{read.traps()} is suitable.
+#' @param mask a mask object. The object returned by \code{make.mask()} is suitable.
+#' @param sv either "auto", or a named vector of starting values for each of the model's
+#' parameters. See 'Details' for list of parameters used by each method. If a named
+#' vector, any of the elements can be set to \code{"auto"}, which will result in a
+#' (hopefully) sensible starting value being automatically generated for the parameters
+#' concerned. If \code{sv} itself is \code{"auto"}, all starting values are automatically
+#' generated.
+#' @param ssqtoa an optional matrix. If calculated before call to \code{admbsecr},
+#' providing this will prevent recalculation.
+#' @param cutoff The signal strength threshold of detection. Required if \code{method} is
+#' \code{"ss"} or \code{"sstoa"}.
+#' @param admbwd file path to the ADMB working directory. Only required if
+#' \code{autogen} is \code{TRUE}, in which case it points to the directory in which the
+#' \code{.tpl} file is located.
+#' @param method either \code{"simple"}, \code{"toa"}, \code{"ang"}, \code{"ss"}, or
+#' \code{"sstoa"}. See 'Details'.
+#' @param memory value of \code{arrmblsize} in ADMB. Increase this if ADMB reports a
+#' memory error.
+#' @param profpars character vector of names of parameters over which profile likelihood
+#' should occur (untested and probably very slow!).
+#' @param clean logical, if \code{TRUE} ADMB files are cleaned after fitting of the model.
+#' @param verbose logical, if \code{TRUE} ADMB details, along with error messages, are
+#' printed to the R session.
+#' @paramtrace logical, if \code{TRUE} parameter values at each step of the fitting
+#' algorithm are printed to the R session.
+#' @param autogen logical, if \code{TRUE}, the appropriate \code{.tpl} file is written
+#' to \code{admbwd} (or the current working directory if \code{admbwd} is \code{NULL}).
+#' If \code{FALSE}, the \code{.tpl} file already be located in \code{admbwd} (or the
+#' current working directory if \code{admb} is \code{NULL}. Usually only set to
+#' \code{FALSE} for development purposes.
+#' @return An object of class 'admb'.
+#' @author Ben Stevenson
+#' @export
+admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NULL,
+                     admbwd = NULL, method = "simple", memory = NULL, profpars = NULL,
+                     clean = TRUE, verbose = TRUE, trace = FALSE, autogen = FALSE){
   require(R2admb)
   require(secr)
   ## Warnings for incorrect input.
@@ -107,9 +189,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL,
     bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
                    sigmatoa = c(0, 100000))
   } else if (method == "ang"){
-    if (is.null(angs)){
-      angs <- angles(traps, mask)
-    }
+    angs <- angles.cpp(traps, mask)
     data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
                  ang = angs, dist = dist, capt = bincapt, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
