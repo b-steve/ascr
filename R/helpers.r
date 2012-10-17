@@ -24,6 +24,7 @@ distcode <- '
   }
   return wrap(DISTANCES);
 '
+
 distances.cpp <- cxxfunction(signature(traps = "numeric", mask = "numeric"),
                               body = distcode, plugin = "Rcpp")
 
@@ -85,52 +86,62 @@ animalIDvec <- function(capthist){
   as.character(x)
 }
 
-## David's function to determine frog ID of a click.
-make.frog.captures=function(mics,clicks,dt){
-  K=dim(mics)[1]
-  captures=clicks
-  ## Times of clicks in current set.
-  ct=rep(-Inf,K)
-  ## Counter for click.
-  ID=1
-  ## Store time of click by mic 1 in ct[mic].
-  ct[clicks$trap[1]]=clicks$tim[1]
-  ## Indicator that is true when click can't be part of current set.
-  new=FALSE
-  nclicks=length(clicks$tim)
-  for(i in 2:nclicks){
-    if(ct[clicks$trap[i]]>-Inf){
-      nd=length(which(ct>-Inf))
-      ## Make all but last of those in current set part of same capture history
-      captures$ID[(i-nd):(i-1)]=ID
-      ## Re-initialise
-      ct=rep(-Inf,K)
-      ## Store time of click by mic i in ct[mic]
-      ct[clicks$trap[i]]=clicks$tim[i] 
-      ID=ID+1
-      if(i==nclicks) captures$ID[i]=ID # write last record with new ID      
+#' Assigning ID numbers to sounds.
+#'
+#' Identifies recaptures and assigns ID numbers to sounds recorded for an SECR model.
+#'
+#' Detected sounds are assumed to come from the same animal if times of arrival at
+#' different microphones are closer together than the time it would take for sound to
+#' travel between these microphones.
+#'
+#' @param mics a matrix containing the coordinates of trap locations.
+#' @param clicks a data frame containing (at least): (i) \code{$tim$}, the precise
+#' time of arrival of the received sound, and (ii) \code{$trap} the trap at which
+#' the sound was recorded.
+#' @dt a \code{K} by \code{K} matrix (where \code{K} is the number of traps)
+#' containing the time taken for sound to travel between each pair of traps.
+#' @return A data frame. Specifically, the \code{clicks} dataframe, now with a new
+#' variable, \code{ID}.
+#' @author David Borchers, Ben Stevenson
+#' @export
+make.acoustic.captures <- function(mics, clicks, dt){
+  K <- dim(mics)[1]
+  captures <- clicks
+  ct <- rep(-Inf, K)
+  ID <- 1
+  ct[clicks$trap[1]] <- clicks$tim[1]
+  new <- FALSE
+  nclicks <- length(clicks$tim)
+  for (i in 2:nclicks){
+    if (ct[clicks$trap[i]] > -Inf){
+      nd <- length(which(ct > -Inf))
+      captures$ID[(i - nd):(i - 1)] <- ID
+      ct <- rep(-Inf, K)
+      ct[clicks$trap[i]] <- clicks$tim[i] 
+      ID <- ID + 1
+      if(i == nclicks) captures$ID[i] <- ID      
     }
-    else { # next click on a mic not in current set
-      ct[clicks$trap[i]]=clicks$tim[i] # store time of click by mic i in ct[mic]
-      ctset=which(ct>-Inf)
-      dts=dt[ctset,clicks$trap[i]] # times between mics in current set and mic i
-      cts=-(ct[ctset]-clicks$tim[i]) # times between clicks in current set and click i
-      if(any((cts-dts)>0)) new=TRUE
-      if(new) { 
-        nd=length(which(ct>-Inf))-1 # number clicks in current set before new click added
-        captures$ID[(i-nd):(i-1)]=ID # make all but last of those in current set part of same capture history
-        ct=rep(-Inf,K) # re-initialise 
-        ct[clicks$trap[i]]=clicks$tim[i] # store time of click by mic i in ct[mic]
-        ID=ID+1
-        new=FALSE
-        if(i==nclicks) captures$ID[i]=ID # write last record with new ID
-      } else if(i==nclicks){
-        nd=length(which(ct>-Inf)) # number clicks in current set
-        captures$ID[(i-nd+1):i]=ID # make all in current set part of same capture history      
+    else {
+      ct[clicks$trap[i]] <- clicks$tim[i]
+      ctset <- which(ct > -Inf)
+      dts <- dt[ctset, clicks$trap[i]]
+      cts <- -(ct[ctset] - clicks$tim[i])
+      if (any((cts - dts) > 0)) new <- TRUE
+      if (new) { 
+        nd <- length(which(ct > -Inf)) - 1
+        captures$ID[(i - nd):(i - 1)] <- ID 
+        ct <- rep(-Inf, K) 
+        ct[clicks$trap[i]] <- clicks$tim[i]
+        ID <- ID+1
+        new <- FALSE
+        if (i == nclicks) captures$ID[i] <- ID
+      } else if(i == nclicks){
+        nd <- length(which(ct > -Inf))
+        captures$ID[(i - nd + 1):i] <- ID      
       }
     }
   }
-  return(captures)
+  captures
 }
 
 
