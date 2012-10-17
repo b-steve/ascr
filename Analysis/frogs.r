@@ -8,7 +8,7 @@ if (.Platform$OS == "unix"){
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
 work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
 func.dir <- paste(admbsecr.dir, "R", sep = sep)
-dat.dir <- paste(admbsecr.dir, "Data", "Frogs", sep = sep)
+dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Running setup code.
 setwd(work.dir)

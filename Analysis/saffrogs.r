@@ -8,7 +8,7 @@ if (.Platform$OS == "unix"){
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
 work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
 func.dir <- paste(admbsecr.dir, "R", sep = sep)
-dat.dir <- paste(admbsecr.dir, "Data", "Acoustic", sep = sep)
+dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Choosing dataset to work with; pref is either "Somiedo" or
 ## "Silvermine", no is either 1 or 2.
