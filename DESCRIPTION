@@ -1,0 +1,27 @@
+Package: admbsecr
+Type: Package
+Title: SECR models in ADMB through R.
+Version: 0.0.1
+Date: 2012-10-17
+Author: Ben Stevenson <bcs5@st-andrews.ac.uk>
+Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
+Depends:
+    R (>= 2.15.1)
+Imports:
+    CircStats,
+    inline,
+    Rcpp,
+    R2admb,
+    secr
+Description: This package allows for the fitting of spatially explicit
+    mark-recapture (SECR). In particular, it is focussed on a class of
+    SECR model which makes use of supplementary information pertaining
+    to animal location.
+License: GPL
+URL: https://github.com/b-steve/admbsecr
+Collate:
+    'admbsecr.r'
+    'autofuns.r'
+    'helpers.r'
+    'lhoodfuns.r'
+    'tplmake.r'
