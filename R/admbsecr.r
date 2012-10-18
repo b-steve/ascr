@@ -112,8 +112,6 @@
 admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NULL,
                      admbwd = NULL, method = "simple", memory = NULL, profpars = NULL,
                      clean = TRUE, verbose = FALSE, trace = FALSE, autogen = TRUE){
-  require(R2admb)
-  require(secr)
   ## Warnings for incorrect input.
   if (length(method) != 1){
     stop("method must be of length 1")
