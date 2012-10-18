@@ -303,96 +303,96 @@ log.Dprwi.ss <- function (wi, D, muss, sigmass, log.gk1) {
 }
 
 
-## Darren's C++ implementation of SECR with angle information.
-code <- '
+## ## Darren's C++ implementation of SECR with angle information.
+## code <- '
 
-	NumericVector BETA(beta);
-	double D     = exp(BETA[0]);
-        double G0    = 1/(1+exp(-BETA[1]));
-	double SIGMA = exp(BETA[2]);
+## 	NumericVector BETA(beta);
+## 	double D     = exp(BETA[0]);
+##         double G0    = 1/(1+exp(-BETA[1]));
+## 	double SIGMA = exp(BETA[2]);
 
-	int n    = as<int>(ncues);
-	int K    = as<int>(ntraps);
-	int M    = as<int>(npoints);
+## 	int n    = as<int>(ncues);
+## 	int K    = as<int>(ntraps);
+## 	int M    = as<int>(npoints);
 
-	int i,k,m;
+## 	int i,k,m;
 
-	NumericMatrix RADS(radians);
-	IntegerMatrix HASH1(hash1);
-	IntegerMatrix HASH0(hash0);
-	NumericMatrix DISTS(mask_dists);
-	NumericMatrix ANGS(mask_angs);
-	double A = as<double>(mask_area);
+## 	NumericMatrix RADS(radians);
+## 	IntegerMatrix HASH1(hash1);
+## 	IntegerMatrix HASH0(hash0);
+## 	NumericMatrix DISTS(mask_dists);
+## 	NumericMatrix ANGS(mask_angs);
+## 	double A = as<double>(mask_area);
 	
-	NumericVector GK(K*M);
-	NumericVector PM(M);
-	PM.fill(1);
-	for (m=0; m<M; m++) {
-		for (k=0; k<K; k++) {
-			GK(k*M+m) = G0*exp(-pow(DISTS(k,m),2) / 2 / pow(SIGMA,2));
-			PM(m) *= 1-GK(k*M+m);
-		}
-	}
-	double SUMDP = D*sum(1-PM);
+## 	NumericVector GK(K*M);
+## 	NumericVector PM(M);
+## 	PM.fill(1);
+## 	for (m=0; m<M; m++) {
+## 		for (k=0; k<K; k++) {
+## 			GK(k*M+m) = G0*exp(-pow(DISTS(k,m),2) / 2 / pow(SIGMA,2));
+## 			PM(m) *= 1-GK(k*M+m);
+## 		}
+## 	}
+## 	double SUMDP = D*sum(1-PM);
 	
-	NumericMatrix L1_X(M,n);
-	L1_X.fill(log(D));
-	NumericVector LOG_GK = log(GK);
-	int METHOD = as<int>(method);
-	if(METHOD==1){
-		double KAPPA = exp(BETA[3]);
-		double CONSTANT = log(2*3.14159265359*Rf_bessel_i(KAPPA,0.0,1.0));
-		for (int det=0; det<HASH1.nrow(); det++) {
-			i = HASH1(det,0);
-			k = HASH1(det,1);
-			for (m=0; m<M; m++) {
-				L1_X(m,i) += KAPPA*cos(RADS(i,k)-ANGS(k,m))-CONSTANT+LOG_GK(k*M+m);
-			}
-		}
-	}else{
-		for (int det=0; det<HASH1.nrow(); det++) {
-			i = HASH1(det,0);
-			k = HASH1(det,1);
-			for (m=0; m<M; m++) {
-				L1_X(m,i) += LOG_GK(k*M+m);
-			}
-		}
-	}
+## 	NumericMatrix L1_X(M,n);
+## 	L1_X.fill(log(D));
+## 	NumericVector LOG_GK = log(GK);
+## 	int METHOD = as<int>(method);
+## 	if(METHOD==1){
+## 		double KAPPA = exp(BETA[3]);
+## 		double CONSTANT = log(2*3.14159265359*Rf_bessel_i(KAPPA,0.0,1.0));
+## 		for (int det=0; det<HASH1.nrow(); det++) {
+## 			i = HASH1(det,0);
+## 			k = HASH1(det,1);
+## 			for (m=0; m<M; m++) {
+## 				L1_X(m,i) += KAPPA*cos(RADS(i,k)-ANGS(k,m))-CONSTANT+LOG_GK(k*M+m);
+## 			}
+## 		}
+## 	}else{
+## 		for (int det=0; det<HASH1.nrow(); det++) {
+## 			i = HASH1(det,0);
+## 			k = HASH1(det,1);
+## 			for (m=0; m<M; m++) {
+## 				L1_X(m,i) += LOG_GK(k*M+m);
+## 			}
+## 		}
+## 	}
 	
-	NumericVector LOG_GK1 = log(1-GK);
-	for (int det=0; det<HASH0.nrow(); det++) {
-		i = HASH0(det,0);
-		k = HASH0(det,1);
-		for (m=0; m<M; m++) {
-			L1_X(m,i) += LOG_GK1(k*M+m);
-		}
-	}
+## 	NumericVector LOG_GK1 = log(1-GK);
+## 	for (int det=0; det<HASH0.nrow(); det++) {
+## 		i = HASH0(det,0);
+## 		k = HASH0(det,1);
+## 		for (m=0; m<M; m++) {
+## 			L1_X(m,i) += LOG_GK1(k*M+m);
+## 		}
+## 	}
 
-	NumericVector L1(n);
-	for (i=0; i<n; i++) {
-		for (m=0; m<M; m++) {
-			L1(i) += exp(L1_X(m,i));
-		}
-	}
+## 	NumericVector L1(n);
+## 	for (i=0; i<n; i++) {
+## 		for (m=0; m<M; m++) {
+## 			L1(i) += exp(L1_X(m,i));
+## 		}
+## 	}
 	
-	double NEG_LOGLIK = -(sum(log(L1))- n*log(SUMDP) + Rf_dpois(n,A*SUMDP,1));
+## 	double NEG_LOGLIK = -(sum(log(L1))- n*log(SUMDP) + Rf_dpois(n,A*SUMDP,1));
 
-	if(ISNAN(NEG_LOGLIK) | !finite(NEG_LOGLIK)){
-		return wrap(1e10);
-	}else{
-		return wrap(NEG_LOGLIK);
-	}
-	'
+## 	if(ISNAN(NEG_LOGLIK) | !finite(NEG_LOGLIK)){
+## 		return wrap(1e10);
+## 	}else{
+## 		return wrap(NEG_LOGLIK);
+## 	}
+## 	'
 	
-secrlikelihood.cpp <- cxxfunction(signature(beta="numeric",
-                                            method="integer",
-                                            ncues="integer",
-                                            ntraps="integer",
-                                            npoints="integer",
-                                            radians="numeric",
-                                            hash1="integer",
-                                            hash0="integer",
-                                            mask_area="numeric",
-                                            mask_dists="numeric",
-                                            mask_angs="numeric") , body=code, plugin = "Rcpp")
+## secrlikelihood.cpp <- cxxfunction(signature(beta="numeric",
+##                                             method="integer",
+##                                             ncues="integer",
+##                                             ntraps="integer",
+##                                             npoints="integer",
+##                                             radians="numeric",
+##                                             hash1="integer",
+##                                             hash0="integer",
+##                                             mask_area="numeric",
+##                                             mask_dists="numeric",
+##                                             mask_angs="numeric") , body=code, plugin = "Rcpp")
 
