@@ -226,7 +226,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
     bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0))
   } else if (method == "sstoa"){
     if (is.null(ssqtoa)){
-      ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
+      ssqtoa <- apply(capt[, , 1], 1, toa.ssq, dists = dist)
     }
     data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt[, , 1],
                  toacapt = capt[, , 2], toassq = t(ssqtoa), dist = dist, capt = bincapt,
@@ -242,7 +242,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
     fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
                    profile = FALSE, profpars = profpars, safe = TRUE,
                    run.opts = run.control(checkdata = "write", checkparam = "write",
-                     clean = clean))
+                     clean_files = clean))
   } else {
     fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
                    safe = FALSE,
