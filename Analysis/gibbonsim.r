@@ -114,11 +114,11 @@ for (i in 1:nsims){
 }
 
 ## To write the simulation results to a file.
-##write.table(angres, "/home/ben/SECR/Results/3/angres.txt", row.names = FALSE)
-##write.table(simpleres, "/home/ben/SECR/Results/3/simpleres.txt", row.names = FALSE)
+##write.table(angres, "/home/ben/admbsecr/Results/gibbons/3/angres.txt", row.names = FALSE)
+##write.table(simpleres, "/home/ben/admbsecr/Results/gibbons/3/simpleres.txt", row.names = FALSE)
 
 ## To read in simulation results from a file.
-resfile <- "/home/ben/admbsecr/Results/3/"
+resfile <- "/home/ben/admbsecr/Results/gibbons/3/"
 source(paste(resfile, "pars.r", sep = ""))
 angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
 simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
@@ -156,7 +156,7 @@ abline(v = D, lty = "dotted")
 lines(dsimD, col = "green")
 lines(dangD, col = "yellow")
 lines(exp(dlogsimD$x), dlogsimD$y, col = "blue")
-lines(exp(dlogangD$x), dlogangD$y, col = "red") 
+lines(exp(dlogangD$x), dlogangD$y, col = "red")
 abline(h = 0, col = "grey")
 box()
 title(main = "Simulated sampling distributions of animal density", xlab = expression(hat(D)), ylab = "Density")
