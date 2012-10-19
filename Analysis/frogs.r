@@ -1,3 +1,4 @@
+library(devtools)
 ## Letting R know where everything is.
 admbsecr.dir <- "~/admbsecr" # Point this to the admbsecr file.
 if (.Platform$OS == "unix"){
@@ -24,13 +25,7 @@ simplefit2 <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir
 
 ## Carrying out TOA analysis.
 
-## Create ssq matrix in advance.
-ssqtoa <- apply(capt.toa, 1, toa.ssq, dists = dists)
-## Starting value for TOA measurement standard deviation.
-sigma.toa <- 0.0025
-## Adding sigma.toa to estimates found above in the simple SECR for starting values.
-start.beta <- c(simplefit1$fit$estimate, log(sigma.toa))
-## Fitting with admbsecr(). Doesn't require start values, but can use sv = start.beta.
+## Fitting with admbsecr(). Doesn't require start values.
 toafit1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto", 
                     admbwd = admb.dir, method = "toa")
 
