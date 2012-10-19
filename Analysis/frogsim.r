@@ -38,7 +38,7 @@ buffer <- 35
 mask.spacing <- 50
 
 ## True parameter values.
-set.seed(5253)
+seed <- 5253
 D <- 4450
 g0 <- 0.99999
 sigma <- 5.60
@@ -50,6 +50,8 @@ cutoff <- 150
 truepars <- c(D = D, g0 = g0, sigma = sigma, sigmatoa = sigmatoa,
               ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
 detectpars <- list(beta0 = ssb0, beta1 = ssb1, sdS = sigmass, cutval = cutoff)
+
+set.seed(seed)
 ## Inverse of speed of sound (in ms per metre).
 invsspd <- 1000/330
 
@@ -93,7 +95,7 @@ for (i in 1:nsims){
   distances <- t(distances(as.matrix(traps), as.matrix(detections)))
   capthist.ss <- array(0, dim = dim(capthist))
   capthist.ss[capthist == 1] <- attr(capthist, "signalframe")[, 1]
-  ## Generating times of arrival.  
+  ## Generating times of arrival.
   ## Time of call itself doesn't provide any information, this comes
   ## solely from the *differences* in arrival times between traps. We
   ## can assume that animal with ID = t calls at time t without loss
@@ -183,3 +185,55 @@ for (i in 1:nsims){
     print(c("end", date()))
   }
 }
+
+## To write the simulation results to a file.
+## write.table(simpleres, "~/admbsecr/Results/frogs/1/simpleres.txt", row.names = FALSE)
+## write.table(toares, "~/admbsecr/Results/frogs/1/toares.txt", row.names = FALSE)
+## write.table(ssres, "~/admbsecr/Results/frogs/1/ssres.txt", row.names = FALSE)
+## write.table(jointres, "~/admbsecr/Results/frogs/1/jointres.txt", row.names = FALSE)
+
+## To read in simulation results from a file.
+resfile <- "/home/ben/admbsecr/Results/frogs/1/"
+source(paste(resfile, "pars.r", sep = ""))
+angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
+simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
+
+## Assigning the columns to vectors.
+for (i in colnames(simpleres)){
+  name <- paste("sim", i, sep = "")
+  assign(name, simpleres[, i])
+}
+for (i in colnames(angres)){
+  name <- paste("ang", i, sep = "")
+  assign(name, angres[, i])
+}
+
+
+## Two different bandwidth selections.
+##dsimD <- density(simD)
+##dangD <- density(angD)
+dsimD <- density(simD, bw = "bcv")
+dangD <- density(angD, bw = "bcv")
+dlogsimD <- density(log(simD))
+dlogangD <- density(log(angD))
+##xs <- c(dsimD$x, dangD$x)
+##ys <- c(dsimD$y, dangD$y)
+xs <- exp(c(dlogsimD$x, dlogangD$x))
+ys <- c(dlogsimD$y, dlogangD$y)
+
+
+##pdf(file = paste(resfile, "fig", sep = ""))
+plot.new()
+plot.window(xlim = range(xs), ylim = c(0, max(ys)))
+axis(1)
+axis(2, las = 1)
+abline(v = D, lty = "dotted")
+lines(dsimD, col = "green")
+lines(dangD, col = "yellow")
+lines(exp(dlogsimD$x), dlogsimD$y, col = "blue")
+lines(exp(dlogangD$x), dlogangD$y, col = "red")
+abline(h = 0, col = "grey")
+box()
+title(main = "Simulated sampling distributions of animal density", xlab = expression(hat(D)), ylab = "Density")
+legend(x = "topright", legend = c("SECR", "SECR + angles"), col = c("blue", "red"), lty = 1)
+##dev.off()
