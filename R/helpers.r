@@ -158,4 +158,20 @@ make.acoustic.captures <- function(mics, clicks, dt){
   captures
 }
 
-
+#' Sum of Squares TOA matrix
+#'
+#' Calculates ssqtoa matrix for a SECR model with TOA information.
+#'
+#' @param wit capture history.
+#' @param dists distances.
+#' @return A matrix.
+#' @export
+toa.ssq <- function(wit, dists) {
+  ssq <- function(x) sum((x - mean(x))^2)
+  v <- 330 # speed of sound
+  wit.na <- wit
+  wit.na[wit == 0] <- NA
+  delt <- na.omit(as.vector(wit.na) - dists/v)
+  toassq <- apply(delt, 2, ssq)
+  toassq
+}
