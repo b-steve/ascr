@@ -8,12 +8,13 @@ if (.Platform$OS == "unix"){
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
 work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
 func.dir <- paste(admbsecr.dir, "R", sep = sep)
-dat.dir <- paste(admbsecr.dir, "Data", "Frogs", sep = sep)
+dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Get required libraries.
 library(secr)
 library(Rcpp)
 library(inline)
+library(R2admb)
 
 ## Set working directory to that with the functions.
 setwd(func.dir)
@@ -92,7 +93,7 @@ for (i in 1:nsims){
   ## Cartesian coordinates of detected animals.
   detections <- popn[cue.ids, ]
   ## Distances from detected animals to traps.
-  distances <- t(distances(as.matrix(traps), as.matrix(detections)))
+  dists <- t(distances(as.matrix(traps), as.matrix(detections)))
   capthist.ss <- array(0, dim = dim(capthist))
   capthist.ss[capthist == 1] <- attr(capthist, "signalframe")[, 1]
   ## Generating times of arrival.
@@ -104,7 +105,7 @@ for (i in 1:nsims){
   for (j in 1:n){
     for (k in 1:ntraps){
       if (capthist[j, 1, k] == 1){
-        dist <- distances[j, k]
+        dist <- dists[j, k]
         meantoa <- cue.ids[j] + invsspd*dist/1000
         capthist.toa[j, 1, k] <- rnorm(1, meantoa, sigmatoa)
       } else {
@@ -195,31 +196,39 @@ for (i in 1:nsims){
 ## To read in simulation results from a file.
 resfile <- "/home/ben/admbsecr/Results/frogs/1/"
 source(paste(resfile, "pars.r", sep = ""))
-angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
 simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
+toares <- read.table(paste(resfile, "toares.txt", sep = ""), header = TRUE)
+ssres <- read.table(paste(resfile, "ssres.txt", sep = ""), header = TRUE)
+jointres <- read.table(paste(resfile, "jointres.txt", sep = ""), header = TRUE)
 
 ## Assigning the columns to vectors.
 for (i in colnames(simpleres)){
   name <- paste("sim", i, sep = "")
   assign(name, simpleres[, i])
 }
-for (i in colnames(angres)){
-  name <- paste("ang", i, sep = "")
-  assign(name, angres[, i])
+for (i in colnames(toares)){
+  name <- paste("toa", i, sep = "")
+  assign(name, toares[, i])
+}
+for (i in colnames(ssres)){
+  name <- paste("ss", i, sep = "")
+  assign(name, ssres[, i])
+}
+for (i in colnames(jointres)){
+  name <- paste("joint", i, sep = "")
+  assign(name, jointres[, i])
 }
 
 
+
 ## Two different bandwidth selections.
-##dsimD <- density(simD)
-##dangD <- density(angD)
-dsimD <- density(simD, bw = "bcv")
-dangD <- density(angD, bw = "bcv")
-dlogsimD <- density(log(simD))
-dlogangD <- density(log(angD))
-##xs <- c(dsimD$x, dangD$x)
-##ys <- c(dsimD$y, dangD$y)
-xs <- exp(c(dlogsimD$x, dlogangD$x))
-ys <- c(dlogsimD$y, dlogangD$y)
+dsimD <- density(simD)
+dtoaD <- density(toaD)
+dssD <- density(ssD)
+djointD <- density(jointD)
+xs <- c(dsimD$x, dtoaD$x, dssD$x, djointD$x)
+ys <- c(dsimD$y, dtoaD$y, dssD$y, djointD$y)
+
 
 
 ##pdf(file = paste(resfile, "fig", sep = ""))
@@ -228,12 +237,14 @@ plot.window(xlim = range(xs), ylim = c(0, max(ys)))
 axis(1)
 axis(2, las = 1)
 abline(v = D, lty = "dotted")
-lines(dsimD, col = "green")
-lines(dangD, col = "yellow")
-lines(exp(dlogsimD$x), dlogsimD$y, col = "blue")
-lines(exp(dlogangD$x), dlogangD$y, col = "red")
+lines(dsimD, col = "blue")
+lines(dtoaD, col = "red")
+lines(dssD, col = "green")
+lines(djointD, col = "purple")
 abline(h = 0, col = "grey")
 box()
-title(main = "Simulated sampling distributions of animal density", xlab = expression(hat(D)), ylab = "Density")
-legend(x = "topright", legend = c("SECR", "SECR + angles"), col = c("blue", "red"), lty = 1)
+title(main = "Simulated sampling distributions of animal density",
+      xlab = expression(hat(D)), ylab = "Density")
+legend(x = "topright", legend = c("SECR", "SECR + TOA", "SECR + SS", "SECR + TOA + SS"),
+       col = c("blue", "red", "green", "purple"), lty = 1)
 ##dev.off()
