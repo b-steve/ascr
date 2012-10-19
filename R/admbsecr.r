@@ -247,7 +247,7 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
     fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
                    safe = FALSE,
                    run.opts = run.control(checkdata = "write", checkparam = "write",
-                     clean = clean))
+                     clean_files = clean))
   }
   if (autogen){
     file.remove("secr.tpl")
