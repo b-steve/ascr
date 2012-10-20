@@ -1,3 +1,7 @@
+## Package imports for roxygenise to pass to NAMESPACE.
+#' @import CircStats inline Rcpp R2admb secr
+NULL
+
 #' Fitting SECR models in ADMB
 #'
 #' Fits an SECR model, with our without supplementary information relevant to animal
