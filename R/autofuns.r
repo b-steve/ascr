@@ -5,7 +5,7 @@ autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL, cutoff =
   secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
 }
 
-autoD <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL){ 
+autoD <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL){
   n <- dim(bincapt)[1]
   A <- attr(mask, "area")
   if (method == "ss" | method == "sstoa"){
@@ -69,7 +69,7 @@ autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv 
 ## Following are helper functions for naive sigma estimation.
 RPSV.mod <- function(capthist, traps){
   w <- split(trapvec(capthist), animalIDvec(capthist))
-  temp <- lapply(w, RPSVx)
+  temp <- lapply(w, RPSVx, traps = traps)
   temp <- matrix(unlist(temp), nrow = 3)
   temp <- apply(temp, 1, sum, na.rm = TRUE)
   temp <- sqrt((temp[2] + temp[3])/(temp[1] - 1))
@@ -77,7 +77,7 @@ RPSV.mod <- function(capthist, traps){
   temp
 }
 
-RPSVx <- function(cx) {
+RPSVx <- function(cx, traps) {
   cx <- abs(cx)
   x <- traps$x[cx]
   y <- traps$y[cx]
