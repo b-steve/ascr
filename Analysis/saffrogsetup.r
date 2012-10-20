@@ -1,16 +1,3 @@
-library("secr")
-library("Rcpp")
-library("inline")
-
-## Set working directory to that with the functions.
-setwd(func.dir)
-## Get SECR functions.
-source("admbsecr.r")
-source("autofuns.r")
-source("helpers.r")
-source("lhoodfuns.r")
-source("tplmake.r")
-
 setwd(dat.dir)
 ## Get and manipulate data.
 mics <- read.csv(file = micsname)

@@ -14,7 +14,7 @@ dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 setwd(admbsecr.dir)
 library(devtools)
 load_all()
-library(admbsecr)
+##library(admbsecr)
 
 ## Running setup code.
 setwd(work.dir)

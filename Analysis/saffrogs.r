@@ -7,7 +7,6 @@ if (.Platform$OS == "unix"){
 }
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
 work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
-func.dir <- paste(admbsecr.dir, "R", sep = sep)
 dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Choosing dataset to work with; pref is either "Somiedo" or
@@ -16,6 +15,12 @@ pref <- c("Somiedo")
 no <- 2
 detsname <- paste(pref, paste("dets", no, sep = ""), "csv", sep = ".")
 micsname <- paste(pref, paste("mics", no, sep = ""), "csv", sep = ".")
+
+## Load admbsecr either using devtools or as a library.
+setwd(admbsecr.dir)
+library(devtools)
+load_all()
+##library(admbsecr)
 
 ## Running setup code.
 setwd(work.dir)
@@ -33,7 +38,7 @@ simplefit2 <- admbsecr(capt, traps = traps, mask = mask, sv = "auto", admbwd = a
 
 ## With secr.fit().
 ssfit1 <- secr.fit(sscapt,model=list(D~1, g0~1, sigma~1), detectfn = 10, mask = mask,
-                  verify = FALSE, steptol = 1e-4)
+                  verify = FALSE, steptol = 1e-4, start = sv)
 ## With admbsecr().
 ssfit2 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto", cutoff = 150,
                    admbwd = admb.dir, method = "ss")

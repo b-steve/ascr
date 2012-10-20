@@ -1,17 +1,3 @@
-library("secr")
-library("CircStats")
-library("inline")
-library("Rcpp")
-
-## Set working directory to that with the functions.
-setwd(func.dir)
-## Get SECR functions.
-source("admbsecr.r")
-source("autofuns.r")
-source("helpers.r")
-source("lhoodfuns.r")
-source("tplmake.r")
-
 setwd(dat.dir)
 gibbons <- read.table(file = "gibbons.txt", header = TRUE)
 npoints <- length(unique(gibbons$point))
@@ -34,7 +20,7 @@ for(det in 1:ndets){
   radians[cue, 1, trap] <- gibbons$bearing[det]/360*2*pi
 }
 n <- ncues
-S <- 1 
+S <- 1
 K <- ntraps
 A <- attr(mask, "area")
 M <- nrow(mask)
