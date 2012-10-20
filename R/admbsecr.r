@@ -10,63 +10,64 @@ NULL
 #' ADMB is called to fit an SECR model through use of the R2admb package. Different
 #' methods are used depending on the additional information on animal location that is
 #' collected. These are:
-#'
-#'    * \code{"simple"}: Normal SECR with no additional information. Parameters to
+#' \itemize{
+#'    \item \code{"simple"}: Normal SECR with no additional information. Parameters to
 #'      estimate are:
+#'   \itemize{
+#'          \item D:      Animal density.
 #'
-#'          * D:      Animal density.
+#'          \item g0:     Probability of detection at distance 0.
 #'
-#'          * g0:     Probability of detection at distance 0.
-#'
-#'          * sigma:  'Standard deviation' parameter for halfnormal detection function.
-#'
-#'    * \code{"toa"}: SECR with precise time of arrival (TOA) recorded. Parameters to
+#'          \item sigma:  'Standard deviation' parameter for halfnormal detection function.
+#'   }
+#'     \item \code{"toa"}: SECR with precise time of arrival (TOA) recorded. Parameters to
 #'      estimate are:
+#'   \itemize{
+#'          \item D:        As above.
 #'
-#'          * D:        As above.
+#'          \item g0:       As above.
 #'
-#'          * g0:       As above.
+#'          \item sigma:    As above.
 #'
-#'          * sigma:    As above.
-#'
-#'          * sigmatoa: Error term associated with TOA.
-#'
-#'    * \code{"ang"}: SECR with estimates of angle to animal recorded. Parameters to
+#'          \item sigmatoa: Error term associated with TOA.
+#'   }
+#'    \item \code{"ang"}: SECR with estimates of angle to animal recorded. Parameters to
 #'      estimate are:
+#'    \itemize{
+#'          \item D:        As above.
 #'
-#'          * D:        As above.
+#'          \item g0:       As above.
 #'
-#'          * g0:       As above.
+#'          \item sigma:    As above.
 #'
-#'          * sigma:    As above.
-#'
-#'          * kappa:    Error term associated with angle estimation.
-#'
-#'    * \code{"ss"}: SECR with received signal strengths at traps recorded. Parameters
+#'          \item kappa:    Error term associated with angle estimation.
+#'    }
+#'    \item \code{"ss"}: SECR with received signal strengths at traps recorded. Parameters
 #'      to estimate are:
+#'    \itemize{
+#'          \item D:        As above.
 #'
-#'          * D:        As above.
+#'          \item ssb0:     Average signal strength at sound source.
 #'
-#'          * ssb0:     Average signal strength at sound source.
-#'
-#'          * ssb1:     Decrease in signal strength per unit distance due to sound
+#'          \item ssb1:     Decrease in signal strength per unit distance due to sound
 #'                      propagation.
 #'
-#'          * sigmass:  Error term associated with signal strength.
-#'
-#'    * \code{"sstoa"}: SECR with precise TOA and received signal strengths at traps
+#'          \item sigmass:  Error term associated with signal strength.
+#'    }
+#'    \item \code{"sstoa"}: SECR with precise TOA and received signal strengths at traps
 #'      recorded. Parameters to estimate are:
+#'    \itemize{
+#'          \item D:        As above.
 #'
-#'          * D:        As above.
+#'          \item sigmatoa: As above.
 #'
-#'          * sigmatoa: As above.
+#'          \item ssb0:     As above.
 #'
-#'          * ssb0:     As above.
+#'          \item ssb1:     As above.
 #'
-#'          * ssb1:     As above.
-#'
-#'          * sigmass:  As above.
-#'
+#'          \item sigmass:  As above.
+#'    }
+#' }
 #' @param capt an array of dimension \code{(n, S, K)}, where \code{n} is the number of
 #' detected animals, \code{S} is number of individual sampling sessions, and \code{K}
 #' is the number of deployed traps. The object returned by  \code{make.capthist()} is
