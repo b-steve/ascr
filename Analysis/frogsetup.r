@@ -1,17 +1,3 @@
-## Get required libraries.
-##library(secr)
-##library(Rcpp)
-##library(inline)
-
-## Set working directory to that with the functions.
-##setwd(func.dir)
-## Get SECR functions. Not required if admbsecr has been loaded as a package.
-##source("admbsecr.r")
-##source("autofuns.r")
-##source("helpers.r")
-##source("lhoodfuns.r")
-##source("tplmake.r")
-
 setwd(dat.dir)
 ## Get trap locations.
 mics <- read.csv(file = "array1a-top.csv")
@@ -22,7 +8,7 @@ add <- max(diff(mics$x), diff(mics$y))
 trap.xlim <- range(mics$x) + 0.5*c(-add, add)
 trap.ylim <- range(mics$y) + 0.5*c(-add, add)
 ## Get detection data.
-alldat <- read.csv("array1a-top-data.csv") 
+alldat <- read.csv("array1a-top-data.csv")
 dat <- alldat
 ## Convert times to milliseconds.
 dat$tim <- alldat$startSeconds*1000

@@ -1,4 +1,3 @@
-library(devtools)
 ## Letting R know where everything is.
 admbsecr.dir <- "~/admbsecr" # Point this to the admbsecr file.
 if (.Platform$OS == "unix"){
@@ -6,10 +5,16 @@ if (.Platform$OS == "unix"){
 } else if (.Platform$OS == "windows") {
   sep <- "\\"
 }
+## admb.dir only required when user provides the .tpl file.
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
 work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
-func.dir <- paste(admbsecr.dir, "R", sep = sep)
 dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
+
+## Load admbsecr either using devtools or as a library.
+setwd(admbsecr.dir)
+library(devtools)
+load_all()
+library(admbsecr)
 
 ## Running setup code.
 setwd(work.dir)
@@ -26,7 +31,7 @@ simplefit2 <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir
 ## Carrying out TOA analysis.
 
 ## Fitting with admbsecr(). Doesn't require start values.
-toafit1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto", 
+toafit1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
                     admbwd = admb.dir, method = "toa")
 
 ## Carrying out signal strength analysis.
