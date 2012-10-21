@@ -1,5 +1,5 @@
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import CircStats inline Rcpp R2admb secr
+#' @import CircStats R2admb secr
 NULL
 
 #' Fitting SECR models in ADMB
