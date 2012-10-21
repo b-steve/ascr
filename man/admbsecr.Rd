@@ -92,65 +92,52 @@
   ADMB is called to fit an SECR model through use of the
   R2admb package. Different methods are used depending on
   the additional information on animal location that is
-  collected. These are:
+  collected. These are: \itemize{ \item \code{"simple"}:
+  Normal SECR with no additional information. Parameters to
+  estimate are: \itemize{ \item D: Animal density.
 
-  * \code{"simple"}: Normal SECR with no additional
-  information. Parameters to estimate are:
+  \item g0: Probability of detection at distance 0.
 
-  * D: Animal density.
+  \item sigma: 'Standard deviation' parameter for
+  halfnormal detection function.  } \item \code{"toa"}:
+  SECR with precise time of arrival (TOA) recorded.
+  Parameters to estimate are: \itemize{ \item D: As above.
 
-  * g0: Probability of detection at distance 0.
+  \item g0: As above.
 
-  * sigma: 'Standard deviation' parameter for halfnormal
-  detection function.
+  \item sigma: As above.
 
-  * \code{"toa"}: SECR with precise time of arrival (TOA)
-  recorded. Parameters to estimate are:
+  \item sigmatoa: Error term associated with TOA.  } \item
+  \code{"ang"}: SECR with estimates of angle to animal
+  recorded. Parameters to estimate are: \itemize{ \item D:
+  As above.
 
-  * D: As above.
+  \item g0: As above.
 
-  * g0: As above.
+  \item sigma: As above.
 
-  * sigma: As above.
+  \item kappa: Error term associated with angle estimation.
+  } \item \code{"ss"}: SECR with received signal strengths
+  at traps recorded. Parameters to estimate are: \itemize{
+  \item D: As above.
 
-  * sigmatoa: Error term associated with TOA.
+  \item ssb0: Average signal strength at sound source.
 
-  * \code{"ang"}: SECR with estimates of angle to animal
-  recorded. Parameters to estimate are:
+  \item ssb1: Decrease in signal strength per unit distance
+  due to sound propagation.
 
-  * D: As above.
+  \item sigmass: Error term associated with signal
+  strength.  } \item \code{"sstoa"}: SECR with precise TOA
+  and received signal strengths at traps recorded.
+  Parameters to estimate are: \itemize{ \item D: As above.
 
-  * g0: As above.
+  \item sigmatoa: As above.
 
-  * sigma: As above.
+  \item ssb0: As above.
 
-  * kappa: Error term associated with angle estimation.
+  \item ssb1: As above.
 
-  * \code{"ss"}: SECR with received signal strengths at
-  traps recorded. Parameters to estimate are:
-
-  * D: As above.
-
-  * ssb0: Average signal strength at sound source.
-
-  * ssb1: Decrease in signal strength per unit distance due
-  to sound propagation.
-
-  * sigmass: Error term associated with signal strength.
-
-  * \code{"sstoa"}: SECR with precise TOA and received
-  signal strengths at traps recorded. Parameters to
-  estimate are:
-
-  * D: As above.
-
-  * sigmatoa: As above.
-
-  * ssb0: As above.
-
-  * ssb1: As above.
-
-  * sigmass: As above.
+  \item sigmass: As above.  } }
 }
 \author{
   Ben Stevenson
