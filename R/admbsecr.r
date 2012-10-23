@@ -114,7 +114,7 @@ NULL
 #' @seealso \code{\link[R2admb]{do_admb}}, \code{\link[secr]{secr.fit}},
 #' \code{\link[secr]{make.capthist}}, \code{\link[secr]{read.traps}}.
 #' @export
-admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NULL,
+admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutoff = NULL,
                      admbwd = NULL, method = "simple", memory = NULL, profpars = NULL,
                      clean = TRUE, verbose = FALSE, trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
@@ -132,6 +132,10 @@ admbsecr <- function(capt, traps, mask, sv = "auto", ssqtoa = NULL, cutoff = NUL
   }
   trace <- as.numeric(trace)
   currwd <- getwd()
+  ## If traps is NULL, see if it is provided as part of capt.
+  if (is.null(traps)){
+    traps <- traps(capt)
+  }
   ## Moving to ADMB working directory.
   if (!is.null(admbwd)){
     setwd(admbwd)
