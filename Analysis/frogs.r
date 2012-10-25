@@ -12,12 +12,13 @@ dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Load admbsecr either using devtools or as a library.
 setwd(admbsecr.dir)
-library(devtools)
-load_all()
-##library(admbsecr)
+##library(devtools)
+##load_all()
+library(admbsecr)
 
 ## Running setup code.
 setwd(work.dir)
+library(secr)
 source("frogsetup.r")
 
 ## Carrying out simple SECR analysis.

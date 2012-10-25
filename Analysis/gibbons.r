@@ -12,12 +12,13 @@ dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Load admbsecr either using devtools or as a library.
 setwd(admbsecr.dir)
-library(devtools)
-load_all()
-##library(admbsecr)
+##library(devtools)
+##load_all()
+library(admbsecr)
 
 ## Running setup code.
 setwd(work.dir)
+library(secr)
 source("gibbonsetup.r")
 
 p <- c(log(0.1125153), logit(0.95), log(750), log(10))

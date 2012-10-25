@@ -10,20 +10,21 @@ work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
 dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Choosing dataset to work with; pref is either "Somiedo" or
-## "Silvermine", no is either 1 or 2.
+## "Silvermine". no is either 1 or 2 (only 1 for Silvermine).
 pref <- c("Somiedo")
-no <- 2
+no <- 1
 detsname <- paste(pref, paste("dets", no, sep = ""), "csv", sep = ".")
 micsname <- paste(pref, paste("mics", no, sep = ""), "csv", sep = ".")
 
 ## Load admbsecr either using devtools or as a library.
 setwd(admbsecr.dir)
-library(devtools)
-load_all()
-##library(admbsecr)
+##library(devtools)
+##load_all()
+library(admbsecr)
 
 ## Running setup code.
 setwd(work.dir)
+library(secr)
 source("saffrogsetup.r")
 
 ## Carrying out simple SECR analysis.
