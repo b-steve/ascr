@@ -2,10 +2,11 @@
 \alias{admbsecr}
 \title{Fitting SECR models in ADMB}
 \usage{
-  admbsecr(capt, traps, mask, sv = "auto", ssqtoa = NULL,
-    cutoff = NULL, admbwd = NULL, method = "simple",
-    memory = NULL, profpars = NULL, clean = TRUE,
-    verbose = FALSE, trace = FALSE, autogen = TRUE)
+  admbsecr(capt, traps = NULL, mask, sv = "auto",
+    ssqtoa = NULL, cutoff = NULL, admbwd = NULL,
+    method = "simple", memory = NULL, profpars = NULL,
+    clean = TRUE, verbose = FALSE, trace = FALSE,
+    autogen = TRUE)
 }
 \arguments{
   \item{capt}{an array of dimension \code{(n, S, K)}, where
@@ -77,7 +78,7 @@
   current working directory if \code{admbwd} is
   \code{NULL}). If \code{FALSE}, the \code{.tpl} file
   already be located in \code{admbwd} (or the current
-  working directory if \code{admb} is \code{NULL}. Usually
+  working directory if \code{admb} is \code{NULL}). Usually
   only set to \code{FALSE} for development purposes.}
 }
 \value{

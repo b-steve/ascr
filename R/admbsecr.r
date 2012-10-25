@@ -107,7 +107,7 @@ NULL
 #' @param autogen logical, if \code{TRUE}, the appropriate \code{.tpl} file is written
 #' to \code{admbwd} (or the current working directory if \code{admbwd} is \code{NULL}).
 #' If \code{FALSE}, the \code{.tpl} file already be located in \code{admbwd} (or the
-#' current working directory if \code{admb} is \code{NULL}. Usually only set to
+#' current working directory if \code{admb} is \code{NULL}). Usually only set to
 #' \code{FALSE} for development purposes.
 #' @return An object of class 'admb'.
 #' @author Ben Stevenson
