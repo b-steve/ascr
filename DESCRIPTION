@@ -8,7 +8,6 @@ Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Depends:
     R (>= 2.15.1)
 Imports:
-    CircStats,
     R2admb,
     secr
 Description: This package allows for the fitting of spatially explicit
