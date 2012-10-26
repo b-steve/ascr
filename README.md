@@ -28,9 +28,11 @@ install_github("admbsecr", "b-steve")
 ## Troubleshooting
 
 * Ensure the command `admb` is recognised at the terminal command line. Mac/Unix users may have to add the following to ~/.bashrc, ~/.bash_login, or a similar script that runs on startup.
-    #!/bin/bash
-    export ADMB_HOME=/path/to/admb/
-    PATH=$PATH:$ADMB_HOME/bin
-    export PATH
+```bash
+#!/bin/bash
+export ADMB_HOME=/path/to/admb/
+PATH=$PATH:$ADMB_HOME/bin
+export PATH
+```
 
 * Windows users may need to add the environment variable `R_SHELL` with a value that points to `cmd.exe`, which is found in the System32 folder.
