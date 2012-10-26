@@ -12,14 +12,15 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 
 To install:
 
-* Download and install [AD Model Builder](http://admb-project.org/).
+1. Download and install [AD Model Builder](http://admb-project.org/).
 
-* For the development version on [R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
+2. Install the admbsecr R library.
+    * For the development version on [R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
 ```r
 install.packages("admbsecr", repos="http://R-Forge.R-project.org")
 ```
 
-* For the very latest version (i.e., this repository):
+    * For the very latest version (i.e., this repository):
 ```r
 library(devtools)
 install_github("admbsecr", "b-steve")
