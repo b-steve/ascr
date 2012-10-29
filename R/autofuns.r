@@ -29,11 +29,15 @@ autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, s
 }
 
 ## Take average std dev across all individuals' TOAs. This will be an
-## overestimate as it assumes sound travels instantaneously, but
-## should be close enough to be reasonable.
+## overestimate as it assumes sound travels instantaneously. Does not
+## seem to work well with frog data.
 autosigmatoa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                          cutoff = NULL, method = NULL){
-  mean(apply(capthist, 1, function(x) sd(x[x != 0])), na.rm = TRUE)
+  ## if (method == "sstoa"){
+  ##   capthist <- capthist[, , , 2, drop = FALSE]
+  ## }
+  ## mean(apply(capthist, 1, function(x) sd(x[x != 0])), na.rm = TRUE)
+  0.0025
 }
 
 ## Haven't come up with a good way for this yet.
