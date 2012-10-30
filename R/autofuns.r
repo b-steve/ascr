@@ -87,6 +87,11 @@ autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv 
   sqrt(sigma^2*(1 - delta))
 }
 
+autoalpha <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                       cutoff = NULL, method = NULL){
+  2
+}
+
 ## Following are helper functions for naive sigma estimation.
 RPSV.mod <- function(capthist, traps){
   w <- split(trapvec(capthist), animalIDvec(capthist))
