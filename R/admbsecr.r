@@ -67,6 +67,18 @@ NULL
 #'
 #'          \item sigmass:  As above.
 #'    }
+#'    \item \code{"dist"}: SECR with estimated distances between animals
+#'      and traps at which detections occurred. Parameters to estimate are:
+#'    \itemize{
+#'          \item D:        As above.
+#'
+#'          \item g0:       As above.
+#'
+#'          \item sigma:    As above.
+#'
+#'          \item alpha:    Shape parameter associated with the gamma distribution
+#'                          used to model estimated distances.
+#'    }
 #' }
 #' @param capt an array of dimension \code{(n, S, K)}, where \code{n} is the number of
 #' detected animals, \code{S} is number of individual sampling sessions, and \code{K}
@@ -136,6 +148,9 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
   if (is.null(traps)){
     traps <- traps(capt)
   }
+  if (diff(range(traps[, 1])) == 0 & diff(range(traps[, 2])) == 0 & any(sv == "auto")){
+    stop("All traps are at the same location; please provide starting values.")
+  }
   ## Moving to ADMB working directory.
   if (!is.null(admbwd)){
     setwd(admbwd)
@@ -162,7 +177,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
     stop("capt array cannot have more than 4 dimensions.")
   }
   ## Setting number of model parameters.
-  npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss")], 5[method == "sstoa"])
+  npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss", "dist")],
+             5[method == "sstoa"])
   ## Setting sensible start values if elements of sv are "auto".
   if (length(sv) == 1 & sv[1] == "auto"){
     sv <- rep("auto", npars)
@@ -176,7 +192,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
                      "kappa"[method == "ang"],
                      "ssb0"[method == "ss" | method == "sstoa"],
                      "ssb1"[method == "ss" | method == "sstoa"],
-                     "sigmass"[method == "ss" | method == "sstoa"])
+                     "sigmass"[method == "ss" | method == "sstoa"],
+                     "alpha"[method == "dist"])
     } else {
       ## Reordering sv vector if names are provided.
       sv <- sv[c("D", "g0"[!(method == "ss" | method == "sstoa")],
@@ -185,12 +202,13 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
                  "kappa"[method == "ang"],
                  "ssb0"[method == "ss" | method == "sstoa"],
                  "ssb1"[method == "ss" | method == "sstoa"],
-                 "sigmass"[method = "ss" | method == "sstoa"])]
+                 "sigmass"[method == "ss" | method == "sstoa"],
+                 "alpha"[method == "dist"])]
     }
     autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
                      "sigmatoa" = autosigmatoa, "kappa" = autokappa,
                      "ssb0" = autossb0, "ssb1" = autossb1,
-                     "sigmass" = autosigmass)
+                     "sigmass" = autosigmass, "alpha" = autoalpha)
     ## Replacing "auto" elements of sv vector.
     for (i in rev(which(sv == "auto"))){
       sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method)
@@ -243,13 +261,19 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
     params <- list(D = sv[1], sigmatoa = sv[2], ssb0 = sv[3], ssb1 = sv[4], sigmass = sv[5])
     bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0),
                    sigmatoa = c(0, 100000))
+  } else if (method == "dist"){
+    data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt, dist = dist,
+                 capt = bincapt, trace = trace)
+    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], alpha = sv[4])
+    bounds <- list(D = c(0, 1000000000), g0 = c(0, 1), sigma = c(0, 100000),
+                   alpha = c(0, 150))
   } else {
-    stop('method must be either "simple", "toa", "ang", "ss", or "sstoa"')
+    stop('method must be either "simple", "toa", "ang", "ss", "sstoa", or "dist"')
   }
   ## Fitting the model.
   if (!is.null(profpars)){
     fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
-                   profile = FALSE, profpars = profpars, safe = TRUE,
+                   profile = TRUE, profpars = profpars, safe = FALSE,
                    run.opts = run.control(checkdata = "write", checkparam = "write",
                      clean_files = clean))
   } else {
