@@ -1,4 +1,4 @@
-admbsecr 0.2.0
+admbsecr 0.1.1
 --------------
 
 * Added additional methods:
@@ -6,6 +6,9 @@ admbsecr 0.2.0
     * "dist" -- SECR with estimated distance information.
 
     * "exactdist" -- SECR with exact distances (i.e., MRDS).
+
+* Bug fix to profpars parameter of admbsecr. Profile likelihood now
+  works.
 
 admbsecr 0.1.0
 --------------
