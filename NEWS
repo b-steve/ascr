@@ -1,0 +1,26 @@
+admbsecr 0.2.0
+--------------
+
+* Added additional methods:
+
+    * "dist" -- SECR with estimated distance information.
+
+    * "exactdist" -- SECR with exact distances (i.e., MRDS).
+
+admbsecr 0.1.0
+--------------
+
+* Initial release of admbsecr.
+
+* Implemented methods are:
+
+    * "simple" -- SECR with no additional information.
+
+    * "toa" -- SECR with time-of-arrival information.
+
+    * "ang" -- SECR with angle information.
+
+    * "ss" -- SECR with signal strength information.
+
+    * "sstoa" -- SECR with both signal strength and time-of-arrival
+      information.
