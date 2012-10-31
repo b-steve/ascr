@@ -7,23 +7,16 @@ if (.Platform$OS == "unix"){
 }
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
 work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
-func.dir <- paste(admbsecr.dir, "R", sep = sep)
 dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Get required libraries.
 library(secr)
-library(Rcpp)
-library(inline)
-library(R2admb)
 
-## Set working directory to that with the functions.
-setwd(func.dir)
-## Get SECR functions.
-source("admbsecr.r")
-source("autofuns.r")
-source("helpers.r")
-source("lhoodfuns.r")
-source("tplmake.r")
+## Loading the admbsecr library.
+setwd(admbsecr.dir)
+library(devtools)
+load_all(".")
+##library(admbsecr)
 
 ## Loading trap positions.
 setwd(dat.dir)
