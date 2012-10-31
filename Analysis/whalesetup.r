@@ -21,7 +21,9 @@ capthist.dist <- array(capthist.dist, dim = c(nrow(capthist.dist), 1, ncol(capth
 options(warn = -1)
 fake.traps <- read.traps(data = fake.traps, detector = "proximity")
 real.traps <- read.traps(data = real.traps, detector = "proximity")
-mask <- make.mask(fake.traps, buffer = 1.5*max(capthist.dist), type = "trapbuffer")
+## Buffer given by Pr(X <= x) = 0.999 for longest estimated distance.
+buffer <- 3000
+mask <- make.mask(fake.traps, buffer = buffer, type = "trapbuffer")
 options(warn = 1)
 bincapt <- capthist.dist
 bincapt[bincapt > 0] <- 1
