@@ -29,7 +29,7 @@ options(warn = 1)
 
 setwd(work.dir)
 ## setup for simulations.
-nsims <- 5
+nsims <- 500
 buffer <- 3000
 mask.spacing <- 45
 
@@ -66,12 +66,12 @@ estdists <- function(x, alpha){
 for (i in 1:nsims){
   if (i == 1){
     print(c("start", date()))
-  } else  if (i %% 100 == 0){
+  } else {
     print(c(i, date()))
   }
   ## Simulating data and setting things up for analysis.
   popn <- sim.popn(D = D, core = real.traps, buffer = buffer)
-  
+
   capthist <- sim.capthist(real.traps, popn, detectfn = 0,
                            detectpar = detectpars, noccasions = 1,
                            renumber = FALSE)
@@ -94,3 +94,8 @@ for (i in 1:nsims){
   coef <- coef(fit)
   res[i, ] <- coef
 }
+
+## To write the simulation results to a file.
+##respath <- paste(admbsecr.dir, "Results/whales/1/res.txt", sep = "/")
+##write.table(res, respath, row.names = FALSE)
+
