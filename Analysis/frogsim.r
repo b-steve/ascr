@@ -212,9 +212,7 @@ for (i in colnames(jointres)){
   assign(name, jointres[, i])
 }
 
-
-
-## Two different bandwidth selections.
+## Calculating densities.
 dsimD <- density(simD)
 dtoaD <- density(toaD)
 dssD <- density(ssD)
