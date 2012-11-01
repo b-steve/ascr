@@ -99,3 +99,34 @@ for (i in 1:nsims){
 ##respath <- paste(admbsecr.dir, "Results/whales/1/res.txt", sep = "/")
 ##write.table(res, respath, row.names = FALSE)
 
+## To read in simulation results from a file.
+resfile <- "~/admbsecr/Results/whales/1/"
+source(paste(resfile, "pars.r", sep = ""))
+res <- read.table(paste(resfile, "res.txt", sep = ""), header = TRUE)
+
+## Assigning the columns to vectors.
+for (i in colnames(res)){
+  name <- paste("res", i, sep = "")
+  assign(name, res[, i])
+}
+
+## Calculating densities.
+dD <- density(resD)
+dg0 <- density(resg0)
+dsigma <- density(ressigma)
+dalpha <- density(resalpha)
+xs <- dD$x
+ys <- dD$y
+
+##pdf(file = paste(resfile, "fig", sep = ""))
+plot.new()
+plot.window(xlim = range(xs), ylim = c(0, max(ys)))
+axis(1)
+axis(2, las = 1)
+abline(v = D, lty = "dotted")
+lines(dD, col = "blue")
+abline(h = 0, col = "grey")
+box()
+title(main = "Simulated sampling distributions of animal density",
+      xlab = expression(hat(D)), ylab = "Density")
+##dev.off()
