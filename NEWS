@@ -10,6 +10,9 @@ admbsecr 0.1.1
 * Bug fix to profpars parameter of admbsecr. Profile likelihood now
   works.
 
+* A log link function is now used to calculate expected received
+  signal strength for methods "ss" and "sstoa".
+
 admbsecr 0.1.0
 --------------
 

@@ -12,9 +12,9 @@ dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Load admbsecr either using devtools or as a library.
 setwd(admbsecr.dir)
-##library(devtools)
-##load_all()
-library(admbsecr)
+library(devtools)
+load_all()
+##library(admbsecr)
 
 ## Running setup code.
 setwd(work.dir)
@@ -42,9 +42,11 @@ ssfit1 <- secr.fit(sscapt, model = list(D~1, g0~1, sigma~1), detectfn = 10, mask
                    verify = FALSE, steptol = 1e-4)
 ## Fitting with admbsecr().
 ssfit2 <- admbsecr(capt.ss, traps = traps, mask, sv = "auto", cutoff = 150,
-                   admbwd = admb.dir, method = "ss")
+                   admbwd = admb.dir, method = "ss", autogen = FALSE, trace = TRUE)
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
 ## Only possible with admbsecr().
-jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask, sv = "auto",
-                     cutoff = 150, admbwd = admb.dir, method = "sstoa")
+sv <- c(coef(toafit1)[c(1, 4)], coef(ssfit2)[2:4])
+jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask, sv = sv,
+                     cutoff = 150, admbwd = admb.dir, method = "sstoa",
+                     autogen = FALSE, trace = TRUE)
