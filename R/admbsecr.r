@@ -1,5 +1,5 @@
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import CircStats R2admb secr
+#' @import R2admb secr
 NULL
 
 #' Fitting SECR models in ADMB
@@ -80,6 +80,7 @@ NULL
 #'                          used to model estimated distances.
 #'    }
 #' }
+#'
 #' @param capt an array of dimension \code{(n, S, K)}, where \code{n} is the number of
 #' detected animals, \code{S} is number of individual sampling sessions, and \code{K}
 #' is the number of deployed traps. The object returned by  \code{make.capthist()} is
@@ -110,7 +111,7 @@ NULL
 #' @param memory value of \code{arrmblsize} in ADMB. Increase this if ADMB reports a
 #' memory error.
 #' @param profpars character vector of names of parameters over which profile likelihood
-#' should occur (untested and probably very slow!).
+#' should occur.
 #' @param clean logical, if \code{TRUE} ADMB files are cleaned after fitting of the model.
 #' @param verbose logical, if \code{TRUE} ADMB details, along with error messages, are
 #' printed to the R session.
@@ -122,6 +123,17 @@ NULL
 #' current working directory if \code{admb} is \code{NULL}). Usually only set to
 #' \code{FALSE} for development purposes.
 #' @return An object of class 'admb'.
+#' 
+#' The following functions can be used to extract model components: \code{summary()},
+#' \code{AIC()}, \code{logLik()}, \code{deviance()}, \code{vcov()}, \code{coef()},
+#' \code{stdEr()}, and \code{confint()}.
+#'
+#' The latter takes arguments \code{level} and \code{method}, which specify the confidence
+#' level and calculation method respectively. The default method gives quadratic (Wald)
+#' intervals based on approximate standard errors; \code{"profile"} gives profile
+#' likelihood intervals, and can be used if the \code{admbsecr()} parameter
+#' \code{profpars} is non-null and provides names of model parameters that are to be
+#' profiled.
 #' @author Ben Stevenson
 #' @seealso \code{\link[R2admb]{do_admb}}, \code{\link[secr]{secr.fit}},
 #' \code{\link[secr]{make.capthist}}, \code{\link[secr]{read.traps}}.

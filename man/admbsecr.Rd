@@ -60,8 +60,7 @@
   Increase this if ADMB reports a memory error.}
 
   \item{profpars}{character vector of names of parameters
-  over which profile likelihood should occur (untested and
-  probably very slow!).}
+  over which profile likelihood should occur.}
 
   \item{clean}{logical, if \code{TRUE} ADMB files are
   cleaned after fitting of the model.}
@@ -83,6 +82,20 @@
 }
 \value{
   An object of class 'admb'.
+
+  The following functions can be used to extract model
+  components: \code{summary()}, \code{AIC()},
+  \code{logLik()}, \code{deviance()}, \code{vcov()},
+  \code{coef()}, \code{stdEr()}, and \code{confint()}.
+
+  The latter takes arguments \code{level} and
+  \code{method}, which specify the confidence level and
+  calculation method respectively. The default method gives
+  quadratic (Wald) intervals based on approximate standard
+  errors; \code{"profile"} gives profile likelihood
+  intervals, and can be used if the \code{admbsecr()}
+  parameter \code{profpars} is non-null and provides names
+  of model parameters that are to be profiled.
 }
 \description{
   Fits an SECR model, with our without supplementary
@@ -138,7 +151,17 @@
 
   \item ssb1: As above.
 
-  \item sigmass: As above.  } }
+  \item sigmass: As above.  } \item \code{"dist"}: SECR
+  with estimated distances between animals and traps at
+  which detections occurred. Parameters to estimate are:
+  \itemize{ \item D: As above.
+
+  \item g0: As above.
+
+  \item sigma: As above.
+
+  \item alpha: Shape parameter associated with the gamma
+  distribution used to model estimated distances.  } }
 }
 \author{
   Ben Stevenson
