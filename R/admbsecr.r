@@ -191,42 +191,54 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
   ## Setting number of model parameters.
   npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss", "dist")],
              5[method == "sstoa"])
-  ## Setting sensible start values if elements of sv are "auto".
+  ## If sv is a list, turn it into a vector.
+  if (is.list(sv)){
+    sv <- c(sv, recursive = TRUE)
+  }
+  ## Parameter names.
+  parnames <- c("D", "g0"[!(method == "ss" | method == "sstoa")],
+                "sigma"[!(method == "ss" | method == "sstoa")],
+                "sigmatoa"[method == "toa" | method == "sstoa"],
+                "kappa"[method == "ang"],
+                "ssb0"[method == "ss" | method == "sstoa"],
+                "ssb1"[method == "ss" | method == "sstoa"],
+                "sigmass"[method == "ss" | method == "sstoa"],
+                "alpha"[method == "dist"])
+  ## Setting sv to a vector full of "auto" if required.
   if (length(sv) == 1 & sv[1] == "auto"){
     sv <- rep("auto", npars)
-  }
-  if (any(sv == "auto")){
-    ## Give sv vector names if it doesn't have them.
-    if (is.null(names(sv))){
-      names(sv) <- c("D", "g0"[!(method == "ss" | method == "sstoa")],
-                     "sigma"[!(method == "ss" | method == "sstoa")],
-                     "sigmatoa"[method == "toa" | method == "sstoa"],
-                     "kappa"[method == "ang"],
-                     "ssb0"[method == "ss" | method == "sstoa"],
-                     "ssb1"[method == "ss" | method == "sstoa"],
-                     "sigmass"[method == "ss" | method == "sstoa"],
-                     "alpha"[method == "dist"])
-    } else {
-      ## Reordering sv vector if names are provided.
-      sv <- sv[c("D", "g0"[!(method == "ss" | method == "sstoa")],
-                 "sigma"[!(method == "ss" | method == "sstoa")],
-                 "sigmatoa"[method == "toa" | method == "sstoa"],
-                 "kappa"[method == "ang"],
-                 "ssb0"[method == "ss" | method == "sstoa"],
-                 "ssb1"[method == "ss" | method == "sstoa"],
-                 "sigmass"[method == "ss" | method == "sstoa"],
-                 "alpha"[method == "dist"])]
+    names(sv) <- parnames
+  } else if (is.null(names(sv))){
+    stop("sv is not a named vector.")
+  } else if (length(unique(sv)) != length(sv)){
+    stop("sv names are not all unique")
+  } else {
+    ## Warning if a listed parameter name is not used in this model.
+    if (!all(names(sv) %in% parnames)){
+      warning("One of the element names of sv is not a parameter used in this model.")
     }
-    autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
-                     "sigmatoa" = autosigmatoa, "kappa" = autokappa,
-                     "ssb0" = autossb0, "ssb1" = autossb1,
-                     "sigmass" = autosigmass, "alpha" = autoalpha)
-    ## Replacing "auto" elements of sv vector.
-    for (i in rev(which(sv == "auto"))){
-      sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method)
+    sv.old <- sv
+    sv <- rep("auto", npars)
+    names(sv) <- parnames
+    for (i in parnames){
+      if (any(names(sv.old) == i)){
+        sv[i] <- sv.old[i]
+      }
     }
-    sv <- as.numeric(sv)
+    ## Reordering sv vector.
+    sv <- sv[parnames]
   }
+  print(sv)
+  stop("rege")
+  autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
+                   "sigmatoa" = autosigmatoa, "kappa" = autokappa,
+                   "ssb0" = autossb0, "ssb1" = autossb1,
+                   "sigmass" = autosigmass, "alpha" = autoalpha)
+  ## Replacing "auto" elements of sv vector.
+  for (i in rev(which(sv == "auto"))){
+    sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method)
+  }
+  sv <- as.numeric(sv)
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
   bincapt <- matrix(as.vector(bincapt), nrow = n, ncol = k)
   capt <- array(as.vector(capt), dim = c(n, k, dim(capt)[4][length(dim(capt)) == 4]))
@@ -271,7 +283,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
                  toacapt = capt[, , 2], toassq = t(ssqtoa), dist = dist, capt = bincapt,
                  trace = trace)
     params <- list(D = sv[1], sigmatoa = sv[2], ssb0 = sv[3], ssb1 = sv[4], sigmass = sv[5])
-    bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0),
+    bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-1, 0),
                    sigmatoa = c(0, 100000))
   } else if (method == "dist"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt, dist = dist,
