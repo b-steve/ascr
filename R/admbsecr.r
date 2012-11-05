@@ -138,9 +138,10 @@ NULL
 #' @seealso \code{\link[R2admb]{do_admb}}, \code{\link[secr]{secr.fit}},
 #' \code{\link[secr]{make.capthist}}, \code{\link[secr]{read.traps}}.
 #' @export
-admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutoff = NULL,
-                     admbwd = NULL, method = "simple", memory = NULL, profpars = NULL,
-                     clean = TRUE, verbose = FALSE, trace = FALSE, autogen = TRUE){
+admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
+                     ssqtoa = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
+                     memory = NULL, profpars = NULL, clean = TRUE, verbose = FALSE,
+                     trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
   if (length(method) != 1){
     stop("method must be of length 1")
@@ -188,13 +189,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
   } else if (length(dim(bincapt)) > 4){
     stop("capt array cannot have more than 4 dimensions.")
   }
-  ## Setting number of model parameters.
-  npars <- c(3[method == "simple"], 4[method %in% c("toa", "ang", "ss", "dist")],
-             5[method == "sstoa"])
-  ## If sv is a list, turn it into a vector.
-  if (is.list(sv)){
-    sv <- c(sv, recursive = TRUE)
-  }
   ## Parameter names.
   parnames <- c("D", "g0"[!(method == "ss" | method == "sstoa")],
                 "sigma"[!(method == "ss" | method == "sstoa")],
@@ -204,6 +198,36 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
                 "ssb1"[method == "ss" | method == "sstoa"],
                 "sigmass"[method == "ss" | method == "sstoa"],
                 "alpha"[method == "dist"])
+  ## Setting number of model parameters.
+  npars <- length(parnames)
+  ## Setting up bounds.
+  default.bounds <- list(D = c(0, 1e8),
+                         g0 = c(0, 1),
+                         sigma = c(0, 1e5),
+                         sigmatoa = c(0, 1e5),
+                         kappa = c(0, 700),
+                         ssb0 = NULL,
+                         ssb1 = c(-10, 0),
+                         sigmass = c(0, 1e5),
+                         alpha = c(0, 150))[parnames]
+  if (!(is.list(bounds) | is.null(bounds))){
+    stop("bounds must either be NULL or a list.")
+  } else {
+    bound.changes <- bounds
+    bounds <- default.bounds
+    for (i in names(default.bounds)){
+      if (i %in% names(bound.changes)){
+        bounds[[i]] <- bound.changes[[i]]
+      } else {
+        ## Removing NULL elements from list.
+        bounds[[i]] <- bounds[[i]]
+      }
+    }
+  }
+  ## If sv is a list, turn it into a vector.
+  if (is.list(sv)){
+    sv <- c(sv, recursive = TRUE)
+  }
   ## Setting sv to a vector full of "auto" if required.
   if (length(sv) == 1 & sv[1] == "auto"){
     sv <- rep("auto", npars)
@@ -228,8 +252,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
     ## Reordering sv vector.
     sv <- sv[parnames]
   }
-  print(sv)
-  stop("rege")
   autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
                    "sigmatoa" = autosigmatoa, "kappa" = autokappa,
                    "ssb0" = autossb0, "ssb1" = autossb1,
@@ -253,7 +275,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,
                  dist = dist, traps = traps, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
-    bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000))
   } else if (method == "toa"){
     if (is.null(ssqtoa)){
       ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
@@ -261,20 +282,15 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
     data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
                  toassq = t(ssqtoa), dist = dist, capt = bincapt, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
-    bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
-                   sigmatoa = c(0, 100000))
   } else if (method == "ang"){
     angs <- angles(traps, mask)
     data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
                  ang = angs, dist = dist, capt = bincapt, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
-    bounds <- list(D = c(0, 10000000), g0 = c(0, 1), sigma = c(0, 100000),
-                   kappa = c(0, 700))
   } else if (method == "ss"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt,
                  dist = dist, capt = bincapt, trace = trace)
     params <- list(D = sv[1], ssb0 = sv[2], ssb1 = sv[3], sigmass = sv[4])
-    bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-100000, 0))
   } else if (method == "sstoa"){
     if (is.null(ssqtoa)){
       ssqtoa <- apply(capt[, , 1], 1, toa.ssq, dists = dist)
@@ -283,14 +299,10 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", ssqtoa = NULL, cutof
                  toacapt = capt[, , 2], toassq = t(ssqtoa), dist = dist, capt = bincapt,
                  trace = trace)
     params <- list(D = sv[1], sigmatoa = sv[2], ssb0 = sv[3], ssb1 = sv[4], sigmass = sv[5])
-    bounds <- list(D = c(0, 10000000), sigmass = c(0, 100000), ssb1 = c(-1, 0),
-                   sigmatoa = c(0, 100000))
   } else if (method == "dist"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt, dist = dist,
                  capt = bincapt, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], alpha = sv[4])
-    bounds <- list(D = c(0, 1000000000), g0 = c(0, 1), sigma = c(0, 100000),
-                   alpha = c(0, 150))
   } else {
     stop('method must be either "simple", "toa", "ang", "ss", "sstoa", or "dist"')
   }
