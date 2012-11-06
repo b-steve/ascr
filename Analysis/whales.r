@@ -22,6 +22,5 @@ source("whalesetup.r")
 
 distfit <- admbsecr(capthist.dist, traps = real.traps, mask = mask,
                     sv = c(D = 5000, g0 = 0.95, sigma = 100, alpha = 5),
-                    admbwd = admb.dir, method = "dist", autogen = FALSE,
-                    clean = TRUE)
+                    admbwd = admb.dir, method = "dist")
 
