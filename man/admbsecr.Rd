@@ -3,10 +3,10 @@
 \title{Fitting SECR models in ADMB}
 \usage{
   admbsecr(capt, traps = NULL, mask, sv = "auto",
-    ssqtoa = NULL, cutoff = NULL, admbwd = NULL,
-    method = "simple", memory = NULL, profpars = NULL,
-    clean = TRUE, verbose = FALSE, trace = FALSE,
-    autogen = TRUE)
+    bounds = NULL, ssqtoa = NULL, cutoff = NULL,
+    admbwd = NULL, method = "simple", memory = NULL,
+    profpars = NULL, clean = TRUE, verbose = FALSE,
+    trace = FALSE, autogen = TRUE)
 }
 \arguments{
   \item{capt}{an array of dimension \code{(n, S, K)}, where
@@ -30,14 +30,27 @@
   \item{mask}{a mask object. The object returned by
   \code{make.mask()} is suitable.}
 
-  \item{sv}{either "auto", or a named vector of starting
-  values for each of the model's parameters. See 'Details'
-  for list of parameters used by each method. If a named
-  vector, any of the elements can be set to \code{"auto"},
-  which will result in a (hopefully) sensible starting
-  value being automatically generated for the parameters
-  concerned. If \code{sv} itself is \code{"auto"}, all
-  starting values are automatically generated.}
+  \item{sv}{either \code{"auto"}, or a named vector. If
+  \code{auto}, starting values for all parameters are
+  automatically generated. If a vector, the elements are
+  the starting values and the names indicate which
+  parameter these correspond to. Starting values for all
+  parameters need not be provided; they are automatically
+  generated for any parameters that do not have a starting
+  value explicitly provided. See 'Details' for list of
+  parameters used by each method.}
+
+  \item{bounds}{a list with optional components
+  corresponding to parameters which are to have their
+  default bounds overridden. Each component should be a
+  vector of length two specifying the bounds, and the name
+  of the component should be the name of the parameter to
+  which these bounds apply. To remove default bounds from a
+  parameter the component should be \code{NULL} rather than
+  a vector of length two. Bounds for all parameters need
+  not be provided; if there is no component corresponding
+  to a parameter it keeps its default bounds. See 'Details'
+  for list of parameters used by each method.}
 
   \item{ssqtoa}{an optional matrix. If calculated before
   call to \code{admbsecr}, providing this will prevent
@@ -76,9 +89,10 @@
   \code{.tpl} file is written to \code{admbwd} (or the
   current working directory if \code{admbwd} is
   \code{NULL}). If \code{FALSE}, the \code{.tpl} file
-  already be located in \code{admbwd} (or the current
-  working directory if \code{admb} is \code{NULL}). Usually
-  only set to \code{FALSE} for development purposes.}
+  should already be located in \code{admbwd} (or the
+  current working directory if \code{admb} is \code{NULL}).
+  Usually only set to \code{FALSE} for development
+  purposes.}
 }
 \value{
   An object of class 'admb'.

@@ -93,12 +93,20 @@ NULL
 #' @param traps a matrix containing the coordinates of trap locations. The object
 #' returned by \code{read.traps()} is suitable.
 #' @param mask a mask object. The object returned by \code{make.mask()} is suitable.
-#' @param sv either "auto", or a named vector of starting values for each of the model's
-#' parameters. See 'Details' for list of parameters used by each method. If a named
-#' vector, any of the elements can be set to \code{"auto"}, which will result in a
-#' (hopefully) sensible starting value being automatically generated for the parameters
-#' concerned. If \code{sv} itself is \code{"auto"}, all starting values are automatically
-#' generated.
+#' @param sv either \code{"auto"}, or a named vector. If \code{auto}, starting values for
+#' all parameters are automatically generated. If a vector, the elements are the starting
+#' values and the names indicate which parameter these correspond to. Starting values for
+#' all parameters need not be provided; they are automatically generated for any parameters
+#' that do not have a starting value explicitly provided. See 'Details' for list of
+#' parameters used by each method.
+#' @param bounds a list with optional components corresponding to parameters which are to
+#' have their default bounds overridden. Each component should be a vector of length two
+#' specifying the bounds, and the name of the component should be the name of the
+#' parameter to which these bounds apply. To remove default bounds from a parameter the
+#' component should be \code{NULL} rather than a vector of length two. Bounds for all
+#' parameters need not be provided; if there is no component corresponding to a
+#' parameter it keeps its default bounds. See 'Details' for list of parameters used by
+#' each method.
 #' @param ssqtoa an optional matrix. If calculated before call to \code{admbsecr},
 #' providing this will prevent recalculation.
 #' @param cutoff The signal strength threshold of detection. Required if \code{method} is
@@ -119,8 +127,8 @@ NULL
 #' algorithm are printed to the R session.
 #' @param autogen logical, if \code{TRUE}, the appropriate \code{.tpl} file is written
 #' to \code{admbwd} (or the current working directory if \code{admbwd} is \code{NULL}).
-#' If \code{FALSE}, the \code{.tpl} file already be located in \code{admbwd} (or the
-#' current working directory if \code{admb} is \code{NULL}). Usually only set to
+#' If \code{FALSE}, the \code{.tpl} file should already be located in \code{admbwd} (or
+#' the current working directory if \code{admb} is \code{NULL}). Usually only set to
 #' \code{FALSE} for development purposes.
 #' @return An object of class 'admb'.
 #' 
