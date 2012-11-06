@@ -331,5 +331,4 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   }
   setwd(currwd)
   fit
-  ## Test line.
 }
