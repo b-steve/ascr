@@ -1,24 +1,22 @@
 admbsecr 0.1.1
 --------------
 
-* Added additional methods:
+* Added additional method:
 
     * "dist" -- SECR with estimated distance information.
-
-    * "exactdist" -- SECR with exact distances (i.e., MRDS).
 
 * Added the parameter `bounds` to admbsecr(). This allows the user to
   specify bounds on any parameters they wish to, overriding the
   defaults.
+
+* A log link function is now used to calculate expected received
+  signal strength for methods "ss" and "sstoa".
 
 * Bug fix to `profpars` parameter of admbsecr(). Profile likelihood
   now works.
 
 * Bug fix to issue with specifying start values in a named vector out
   of order.
-
-* A log link function is now used to calculate expected received
-  signal strength for methods "ss" and "sstoa".
 
 admbsecr 0.1.0
 --------------
