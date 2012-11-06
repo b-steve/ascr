@@ -42,12 +42,11 @@ ssfit1 <- secr.fit(sscapt, model = list(D~1, g0~1, sigma~1), detectfn = 10, mask
                    verify = FALSE, steptol = 1e-4)
 ## Fitting with admbsecr().
 ssfit2 <- admbsecr(capt.ss, traps = traps, mask, cutoff = 150, sv = "auto",
-                   admbwd = admb.dir, method = "ss", autogen = FALSE)
+                   admbwd = admb.dir, method = "ss")
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
 ## Only possible with admbsecr().
 ##sv <- c(coef(toafit1)[c(1, 4)], coef(ssfit2)[2:4])
 jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                      bounds = list(D = c(0, 1e5), ssb1 = c(-1, 0)),
-                     cutoff = 150, admbwd = admb.dir, method = "sstoa",
-                     autogen = FALSE, trace = TRUE)
+                     cutoff = 150, admbwd = admb.dir, method = "sstoa")
