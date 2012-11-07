@@ -131,9 +131,9 @@ make.acoustic.captures <- function(mics, clicks, dt){
       nd <- length(which(ct > -Inf))
       captures$ID[(i - nd):(i - 1)] <- ID
       ct <- rep(-Inf, K)
-      ct[clicks$trap[i]] <- clicks$tim[i] 
+      ct[clicks$trap[i]] <- clicks$tim[i]
       ID <- ID + 1
-      if(i == nclicks) captures$ID[i] <- ID      
+      if(i == nclicks) captures$ID[i] <- ID
     }
     else {
       ct[clicks$trap[i]] <- clicks$tim[i]
@@ -141,24 +141,24 @@ make.acoustic.captures <- function(mics, clicks, dt){
       dts <- dt[ctset, clicks$trap[i]]
       cts <- -(ct[ctset] - clicks$tim[i])
       if (any((cts - dts) > 0)) new <- TRUE
-      if (new) { 
+      if (new) {
         nd <- length(which(ct > -Inf)) - 1
-        captures$ID[(i - nd):(i - 1)] <- ID 
-        ct <- rep(-Inf, K) 
+        captures$ID[(i - nd):(i - 1)] <- ID
+        ct <- rep(-Inf, K)
         ct[clicks$trap[i]] <- clicks$tim[i]
         ID <- ID+1
         new <- FALSE
         if (i == nclicks) captures$ID[i] <- ID
       } else if(i == nclicks){
         nd <- length(which(ct > -Inf))
-        captures$ID[(i - nd + 1):i] <- ID      
+        captures$ID[(i - nd + 1):i] <- ID
       }
     }
   }
   captures
 }
 
-#' Sum of Squares TOA matrix
+#' Sum of squares TOA matrix
 #'
 #' Calculates ssqtoa matrix for a SECR model with TOA information.
 #'
@@ -174,4 +174,33 @@ toa.ssq <- function(wit, dists) {
   delt <- na.omit(as.vector(wit.na) - dists/v)
   toassq <- apply(delt, 2, ssq)
   toassq
+}
+
+#' Simulated signal strength capture history matrix
+#'
+#' Simulating a signal strength capture history matrix. Signal
+#' strength detection function uses a log link function, and
+#' thus is different to \code{sim.capthist} where
+#' \code{detectfn = 10}.
+#'
+#' @param traps trap locations.
+#' @param popn simulated population.
+#' @param detectpar detection function parameters.
+#' @export
+sim.capthist.ss <- function(traps, popn, detectpars){
+  ssb0 <- detectpars$beta0
+  ssb1 <- detectpars$beta1
+  sigmass <- detectpars$sdS
+  c <- detectpars$cutval
+  ntraps <- nrow(traps)
+  n <- nrow(popn)
+  dists <- distances(as.matrix(popn), as.matrix(traps))
+  muss <- exp(ssb0 + ssb1*dists)
+  ss.error <- matrix(rnorm(n*ntraps, 0, sigmass), nrow = n, ncol = ntraps)
+  ss <- muss + ss.error
+  ss[ss < c] <- 0
+  dets <- apply(ss, 1, function(x) !all(x == 0))
+  ndet <- sum(dets)
+  ss <- ss[dets, ]
+  array(ss, dim = c(ndet, 1, ntraps), dimnames = list(which(dets), NULL, NULL))
 }
