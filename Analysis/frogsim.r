@@ -72,7 +72,7 @@ colnames(jointres) <- c("D", "sigmatoa", "ssb0", "ssb1", "sigmass")
 for (i in 1:nsims){
   if (i == 1){
     print(c("start", date()))
-  } else if (i %% 100 == 0){
+  } else {
     print(c(i, date()))
   }
   ## Simulating data and setting things up for analysis.
