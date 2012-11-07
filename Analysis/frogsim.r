@@ -32,14 +32,14 @@ buffer <- 35
 mask.spacing <- 50
 
 ## True parameter values.
-seed <- 5253
-D <- 4450
+seed <- 9578
+D <- 5270
 g0 <- 0.99999
 sigma <- 5.60
 sigmatoa <- 0.002
-ssb0 <- 170
-ssb1 <- -2.50
-sigmass <- 7.00
+ssb0 <- 5.16
+ssb1 <- -0.02
+sigmass <- 6.20
 cutoff <- 150
 truepars <- c(D = D, g0 = g0, sigma = sigma, sigmatoa = sigmatoa,
               ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
@@ -77,8 +77,9 @@ for (i in 1:nsims){
   }
   ## Simulating data and setting things up for analysis.
   popn <- sim.popn(D = D, core = traps, buffer = buffer)
-  capthist <- sim.capthist(traps, popn, detectfn = 10, detectpar = detectpars,
-                       noccasions = 1, renumber = FALSE)
+  capthist.ss <- sim.capthist.ss(traps, popn, detectpars)
+  capthist <- capthist.ss
+  capthist[capthist > 0] <- 1
   n <- nrow(capthist)
   ndets <- sum(capthist)
   ## IDs for detected animals.
@@ -87,8 +88,6 @@ for (i in 1:nsims){
   detections <- popn[cue.ids, ]
   ## Distances from detected animals to traps.
   dists <- t(distances(as.matrix(traps), as.matrix(detections)))
-  capthist.ss <- array(0, dim = dim(capthist))
-  capthist.ss[capthist == 1] <- attr(capthist, "signalframe")[, 1]
   ## Generating times of arrival.
   ## Time of call itself doesn't provide any information, this comes
   ## solely from the *differences* in arrival times between traps. We
@@ -181,61 +180,61 @@ for (i in 1:nsims){
 }
 
 ## To write the simulation results to a file.
-## write.table(simpleres, "~/admbsecr/Results/frogs/1/simpleres.txt", row.names = FALSE)
-## write.table(toares, "~/admbsecr/Results/frogs/1/toares.txt", row.names = FALSE)
-## write.table(ssres, "~/admbsecr/Results/frogs/1/ssres.txt", row.names = FALSE)
-## write.table(jointres, "~/admbsecr/Results/frogs/1/jointres.txt", row.names = FALSE)
+write.table(simpleres, "~/admbsecr/Results/frogs/2/simpleres.txt", row.names = FALSE)
+write.table(toares, "~/admbsecr/Results/frogs/2/toares.txt", row.names = FALSE)
+write.table(ssres, "~/admbsecr/Results/frogs/2/ssres.txt", row.names = FALSE)
+write.table(jointres, "~/admbsecr/Results/frogs/2/jointres.txt", row.names = FALSE)
 
-## To read in simulation results from a file.
-resfile <- "/home/ben/admbsecr/Results/frogs/1/"
-source(paste(resfile, "pars.r", sep = ""))
-simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
-toares <- read.table(paste(resfile, "toares.txt", sep = ""), header = TRUE)
-ssres <- read.table(paste(resfile, "ssres.txt", sep = ""), header = TRUE)
-jointres <- read.table(paste(resfile, "jointres.txt", sep = ""), header = TRUE)
+## ## To read in simulation results from a file.
+## resfile <- "/home/ben/admbsecr/Results/frogs/1/"
+## source(paste(resfile, "pars.r", sep = ""))
+## simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
+## toares <- read.table(paste(resfile, "toares.txt", sep = ""), header = TRUE)
+## ssres <- read.table(paste(resfile, "ssres.txt", sep = ""), header = TRUE)
+## jointres <- read.table(paste(resfile, "jointres.txt", sep = ""), header = TRUE)
 
-## Assigning the columns to vectors.
-for (i in colnames(simpleres)){
-  name <- paste("sim", i, sep = "")
-  assign(name, simpleres[, i])
-}
-for (i in colnames(toares)){
-  name <- paste("toa", i, sep = "")
-  assign(name, toares[, i])
-}
-for (i in colnames(ssres)){
-  name <- paste("ss", i, sep = "")
-  assign(name, ssres[, i])
-}
-for (i in colnames(jointres)){
-  name <- paste("joint", i, sep = "")
-  assign(name, jointres[, i])
-}
+## ## Assigning the columns to vectors.
+## for (i in colnames(simpleres)){
+##   name <- paste("sim", i, sep = "")
+##   assign(name, simpleres[, i])
+## }
+## for (i in colnames(toares)){
+##   name <- paste("toa", i, sep = "")
+##   assign(name, toares[, i])
+## }
+## for (i in colnames(ssres)){
+##   name <- paste("ss", i, sep = "")
+##   assign(name, ssres[, i])
+## }
+## for (i in colnames(jointres)){
+##   name <- paste("joint", i, sep = "")
+##   assign(name, jointres[, i])
+## }
 
-## Calculating densities.
-dsimD <- density(simD)
-dtoaD <- density(toaD)
-dssD <- density(ssD)
-djointD <- density(jointD)
-xs <- c(dsimD$x, dtoaD$x, dssD$x, djointD$x)
-ys <- c(dsimD$y, dtoaD$y, dssD$y, djointD$y)
+## ## Calculating densities.
+## dsimD <- density(simD)
+## dtoaD <- density(toaD)
+## dssD <- density(ssD)
+## djointD <- density(jointD)
+## xs <- c(dsimD$x, dtoaD$x, dssD$x, djointD$x)
+## ys <- c(dsimD$y, dtoaD$y, dssD$y, djointD$y)
 
 
 
-##pdf(file = paste(resfile, "fig", sep = ""))
-plot.new()
-plot.window(xlim = range(xs), ylim = c(0, max(ys)))
-axis(1)
-axis(2, las = 1)
-abline(v = D, lty = "dotted")
-lines(dsimD, col = "blue")
-lines(dtoaD, col = "red")
-lines(dssD, col = "green")
-lines(djointD, col = "purple")
-abline(h = 0, col = "grey")
-box()
-title(main = "Simulated sampling distributions of animal density",
-      xlab = expression(hat(D)), ylab = "Density")
-legend(x = "topright", legend = c("SECR", "SECR + TOA", "SECR + SS", "SECR + TOA + SS"),
-       col = c("blue", "red", "green", "purple"), lty = 1)
-##dev.off()
+## ##pdf(file = paste(resfile, "fig", sep = ""))
+## plot.new()
+## plot.window(xlim = range(xs), ylim = c(0, max(ys)))
+## axis(1)
+## axis(2, las = 1)
+## abline(v = D, lty = "dotted")
+## lines(dsimD, col = "blue")
+## lines(dtoaD, col = "red")
+## lines(dssD, col = "green")
+## lines(djointD, col = "purple")
+## abline(h = 0, col = "grey")
+## box()
+## title(main = "Simulated sampling distributions of animal density",
+##       xlab = expression(hat(D)), ylab = "Density")
+## legend(x = "topright", legend = c("SECR", "SECR + TOA", "SECR + SS", "SECR + TOA + SS"),
+##        col = c("blue", "red", "green", "purple"), lty = 1)
+## ##dev.off()
