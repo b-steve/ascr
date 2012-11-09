@@ -160,6 +160,12 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   if (method == "ss" & is.null(cutoff)){
     stop("cutoff must be supplied for signal strength analysis")
   }
+  if (!is.array(capt) | length(dim(array)) != 3){
+    stop("capt must be a three-dimensional array.")
+  }
+  if (dim(capt)[2] != 1){
+    stop("admbsecr only currently works for a single sampling session.")
+  }
   if (trace){
     verbose <- TRUE
   }
