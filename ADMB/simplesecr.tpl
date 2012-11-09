@@ -1,7 +1,4 @@
 
-TOP_OF_MAIN_SECTION
-  arrmblsize=20000000;
-
 PROCEDURE_SECTION
   // Setting up variables
   int i,j;

@@ -1,5 +1,3 @@
-TOP_OF_MAIN_SECTION
-  arrmblsize=15000000;
 
 PROCEDURE_SECTION
   // Setting up variables

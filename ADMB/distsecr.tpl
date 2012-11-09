@@ -1,5 +1,3 @@
-TOP_OF_MAIN_SECTION
-  arrmblsize=20000000;
 
 PROCEDURE_SECTION
   // Setting up variables
@@ -56,6 +54,5 @@ PROCEDURE_SECTION
 
 GLOBALS_SECTION
   #include <float.h>
-  #include <bessel.cxx>
 
 REPORT_SECTION
