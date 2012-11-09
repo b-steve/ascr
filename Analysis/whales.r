@@ -20,7 +20,14 @@ setwd(work.dir)
 library(secr)
 source("whalesetup.r")
 
-distfit <- admbsecr(capthist.dist, traps = real.traps, mask = mask,
-                    sv = c(D = 5000, g0 = 0.95, sigma = 100, alpha = 5),
-                    admbwd = admb.dir, method = "dist")
+distfit87 <- admbsecr(capthist87.dist, traps = real.traps, mask = mask87,
+                      sv = c(D = 10, g0 = 0.95, sigma = 100, alpha = 5),
+                      method = "dist")
 
+distfit01 <- admbsecr(capthist01.dist, traps = real.traps, mask = mask01,
+                      sv = c(D = 10, g0 = 0.95, sigma = 100, alpha = 2),
+                      method = "dist")
+
+mrdsfit01 <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
+                      sv = c(D = 10, g0 = 0.95, sigma = 100),
+                      method = "mrds")
