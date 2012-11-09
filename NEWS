@@ -1,3 +1,19 @@
+admbsecr 0.1.2
+--------------
+
+* Added additional method:
+
+    * "mrds" -- SECR with known animal locations. Equivalent to
+      mark-recapture distance sampling.
+
+* Major bug fix: Methods "ang" and "dist" did not work, as a file
+  (bessel.cxx) needs to be available.
+
+* Minor bug fixes regarding error and warning messages.
+
+* Capture history matrices with more than one session now result in an
+  error message.
+
 admbsecr 0.1.1
 --------------
 
