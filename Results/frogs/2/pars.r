@@ -1,3 +1,5 @@
+## USING LOG LINK FUNCTION FOR SIGNAL STRENGTHS.
+
 ## Setup for simulations.
 nsims <- 1
 buffer <- 35
