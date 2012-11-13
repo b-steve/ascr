@@ -60,4 +60,29 @@ distfn <- function(x){
   rep(mean(x), n)
 }
 dists01 <- t(apply(capthist01.dist, 1, distfn))
-capthist.mrds <- array(c(bincapt01, dists01), dim = c(dim(capthist01.dist), 2))
+## Truncating to remove outlier.
+capthist.mrds <- array(c(bincapt01, dists01),
+                       dim = c(dim(capthist01.dist), 2))[-36, , , , drop = FALSE]
+
+## Function to fit mrds with different detection functions for each trap:
+mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
+  require(R2admb)
+  setwd(admb.dir)
+  n <- dim(capt)[1]
+  k <- dim(capt)[3]
+  A <- attr(mask, "area")
+  nm <- nrow(mask)
+  dist <- distances(traps, mask)
+  capt <- array(as.vector(capt), dim = c(n, k, dim(capt)[4]))
+  data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt[, , 1],
+               dist = dist, indivdist = capt[, , 2], trace = as.numeric(trace))
+  params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
+                 g02 = sv[4], sigma2 = sv[5])
+  bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                 g02 = c(0, 1), sigma2 = c(0, 1e5))
+  fit <- do_admb("mrdstrapcovsecr", data = data, params = params, bounds = bounds,
+                 verbose = verbose, safe = FALSE,
+                 run.opts = run.control(checkdata = "write", checkparam = "write",
+                   clean_files = clean))
+  fit
+}
