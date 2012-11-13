@@ -4,8 +4,6 @@ PROCEDURE_SECTION
   dvariable p,lambda,L1,L2,L3;
   dvar_matrix maskp1(1,ntraps,1,nmask);
   dvar_matrix maskp2(1,ntraps,1,nmask);
-  dvar_matrix logp1(1,ntraps,1,nmask);
-  dvar_matrix logp2(1,ntraps,1,nmask);
   dvar_matrix indivp1(1,n,1,ntraps);
   dvar_matrix indivp2(1,n,1,ntraps);
   dvar_matrix logindivp1(1,n,1,ntraps);
@@ -17,8 +15,6 @@ PROCEDURE_SECTION
   // Probability of capture for each individual at each trap.
   maskp1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;
   maskp2=1-maskp1;
-  logp1=log(maskp1);
-  logp2=log(maskp2);
   // Probability of detection at any trap for each location.
   for(i=1; i<=nmask; i++){
     p=1;
@@ -39,7 +35,7 @@ PROCEDURE_SECTION
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
   if (trace == 1){
-  cout << "D: " << D << ", g0: " << g0 << ", sigma: " << sigma << ", loglik: " << -f << endl;
+    cout << "D: " << D << ", g0: " << g0 << ", sigma: " << sigma << ", loglik: " << -f << endl;
   }
 
 GLOBALS_SECTION
