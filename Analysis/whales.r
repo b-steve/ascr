@@ -32,6 +32,11 @@ mrdsfit01 <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
                       sv = c(D = 10, g0 = 0.95, sigma = 100),
                       method = "mrds")
 
+## dist fit with separate detection functions for each trap:
+distfit01tc <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
+                           sv = c(10, 0.5, 100, 0.5, 100, 5), admb.dir = admb.dir,
+                           clean = TRUE, verbose = FALSE, trace = FALSE)
+
 ## mrds fit with seperate detection functions for each trap:
 mrdsfit01tc <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
                            sv = c(10, 0.5, 100, 0.5, 100), admb.dir = admb.dir,

@@ -46,7 +46,8 @@ for (i in unique(sighting)){
 capthist01.dist[is.na(capthist01.dist)] <- 0
 capthist01.dist <- capthist01.dist*1000
 capthist01.dist <- array(capthist01.dist,
-                         dim = c(nrow(capthist01.dist), 1, ncol(capthist01.dist)))
+                         dim = c(nrow(capthist01.dist), 1,
+                           ncol(capthist01.dist)))[-36, , , drop = FALSE]
 options(warn = -1)
 ## Buffer given by Pr(X <= x) = 0.999 for longest estimated distance.
 buffer <- 4500
@@ -86,3 +87,30 @@ mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
                    clean_files = clean))
   fit
 }
+
+## Function to fit distance error model with different detection
+## functions for each trap:
+disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
+  require(R2admb)
+  setwd(admb.dir)
+  n <- dim(capt)[1]
+  k <- dim(capt)[3]
+  A <- attr(mask, "area")
+  nm <- nrow(mask)
+  dist <- distances(traps, mask)
+  capt <- array(as.vector(capt), dim = c(n, k))
+  bincapt <- capt
+  bincapt[bincapt != 0] <- 1
+  data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt,
+               dist = dist, capt = bincapt, trace = as.numeric(trace))
+  params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
+                 g02 = sv[4], sigma2 = sv[5], alpha = sv[6])
+  bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                 g02 = c(0, 1), sigma2 = c(0, 1e5), alpha = c(0, 150))
+  fit <- do_admb("disttrapcovsecr", data = data, params = params, bounds = bounds,
+                 verbose = verbose, safe = FALSE,
+                 run.opts = run.control(checkdata = "write", checkparam = "write",
+                   clean_files = clean))
+  fit
+}
+
