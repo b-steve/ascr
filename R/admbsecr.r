@@ -187,7 +187,10 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   if (autogen){
     prefix <- "secr"
     make.all.tpl.easy(memory = memory, methods = method)
-    make.bessel()
+    bessel.exists <- file.access("bessel.cxx", mode = 0)
+    if (bessel.exists == -1){
+      make.bessel()
+    }
   } else {
     prefix <- paste(method, "secr", sep = "")
   }
@@ -341,7 +344,9 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   }
   if (autogen){
     file.remove("secr.tpl")
-    file.remove("bessel.cxx")
+    if (bessel.exists == -1){
+      file.remove("bessel.cxx")
+    }
   }
   setwd(currwd)
   fit
