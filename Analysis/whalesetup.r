@@ -50,8 +50,8 @@ capthist01.dist <- array(capthist01.dist,
                            ncol(capthist01.dist)))[-36, , , drop = FALSE]
 options(warn = -1)
 ## Buffer given by Pr(X <= x) = 0.999 for longest estimated distance.
-buffer <- 4500
-mask01 <- make.mask(fake.traps, buffer = buffer, type = "trapbuffer")
+buffer <- 3000
+mask01 <- make.mask(fake.traps, buffer = buffer, spacing = 45, type = "trapbuffer")
 options(warn = 1)
 bincapt01 <- capthist01.dist
 bincapt01[bincapt01 > 0] <- 1
