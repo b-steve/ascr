@@ -1,6 +1,6 @@
 \name{toa.ssq}
 \alias{toa.ssq}
-\title{Sum of Squares TOA matrix}
+\title{Sum of squares TOA matrix}
 \usage{
   toa.ssq(wit, dists)
 }

@@ -18,10 +18,14 @@
   array must be changed to the value of the recorded
   supplementary information, which will depend on
   \code{method} (see 'Details'). When \code{method} is
-  \code{"sstoa"}, this array must be of dimension \code{(n,
-  S, K, 2)}, where \code{capt[, , , 1]} provides the signal
-  strength information and \code{capt[, , , 2]} provides
-  the time of arrival information.}
+  \code{"sstoa"} or \code{"mrds"}, this array must be of
+  dimension \code{(n, S, K, 2)}. With \code{"sstoa"},
+  \code{capt[, , , 1]} provides the signal strength
+  information and \code{capt[, , , 2]} provides the time of
+  arrival information. With \code{"mrds"}, \code{capt[, , ,
+  1]} provides the binary capture history array and
+  \code{capt[, , , 2]} provides the distances between all
+  traps (regardless of capture) and detected animals.}
 
   \item{traps}{a matrix containing the coordinates of trap
   locations. The object returned by \code{read.traps()} is
