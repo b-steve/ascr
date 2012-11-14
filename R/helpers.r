@@ -185,7 +185,7 @@ toa.ssq <- function(wit, dists) {
 #'
 #' @param traps trap locations.
 #' @param popn simulated population.
-#' @param detectpar detection function parameters.
+#' @param detectpars detection function parameters.
 #' @export
 sim.capthist.ss <- function(traps, popn, detectpars){
   ssb0 <- detectpars$beta0
@@ -203,4 +203,131 @@ sim.capthist.ss <- function(traps, popn, detectpars){
   ndet <- sum(dets)
   ss <- ss[dets, ]
   array(ss, dim = c(ndet, 1, ntraps), dimnames = list(which(dets), NULL, NULL))
+}
+
+#' Simulated distance error model capture history matrix
+#'
+#' Simulating a capture history matrix for a distance error model.
+#' This function specifically deals with the case where there are
+#' two traps in the same location, each of which has different
+#' detection function parameters.
+#'
+#' @param traps trap locations.
+#' @param popn simulated population.
+#' @param detectpars detection function parameters.
+#' @export
+sim.capthist.dist <- function(traps, popn, detectpars){
+  g01 <- detectpars$g01
+  g02 <- detectpars$g02
+  sigma1 <- detectpars$sigma1
+  sigma2 <- detectpars$sigma2
+  alpha <- detectpars$alpha
+  dists <- distances(as.matrix(popn), as.matrix(traps))
+  N <- nrow(dists)
+  ntraps <- ncol(dists)
+  probs1 <- g01*exp(-dists[, 1]^2/(2*sigma1^2))
+  probs2 <- g02*exp(-dists[, 2]^2/(2*sigma2^2))
+  probs <- cbind(probs1, probs2)
+  rnos <- matrix(runif(N*ntraps), nrow = N, ncol = ntraps)
+  bincapt <- rnos <= probs
+  class(bincapt) <- "numeric"
+  bincapt <- array(bincapt, dim = c(dim(bincapt)[1], 1, dim(bincapt)[2]))
+  dets <- apply(bincapt, 1, function(x) !all(x == 0))
+  bincapt <- bincapt[dets, , , drop = FALSE]
+  captdists <- dists[dets, ]
+  distests <- function(x, alpha){
+    betas <- alpha/x
+    c(rgamma(1, shape = alpha, rate = betas[1]),
+      rgamma(1, shape = alpha, rate = betas[2]))
+  }
+  estdists <- aaply(captdists, 1, distests, alpha = alpha)
+  estdists <- array(estdists, dim = c(dim(estdists)[1], 1, dim(captdists)[2]))
+  capthist.dist <- as.array(estdists*bincapt)
+  distfn <- function(x){
+    n <- length(x)
+    x <- x[x > 0]
+    rep(mean(x), n)
+  }
+  avedists <- t(apply(capthist.dist, 1, distfn))
+  capthist.mrds <- array(c(bincapt, avedists),
+                         dim = c(dim(capthist.dist), 2))
+  list(dist = capthist.dist, mrds = capthist.mrds)
+}
+
+#' Fitting MRDS models.
+#'
+#' Fits a mark-recapture distance sampling (MRDS) model, with different detection
+#' function parameters for each trap. This is a temporary function; eventually
+#' \code{admbsecr()} will be flexible enough to do this.
+#'
+#' @param capt capture history array.
+#' @param mask mask point locations.
+#' @param traps trap locations.
+#' @param sv start values.
+#' @param admb.dir directory containing mrdstrapcovsecr.tpl.
+#' @param clean logical, if \code{TRUE} ADMB files are cleaned after fitting of the model.
+#' @param verbose logical, if \code{TRUE} ADMB details, along with error messages, are
+#' printed to the R session.
+#' @param trace logical, if \code{TRUE} parameter values at each step of the fitting
+#' algorithm are printed to the R session.
+#' @export
+mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
+  setwd(admb.dir)
+  n <- dim(capt)[1]
+  k <- dim(capt)[3]
+  A <- attr(mask, "area")
+  nm <- nrow(mask)
+  dist <- distances(traps, mask)
+  capt <- array(as.vector(capt), dim = c(n, k, dim(capt)[4]))
+  data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt[, , 1],
+               dist = dist, indivdist = capt[, , 2], trace = as.numeric(trace))
+  params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
+                 g02 = sv[4], sigma2 = sv[5])
+  bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                 g02 = c(0, 1), sigma2 = c(0, 1e5))
+  fit <- do_admb("mrdstrapcovsecr", data = data, params = params, bounds = bounds,
+                 verbose = verbose, safe = FALSE,
+                 run.opts = run.control(checkdata = "write", checkparam = "write",
+                   clean_files = clean))
+  fit
+}
+
+#' Fitting distance error SECR models.
+#'
+#' Fits a distance error SECR model, with different detection function parameters for each
+#' trap. This is a temporary function; eventually \code{admbsecr()} will be flexible enough
+#' to do this.
+#'
+#' @param capt capture history array.
+#' @param mask mask point locations.
+#' @param traps trap locations.
+#' @param sv start values.
+#' @param admb.dir directory containing mrdstrapcovsecr.tpl.
+#' @param clean logical, if \code{TRUE} ADMB files are cleaned after fitting of the model.
+#' @param verbose logical, if \code{TRUE} ADMB details, along with error messages, are
+#' printed to the R session.
+#' @param trace logical, if \code{TRUE} parameter values at each step of the fitting
+#' algorithm are printed to the R session.
+#' @export
+disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
+  setwd(admb.dir)
+  n <- dim(capt)[1]
+  k <- dim(capt)[3]
+  A <- attr(mask, "area")
+  nm <- nrow(mask)
+  dist <- distances(traps, mask)
+  capt <- array(as.vector(capt), dim = c(n, k))
+  bincapt <- capt
+  bincapt[bincapt != 0] <- 1
+  data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt,
+               dist = dist, capt = bincapt, trace = as.numeric(trace))
+  params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
+                 g02 = sv[4], sigma2 = sv[5], alpha = sv[6])
+  bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                 g02 = c(0, 1), sigma2 = c(0, 1e5), alpha = c(0, 150))
+  fit <- do_admb("disttrapcovsecr", data = data, params = params, bounds = bounds,
+                 verbose = verbose, safe = FALSE,
+                 run.opts = run.control(checkdata = "write", checkparam = "write",
+                   clean_files = clean))
+  fit
 }
