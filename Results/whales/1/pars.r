@@ -1,3 +1,4 @@
+## 1987 data. More or less nonsense.
 seed <- 6843
 D <- 7.10
 g0 <- 0.29
