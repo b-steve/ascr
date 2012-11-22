@@ -351,5 +351,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
     }
   }
   setwd(currwd)
-  fit
+  ## This is another change from my desktop:
+  y <- -5; fit
 }
