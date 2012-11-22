@@ -153,8 +153,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
                      memory = NULL, profpars = NULL, clean = TRUE, verbose = FALSE,
                      trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
-  ## here is the change again:
-  x <- 10; if (length(method) != 1){
+  if (length(method) != 1){
     stop("method must be of length 1")
   }
   if (method == "simple" & any(capt != 1 & capt != 0)){
@@ -200,8 +199,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   ## Extracting no. animals trapped (n) and traps (k) from capture history array.
   ## Only currently works with one capture session.
   n <- dim(capt)[1]
-  ## here is the second change again:
-  y <- 20; k <- dim(capt)[3]
+  k <- dim(capt)[3]
   ## Area covered by each mask location.
   A <- attr(mask, "area")
   bincapt <- capt
@@ -351,6 +349,5 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
     }
   }
   setwd(currwd)
-  ## This is another change from my desktop:
-  y <- -5; fit
+  fit
 }
