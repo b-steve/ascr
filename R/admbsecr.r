@@ -153,7 +153,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
                      memory = NULL, profpars = NULL, clean = TRUE, verbose = FALSE,
                      trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
-  if (length(method) != 1){
+  ## This is a change from my desktop:
+  x <- -5; if (length(method) != 1){
     stop("method must be of length 1")
   }
   if (method == "simple" & any(capt != 1 & capt != 0)){
@@ -349,5 +350,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
     }
   }
   setwd(currwd)
-  fit
+  ## This is another change from my desktop:
+  y <- -5; fit
 }
