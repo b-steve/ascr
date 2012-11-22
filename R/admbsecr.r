@@ -133,7 +133,7 @@ NULL
 #' the current working directory if \code{admb} is \code{NULL}). Usually only set to
 #' \code{FALSE} for development purposes.
 #' @return An object of class 'admb'.
-#' 
+#'
 #' The following functions can be used to extract model components: \code{summary()},
 #' \code{AIC()}, \code{logLik()}, \code{deviance()}, \code{vcov()}, \code{coef()},
 #' \code{stdEr()}, and \code{confint()}.
@@ -153,7 +153,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
                      memory = NULL, profpars = NULL, clean = TRUE, verbose = FALSE,
                      trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
-  if (length(method) != 1){
+  ## here is the change again:
+  x <- 10; if (length(method) != 1){
     stop("method must be of length 1")
   }
   if (method == "simple" & any(capt != 1 & capt != 0)){
@@ -199,7 +200,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   ## Extracting no. animals trapped (n) and traps (k) from capture history array.
   ## Only currently works with one capture session.
   n <- dim(capt)[1]
-  k <- dim(capt)[3]
+  ## here is the second change again:
+  y <- 20; k <- dim(capt)[3]
   ## Area covered by each mask location.
   A <- attr(mask, "area")
   bincapt <- capt
