@@ -32,7 +32,7 @@ simplefit2 <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir
 ## Carrying out TOA analysis.
 
 ## Fitting with admbsecr(). Doesn't require start values.
-toafit1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+toafit <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
                     admbwd = admb.dir, method = "toa")
 
 ## Carrying out signal strength analysis.
