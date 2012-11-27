@@ -293,7 +293,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   ## Setting up parameters for do_admb.
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,
-                 dist = dist, traps = traps, trace = trace)
+                 dist = dist, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
   } else if (method == "toa"){
     if (is.null(ssqtoa)){
@@ -349,5 +349,9 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
     }
   }
   setwd(currwd)
+  fit$data <- data
+  fit$traps <- traps
+  fit$mask <- mask
+  fit$method <- method
   fit
 }

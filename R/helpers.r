@@ -146,7 +146,7 @@ make.acoustic.captures <- function(mics, clicks, dt){
         captures$ID[(i - nd):(i - 1)] <- ID
         ct <- rep(-Inf, K)
         ct[clicks$trap[i]] <- clicks$tim[i]
-        ID <- ID+1
+        ID <- ID + 1
         new <- FALSE
         if (i == nclicks) captures$ID[i] <- ID
       } else if(i == nclicks){
@@ -331,3 +331,130 @@ disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
                    clean_files = clean))
   fit
 }
+
+#' Plotting estimated animal location densities.
+#'
+#' Plots a density of individual animals' locations from a fit returned by
+#' \code{admbsecr()}.
+#'
+#' @param fit a fitted model returned by \code{admbsecr()}.
+#' @param which which individuals' location densities to be plotted.
+#' @param logical; indicates whether the contour should be added to an already
+#' existing plot.
+#' @col colour of the contour.
+#' @export
+contours <- function(fit, which = "all", add = FALSE, col = "black"){
+  method <- fit$method
+  if (length(which) == 1 && which == "all"){
+    which <- 1:fit$data$n
+  }
+  if (method == "simple"){
+    contours.simple(fit, which, add, col)
+  } else if (method == "toa"){
+    contours.toa(fit, which, add, col)
+  } else {
+    stop(paste("This function does not work with admbsecr fits of method",
+               method))
+  }
+}
+
+contours.simple <- function(fit, which, add, col){
+  data <- fit$data
+  mask <- fit$mask
+  allcapt <- data$capt
+  traps <- fit$traps
+  dist <- data$dist
+  n <- data$n
+  ntraps <- data$ntraps
+  coefs <- coef(fit)
+  x <- mask[, 1]
+  y <- mask[, 2]
+  if (!add){
+    plot(mask, type = "n")
+  }
+  D <- coefs["D"]
+  g0 <- coefs["g0"]
+  sigma <- coefs["sigma"]
+  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  for (i in which){
+    capt <- allcapt[i, ]
+    probs <- allprobs
+    for (j in 1:ntraps){
+      if (capt[j] == 0) probs[j, ] <- 1 - probs[j, ]
+    }
+    maskprobs <- exp(apply(log(probs), 2, sum))*D
+    maskprobs <- maskprobs/sum(maskprobs)
+    uniquex <- sort(unique(x))
+    uniquey <- sort(unique(y))
+    z <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
+    for (j in 1:length(maskprobs)){
+      xind <- which(uniquex == x[j])
+      yind <- which(uniquey == y[j])
+      z[xind, yind] <- maskprobs[j]
+    }
+    contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
+  }
+  ##points(traps, pch = 4, col = "red")
+  text(traps, labels = 1:6, col = "red")
+}
+
+contours.toa <- function(fit, which, add, col){
+  data <- fit$data
+  mask <- fit$mask
+  allcapt <- data$capt
+  alltoacapt <- data$toacapt
+  traps <- fit$traps
+  dist <- data$dist
+  n <- data$n
+  ntraps <- data$ntraps
+  coefs <- coef(fit)
+  x <- mask[, 1]
+  y <- mask[, 2]
+  if (!add) {
+    plot(mask, type = "n")
+  }
+  D <- coefs["D"]
+  g0 <- coefs["g0"]
+  sigma <- coefs["sigma"]
+  sigmatoa <- coefs["sigmatoa"]
+  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  times <- dist/330
+  for (i in which){
+    capt <- allcapt[i, ]
+    probs <- allprobs
+    for (j in 1:ntraps){
+      if (capt[j] == 0) probs[j, ] <- 1 - probs[j, ]
+    }
+    ## Can only incorporate TOA part if more than one detection.
+    if (sum(capt) > 1){
+      toacapt <- alltoacapt[i, ]
+      dettraps <- which(capt == 1)
+      ## Getting mask point sound travel times from traps at which a
+      ## detection was made.
+      dettimes <- times[dettraps, ]
+      toacapt <- toacapt[dettraps]
+      ## Expected sound generation times.
+      esttimes <- toacapt - dettimes
+      ## Calculating TOA sum of squares.
+      ssqtoa <- apply(esttimes, 2, function(x) sum((x - mean(x))^2))
+      toadens <- (1 - sum(capt))*log(sigmatoa^2) - ssqtoa/(2*sigmatoa^2)
+    } else {
+      toadens <- 0
+    }
+    maskprobs <- exp(apply(log(probs), 2, sum) + toadens)*D
+    ##maskprobs <- exp(toadens)*D
+    maskprobs <- maskprobs/sum(maskprobs)
+    uniquex <- sort(unique(x))
+    uniquey <- sort(unique(y))
+    z <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
+    for (j in 1:length(maskprobs)){
+      xind <- which(uniquex == x[j])
+      yind <- which(uniquey == y[j])
+      z[xind, yind] <- maskprobs[j]
+    }
+    contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
+  }
+  ##points(traps, pch = 4, col = "red")
+  text(traps, labels = 1:6, col = "red")
+}
+
