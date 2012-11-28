@@ -240,7 +240,7 @@ sim.capthist.dist <- function(traps, popn, detectpars){
     c(rgamma(1, shape = alpha, rate = betas[1]),
       rgamma(1, shape = alpha, rate = betas[2]))
   }
-  estdists <- aaply(captdists, 1, distests, alpha = alpha)
+  estdists <- t(apply(captdists, 1, distests, alpha = alpha))
   estdists <- array(estdists, dim = c(dim(estdists)[1], 1, dim(captdists)[2]))
   capthist.dist <- as.array(estdists*bincapt)
   distfn <- function(x){
@@ -338,27 +338,41 @@ disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
 #' \code{admbsecr()}.
 #'
 #' @param fit a fitted model returned by \code{admbsecr()}.
-#' @param which which individuals' location densities to be plotted.
-#' @param logical; indicates whether the contour should be added to an already
+#' @param which which individuals' location densities are plotted.
+#' @param add logical, if \code{TRUE} the contours are added to an already
 #' existing plot.
-#' @col colour of the contour.
+#' @param partition logical, if \code{TRUE} the contributions to the countour due
+#' to both the binary capture history data and the supplementary information
+#' are also plotted.
+#' @param col specifies the colour of the contours to be plotted.
+#' @param trapnos logical, if \code{TRUE} the trap identification numbers are
+#' plotted.
 #' @export
-contours <- function(fit, which = "all", add = FALSE, col = "black"){
+contours <- function(fit, which = "all", add = FALSE, partition = FALSE,
+                     col = "black", trapnos = FALSE){
   method <- fit$method
   if (length(which) == 1 && which == "all"){
     which <- 1:fit$data$n
   }
   if (method == "simple"){
-    contours.simple(fit, which, add, col)
+    if (partition){
+      warning("When method is \"simple\" partition = TRUE is not relevant.")
+    }
+    contours.simple(fit, which, add, col, trapnos)
   } else if (method == "toa"){
-    contours.toa(fit, which, add, col)
+    contours.toa(fit, which, add, partition, col, trapnos)
+  } else if (method == "ss"){
+    if (partition){
+      warning("When method is \"ss\" partition = TRUE is not relevant.")
+    }
+    contours.ss(fit, which, add, col, trapnos)
   } else {
-    stop(paste("This function does not work with admbsecr fits of method",
-               method))
+    stop(paste("This function does not work with admbsecr fits of method ",
+               "\"", method, "\"", sep = ""))
   }
 }
 
-contours.simple <- function(fit, which, add, col){
+contours.simple <- function(fit, which, add, col, trapnos){
   data <- fit$data
   mask <- fit$mask
   allcapt <- data$capt
@@ -394,11 +408,18 @@ contours.simple <- function(fit, which, add, col){
     }
     contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
   }
-  ##points(traps, pch = 4, col = "red")
-  text(traps, labels = 1:6, col = "red")
+  if (trapnos){
+    text(traps, labels = 1:6, col = "red")
+  } else {
+    points(traps, pch = 4, col = "red")
+  }
 }
 
-contours.toa <- function(fit, which, add, col){
+contours.toa <- function(fit, which, add, partition, col, trapnos){
+  if (partition & length(which) > 1){
+    warning("Setting partition to FALSE as length(which) > 1")
+    partition <- FALSE
+  }
   data <- fit$data
   mask <- fit$mask
   allcapt <- data$capt
@@ -439,10 +460,85 @@ contours.toa <- function(fit, which, add, col){
       ssqtoa <- apply(esttimes, 2, function(x) sum((x - mean(x))^2))
       toadens <- (1 - sum(capt))*log(sigmatoa^2) - ssqtoa/(2*sigmatoa^2)
     } else {
+      if (partition){
+        warning("Setting partition to FALSE; no TOA information.")
+        partition <- FALSE
+      }
       toadens <- 0
     }
     maskprobs <- exp(apply(log(probs), 2, sum) + toadens)*D
-    ##maskprobs <- exp(toadens)*D
+    maskprobs <- maskprobs/sum(maskprobs)
+    uniquex <- sort(unique(x))
+    uniquey <- sort(unique(y))
+    z <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
+    for (j in 1:length(maskprobs)){
+      xind <- which(uniquex == x[j])
+      yind <- which(uniquey == y[j])
+      z[xind, yind] <- maskprobs[j]
+    }
+    if (partition){
+      secrprobs <- exp(apply(log(probs), 2, sum))*D
+      secrprobs <- secrprobs/sum(secrprobs)
+      toaprobs <- exp(toadens)*D
+      toaprobs <- toaprobs/sum(toaprobs)
+      z1 <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
+      z2 <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
+      for (j in 1:length(maskprobs)){
+        xind <- which(uniquex == x[j])
+        yind <- which(uniquey == y[j])
+        z1[xind, yind] <- secrprobs[j]
+        z2[xind, yind] <- toaprobs[j]
+      }
+      z1col <- rgb(0, 1, 0, 0.45)
+      z2col <- rgb(0, 0, 1, 0.45)
+      contour(x = uniquex, y = uniquey, z = z1, add = TRUE, col = z1col)
+      contour(x = uniquex, y = uniquey, z = z2, add = TRUE, col = z2col)
+    }
+    contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
+  }
+  if (trapnos){
+    text(traps, labels = 1:6, col = "red")
+  } else {
+    points(traps, pch = 4, col = "red")
+  }
+}
+
+
+contours.ss <- function(fit, which, add, col, trapnos){
+  data <- fit$data
+  mask <- fit$mask
+  allcapt <- data$capt
+  allsscapt <- data$sscapt
+  traps <- fit$traps
+  dist <- data$dist
+  n <- data$n
+  ntraps <- data$ntraps
+  nmask <- data$nmask
+  cutoff <- fit$data$c
+  coefs <- coef(fit)
+  x <- mask[, 1]
+  y <- mask[, 2]
+  if (!add){
+    plot(mask, type = "n")
+  }
+  D <- coefs["D"]
+  ssb0 <- coefs["ssb0"]
+  ssb1 <- coefs["ssb1"]
+  sigmass <- coefs["sigmass"]
+  muss <- ssb0 + ssb1*dist
+  allnonprobs <- pnorm(cutoff, muss, sigmass)
+  for (i in which){
+    capt <- allcapt[i, ]
+    sscapt <- allsscapt[i, ]
+    probs <- matrix(0, nrow = ntraps, ncol = nmask)
+    for (j in 1:ntraps){
+      if (capt[j] == 1){
+        probs[j, ] <- dnorm(sscapt[j], muss[j, ], sigmass)
+      } else {
+        probs[j, ] <- allnonprobs[j, ]
+      }
+    }
+    maskprobs <- exp(apply(log(probs), 2, sum))*D
     maskprobs <- maskprobs/sum(maskprobs)
     uniquex <- sort(unique(x))
     uniquey <- sort(unique(y))
@@ -454,7 +550,9 @@ contours.toa <- function(fit, which, add, col){
     }
     contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
   }
-  ##points(traps, pch = 4, col = "red")
-  text(traps, labels = 1:6, col = "red")
+  if (trapnos){
+    text(traps, labels = 1:6, col = "red")
+  } else {
+    points(traps, pch = 4, col = "red")
+  }
 }
-
