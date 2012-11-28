@@ -7,8 +7,8 @@ admbsecr 0.1.2
       mark-recapture distance sampling.
 
 * Added contours() function, which plots estimated animal location
-  densities. This currently works with fits from methods "simple" and
-  "toa".
+  densities. This currently works with fits from methods "simple",
+  "toa", and "ss".
 
 * Major bug fix: Methods "ang" and "dist" did not work, as a file
   (bessel.cxx) needs to be available.
