@@ -46,7 +46,6 @@ ssfit2 <- admbsecr(capt.ss, traps = traps, mask, cutoff = 150, sv = "auto",
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
 ## Only possible with admbsecr().
-##sv <- c(coef(toafit1)[c(1, 4)], coef(ssfit2)[2:4])
 jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
-                     bounds = list(D = c(0, 1e5), ssb1 = c(-1, 0)),
+                     bounds = list(ssb0 = c(150, 1e8)),
                      cutoff = 150, admbwd = admb.dir, method = "sstoa")
