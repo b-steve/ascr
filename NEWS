@@ -6,6 +6,10 @@ admbsecr 0.1.2
     * "mrds" -- SECR with known animal locations. Equivalent to
       mark-recapture distance sampling.
 
+* Added contours() function, which plots estimated animal location
+  densities. This currently works with fits from methods "simple" and
+  "toa".
+
 * Major bug fix: Methods "ang" and "dist" did not work, as a file
   (bessel.cxx) needs to be available.
 
@@ -13,6 +17,10 @@ admbsecr 0.1.2
 
 * Capture history matrices with more than one session now result in an
   error message.
+
+* A log link function is no longer used to calculated expected
+  received signal strength for methods "ss" and "sstoa". Eventually
+  both options will be available to the user.
 
 admbsecr 0.1.1
 --------------
