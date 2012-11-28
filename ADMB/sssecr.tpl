@@ -13,7 +13,8 @@ PROCEDURE_SECTION
   dvar_matrix logp1(1,ntraps,1,nmask);
   dvar_matrix p2(1,ntraps,1,nmask);
   dvar_matrix logp2(1,ntraps,1,nmask);
-  muss=mfexp(ssb0+ssb1*dist);
+  //muss=mfexp(ssb0+ssb1*dist);
+  muss=ssb0+ssb1*dist;
   for(i=1; i<=nmask; i++){
     p=1;
     for(j=1; j<=ntraps; j++){

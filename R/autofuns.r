@@ -59,7 +59,7 @@ autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = N
   sigma <- sd(ss)
   alpha <- (cutoff - mu)/sigma
   lambda <- dnorm(alpha)/(1 - pnorm(alpha))
-  log(mu + sigma*lambda)
+  mu + sigma*lambda
 }
 
 ## Assumes signal strength received is almost equal to signal strength
@@ -67,7 +67,7 @@ autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = N
 ## paramter bound.
 autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL){
-  -0.01
+  -0.1
 }
 
 ## Assumes signal strength received is equal to signal strength
