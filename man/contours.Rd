@@ -3,7 +3,8 @@
 \title{Plotting estimated animal location densities.}
 \usage{
   contours(fit, which = "all", add = FALSE,
-    partition = FALSE, col = "black", trapnos = FALSE)
+    partition = FALSE, heat = FALSE, col = "black",
+    trapnos = FALSE)
 }
 \arguments{
   \item{fit}{a fitted model returned by \code{admbsecr()}.}
@@ -18,6 +19,9 @@
   contributions to the countour due to both the binary
   capture history data and the supplementary information
   are also plotted.}
+
+  \item{heat}{logical, if \code{TRUE} a levelplot is used
+  instead of contours.}
 
   \item{col}{specifies the colour of the contours to be
   plotted.}
