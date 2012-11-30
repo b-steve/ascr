@@ -94,47 +94,8 @@ for (i in 1:nsims){
   mrdsres[i, ] <- mrdscoef
 }
 
-## ## To write the simulation results to a file.
-## distrespath <- paste(admbsecr.dir, "Results/whales/2/distres.txt", sep = "/")
-## mrdsrespath <- paste(admbsecr.dir, "Results/whales/2/mrdsres.txt", sep = "/")
-## write.table(distres, distrespath, row.names = FALSE)
-## write.table(mrdsres, mrdsrespath, row.names = FALSE)
-
-## To read in simulation results from a file.
-resfile <- "~/admbsecr/Results/whales/2/"
-source(paste(resfile, "pars.r", sep = ""))
-distres <- read.table(paste(resfile, "distres.txt", sep = ""), header = TRUE)
-mrdsres <- read.table(paste(resfile, "mrdsres.txt", sep = ""), header = TRUE)
-
-## Assigning the columns to vectors.
-for (i in colnames(distres)){
-  name <- paste("dist", i, sep = "")
-  assign(name, distres[, i])
-  dname <- paste("ddist", i, sep = "")
-  assign(dname, density(get(name)))
-}
-for (i in colnames(mrdsres)){
-  name <- paste("mrds", i, sep = "")
-  assign(name, mrdsres[, i])
-  dname <- paste("dmrds", i, sep = "")
-  assign(dname, density(get(name)))
-}
-
-xs <- c(ddistD$x, dmrdsD$x)
-ys <- c(ddistD$y, dmrdsD$y)
-
-##pdf(file = paste(resfile, "fig", sep = ""))
-plot.new()
-plot.window(xlim = range(xs), ylim = c(0, max(ys)))
-axis(1)
-axis(2, las = 1)
-abline(v = D, lty = "dotted")
-lines(ddistD, col = "blue")
-lines(dmrdsD, col = "red")
-abline(h = 0, col = "grey")
-box()
-title(main = "Simulated sampling distributions of animal density",
-      xlab = expression(hat(D)), ylab = "Density")
-legend(x = "topright", legend = c("SECR + Distances", "MRDS"),
-       col = c("blue", "red"), lty = 1)
-##dev.off()
+## To write the simulation results to a file.
+distrespath <- paste(admbsecr.dir, "Results/whales/2/distres.txt", sep = "/")
+mrdsrespath <- paste(admbsecr.dir, "Results/whales/2/mrdsres.txt", sep = "/")
+write.table(distres, distrespath, row.names = FALSE)
+write.table(mrdsres, mrdsrespath, row.names = FALSE)
