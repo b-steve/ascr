@@ -1,3 +1,5 @@
+## Using identity link function for signal strengths.
+
 seed <- 5253
 D <- 4450
 g0 <- 0.99999
