@@ -353,5 +353,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   fit$traps <- traps
   fit$mask <- mask
   fit$method <- method
+  class(fit) <- c(class(fit), method, "admbsecr")
   fit
 }
