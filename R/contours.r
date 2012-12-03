@@ -2,41 +2,40 @@
 #'
 #' Plots a density of individual animals' locations from a fit returned by
 #' \code{admbsecr()}.
-#'
+#' 
 #' @param fit a fitted model returned by \code{admbsecr()}.
-#' @param which which individuals' location densities are plotted.
-#' @param add logical, if \code{TRUE} the contours are added to an already
-#' existing plot.
-#' @param partition logical, if \code{TRUE} the contributions to the countour due
-#' to both the binary capture history data and the supplementary information
-#' are also plotted.
-#' @param heat logical, if \code{TRUE} a levelplot is used instead of contours.
-#' @param col specifies the colour of the contours to be plotted.
-#' @param trapnos logical, if \code{TRUE} the trap identification numbers are
-#' plotted.
+#' @param ... additional arguments to be passed to \code{\link[graphics]{contour}}.
+#' @rdname contours
 #' @export
-contours <- function(fit, which = "all", add = FALSE, partition = FALSE,
-                     heat = FALSE, col = "black", trapnos = FALSE){
-  if (heat & add){
-    warning("Setting add to FALSE as heat is TRUE")
-  }
-  if (heat & partition){
-    warning("Setting partition to FALSE as heat is TRUE")
-  }
-  if (heat & (length(which) > 1 | (length(which == 1) & which[1] == "all"))){
-    stop("Only one animal can be plotted when heat is TRUE")
-  }
+contours <- function(fit, ...){
   UseMethod("contours", fit)
 }
 
-contours.admbsecr <- function(fit,  which = "all", add = FALSE, partition = FALSE,
-                     heat = FALSE, col = "black", trapnos = FALSE){
+#' @S3method contours default
+contours.default <- function(fit,  which = "all", add = FALSE, partition = FALSE,
+                     heat = FALSE, col = "black", trapnos = FALSE, ...){
   stop(paste("This function does not work with admbsecr fits of method ",
              "\"", fit$method, "\"", sep = ""))
 }
 
-contours.simple <- function(fit, which = "all", add = FALSE, partition = FALSE,
-                     heat = FALSE, col = "black", trapnos = FALSE){
+#' @rdname contours
+#' @param which which individuals' location densities are plotted.
+#' @param add logical, if \code{TRUE} the contours are added to an already
+#' existing plot.
+#' @param heat logical, if \code{TRUE} a levelplot is used instead of contours.
+#' @param col specifies the colour of the contours to be plotted.
+#' @param trapnos logical, if \code{TRUE} the trap identification numbers are
+#' plotted.
+#' @method contours simple
+#' @S3method contours simple
+contours.simple <- function(fit, which = "all", add = FALSE, heat = FALSE,
+                            col = "black", trapnos = FALSE, ...){
+  if (heat & add){
+     warning("Setting add to FALSE as heat is TRUE")
+  }
+  if (heat & (length(which) > 1)){
+     stop("Only one animal can be plotted when heat is TRUE")
+  }
   if (length(which) == 1 && which == "all"){
     which <- 1:fit$data$n
   }
@@ -78,7 +77,7 @@ contours.simple <- function(fit, which = "all", add = FALSE, partition = FALSE,
       box()
       trapcol <- "black"
     } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
+      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
       trapcol <- "red"
     }
   }
@@ -89,10 +88,25 @@ contours.simple <- function(fit, which = "all", add = FALSE, partition = FALSE,
   }
 }
 
+#' @rdname contours
+#' @param partition logical, if \code{TRUE} the contributions to the countour due
+#' to both the binary capture history data and the supplementary information
+#' are also plotted.
+#' @method contours toa
+#' @S3method contours toa
 contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
-                         heat = FALSE, col = "black", trapnos = FALSE){
+                         heat = FALSE, col = "black", trapnos = FALSE, ...){
   if (length(which) == 1 && which == "all"){
     which <- 1:fit$data$n
+  }
+  if (heat & add){
+     warning("Setting add to FALSE as heat is TRUE")
+  }
+  if (heat & partition){
+     warning("Setting partition to FALSE as heat is TRUE")
+  }
+  if (heat & (length(which) > 1)){
+     stop("Only one animal can be plotted when heat is TRUE")
   }
   if (partition & length(which) > 1){
     warning("Setting partition to FALSE as length(which) > 1")
@@ -179,7 +193,7 @@ contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
       box()
       trapcol <- "black"
     } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
+      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
       trapcol <- "red"
     }
   }
@@ -190,11 +204,19 @@ contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
   }
 }
 
-
-contours.ss <- function(fit, which = "all", add = FALSE, partition = FALSE,
-                        heat = FALSE, col = "black", trapnos = FALSE){
+#' @rdname contours
+#' @method contours ss
+#' @S3method contours ss
+contours.ss <- function(fit, which = "all", add = FALSE, heat = FALSE,
+                        col = "black", trapnos = FALSE, ...){
   if (length(which) == 1 && which == "all"){
     which <- 1:fit$data$n
+  }
+  if (heat & add){
+     warning("Setting add to FALSE as heat is TRUE")
+  }
+  if (heat & (length(which) > 1)){
+     stop("Only one animal can be plotted when heat is TRUE")
   }
   data <- fit$data
   mask <- fit$mask
@@ -244,7 +266,7 @@ contours.ss <- function(fit, which = "all", add = FALSE, partition = FALSE,
       box()
       trapcol <- "black"
     } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
+      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
       trapcol <- "red"
     }
   }
@@ -255,11 +277,27 @@ contours.ss <- function(fit, which = "all", add = FALSE, partition = FALSE,
   }
 }
 
+#' @rdname contours
+#' @method contours ang
+#' @S3method contours ang
 contours.ang <- function(fit, which = "all", add = FALSE, partition = FALSE,
-                         heat = FALSE, col = "black", trapnos = FALSE){
+                         heat = FALSE, col = "black", trapnos = FALSE, ...){
   if (length(which) == 1 && which == "all"){
     which <- 1:fit$data$n
   }
+  if (heat & add){
+     warning("Setting add to FALSE as heat is TRUE")
+  }
+  if (heat & partition){
+     warning("Setting partition to FALSE as heat is TRUE")
+  }
+  if (heat & (length(which) > 1)){
+     stop("Only one animal can be plotted when heat is TRUE")
+  }
+  if (partition & length(which) > 1){
+    warning("Setting partition to FALSE as length(which) > 1")
+    partition <- FALSE
+  }  
   data <- fit$data
   mask <- fit$mask
   allcapt <- data$capt
@@ -328,7 +366,7 @@ contours.ang <- function(fit, which = "all", add = FALSE, partition = FALSE,
       box()
       trapcol <- "black"
     } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col)
+      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
       trapcol <- "red"
     }
   }
