@@ -136,9 +136,10 @@ NULL
 #' @return An object of class 'admb'.
 #'
 #' The following functions can be used to extract model components:
-#' \code{\link[R2admb]{summary}}, \code{\link[R2admb]{AIC}}, \code{\link[R2admb]{logLik}},
-#' \code{\link[R2admb]{deviance}}, \code{\link[R2admb]{vcov}}, \code{\link[R2admb]coef}},
-#' \code{\link[R2admb]{stdEr}}, and \code{\link[R2admb]{confint}}.
+#' \code{\link[base]{summary}}, \code{\link[R2admb:AIC.admb]{AIC}},
+#' \code{\link[R2admb:AIC.admb]{logLik}}, \code{\link[R2admb:AIC.admb]{deviance}},
+#' \code{\link[R2admb:AIC.admb]{vcov}}, \code{\link[R2admb:AIC.admb]{coef}},
+#' \code{\link[R2admb:AIC.admb]{stdEr}}, and \code{\link[R2admb:AIC.admb]{confint}}.
 #'
 #' The latter takes arguments \code{level} and \code{method}, which specify the confidence
 #' level and calculation method respectively. The default method gives quadratic (Wald)
