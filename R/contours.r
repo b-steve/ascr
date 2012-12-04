@@ -252,8 +252,8 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
         z1[xind, yind] <- secrprobs[j]
         z2[xind, yind] <- toaprobs[j]
       }
-      z1col <- rgb(0, 1, 0, 0.4)
-      z2col <- rgb(0, 0, 1, 0.4)
+      z1col <- "blue" # rgb(0, 1, 0, 0.4)
+      z2col <- "black" # rgb(0, 0, 1, 0.4)
       if (plot.simple){
         contour(x = uniquex, y = uniquey, z = z1, add = TRUE, col = z1col)
       }
@@ -500,8 +500,8 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
         z1[xind, yind] <- secrprobs[j]
         z2[xind, yind] <- angprobs[j]
       }
-      z1col <- rgb(0, 1, 0, 0.4)
-      z2col <- rgb(0, 0, 1, 0.4)
+      z1col <- "blue" # rgb(0, 1, 0, 0.4)
+      z2col <- "black" # rgb(0, 0, 1, 0.4)
       if (plot.simple){
         contour(x = uniquex, y = uniquey, z = z1, add = TRUE, col = z1col)
       }
