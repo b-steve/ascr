@@ -61,8 +61,7 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   if (is.null(ylim)) ylim <- range(y)
   if (!add & !heat){
     if (require(TeachingDemos)){
-      op <- TeachingDemos::squishplot(xlim, ylim,
-                                        diff(ylim)/diff(xlim))
+      op <- TeachingDemos::squishplot(xlim, ylim, 1)
       plot(mask, type = "n", xlim = xlim, ylim = ylim)
       par(op)
     } else {
