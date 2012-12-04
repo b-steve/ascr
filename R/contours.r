@@ -34,80 +34,31 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                             col = "black", trapnos = FALSE,
                             showcapt = length(dets) == 1 && dets != "all",
                             xlim = NULL, ylim = NULL, ...){
-  if (heat & add){
-     warning("Setting add to FALSE as heat is TRUE")
-  }
-  if (heat & (length(dets) > 1)){
-     stop("Only one animal can be plotted when heat is TRUE")
-  }
-  if (length(dets) == 1 && dets == "all"){
-    dets <- 1:fit$data$n
-  }
-  if (length(dets) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(dets) > 1")
-     showcapt <- FALSE
-  }
   data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
   mask <- fit$mask
   allcapt <- data$capt
   traps <- fit$traps
   dist <- data$dist
-  n <- data$n
   ntraps <- data$ntraps
   coefs <- coef(fit)
-  x <- mask[, 1]
-  y <- mask[, 2]
-  if (is.null(xlim)) xlim <- range(x)
-  if (is.null(ylim)) ylim <- range(y)
   if (!add & !heat){
-    if (require(TeachingDemos)){
-      op <- TeachingDemos::squishplot(xlim, ylim, 1)
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-      par(op)
-    } else {
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-      warning("Make package 'TeachingDemos' available to ensure an aspect ratio of 1.")
-    }
+    make.plot(mask, xlim, ylim)
   }
   D <- coefs["D"]
   g0 <- coefs["g0"]
   sigma <- coefs["sigma"]
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
   for (i in dets){
-    capt <- allcapt[i, ]
-    probs <- allprobs
-    for (j in 1:ntraps){
-      if (capt[j] == 0) probs[j, ] <- 1 - probs[j, ]
-    }
-    maskprobs <- exp(apply(log(probs), 2, sum))*D
-    maskprobs <- maskprobs/sum(maskprobs)
-    uniquex <- sort(unique(x))
-    uniquey <- sort(unique(y))
-    z <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-    for (j in 1:length(maskprobs)){
-      xind <- which(uniquex == x[j])
-      yind <- which(uniquey == y[j])
-      z[xind, yind] <- maskprobs[j]
-    }
-    if (heat){
-      image(x = uniquex, y = uniquey, z = z, xlab = "x", ylab = "y",
-            xlim = xlim, ylim = ylim)
-      box()
-      trapcol <- "black"
-    } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
-      trapcol <- "red"
-    }
+    simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
+    maskdens <- exp(simpledens)*D
+    maskdens <- maskdens/sum(maskdens)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
   }
-  if (trapnos){
-    text(traps, labels = 1:ntraps, col = trapcol)
-  } else {
-    points(traps, pch = 4, col = trapcol)
-  }
-  if(showcapt) {
-    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
-           lwd = 2, col = trapcol)
-  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
 #' @rdname contours
@@ -124,75 +75,25 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                          heat = FALSE, col = "black", trapnos = FALSE,
                          showcapt = length(dets) == 1 && dets != "all",
                          xlim = NULL, ylim = NULL, ...){
-  if (length(dets) == 1 && dets == "all"){
-    dets <- 1:fit$data$n
-  }
-  if (heat & add){
-     warning("Setting add to FALSE as heat is TRUE")
-  }
-  if (heat & !(partition == FALSE | partition == "none")){
-     warning("Setting partition to FALSE as heat is TRUE")
-  }
-  if (heat & (length(dets) > 1)){
-     stop("Only one animal can be plotted when heat is TRUE")
-  }
-  if (!(partition == FALSE | partition == "none") & length(dets) > 1){
-    warning("Setting partition to FALSE as length(dets) > 1")
-    partition <- FALSE
-  }
-  if (length(dets) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(dets) > 1")
-     showcapt <- FALSE
-  }
-  if (is.logical(partition)){
-    plot.simple <- partition
-    plot.extra <- partition
-    plot.part <- partition
-  } else {
-    plot.part <- TRUE
-    if (partition == "all"){
-      plot.simple <- TRUE
-      plot.extra <- TRUE
-    } else if (partition == "none"){
-      plot.simple <- FALSE
-      plot.extra <- FALSE
-      plot.part <- FALSE
-    } else if (partition == "simple"){
-      plot.simple <- TRUE
-      plot.extra <- FALSE
-    } else if (partition == "extra"){
-      plot.simple <- FALSE
-      plot.extra <- TRUE
-    } else {
-      stop("partition must be \"all\", \"none\", \"simple\" or \"extra\"")
-    }
-  }
   data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
+  partition <- updated.arguments$partition
+  extra.contours <- check.partition(partition)
+  plot.part <- extra.contours$plot.part
+  plot.simple <- extra.contours$plot.simple
+  plot.extra <- extra.contours$plot.extra
   mask <- fit$mask
   allcapt <- data$capt
   alltoacapt <- data$toacapt
   traps <- fit$traps
   dist <- data$dist
-  n <- data$n
   ntraps <- data$ntraps
   coefs <- coef(fit)
-  x <- mask[, 1]
-  y <- mask[, 2]
-  if (is.null(xlim)){
-    xlim <- range(x)
-  }
-  if (is.null(ylim)){
-    ylim <- range(y)
-  }
   if (!add & !heat){
-    if (require(TeachingDemos)){
-      op <- TeachingDemos::squishplot(xlim, ylim,
-                                        diff(ylim)/diff(xlim))
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-      par(op)
-    } else {
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-    }
+    make.plot(mask, xlim, ylim)
   }
   D <- coefs["D"]
   g0 <- coefs["g0"]
@@ -201,26 +102,10 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
   times <- dist/330
   for (i in dets){
-    capt <- allcapt[i, ]
-    probs <- allprobs
-    for (j in 1:ntraps){
-      if (capt[j] == 0){
-        probs[j, ] <- 1 - probs[j, ]
-      }
-    }
+    simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     ## Can only incorporate TOA part if more than one detection.
-    if (sum(capt) > 1){
-      toacapt <- alltoacapt[i, ]
-      dettraps <- which(capt == 1)
-      ## Getting mask point sound travel times from traps at which a
-      ## detection was made.
-      dettimes <- times[dettraps, ]
-      toacapt <- toacapt[dettraps]
-      ## Expected sound generation times.
-      esttimes <- toacapt - dettimes
-      ## Calculating TOA sum of squares.
-      ssqtoa <- apply(esttimes, 2, function(x) sum((x - mean(x))^2))
-      toadens <- (1 - sum(capt))*log(sigmatoa^2) - ssqtoa/(2*sigmatoa^2)
+    if (sum(allcapt[i, ]) > 1){
+      toadens <- logdens.toa(alltoacapt, allcapt, times, sigmatoa, i)
     } else {
       if (partition){
         warning("Setting partition to FALSE; no TOA information.")
@@ -228,57 +113,14 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
       }
       toadens <- 0
     }
-    maskprobs <- exp(apply(log(probs), 2, sum) + toadens)*D
-    maskprobs <- maskprobs/sum(maskprobs)
-    uniquex <- sort(unique(x))
-    uniquey <- sort(unique(y))
-    z <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-    for (j in 1:length(maskprobs)){
-      xind <- which(uniquex == x[j])
-      yind <- which(uniquey == y[j])
-      z[xind, yind] <- maskprobs[j]
-    }
+    maskdens <- exp(simpledens + toadens)*D
+    maskdens <- maskdens/sum(maskdens)
     if (plot.part){
-      secrprobs <- exp(apply(log(probs), 2, sum))*D
-      secrprobs <- secrprobs/sum(secrprobs)
-      toaprobs <- exp(toadens)*D
-      toaprobs <- toaprobs/sum(toaprobs)
-      z1 <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-      z2 <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-      for (j in 1:length(maskprobs)){
-        xind <- which(uniquex == x[j])
-        yind <- which(uniquey == y[j])
-        z1[xind, yind] <- secrprobs[j]
-        z2[xind, yind] <- toaprobs[j]
-      }
-      z1col <- "blue" # rgb(0, 1, 0, 0.4)
-      z2col <- "black" # rgb(0, 0, 1, 0.4)
-      if (plot.simple){
-        contour(x = uniquex, y = uniquey, z = z1, add = TRUE, col = z1col)
-      }
-      if (plot.extra){
-        contour(x = uniquex, y = uniquey, z = z2, add = TRUE, col = z2col)
-      }
+      plot.other.contours(simpledens, toadens, plot.simple, plot.extra, D, mask)
     }
-    if (heat){
-      image(x = uniquex, y = uniquey, z = z, xlab = "x", ylab = "y",
-            xlim = xlim, ylim = ylim)
-      box()
-      trapcol <- "black"
-    } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
-      trapcol <- "red"
-    }
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
   }
-  if (trapnos){
-    text(traps, labels = 1:ntraps, col = trapcol)
-  } else {
-    points(traps, pch = 4, col = trapcol)
-  }
-  if(showcapt) {
-    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
-           lwd = 2, col = trapcol)
-  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
 #' @rdname contours
@@ -288,47 +130,22 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                         col = "black", trapnos = FALSE,
                         showcapt = length(dets) == 1 && dets != "all",
                         xlim = NULL, ylim = NULL, ...){
-  if (length(dets) == 1 && dets == "all"){
-    dets <- 1:fit$data$n
-  }
-  if (heat & add){
-     warning("Setting add to FALSE as heat is TRUE")
-  }
-  if (heat & (length(dets) > 1)){
-     stop("Only one animal can be plotted when heat is TRUE")
-  }
-  if (length(dets) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(dets) > 1")
-     showcapt <- FALSE
-  }
   data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
   mask <- fit$mask
   allcapt <- data$capt
   allsscapt <- data$sscapt
   traps <- fit$traps
   dist <- data$dist
-  n <- data$n
   ntraps <- data$ntraps
   nmask <- data$nmask
   cutoff <- fit$data$c
   coefs <- coef(fit)
-  x <- mask[, 1]
-  y <- mask[, 2]
-  if (is.null(xlim)){
-    xlim <- range(x)
-  }
-  if (is.null(ylim)){
-    ylim <- range(y)
-  }
   if (!add & !heat){
-    if (require(TeachingDemos)){
-      op <- TeachingDemos::squishplot(xlim, ylim,
-                                        diff(ylim)/diff(xlim))
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-      par(op)
-    } else {
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-    }
+    make.plot(mask, xlim, ylim)
   }
   D <- coefs["D"]
   ssb0 <- coefs["ssb0"]
@@ -337,45 +154,13 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   muss <- ssb0 + ssb1*dist
   allnonprobs <- pnorm(cutoff, muss, sigmass)
   for (i in dets){
-    capt <- allcapt[i, ]
-    sscapt <- allsscapt[i, ]
-    probs <- matrix(0, nrow = ntraps, ncol = nmask)
-    for (j in 1:ntraps){
-      if (capt[j] == 1){
-        probs[j, ] <- dnorm(sscapt[j], muss[j, ], sigmass)
-      } else {
-        probs[j, ] <- allnonprobs[j, ]
-      }
-    }
-    maskprobs <- exp(apply(log(probs), 2, sum))*D
-    maskprobs <- maskprobs/sum(maskprobs)
-    uniquex <- sort(unique(x))
-    uniquey <- sort(unique(y))
-    z <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-    for (j in 1:length(maskprobs)){
-      xind <- which(uniquex == x[j])
-      yind <- which(uniquey == y[j])
-      z[xind, yind] <- maskprobs[j]
-    }
-    if (heat){
-      image(x = uniquex, y = uniquey, z = z, xlab = "x", ylab = "y",
-            xlim = xlim, ylim = ylim)
-      box()
-      trapcol <- "black"
-    } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
-      trapcol <- "red"
-    }
+    ssdens <- logdens.ss(allcapt, allsscapt, allnonprobs, ntraps,
+                         muss, sigmass, i)
+    maskdens <- exp(ssdens)*D
+    maskdens <- maskdens/sum(maskdens)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
   }
-  if (trapnos){
-    text(traps, labels = 1:ntraps, col = trapcol)
-  } else {
-    points(traps, pch = 4, col = trapcol)
-  }
-  if(showcapt) {
-    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
-           lwd = 2, col = trapcol)
-  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
 #' @rdname contours
@@ -385,26 +170,75 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                          heat = FALSE, col = "black", trapnos = FALSE,
                          showcapt = length(dets) == 1 && dets != "all",
                          xlim = NULL, ylim = NULL, ...){
+  data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
+  partition <- updated.arguments$partition
+  extra.contours <- check.partition(partition)
+  plot.part <- extra.contours$plot.part
+  plot.simple <- extra.contours$plot.simple
+  plot.extra <- extra.contours$plot.extra
+  mask <- fit$mask
+  allcapt <- data$capt
+  allangcapt <- data$angcapt
+  traps <- fit$traps
+  dist <- data$dist
+  ang <- data$ang
+  ntraps <- data$ntraps
+  coefs <- coef(fit)
+  if (!add & !heat){
+    make.plot(mask, xlim, ylim)
+  }
+  D <- coefs["D"]
+  g0 <- coefs["g0"]
+  sigma <- coefs["sigma"]
+  kappa <- coefs["kappa"]
+  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  for (i in dets){
+    simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
+    angdens <- logdens.ang(allangcapt, allcapt, ang, kappa, i)
+    maskdens <- exp(simpledens + angdens)*D
+    maskdens <- maskdens/sum(maskdens)
+    if (plot.part){
+      plot.other.contours(simpledens, angdens, plot.simple, plot.extra, D, mask)
+    }
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+}
+
+## Checks inputs and returns altered argument values.
+warning.contours <- function(n, dets, add, heat, showcapt, partition = NULL){
   if (length(dets) == 1 && dets == "all"){
-    dets <- 1:fit$data$n
+    dets <- 1:n
   }
-  if (heat & add){
-     warning("Setting add to FALSE as heat is TRUE")
+  if (add & heat){
+    warning("Setting add to FALSE as heat is TRUE")
   }
-  if (heat & !(partition == FALSE | partition == "none")){
-     warning("Setting partition to FALSE as heat is TRUE")
-  }
-  if (heat & (length(dets) > 1)){
-     stop("Only one animal can be plotted when heat is TRUE")
-  }
-  if (!(partition == FALSE | partition == "none") & length(dets) > 1){
-    warning("Setting partition to FALSE as length(dets) > 1")
-    partition <- FALSE
+  if (length(dets) > 1 & heat){
+    stop("Only one animal can be plotted when heat is TRUE")
   }
   if (length(dets) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(dets) > 1")
-     showcapt <- FALSE
+    warning("Setting showcapt to FALSE as length(dets) > 1")
+    showcapt <- FALSE
   }
+  if (!is.null(partition)){
+    if (heat & !(partition == FALSE | partition == "none")){
+      warning("Setting partition to FALSE as heat is TRUE")
+      partition <- FALSE
+    }
+    if (length(dets) > 1 & !(partition == FALSE | partition == "none")){
+      warning("Setting partition to FALSE as length(dets) > 1")
+      partition <- FALSE
+    }
+  }
+  list(dets = dets, showcapt = showcapt, partition = partition)
+}
+
+## Sets up indicators for simple and extra contour plotting.
+check.partition <- function(partition){
   if (is.logical(partition)){
     plot.simple <- partition
     plot.extra <- partition
@@ -428,103 +262,134 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
       stop("partition must be \"all\", \"none\", \"simple\" or \"extra\"")
     }
   }
-  data <- fit$data
-  mask <- fit$mask
-  allcapt <- data$capt
-  allangcapt <- data$angcapt
-  traps <- fit$traps
-  dist <- data$dist
-  ang <- data$ang
-  n <- data$n
-  ntraps <- data$ntraps
-  coefs <- coef(fit)
+  list(plot.part = plot.part, plot.simple = plot.simple, plot.extra = plot.extra)
+}
+
+## Generates the axes and plotting area.
+make.plot <- function(mask, xlim, ylim){
+  if (is.null(xlim)) xlim <- range(mask[, 1])
+  if (is.null(ylim)) ylim <- range(mask[, 2])
+  if (require(TeachingDemos)){
+    op <- TeachingDemos::squishplot(xlim, ylim, 1)
+    plot(mask, type = "n", xlim = xlim, ylim = ylim)
+    par(op)
+  } else {
+    plot(mask, type = "n", xlim = xlim, ylim = ylim)
+    warning("Make package 'TeachingDemos' available to ensure an aspect ratio of 1.")
+  }
+}
+
+## Calculates the log of the animal density due to binary capture history data.
+logdens.simple <- function(allcapt, allprobs, ntraps, i){
+  capt <- allcapt[i, ]
+  probs <- allprobs
+  for (j in 1:ntraps){
+    if (capt[j] == 0) probs[j, ] <- 1 - probs[j, ]
+  }
+  apply(log(probs), 2, sum)
+}
+
+## Calculates the log of the animal density due to signal strength data.
+logdens.ss <- function(allcapt, allsscapt, allnonprobs, ntraps, muss, sigmass, i){
+  capt <- allcapt[i, ]
+  sscapt <- allsscapt[i, ]
+  probs <- matrix(0, nrow = ntraps, ncol = ncol(allnonprobs))
+  for (j in 1:ntraps){
+    if (capt[j] == 1){
+      probs[j, ] <- dnorm(sscapt[j], muss[j, ], sigmass)
+    } else {
+      probs[j, ] <- allnonprobs[j, ]
+    }
+  }
+  apply(log(probs), 2, sum)
+}
+
+## Calculates the log of the animal density due to angle data.
+logdens.ang <- function(allangcapt, allcapt, ang, kappa, i){
+  capt <- allcapt[i, ]
+  angcapt <- allangcapt[i, ]
+  dettraps <- which(capt == 1)
+  dens.ang <- dvm(angcapt[dettraps], ang[dettraps, ], kappa)
+  if (length(dettraps) == 1){
+    dim(dens.ang) <- c(1, ncol(ang))
+  }
+  apply(log(dens.ang), 2, sum)
+}
+
+## Calculates the log of the animal density due to TOA data.
+logdens.toa <- function(alltoacapt, allcapt, times, sigmatoa, i){
+  capt <- allcapt[i, ]
+  toacapt <- alltoacapt[i, ]
+  dettraps <- which(capt == 1)
+  dettimes <- times[dettraps, ]
+  toacapt <- toacapt[dettraps]
+  esttimes <- toacapt - dettimes
+  ssqtoa <- apply(esttimes, 2, function(x) sum((x - mean(x))^2))
+  toadens <- (1 - sum(capt))*log(sigmatoa^2) - ssqtoa/(2*sigmatoa^2)
+}
+
+## Plots the overall contour for the animal.
+plot.main.contour <- function(maskdens, mask, xlim, ylim, heat, col, ...){
   x <- mask[, 1]
   y <- mask[, 2]
-  if (is.null(xlim)){
-    xlim <- range(x)
+  unique.x <- sort(unique(x))
+  unique.y <- sort(unique(y))
+  z <- matrix(NA, nrow = length(unique.x), ncol = length(unique.y))
+  for (j in 1:length(maskdens)){
+    xind <- which(unique.x == x[j])
+    yind <- which(unique.y == y[j])
+    z[xind, yind] <- maskdens[j]
   }
-  if (is.null(ylim)){
-    ylim <- range(y)
+  if (heat){
+    if (is.null(xlim)) xlim <- range(x)
+    if (is.null(ylim)) ylim <- range(y)
+    image(x = unique.x, y = unique.y, z = z, xlab = "x", ylab = "y",
+          xlim = xlim, ylim = ylim)
+    box()
+  } else {
+    contour(x = unique.x, y = unique.y, z = z, add = TRUE, col = col, ...)
   }
-  if (!add & !heat){
-    if (require(TeachingDemos)){
-      op <- TeachingDemos::squishplot(xlim, ylim,
-                                        diff(ylim)/diff(xlim))
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-      par(op)
-    } else {
-      plot(mask, type = "n", xlim = xlim, ylim = ylim)
-    }
+}
+
+## Plots the extra contours (i.e., when partition != FALSE).
+plot.other.contours <- function(detdens, otherdens, plot.simple,
+                                plot.extra, D, mask){
+  secr.maskdens <- exp(detdens)*D
+  secr.maskdens <- secr.maskdens/sum(secr.maskdens)
+  other.maskdens <- exp(otherdens)*D
+  other.maskdens <- other.maskdens/sum(other.maskdens)
+  x <- mask[, 1]
+  y <- mask[, 2]
+  unique.x <- sort(unique(x))
+  unique.y <- sort(unique(y))
+  z1 <- matrix(NA, nrow = length(unique.x), ncol = length(unique.y))
+  z2 <- matrix(NA, nrow = length(unique.x), ncol = length(unique.y))
+  for (j in 1:length(detdens)){
+      xind <- which(unique.x == x[j])
+      yind <- which(unique.y == y[j])
+      z1[xind, yind] <- secr.maskdens[j]
+      z2[xind, yind] <- other.maskdens[j]
   }
-  D <- coefs["D"]
-  g0 <- coefs["g0"]
-  sigma <- coefs["sigma"]
-  kappa <- coefs["kappa"]
-  allprobs <- g0*exp(-dist^2/(2*sigma^2))
-  for (i in dets){
-    capt <- allcapt[i, ]
-    probs <- allprobs
-    for (j in 1:ntraps){
-      if (capt[j] == 0){
-        probs[j, ] <- 1 - probs[j, ]
-      }
-    }
-    angcapt <- allangcapt[i, ]
-    dettraps <- which(capt == 1)
-    angdens <- dvm(angcapt[dettraps], ang[dettraps, ], kappa)
-    if (length(dettraps) == 1){
-      dim(angdens) <- c(1, length(x))
-    }
-    angdens <- apply(log(angdens), 2, sum)
-    maskprobs <- exp(apply(log(probs), 2, sum) + angdens)*D
-    maskprobs <- maskprobs/sum(maskprobs)
-    uniquex <- sort(unique(x))
-    uniquey <- sort(unique(y))
-    z <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-    for (j in 1:length(maskprobs)){
-      xind <- which(uniquex == x[j])
-      yind <- which(uniquey == y[j])
-      z[xind, yind] <- maskprobs[j]
-    }
-    if (plot.part){
-      secrprobs <- exp(apply(log(probs), 2, sum))*D
-      secrprobs <- secrprobs/sum(secrprobs)
-      angprobs <- exp(angdens)*D
-      angprobs <- angprobs/sum(angprobs)
-      z1 <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-      z2 <- matrix(NA, nrow = length(uniquex), ncol = length(uniquey))
-      for (j in 1:length(maskprobs)){
-        xind <- which(uniquex == x[j])
-        yind <- which(uniquey == y[j])
-        z1[xind, yind] <- secrprobs[j]
-        z2[xind, yind] <- angprobs[j]
-      }
-      z1col <- "blue" # rgb(0, 1, 0, 0.4)
-      z2col <- "black" # rgb(0, 0, 1, 0.4)
-      if (plot.simple){
-        contour(x = uniquex, y = uniquey, z = z1, add = TRUE, col = z1col)
-      }
-      if (plot.extra){
-        contour(x = uniquex, y = uniquey, z = z2, add = TRUE, col = z2col)
-      }
-    }
-    if (heat){
-      image(x = uniquex, y = uniquey, z = z, xlab = "x", ylab = "y",
-            xlim = xlim, ylim = ylim)
-      box()
-      trapcol <- "black"
-    } else {
-      contour(x = uniquex, y = uniquey, z = z, add = TRUE, col = col, ...)
-      trapcol <- "red"
-    }
+  z1col <- rgb(0, 1, 0, 0.4)
+  z2col <- rgb(0, 0, 1, 0.4)
+  if (plot.simple){
+      contour(x = unique.x, y = unique.y, z = z1, add = TRUE, col = z1col)
   }
+  if (plot.extra){
+      contour(x = unique.x, y = unique.y, z = z2, add = TRUE, col = z2col)
+  }
+}
+
+## Plots the traps.
+plot.traps <- function(traps, allcapt, i, heat, trapnos, showcapt){
+  trapcol <- ifelse(heat, "black", "red")
   if (trapnos){
-    text(traps, labels = 1:ntraps, col = trapcol)
+    text(traps, labels = 1:nrow(traps), col = trapcol)
   } else {
     points(traps, pch = 4, col = trapcol)
   }
-  if(showcapt) {
-    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
+  if (showcapt){
+    points(traps[which(allcapt[i, ] == 1), , drop = FALSE], cex = 2,
            lwd = 2, col = trapcol)
   }
 }
