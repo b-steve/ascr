@@ -82,9 +82,9 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
   extra.contours <- check.partition(partition)
-  plot.part <- extra.contours$plot.part
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
+  plot.part <- plot.simple | plot.extra
   mask <- fit$mask
   allcapt <- data$capt
   alltoacapt <- data$toacapt
@@ -109,7 +109,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     } else {
       if (partition){
         warning("Setting partition to FALSE; no TOA information.")
-        partition <- FALSE
+        plot.part <- FALSE
       }
       toadens <- 0
     }
@@ -177,9 +177,9 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
   extra.contours <- check.partition(partition)
-  plot.part <- extra.contours$plot.part
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
+  plot.part <- plot.simple | plot.extra
   mask <- fit$mask
   allcapt <- data$capt
   allangcapt <- data$angcapt
@@ -242,16 +242,13 @@ check.partition <- function(partition){
   if (is.logical(partition)){
     plot.simple <- partition
     plot.extra <- partition
-    plot.part <- partition
   } else {
-    plot.part <- TRUE
     if (partition == "all"){
       plot.simple <- TRUE
       plot.extra <- TRUE
     } else if (partition == "none"){
       plot.simple <- FALSE
       plot.extra <- FALSE
-      plot.part <- FALSE
     } else if (partition == "simple"){
       plot.simple <- TRUE
       plot.extra <- FALSE
@@ -262,7 +259,7 @@ check.partition <- function(partition){
       stop("partition must be \"all\", \"none\", \"simple\" or \"extra\"")
     }
   }
-  list(plot.part = plot.part, plot.simple = plot.simple, plot.extra = plot.extra)
+  list(plot.simple = plot.simple, plot.extra = plot.extra)
 }
 
 ## Generates the axes and plotting area.
