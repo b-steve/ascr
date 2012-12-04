@@ -18,7 +18,7 @@ contours.default <- function(fit, ...){
 }
 
 #' @rdname contours
-#' @param which which individuals' location densities are plotted.
+#' @param dets which individuals' location densities are plotted.
 #' @param add logical, if \code{TRUE} the contours are added to an already
 #' existing plot.
 #' @param heat logical, if \code{TRUE} a levelplot is used instead of contours.
@@ -30,21 +30,21 @@ contours.default <- function(fit, ...){
 #' @inheritParams graphics::plot.window
 #' @method contours simple
 #' @S3method contours simple
-contours.simple <- function(fit, which = "all", add = FALSE, heat = FALSE,
+contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                             col = "black", trapnos = FALSE,
-                            showcapt = length(which) == 1 && which != "all",
+                            showcapt = length(dets) == 1 && dets != "all",
                             xlim = NULL, ylim = NULL, ...){
   if (heat & add){
      warning("Setting add to FALSE as heat is TRUE")
   }
-  if (heat & (length(which) > 1)){
+  if (heat & (length(dets) > 1)){
      stop("Only one animal can be plotted when heat is TRUE")
   }
-  if (length(which) == 1 && which == "all"){
-    which <- 1:fit$data$n
+  if (length(dets) == 1 && dets == "all"){
+    dets <- 1:fit$data$n
   }
-  if (length(which) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(which) > 1")
+  if (length(dets) > 1 & showcapt){
+     warning("Setting showcapt to FALSE as length(dets) > 1")
      showcapt <- FALSE
   }
   data <- fit$data
@@ -57,27 +57,24 @@ contours.simple <- function(fit, which = "all", add = FALSE, heat = FALSE,
   coefs <- coef(fit)
   x <- mask[, 1]
   y <- mask[, 2]
-  if (is.null(xlim)){
-    xlim=range(x)
-  }
-  if (is.null(ylim)){
-    ylim=range(x)
-  }
+  if (is.null(xlim)) xlim <- range(x)
+  if (is.null(ylim)) ylim <- range(y)
   if (!add & !heat){
     if (require(TeachingDemos)){
-        op <- TeachingDemos::squishplot(xlim, ylim,
+      op <- TeachingDemos::squishplot(xlim, ylim,
                                         diff(ylim)/diff(xlim))
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
+      par(op)
     } else {
-      op <- par()
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
+      warning("Make package 'TeachingDemos' available to ensure an aspect ratio of 1.")
     }
-    plot(mask, type = "n")
-    par(op)
   }
   D <- coefs["D"]
   g0 <- coefs["g0"]
   sigma <- coefs["sigma"]
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
-  for (i in which){
+  for (i in dets){
     capt <- allcapt[i, ]
     probs <- allprobs
     for (j in 1:ntraps){
@@ -109,7 +106,7 @@ contours.simple <- function(fit, which = "all", add = FALSE, heat = FALSE,
     points(traps, pch = 4, col = trapcol)
   }
   if(showcapt) {
-    points(traps[which(fit$data$capt[det, ] == 1), , drop = FALSE], cex = 2,
+    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
            lwd = 2, col = trapcol)
   }
 }
@@ -124,28 +121,28 @@ contours.simple <- function(fit, which = "all", add = FALSE, heat = FALSE,
 #' contours due to the supplementary information.
 #' @method contours toa
 #' @S3method contours toa
-contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
+contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                          heat = FALSE, col = "black", trapnos = FALSE,
-                         showcapt = length(which) == 1 && which != "all",
+                         showcapt = length(dets) == 1 && dets != "all",
                          xlim = NULL, ylim = NULL, ...){
-  if (length(which) == 1 && which == "all"){
-    which <- 1:fit$data$n
+  if (length(dets) == 1 && dets == "all"){
+    dets <- 1:fit$data$n
   }
   if (heat & add){
      warning("Setting add to FALSE as heat is TRUE")
   }
-  if (heat & partition){
+  if (heat & !(partition == FALSE | partition == "none")){
      warning("Setting partition to FALSE as heat is TRUE")
   }
-  if (heat & (length(which) > 1)){
+  if (heat & (length(dets) > 1)){
      stop("Only one animal can be plotted when heat is TRUE")
   }
-  if (partition & length(which) > 1){
-    warning("Setting partition to FALSE as length(which) > 1")
+  if (!(partition == FALSE | partition == "none") & length(dets) > 1){
+    warning("Setting partition to FALSE as length(dets) > 1")
     partition <- FALSE
   }
-  if (length(which) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(which) > 1")
+  if (length(dets) > 1 & showcapt){
+     warning("Setting showcapt to FALSE as length(dets) > 1")
      showcapt <- FALSE
   }
   if (is.logical(partition)){
@@ -182,15 +179,21 @@ contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
   coefs <- coef(fit)
   x <- mask[, 1]
   y <- mask[, 2]
+  if (is.null(xlim)){
+    xlim <- range(x)
+  }
+  if (is.null(ylim)){
+    ylim <- range(y)
+  }
   if (!add & !heat){
     if (require(TeachingDemos)){
-        op <- TeachingDemos::squishplot(xlim, ylim,
+      op <- TeachingDemos::squishplot(xlim, ylim,
                                         diff(ylim)/diff(xlim))
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
+      par(op)
     } else {
-      op <- par()
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
     }
-    plot(mask, type = "n")
-    par(op)
   }
   D <- coefs["D"]
   g0 <- coefs["g0"]
@@ -198,7 +201,7 @@ contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
   sigmatoa <- coefs["sigmatoa"]
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
   times <- dist/330
-  for (i in which){
+  for (i in dets){
     capt <- allcapt[i, ]
     probs <- allprobs
     for (j in 1:ntraps){
@@ -274,7 +277,7 @@ contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
     points(traps, pch = 4, col = trapcol)
   }
   if(showcapt) {
-    points(traps[which(fit$data$capt[det, ] == 1), , drop = FALSE], cex = 2,
+    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
            lwd = 2, col = trapcol)
   }
 }
@@ -282,21 +285,21 @@ contours.toa <- function(fit, which = "all", add = FALSE, partition = FALSE,
 #' @rdname contours
 #' @method contours ss
 #' @S3method contours ss
-contours.ss <- function(fit, which = "all", add = FALSE, heat = FALSE,
+contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                         col = "black", trapnos = FALSE,
-                        showcapt = length(which) == 1 && which != "all",
+                        showcapt = length(dets) == 1 && dets != "all",
                         xlim = NULL, ylim = NULL, ...){
-  if (length(which) == 1 && which == "all"){
-    which <- 1:fit$data$n
+  if (length(dets) == 1 && dets == "all"){
+    dets <- 1:fit$data$n
   }
   if (heat & add){
      warning("Setting add to FALSE as heat is TRUE")
   }
-  if (heat & (length(which) > 1)){
+  if (heat & (length(dets) > 1)){
      stop("Only one animal can be plotted when heat is TRUE")
   }
-  if (length(which) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(which) > 1")
+  if (length(dets) > 1 & showcapt){
+     warning("Setting showcapt to FALSE as length(dets) > 1")
      showcapt <- FALSE
   }
   data <- fit$data
@@ -312,15 +315,21 @@ contours.ss <- function(fit, which = "all", add = FALSE, heat = FALSE,
   coefs <- coef(fit)
   x <- mask[, 1]
   y <- mask[, 2]
+  if (is.null(xlim)){
+    xlim <- range(x)
+  }
+  if (is.null(ylim)){
+    ylim <- range(y)
+  }
   if (!add & !heat){
     if (require(TeachingDemos)){
-        op <- TeachingDemos::squishplot(xlim, ylim,
+      op <- TeachingDemos::squishplot(xlim, ylim,
                                         diff(ylim)/diff(xlim))
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
+      par(op)
     } else {
-      op <- par()
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
     }
-    plot(mask, type = "n")
-    par(op)
   }
   D <- coefs["D"]
   ssb0 <- coefs["ssb0"]
@@ -328,7 +337,7 @@ contours.ss <- function(fit, which = "all", add = FALSE, heat = FALSE,
   sigmass <- coefs["sigmass"]
   muss <- ssb0 + ssb1*dist
   allnonprobs <- pnorm(cutoff, muss, sigmass)
-  for (i in which){
+  for (i in dets){
     capt <- allcapt[i, ]
     sscapt <- allsscapt[i, ]
     probs <- matrix(0, nrow = ntraps, ncol = nmask)
@@ -365,7 +374,7 @@ contours.ss <- function(fit, which = "all", add = FALSE, heat = FALSE,
     points(traps, pch = 4, col = trapcol)
   }
   if(showcapt) {
-    points(traps[which(fit$data$capt[det, ] == 1), , drop = FALSE], cex = 2,
+    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
            lwd = 2, col = trapcol)
   }
 }
@@ -373,28 +382,28 @@ contours.ss <- function(fit, which = "all", add = FALSE, heat = FALSE,
 #' @rdname contours
 #' @method contours ang
 #' @S3method contours ang
-contours.ang <- function(fit, which = "all", add = FALSE, partition = FALSE,
+contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                          heat = FALSE, col = "black", trapnos = FALSE,
-                         showcapt = length(which) == 1 && which != "all",
+                         showcapt = length(dets) == 1 && dets != "all",
                          xlim = NULL, ylim = NULL, ...){
-  if (length(which) == 1 && which == "all"){
-    which <- 1:fit$data$n
+  if (length(dets) == 1 && dets == "all"){
+    dets <- 1:fit$data$n
   }
   if (heat & add){
      warning("Setting add to FALSE as heat is TRUE")
   }
-  if (heat & partition){
+  if (heat & !(partition == FALSE | partition == "none")){
      warning("Setting partition to FALSE as heat is TRUE")
   }
-  if (heat & (length(which) > 1)){
+  if (heat & (length(dets) > 1)){
      stop("Only one animal can be plotted when heat is TRUE")
   }
-  if (partition & length(which) > 1){
-    warning("Setting partition to FALSE as length(which) > 1")
+  if (!(partition == FALSE | partition == "none") & length(dets) > 1){
+    warning("Setting partition to FALSE as length(dets) > 1")
     partition <- FALSE
   }
-  if (length(which) > 1 & showcapt){
-     warning("Setting showcapt to FALSE as length(which) > 1")
+  if (length(dets) > 1 & showcapt){
+     warning("Setting showcapt to FALSE as length(dets) > 1")
      showcapt <- FALSE
   }
   if (is.logical(partition)){
@@ -432,22 +441,28 @@ contours.ang <- function(fit, which = "all", add = FALSE, partition = FALSE,
   coefs <- coef(fit)
   x <- mask[, 1]
   y <- mask[, 2]
+  if (is.null(xlim)){
+    xlim <- range(x)
+  }
+  if (is.null(ylim)){
+    ylim <- range(y)
+  }
   if (!add & !heat){
     if (require(TeachingDemos)){
-        op <- TeachingDemos::squishplot(xlim, ylim,
+      op <- TeachingDemos::squishplot(xlim, ylim,
                                         diff(ylim)/diff(xlim))
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
+      par(op)
     } else {
-      op <- par()
+      plot(mask, type = "n", xlim = xlim, ylim = ylim)
     }
-    plot(mask, type = "n")
-    par(op)
   }
   D <- coefs["D"]
   g0 <- coefs["g0"]
   sigma <- coefs["sigma"]
   kappa <- coefs["kappa"]
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
-  for (i in which){
+  for (i in dets){
     capt <- allcapt[i, ]
     probs <- allprobs
     for (j in 1:ntraps){
@@ -510,7 +525,7 @@ contours.ang <- function(fit, which = "all", add = FALSE, partition = FALSE,
     points(traps, pch = 4, col = trapcol)
   }
   if(showcapt) {
-    points(traps[which(fit$data$capt[det, ] == 1), , drop = FALSE], cex = 2,
+    points(traps[which(fit$data$capt[dets, ] == 1), , drop = FALSE], cex = 2,
            lwd = 2, col = trapcol)
   }
 }
