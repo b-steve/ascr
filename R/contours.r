@@ -27,7 +27,8 @@ contours.default <- function(fit, ...){
 #' plotted.
 #' @param showcapt logical, if \code{TRUE} circles are drawn around detectors
 #' on which the detection was made.
-#' @inheritParams graphics::plot.window
+#' @param xlim numeric vector of length 2, giving the x coordinate range.
+#' @param ylim numeric vector of length 2, giving the y coordinate range.
 #' @method contours simple
 #' @S3method contours simple
 contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
