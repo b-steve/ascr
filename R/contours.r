@@ -3,7 +3,7 @@
 #' Plots a density of individual animals' locations from a fit returned by
 #' \code{admbsecr()}.
 #'
-#' @param fit a fitted model returned by \code{admbsecr()}.
+#' @param fit a fitted model returned by \code{\link[admbsecr]{admbsecr}}.
 #' @param ... additional arguments to be passed to \code{\link[graphics]{contour}}.
 #' @rdname contours
 #' @export

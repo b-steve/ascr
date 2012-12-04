@@ -93,8 +93,9 @@ NULL
 #' \code{capt[, , , 1]} provides the binary capture history array and \code{capt[, , , 2]}
 #' provides the distances between all traps (regardless of capture) and detected animals.
 #' @param traps a matrix containing the coordinates of trap locations. The object
-#' returned by \code{read.traps()} is suitable.
-#' @param mask a mask object. The object returned by \code{make.mask()} is suitable.
+#' returned by \code{\link[secr]{read.traps}} is suitable.
+#' @param mask a mask object. The object returned by \code{\link[secr]{make.mask}} is
+#' suitable.
 #' @param sv either \code{"auto"}, or a named vector. If \code{auto}, starting values for
 #' all parameters are automatically generated. If a vector, the elements are the starting
 #' values and the names indicate which parameter these correspond to. Starting values for
@@ -134,9 +135,10 @@ NULL
 #' \code{FALSE} for development purposes.
 #' @return An object of class 'admb'.
 #'
-#' The following functions can be used to extract model components: \code{summary()},
-#' \code{AIC()}, \code{logLik()}, \code{deviance()}, \code{vcov()}, \code{coef()},
-#' \code{stdEr()}, and \code{confint()}.
+#' The following functions can be used to extract model components:
+#' \code{\link[R2admb]{summary}}, \code{\link[R2admb]{AIC}}, \code{\link[R2admb]{logLik}},
+#' \code{\link[R2admb]{deviance}}, \code{\link[R2admb]{vcov}}, \code{\link[R2admb]coef}},
+#' \code{\link[R2admb]{stdEr}}, and \code{\link[R2admb]{confint}}.
 #'
 #' The latter takes arguments \code{level} and \code{method}, which specify the confidence
 #' level and calculation method respectively. The default method gives quadratic (Wald)
@@ -145,8 +147,6 @@ NULL
 #' \code{profpars} is non-null and provides names of model parameters that are to be
 #' profiled.
 #' @author Ben Stevenson
-#' @seealso \code{\link[R2admb]{do_admb}}, \code{\link[secr]{secr.fit}},
-#' \code{\link[secr]{make.capthist}}, \code{\link[secr]{read.traps}}.
 #' @export
 admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
                      ssqtoa = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
