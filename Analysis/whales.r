@@ -41,6 +41,7 @@ distfit01tc <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.t
 mrdsfit01tc <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
                            sv = c(10, 0.5, 100, 0.5, 100), admb.dir = admb.dir,
                            clean = TRUE, verbose = FALSE, trace = FALSE)
+
 ## Comparing the two models:
-LRTS <- 2*(logLik(fit) - logLik(mrdsfit01))
+LRTS <- 2*(logLik(mrdsfit01tc) - logLik(mrdsfit01))
 1 - pchisq(LRTS, 2)
