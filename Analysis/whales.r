@@ -42,6 +42,15 @@ mrdsfit01tc <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.tra
                            sv = c(10, 0.5, 100, 0.5, 100), admb.dir = admb.dir,
                            clean = TRUE, verbose = FALSE, trace = FALSE)
 
-## Comparing the two models:
+## Comparing the models to see if the extra g0 and sigma parameters are required:
 LRTS <- 2*(logLik(mrdsfit01tc) - logLik(mrdsfit01))
 1 - pchisq(LRTS, 2)
+
+AIC(mrdsfit01tc)
+AIC(mrdsfit01)
+
+LRTS <- 2*(logLik(distfit01tc) - logLik(distfit01))
+1 - pchisq(LRTS, 2)
+
+AIC(distfit01tc)
+AIC(distfit01)
