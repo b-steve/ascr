@@ -71,13 +71,13 @@ for (i in 1:nsims){
   capthists <- sim.capthist.dist(real.traps, popn, detectpars)
   capthist.dist <- capthists$dist
   capthist.mrds <- capthists$mrds
-  distfit <- disttrapcov(capt = capthist.dist, mask = mask, traps = real.traps,
+  distfit <- try(disttrapcov(capt = capthist.dist, mask = mask, traps = real.traps,
                          sv = c(D, g01, sigma1, g02, sigma2, alpha),
                          admb.dir = admb.dir, clean = TRUE,
-                         verbose = FALSE, trace = FALSE)
-  mrdsfit <- mrdstrapcov(capt = capthist.mrds, mask = mask, traps = real.traps,
+                         verbose = FALSE, trace = FALSE), silent = TRUE)
+  mrdsfit <- try(mrdstrapcov(capt = capthist.mrds, mask = mask, traps = real.traps,
                          sv = c(D, g01, sigma1, g02, sigma2), admb.dir = admb.dir,
-                         clean =  TRUE, verbose = FALSE, trace = FALSE)
+                         clean =  TRUE, verbose = FALSE, trace = FALSE), silent = TRUE)
   if (class(distfit) == "try-error"){
     distcoef <- NA
     distprobs <- c(distprobs, i)
