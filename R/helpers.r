@@ -289,6 +289,11 @@ mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
                  verbose = verbose, safe = FALSE,
                  run.opts = run.control(checkdata = "write", checkparam = "write",
                    clean_files = clean))
+  fit$data <- data
+  fit$traps <- traps
+  fit$mask <- as.matrix(mask)
+  fit$method <- "mrdstc"
+  class(fit) <- c(class(fit), fit$method, "admbsecr")
   fit
 }
 
@@ -329,5 +334,10 @@ disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
                  verbose = verbose, safe = FALSE,
                  run.opts = run.control(checkdata = "write", checkparam = "write",
                    clean_files = clean))
+  fit$data <- data
+  fit$traps <- traps
+  fit$mask <- as.matrix(mask)
+  fit$method <- "disttc"
+  class(fit) <- c(class(fit), fit$method, "admbsecr")
   fit
 }
