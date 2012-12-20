@@ -11,6 +11,7 @@ dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Get required library.
 library(secr)
+library(CircStats)
 
 ## Loading the admbsecr library.
 setwd(admbsecr.dir)
@@ -44,10 +45,10 @@ mask.dists <- distances(as.matrix(traps), as.matrix(mask))
 mask.angs <- angles(as.matrix(traps), as.matrix(mask))
 simprobs <- NULL
 angprobs <- NULL
-simpleres <- matrix(0, nrow = nsims, ncol = 3)
-angres <- matrix(0, nrow = nsims, ncol = 5)
-colnames(simpleres) <- c("D", "g0", "sigma")
-colnames(angres) <- c("D", "g0", "sigma", "kappa", "logLik")
+simpleres <- matrix(0, nrow = nsims, ncol = 2)
+angres <- matrix(0, nrow = nsims, ncol = 4)
+colnames(simpleres) <- c("D", "sigma")
+colnames(angres) <- c("D", "sigma", "kappa", "logLik")
 
 ## Carrying out simulation.
 for (i in 1:nsims){
@@ -113,6 +114,6 @@ for (i in 1:nsims){
 }
 
 ##To write the simulation results to a file.
-write.table(angres, "/home/ben/admbsecr/Results/gibbons/4/angres.txt", row.names = FALSE)
-write.table(simpleres, "/home/ben/admbsecr/Results/gibbons/4/simpleres.txt", row.names = FALSE)
+write.table(angres, "~/admbsecr/Results/gibbons/4/angres.txt", row.names = FALSE)
+write.table(simpleres, "~/admbsecr/Results/gibbons/4/simpleres.txt", row.names = FALSE)
 
