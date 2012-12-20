@@ -253,11 +253,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (is.list(sv)){
     sv <- c(sv, recursive = TRUE)
   }
-  ## Adding fixed parameters to "sv" in case they are required for
-  ## determining further start values.
-  for (i in names(fix)){
-    sv[i] <- fix[[i]]
-  }
   ##Setting sv to a vector full of "auto" if required.
   if (length(sv) == 1 & sv[1] == "auto"){
     sv <- rep("auto", npars)
@@ -281,6 +276,11 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     }
     ## Reordering sv vector.
     sv <- sv[parnames]
+  }
+  ## Adding fixed parameters to "sv" in case they are required for
+  ## determining further start values.
+  for (i in names(fix)){
+    sv[i] <- fix[[i]]
   }
   autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
                    "sigmatoa" = autosigmatoa, "kappa" = autokappa,
