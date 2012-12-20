@@ -1,3 +1,4 @@
+## Decreased the mask spacing and the trap spacing.
 buffer <- 6000
 mask.spacing <- 50
 trap.spacing <- 500

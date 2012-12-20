@@ -1,3 +1,4 @@
+## Increased D, decreased kappa.
 buffer <- 6000
 mask.spacing <- 100
 trap.spacing <- 2500
