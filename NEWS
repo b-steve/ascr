@@ -1,3 +1,12 @@
+admbsecr 0.1.3
+--------------
+
+* Added further methods to contours() function. It now works with
+  "ang" and "disttc".
+
+* The admbsecr() function now accepts an argument which fixes
+  parameters at a specific value and are not estimated.
+
 admbsecr 0.1.2
 --------------
 

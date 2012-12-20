@@ -110,6 +110,10 @@ NULL
 #' parameters need not be provided; if there is no component corresponding to a
 #' parameter it keeps its default bounds. See 'Details' for list of parameters used by
 #' each method.
+#' @param fix a list with optional components corresponding to parameters which are to
+#' be fixed rather than estimated. Each component should be a vector of length one,
+#' specifying the fixed value of the parameter, and the name of the component should be
+#' the name of the paramter to which this value applies.
 #' @param ssqtoa an optional matrix. If calculated before call to \code{admbsecr},
 #' providing this will prevent recalculation.
 #' @param cutoff The signal strength threshold of detection. Required if \code{method} is
@@ -149,7 +153,7 @@ NULL
 #' profiled.
 #' @author Ben Stevenson
 #' @export
-admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
+admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix = NULL,
                      ssqtoa = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
                      memory = NULL, profpars = NULL, clean = TRUE, verbose = FALSE,
                      trace = FALSE, autogen = TRUE){
@@ -249,7 +253,12 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
   if (is.list(sv)){
     sv <- c(sv, recursive = TRUE)
   }
-  ## Setting sv to a vector full of "auto" if required.
+  ## Adding fixed parameters to "sv" in case they are required for
+  ## determining further start values.
+  for (i in names(fix)){
+    sv[i] <- fix[[i]]
+  }
+  ##Setting sv to a vector full of "auto" if required.
   if (length(sv) == 1 & sv[1] == "auto"){
     sv <- rep("auto", npars)
     names(sv) <- parnames
@@ -330,6 +339,12 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL,
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
   } else {
     stop('method must be either "simple", "toa", "ang", "ss", "sstoa", "dist", or "mrds"')
+  }
+  ## Removing fixed parameters from param list and adding them to the data instead.
+  for (i in names(fix)){
+    params[[i]] <- NULL
+    bounds[[i]] <- NULL
+    data[[i]] <- fix[[i]]
   }
   ## Fitting the model.
   if (!is.null(profpars)){
