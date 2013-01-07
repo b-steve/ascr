@@ -54,7 +54,7 @@ colnames(angres) <- c("D", "sigma", "kappa", "logLik")
 for (i in 1:nsims){
   if (i == 1){
     print(c("start", date()))
-  } else if (i %% 100 == 0){
+  } else {
     print(c(i, date()))
   }
   ## Simulating data and setting things up for analysis.
