@@ -74,12 +74,14 @@ for (i in 1:nsims){
   radhist[radhist == 1] <- radians[radhist == 1]
   ## Straightforward SECR model using admbsecr()
   simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                            fix = list(g0 = 1), sv = truepars[1:3], admbwd = admb.dir,
+                            #fix = list(g0 = 1),
+                            sv = truepars[1:3], admbwd = admb.dir,
                             method = "simple", verbose = FALSE, autogen = FALSE),
                    silent = TRUE)
   if (class(simplefit) == "try-error"){
     simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                              fix = list(g0 = 1), sv = "auto", admbwd = admb.dir,
+                              #fix = list(g0 = 1),
+                              sv = "auto", admbwd = admb.dir,
                               method = "simple", verbose = FALSE, autogen = FALSE),
                      silent = TRUE)
   }
@@ -91,12 +93,14 @@ for (i in 1:nsims){
   }
   ## SECR model using supplementary angle data
   angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask,
-                         fix = list(g0 = 1), sv = truepars, admbwd = admb.dir,
+                         #fix = list(g0 = 1),
+                         sv = truepars, admbwd = admb.dir,
                          method = "ang", verbose = FALSE, autogen = FALSE),
                 silent = TRUE)
   if (class(angfit) == "try-error"){
     angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask,
-                           fix = list(g0 = 1), sv = "auto", admbwd = admb.dir,
+                           #fix = list(g0 = 1),
+                           sv = "auto", admbwd = admb.dir,
                            method = "ang", verbose = FALSE, autogen = FALSE),
                   silent = TRUE)
   }
@@ -114,6 +118,6 @@ for (i in 1:nsims){
 }
 
 ##To write the simulation results to a file.
-write.table(angres, "~/admbsecr/Results/gibbons/4/angres.txt", row.names = FALSE)
-write.table(simpleres, "~/admbsecr/Results/gibbons/4/simpleres.txt", row.names = FALSE)
+write.table(angres, "~/admbsecr/Results/gibbons/5/angres.txt", row.names = FALSE)
+write.table(simpleres, "~/admbsecr/Results/gibbons/5/simpleres.txt", row.names = FALSE)
 

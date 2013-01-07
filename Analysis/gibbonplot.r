@@ -1,6 +1,6 @@
 ## To read in simulation results from a file.
 admbsecr.dir <- "~/admbsecr" ## Point this to admbsecr folder.
-resfile <- paste(admbsecr.dir, "Results/gibbons/3/", sep = "/")
+resfile <- paste(admbsecr.dir, "Results/gibbons/4/", sep = "/")
 source(paste(resfile, "pars.r", sep = ""))
 angres <- read.table(paste(resfile, "angres.txt", sep = ""), header = TRUE)
 simpleres <- read.table(paste(resfile, "simpleres.txt", sep = ""), header = TRUE)
@@ -16,10 +16,10 @@ for (i in colnames(angres)){
 }
 
 ## Two different bandwidth selections.
-##dsimD <- density(simD)
-##dangD <- density(angD)
-dsimD <- density(simD, bw = "bcv")
-dangD <- density(angD, bw = "bcv")
+dsimD <- density(simD)
+dangD <- density(angD)
+##dsimD <- density(simD, bw = "bcv")
+##dangD <- density(angD, bw = "bcv")
 xs <- c(dsimD$x, dangD$x)
 ys <- c(dsimD$y, dangD$y)
 
