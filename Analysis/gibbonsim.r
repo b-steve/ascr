@@ -21,7 +21,7 @@ load_all(".")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 500
+nsims <- 1
 set.seed <- 7862
 buffer <- 6000
 mask.spacing <- 50
@@ -45,10 +45,10 @@ mask.dists <- distances(as.matrix(traps), as.matrix(mask))
 mask.angs <- angles(as.matrix(traps), as.matrix(mask))
 simprobs <- NULL
 angprobs <- NULL
-simpleres <- matrix(0, nrow = nsims, ncol = 2)
+simpleres <- matrix(0, nrow = nsims, ncol = 3)
 angres <- matrix(0, nrow = nsims, ncol = 4)
-colnames(simpleres) <- c("D", "sigma")
-colnames(angres) <- c("D", "sigma", "kappa", "logLik")
+colnames(simpleres) <- c("D", "g0", "sigma")
+colnames(angres) <- c("D", "g0", "sigma", "kappa")
 
 ## Carrying out simulation.
 for (i in 1:nsims){
@@ -78,14 +78,14 @@ for (i in 1:nsims){
                             sv = truepars[1:3], admbwd = admb.dir,
                             method = "simple", verbose = FALSE, autogen = FALSE),
                    silent = TRUE)
-  if (class(simplefit) == "try-error"){
+  if (class(simplefit)[1] == "try-error"){
     simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
                               #fix = list(g0 = 1),
                               sv = "auto", admbwd = admb.dir,
                               method = "simple", verbose = FALSE, autogen = FALSE),
                      silent = TRUE)
   }
-  if (class(simplefit) == "try-error"){
+  if (class(simplefit)[1] == "try-error"){
     simplecoef <- NA
     simprobs <- c(simprobs, i)
   } else {
@@ -97,18 +97,18 @@ for (i in 1:nsims){
                          sv = truepars, admbwd = admb.dir,
                          method = "ang", verbose = FALSE, autogen = FALSE),
                 silent = TRUE)
-  if (class(angfit) == "try-error"){
+  if (class(angfit)[1] == "try-error"){
     angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask,
                            #fix = list(g0 = 1),
                            sv = "auto", admbwd = admb.dir,
                            method = "ang", verbose = FALSE, autogen = FALSE),
                   silent = TRUE)
   }
-  if (class(angfit) == "try-error"){
+  if (class(angfit)[1] == "try-error"){
     angcoef <- NA
     angprobs <- c(angprobs, i)
   } else {
-    angcoef <- c(coef(angfit), logLik(angfit))
+    angcoef <- coef(angfit)
   }
   simpleres[i, ] <- simplecoef
   angres[i, ] <- angcoef
