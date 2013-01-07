@@ -1,8 +1,8 @@
 Package: admbsecr
 Type: Package
 Title: SECR models in ADMB through R.
-Version: 0.1.2
-Date: 2012-11-28
+Version: 0.1.3
+Date: 2012-12-20
 Author: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Depends:
