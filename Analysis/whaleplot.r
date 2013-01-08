@@ -29,7 +29,7 @@ ys <- c(ddistD$y, dmrdsD$y)
 
 ## Uncomment pdf() and dev.off() to create pdf of plot.
 
-##pdf(file = paste(resfile, "fig", sep = ""))
+pdf(file = paste(resfile, "fig", sep = ""))
 plot.new()
 plot.window(xlim = range(xs), ylim = c(0, max(ys)))
 axis(1)
@@ -43,4 +43,4 @@ title(main = "Simulated sampling distributions of animal density",
       xlab = expression(hat(D)), ylab = "Density")
 legend(x = "topright", legend = c("SECR + Distances", "MRDS"),
        col = c("blue", "red"), lty = 1)
-##dev.off()
+dev.off()
