@@ -3,10 +3,10 @@
 \title{Fitting SECR models in ADMB}
 \usage{
   admbsecr(capt, traps = NULL, mask, sv = "auto",
-    bounds = NULL, ssqtoa = NULL, cutoff = NULL,
-    admbwd = NULL, method = "simple", memory = NULL,
-    profpars = NULL, clean = TRUE, verbose = FALSE,
-    trace = FALSE, autogen = TRUE)
+    bounds = NULL, fix = NULL, ssqtoa = NULL,
+    cutoff = NULL, admbwd = NULL, method = "simple",
+    memory = NULL, profpars = NULL, clean = TRUE,
+    verbose = FALSE, trace = FALSE, autogen = TRUE)
 }
 \arguments{
   \item{capt}{an array of dimension \code{(n, S, K)}, where
@@ -55,6 +55,13 @@
   not be provided; if there is no component corresponding
   to a parameter it keeps its default bounds. See 'Details'
   for list of parameters used by each method.}
+
+  \item{fix}{a list with optional components corresponding
+  to parameters which are to be fixed rather than
+  estimated. Each component should be a vector of length
+  one, specifying the fixed value of the parameter, and the
+  name of the component should be the name of the paramter
+  to which this value applies.}
 
   \item{ssqtoa}{an optional matrix. If calculated before
   call to \code{admbsecr}, providing this will prevent

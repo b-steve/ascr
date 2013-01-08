@@ -1,6 +1,7 @@
 \name{contours}
 \alias{contours}
 \alias{contours.ang}
+\alias{contours.disttc}
 \alias{contours.simple}
 \alias{contours.ss}
 \alias{contours.toa}
@@ -28,6 +29,12 @@
   \method{contours}{ang} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE, col = "black",
     trapnos = FALSE,
+    showcapt = length(dets) == 1 && dets != "all",
+    xlim = NULL, ylim = NULL, ...)
+
+  \method{contours}{disttc} (fit, dets = "all",
+    add = FALSE, partition = FALSE, heat = FALSE,
+    col = "black", trapnos = FALSE,
     showcapt = length(dets) == 1 && dets != "all",
     xlim = NULL, ylim = NULL, ...)
 }

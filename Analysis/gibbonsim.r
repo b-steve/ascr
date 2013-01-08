@@ -7,33 +7,29 @@ if (.Platform$OS == "unix"){
 }
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
 work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
-func.dir <- paste(admbsecr.dir, "R", sep = sep)
-dat.dir <- paste(admbsecr.dir, "Data", "Gibbons", sep = sep)
+dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
-library("secr")
-library("CircStats")
-library("inline")
-library("Rcpp")
+## Get required library.
+library(secr)
+library(CircStats)
 
-## Set working directory to that with the functions.
-setwd(func.dir)
-## Get SECR functions.
-source("admbsecr.r")
-source("autofuns.r")
-source("helpers.r")
-source("lhoodfuns.r")
-source("tplmake.r")
+## Loading the admbsecr library.
+setwd(admbsecr.dir)
+library(devtools)
+load_all(".")
+##library(admbsecr)
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 500
+nsims <- 1
+set.seed <- 7862
 buffer <- 6000
 mask.spacing <- 50
 trap.spacing <- 500
 
 ## True parameter values.
 D <- 0.0416
-g0 <- 0.99999
+g0 <- 1
 sigma <- 1250
 kappa <- 70
 truepars <- c(D = D, g0 = g0, sigma = sigma, kappa = kappa)
@@ -50,15 +46,15 @@ mask.angs <- angles(as.matrix(traps), as.matrix(mask))
 simprobs <- NULL
 angprobs <- NULL
 simpleres <- matrix(0, nrow = nsims, ncol = 3)
-angres <- matrix(0, nrow = nsims, ncol = 5)
+angres <- matrix(0, nrow = nsims, ncol = 4)
 colnames(simpleres) <- c("D", "g0", "sigma")
-colnames(angres) <- c("D", "g0", "sigma", "kappa", "logLik")
+colnames(angres) <- c("D", "g0", "sigma", "kappa")
 
 ## Carrying out simulation.
 for (i in 1:nsims){
   if (i == 1){
     print(c("start", date()))
-  } else if (i %% 100 == 0){
+  } else {
     print(c(i, date()))
   }
   ## Simulating data and setting things up for analysis.
@@ -78,33 +74,41 @@ for (i in 1:nsims){
   radhist[radhist == 1] <- radians[radhist == 1]
   ## Straightforward SECR model using admbsecr()
   simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                            sv = truepars[1:3], admbwd = admb.dir, method = "simple",
-                            verbose = FALSE, autogen = FALSE), silent = TRUE)
-  if (class(simplefit) == "try-error"){
-    simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, sv = "auto",
-                              admbwd = admb.dir, method = "simple", verbose = FALSE,
-                              autogen = FALSE), silent = TRUE)
+                            #fix = list(g0 = 1),
+                            sv = truepars[1:3], admbwd = admb.dir,
+                            method = "simple", verbose = FALSE, autogen = FALSE),
+                   silent = TRUE)
+  if (class(simplefit)[1] == "try-error"){
+    simplefit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+                              #fix = list(g0 = 1),
+                              sv = "auto", admbwd = admb.dir,
+                              method = "simple", verbose = FALSE, autogen = FALSE),
+                     silent = TRUE)
   }
-  if (class(simplefit) == "try-error"){
+  if (class(simplefit)[1] == "try-error"){
     simplecoef <- NA
     simprobs <- c(simprobs, i)
   } else {
     simplecoef <- coef(simplefit)
   }
   ## SECR model using supplementary angle data
-  angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask, sv = truepars,
-                         admbwd = admb.dir, method = "ang", verbose = FALSE,
-                         autogen = FALSE), silent = TRUE)
-  if (class(angfit) == "try-error"){
-    angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask, sv = "auto",
-                           admbwd = admb.dir, method = "ang", verbose = FALSE,
-                           autogen = FALSE), silent = TRUE)
+  angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask,
+                         #fix = list(g0 = 1),
+                         sv = truepars, admbwd = admb.dir,
+                         method = "ang", verbose = FALSE, autogen = FALSE),
+                silent = TRUE)
+  if (class(angfit)[1] == "try-error"){
+    angfit <- try(admbsecr(capt = radhist, traps = traps, mask = mask,
+                           #fix = list(g0 = 1),
+                           sv = "auto", admbwd = admb.dir,
+                           method = "ang", verbose = FALSE, autogen = FALSE),
+                  silent = TRUE)
   }
-  if (class(angfit) == "try-error"){
+  if (class(angfit)[1] == "try-error"){
     angcoef <- NA
     angprobs <- c(angprobs, i)
   } else {
-    angcoef <- c(coef(angfit), logLik(angfit))
+    angcoef <- coef(angfit)
   }
   simpleres[i, ] <- simplecoef
   angres[i, ] <- angcoef
@@ -113,7 +117,7 @@ for (i in 1:nsims){
   }
 }
 
-To write the simulation results to a file.
-write.table(angres, "/home/ben/admbsecr/Results/gibbons/3/angres.txt", row.names = FALSE)
-write.table(simpleres, "/home/ben/admbsecr/Results/gibbons/3/simpleres.txt", row.names = FALSE)
+##To write the simulation results to a file.
+write.table(angres, "~/admbsecr/Results/gibbons/5/angres.txt", row.names = FALSE)
+write.table(simpleres, "~/admbsecr/Results/gibbons/5/simpleres.txt", row.names = FALSE)
 
