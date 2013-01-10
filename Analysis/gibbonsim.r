@@ -21,7 +21,7 @@ load_all(".")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 1
+nsims <- 500
 set.seed <- 7862
 buffer <- 6000
 mask.spacing <- 50
