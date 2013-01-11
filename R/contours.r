@@ -318,14 +318,7 @@ check.partition <- function(partition){
 make.plot <- function(mask, xlim, ylim){
   if (is.null(xlim)) xlim <- range(mask[, 1])
   if (is.null(ylim)) ylim <- range(mask[, 2])
-  if (require(TeachingDemos)){
-    op <- TeachingDemos::squishplot(xlim, ylim, 1)
-    plot(mask, type = "n", xlim = xlim, ylim = ylim)
-    par(op)
-  } else {
-    plot(mask, type = "n", xlim = xlim, ylim = ylim)
-    warning("Make package 'TeachingDemos' available to ensure an aspect ratio of 1.")
-  }
+  plot(mask, type = "n", xlim = xlim, ylim = ylim, asp = 1)
 }
 
 ## Calculates the log of the animal density due to binary capture history data.
