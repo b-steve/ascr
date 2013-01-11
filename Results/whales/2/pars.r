@@ -1,4 +1,4 @@
-## 2001 data. MRDS and distance error model comparison.
+## 2001 data. MRDS and distance error model comparison. 19.6% CV
 seed <- 8465
 D <- 1.7
 g01 <- 0.99999
