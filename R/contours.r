@@ -242,14 +242,13 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   sigma1 <- coefs["sigma1"]
   g02 <- coefs["g02"]
   sigma2 <- coefs["sigma2"]
-  sigma <- coefs["sigma"]
   alpha <- coefs["alpha"]
   allprobs <- matrix(0, nrow = nrow(dist), ncol = ncol(dist))
   allprobs[1, ] <- g01*exp(-dist[1, ]^2/(2*sigma1^2))
   allprobs[2, ] <- g02*exp(-dist[2, ]^2/(2*sigma2^2))
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
-    distdens <- logdens.disttc(alldistcapt, allcapt, dist, alpha, i)
+    distdens <- logdens.dist(alldistcapt, allcapt, dist, alpha, i)
     maskdens <- exp(simpledens + distdens)*D
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
@@ -260,6 +259,50 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
+#' @rdname contours
+#' @method contours dist
+#' @S3method contours dist
+contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
+                          heat = FALSE, col = "black", trapnos = FALSE,
+                          showcapt = length(dets) == 1 && dets != "all",
+                          xlim = NULL, ylim = NULL, ...){
+  data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
+  partition <- updated.arguments$partition
+  extra.contours <- check.partition(partition)
+  plot.simple <- extra.contours$plot.simple
+  plot.extra <- extra.contours$plot.extra
+  plot.part <- plot.simple | plot.extra
+  mask <- fit$mask
+  allcapt <- data$capt
+  alldistcapt <- data$distcapt
+  traps <- fit$traps
+  dist <- data$dist
+  ntraps <- data$ntraps
+  coefs <- coef(fit)
+  if (!add & !heat){
+    make.plot(mask, xlim, ylim)
+  }
+  D <- coefs["D"]
+  g0 <- coefs["g0"]
+  sigma <- coefs["sigma"]
+  alpha <- coefs["alpha"]
+  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  for (i in dets){
+    simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
+    distdens <- logdens.dist(alldistcapt, allcapt, dist, alpha, i)
+    maskdens <- exp(simpledens + distdens)*D
+    maskdens <- maskdens/sum(maskdens)
+    if (plot.part){
+      plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask)
+    }
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+}
 
 ## Checks inputs and returns altered argument values.
 warning.contours <- function(n, dets, add, heat, showcapt, partition = NULL){
@@ -370,7 +413,7 @@ logdens.toa <- function(alltoacapt, allcapt, times, sigmatoa, i){
   (1 - sum(capt))*log(sigmatoa^2) - ssqtoa/(2*sigmatoa^2)
 }
 
-logdens.disttc <- function(alldistcapt, allcapt, dist, alpha, i){
+logdens.dist <- function(alldistcapt, allcapt, dist, alpha, i){
   capt <- allcapt[i, ]
   distcapt <- alldistcapt[i, ]
   dettraps <- which(capt == 1)
