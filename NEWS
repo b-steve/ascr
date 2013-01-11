@@ -1,3 +1,9 @@
+admbsecr 0.1.4
+--------------
+
+* Added a further method to contours() function. It now works with
+  the "dist" method.
+
 admbsecr 0.1.3
 --------------
 
