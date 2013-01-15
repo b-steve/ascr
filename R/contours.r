@@ -208,6 +208,9 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+  if (showcapt){
+    plot.arrows(traps, allcapt, allangcapt, i, heat)
+  }
 }
 
 #' @rdname contours
@@ -319,7 +322,15 @@ warning.contours <- function(n, dets, add, heat, showcapt, partition = NULL){
     warning("Setting showcapt to FALSE as length(dets) > 1")
     showcapt <- FALSE
   }
+  if (add & showcapt){
+    warning("Setting showcapt to FALSE as add is TRUE")
+    showcapt <- FALSE
+  }
   if (!is.null(partition)){
+    if (heat & !(partition == FALSE | partition == "none")){
+      warning("Setting partition to FALSE as heat is TRUE")
+      partition <- FALSE
+    }
     if (heat & !(partition == FALSE | partition == "none")){
       warning("Setting partition to FALSE as heat is TRUE")
       partition <- FALSE
@@ -489,4 +500,18 @@ plot.traps <- function(traps, allcapt, i, heat, trapnos, showcapt){
     points(traps[which(allcapt[i, ] == 1), , drop = FALSE], cex = 2,
            lwd = 2, col = trapcol)
   }
+}
+
+## Plots arrows on traps for the angles method.
+plot.arrows <- function(traps, allcapt, allangcapt, i, heat){
+  xlim <- par("usr")[1:2]
+  ylim <- par("usr")[3:4]
+  arrowlength <- 0.15*min(range(xlim), range(ylim))
+  arrowcol <- ifelse(heat, "black", "red")
+  trappos <- traps[which(allcapt[i, ] == 1), , drop = FALSE]
+  bearings <- allangcapt[i, which(allcapt[i, ] == 1)]
+  sinb <- -sin(bearings)*arrowlength
+  cosb <- -cos(bearings)*arrowlength
+  arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
+         length = 0.1, col = arrowcol)
 }
