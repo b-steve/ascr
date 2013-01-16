@@ -1,4 +1,5 @@
 ## Decreased the mask spacing and the trap spacing.
+## This sim originally used in manuscript.
 buffer <- 6000
 mask.spacing <- 50
 trap.spacing <- 500

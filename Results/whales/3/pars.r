@@ -1,4 +1,4 @@
-## Same as (2) with alpha set at 9.8.
+## Same as (2) with alpha set at 9.8. (32% CV)
 seed <- 8465
 D <- 1.7
 g01 <- 0.99999

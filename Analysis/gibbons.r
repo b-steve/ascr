@@ -25,5 +25,5 @@ p <- c(log(0.1125153), logit(0.95), log(750), log(10))
 ## Carrying out angle analysis with admbsecr(). Start values same as
 ## above provided, need to change to sv = sv. Or else use sv = "auto".
 sv <- c("D" = exp(p[1]), "g0" = invlogit(p[2]), "sigma" = exp(p[3]), "kappa" = exp(p[4]))
-anglefit <- admbsecr(capt = radians, traps = traps, mask = mask, fix = list(g0 = 1),
+anglefit <- admbsecr(capt = radians, traps = traps, mask = mask, #fix = list(g0 = 1),
                      sv = "auto", admbwd = admb.dir, method = "ang")

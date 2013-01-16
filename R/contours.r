@@ -208,6 +208,9 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+  if (showcapt){
+    plot.arrows(traps, allcapt, allangcapt, i, heat)
+  }
 }
 
 #' @rdname contours
@@ -242,14 +245,13 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   sigma1 <- coefs["sigma1"]
   g02 <- coefs["g02"]
   sigma2 <- coefs["sigma2"]
-  sigma <- coefs["sigma"]
   alpha <- coefs["alpha"]
   allprobs <- matrix(0, nrow = nrow(dist), ncol = ncol(dist))
   allprobs[1, ] <- g01*exp(-dist[1, ]^2/(2*sigma1^2))
   allprobs[2, ] <- g02*exp(-dist[2, ]^2/(2*sigma2^2))
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
-    distdens <- logdens.disttc(alldistcapt, allcapt, dist, alpha, i)
+    distdens <- logdens.dist(alldistcapt, allcapt, dist, alpha, i)
     maskdens <- exp(simpledens + distdens)*D
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
@@ -260,6 +262,50 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
+#' @rdname contours
+#' @method contours dist
+#' @S3method contours dist
+contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
+                          heat = FALSE, col = "black", trapnos = FALSE,
+                          showcapt = length(dets) == 1 && dets != "all",
+                          xlim = NULL, ylim = NULL, ...){
+  data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
+  partition <- updated.arguments$partition
+  extra.contours <- check.partition(partition)
+  plot.simple <- extra.contours$plot.simple
+  plot.extra <- extra.contours$plot.extra
+  plot.part <- plot.simple | plot.extra
+  mask <- fit$mask
+  allcapt <- data$capt
+  alldistcapt <- data$distcapt
+  traps <- fit$traps
+  dist <- data$dist
+  ntraps <- data$ntraps
+  coefs <- coef(fit)
+  if (!add & !heat){
+    make.plot(mask, xlim, ylim)
+  }
+  D <- coefs["D"]
+  g0 <- coefs["g0"]
+  sigma <- coefs["sigma"]
+  alpha <- coefs["alpha"]
+  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  for (i in dets){
+    simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
+    distdens <- logdens.dist(alldistcapt, allcapt, dist, alpha, i)
+    maskdens <- exp(simpledens + distdens)*D
+    maskdens <- maskdens/sum(maskdens)
+    if (plot.part){
+      plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask)
+    }
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+}
 
 ## Checks inputs and returns altered argument values.
 warning.contours <- function(n, dets, add, heat, showcapt, partition = NULL){
@@ -276,7 +322,15 @@ warning.contours <- function(n, dets, add, heat, showcapt, partition = NULL){
     warning("Setting showcapt to FALSE as length(dets) > 1")
     showcapt <- FALSE
   }
+  if (add & showcapt){
+    warning("Setting showcapt to FALSE as add is TRUE")
+    showcapt <- FALSE
+  }
   if (!is.null(partition)){
+    if (heat & !(partition == FALSE | partition == "none")){
+      warning("Setting partition to FALSE as heat is TRUE")
+      partition <- FALSE
+    }
     if (heat & !(partition == FALSE | partition == "none")){
       warning("Setting partition to FALSE as heat is TRUE")
       partition <- FALSE
@@ -318,14 +372,7 @@ check.partition <- function(partition){
 make.plot <- function(mask, xlim, ylim){
   if (is.null(xlim)) xlim <- range(mask[, 1])
   if (is.null(ylim)) ylim <- range(mask[, 2])
-  if (require(TeachingDemos)){
-    op <- TeachingDemos::squishplot(xlim, ylim, 1)
-    plot(mask, type = "n", xlim = xlim, ylim = ylim)
-    par(op)
-  } else {
-    plot(mask, type = "n", xlim = xlim, ylim = ylim)
-    warning("Make package 'TeachingDemos' available to ensure an aspect ratio of 1.")
-  }
+  plot(mask, type = "n", xlim = xlim, ylim = ylim, asp = 1)
 }
 
 ## Calculates the log of the animal density due to binary capture history data.
@@ -377,7 +424,7 @@ logdens.toa <- function(alltoacapt, allcapt, times, sigmatoa, i){
   (1 - sum(capt))*log(sigmatoa^2) - ssqtoa/(2*sigmatoa^2)
 }
 
-logdens.disttc <- function(alldistcapt, allcapt, dist, alpha, i){
+logdens.dist <- function(alldistcapt, allcapt, dist, alpha, i){
   capt <- allcapt[i, ]
   distcapt <- alldistcapt[i, ]
   dettraps <- which(capt == 1)
@@ -453,4 +500,18 @@ plot.traps <- function(traps, allcapt, i, heat, trapnos, showcapt){
     points(traps[which(allcapt[i, ] == 1), , drop = FALSE], cex = 2,
            lwd = 2, col = trapcol)
   }
+}
+
+## Plots arrows on traps for the angles method.
+plot.arrows <- function(traps, allcapt, allangcapt, i, heat){
+  xlim <- par("usr")[1:2]
+  ylim <- par("usr")[3:4]
+  arrowlength <- 0.15*min(range(xlim), range(ylim))
+  arrowcol <- ifelse(heat, "black", "red")
+  trappos <- traps[which(allcapt[i, ] == 1), , drop = FALSE]
+  bearings <- allangcapt[i, which(allcapt[i, ] == 1)]
+  sinb <- -sin(bearings)*arrowlength
+  cosb <- -cos(bearings)*arrowlength
+  arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
+         length = 0.1, col = arrowcol)
 }
