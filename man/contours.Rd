@@ -11,38 +11,44 @@
   contours(fit, ...)
 
   \method{contours}{simple} (fit, dets = "all",
-    add = FALSE, heat = FALSE, col = "black",
+    add = FALSE, heat = FALSE, cols = "black", ltys = 1,
     trapnos = FALSE,
-    showcapt = length(dets) == 1 && dets != "all",
+    showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{toa} (fit, dets = "all", add = FALSE,
-    partition = FALSE, heat = FALSE, col = "black",
-    trapnos = FALSE,
-    showcapt = length(dets) == 1 && dets != "all",
+    partition = FALSE, heat = FALSE,
+    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    ltys = 1, trapnos = FALSE,
+    showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{ss} (fit, dets = "all", add = FALSE,
-    heat = FALSE, col = "black", trapnos = FALSE,
-    showcapt = length(dets) == 1 && dets != "all",
+    heat = FALSE,
+    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    ltys = 1, trapnos = FALSE,
+    showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{ang} (fit, dets = "all", add = FALSE,
-    partition = FALSE, heat = FALSE, col = "black",
-    trapnos = FALSE,
-    showcapt = length(dets) == 1 && dets != "all",
-    xlim = NULL, ylim = NULL, ...)
+    partition = FALSE, heat = FALSE,
+    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    ltys = 1, trapnos = FALSE,
+    showcapt = length(dets) == 1 && dets != "all" && !add,
+    arrows = showcapt, xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{disttc} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
-    col = "black", trapnos = FALSE,
-    showcapt = length(dets) == 1 && dets != "all",
+    cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
+    trapnos = FALSE,
+    showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{dist} (fit, dets = "all", add = FALSE,
-    partition = FALSE, heat = FALSE, col = "black",
+    partition = FALSE, heat = FALSE,
+    cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
     trapnos = FALSE,
-    showcapt = length(dets) == 1 && dets != "all",
+    showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 }
 \arguments{
@@ -50,7 +56,8 @@
   \code{\link[admbsecr]{admbsecr}}.}
 
   \item{...}{additional arguments to be passed to
-  \code{\link[graphics]{contour}}.}
+  \code{\link[graphics]{contour}}. Note that these will
+  apply to the main, simple, and extra contours.}
 
   \item{dets}{which individuals' location densities are
   plotted.}
@@ -61,8 +68,13 @@
   \item{heat}{logical, if \code{TRUE} a levelplot is used
   instead of contours.}
 
-  \item{col}{specifies the colour of the contours to be
-  plotted.}
+  \item{cols}{a vector specifying the colours of the main,
+  extra, and simple contours, in that order. Can be of
+  length 1 if all three are to be the same.}
+
+  \item{ltys}{vector specifying the line types for the
+  main, simple, and extra contours, in that order. Can be
+  of length 1 if all three are to be the same.}
 
   \item{trapnos}{logical, if \code{TRUE} the trap
   identification numbers are plotted.}
@@ -85,6 +97,10 @@
   only to add contours due to the binary capture history
   data, and \code{"extra"} indicates only to add contours
   due to the supplementary information.}
+
+  \item{arrows}{logical, indicating whether or not arrows
+  are to be plotted to show estimated animal bearing from
+  traps.}
 }
 \description{
   Plots a density of individual animals' locations from a

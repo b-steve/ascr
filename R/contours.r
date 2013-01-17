@@ -4,7 +4,9 @@
 #' \code{admbsecr()}.
 #'
 #' @param fit a fitted model returned by \code{\link[admbsecr]{admbsecr}}.
-#' @param ... additional arguments to be passed to \code{\link[graphics]{contour}}.
+#' @param ... additional arguments to be passed to
+#' \code{\link[graphics]{contour}}. Note that these will apply to the
+#' main, simple, and extra contours.
 #' @rdname contours
 #' @export
 contours <- function(fit, ...){
@@ -130,7 +132,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, toadens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3])
+                          cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
@@ -229,7 +231,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, angdens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3])
+                          cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
@@ -286,7 +288,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3])
+                          cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
@@ -336,7 +338,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3])
+                          cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
@@ -505,13 +507,23 @@ plot.main.contour <- function(maskdens, mask, xlim, ylim, heat, col, ...){
           xlim = xlim, ylim = ylim)
     box()
   } else {
-    contour(x = unique.x, y = unique.y, z = z, add = TRUE, col = col, ...)
+    nlevels <- list(...)$nlevels
+    if (is.null(nlevels)) nlevels <- 10
+    zlim <- range(z, na.rm = TRUE)
+    levels <- seq(zlim[1], zlim[2], length.out = nlevels)
+    labels <- numeric(nlevels)
+    for (i in 1:nlevels){
+      labels[i] <- format(round(sum(z[z > levels[i]], na.rm = TRUE)/
+                                sum(z, na.rm = TRUE), 2), nsmall = 2)
+    }
+    contour(x = unique.x, y = unique.y, z = z, add = TRUE, levels = levels,
+            labels = labels, col = col, ...)
   }
 }
 
 ## Plots the extra contours (i.e., when partition != FALSE).
 plot.other.contours <- function(detdens, otherdens, plot.simple,
-                                plot.extra, D, mask, cols, ltys){
+                                plot.extra, D, mask, cols, ltys, ...){
   secr.maskdens <- exp(detdens)*D
   secr.maskdens <- secr.maskdens/sum(secr.maskdens)
   other.maskdens <- exp(otherdens)*D
@@ -528,13 +540,29 @@ plot.other.contours <- function(detdens, otherdens, plot.simple,
       z1[xind, yind] <- secr.maskdens[j]
       z2[xind, yind] <- other.maskdens[j]
   }
+  nlevels <- list(...)$nlevels
+  if (is.null(nlevels)) nlevels <- 10
   if (plot.simple){
-      contour(x = unique.x, y = unique.y, z = z1, add = TRUE, col = cols[2],
-              lty = ltys[2])
+    zlim <- range(z1, na.rm = TRUE)
+    levels <- seq(zlim[1], zlim[2], length.out = nlevels)
+    labels <- numeric(nlevels)
+    for (i in 1:nlevels){
+      labels[i] <- format(round(sum(z1[z1 > levels[i]], na.rm = TRUE)/
+                                sum(z1, na.rm = TRUE), 2), nsmall = 2)
+    }
+    contour(x = unique.x, y = unique.y, z = z1, add = TRUE, levels = levels,
+            labels = labels, col = cols[2], lty = ltys[2], ...)
   }
   if (plot.extra){
-      contour(x = unique.x, y = unique.y, z = z2, add = TRUE, col = cols[1],
-              lty = ltys[1])
+    zlim <- range(z2, na.rm = TRUE)
+    levels <- seq(zlim[1], zlim[2], length.out = nlevels)
+    labels <- numeric(nlevels)
+    for (i in 1:nlevels){
+      labels[i] <- format(round(sum(z2[z2 > levels[i]], na.rm = TRUE)/
+                                sum(z2, na.rm = TRUE), 2), nsmall = 2)
+    }
+    contour(x = unique.x, y = unique.y, z = z2, add = TRUE, levels = levels,
+            labels = labels, col = cols[1], lty = ltys[1], ...)
   }
 }
 
