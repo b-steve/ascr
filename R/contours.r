@@ -22,7 +22,12 @@ contours.default <- function(fit, ...){
 #' @param add logical, if \code{TRUE} the contours are added to an already
 #' existing plot.
 #' @param heat logical, if \code{TRUE} a levelplot is used instead of contours.
-#' @param col specifies the colour of the contours to be plotted.
+#' @param cols a vector specifying the colours of the main, extra, and
+#' simple contours, in that order. Can be of length 1 if all three are
+#' to be the same.
+#' @param ltys vector specifying the line types for the main, simple,
+#' and extra contours, in that order. Can be of length 1 if all three
+#' are to be the same.
 #' @param trapnos logical, if \code{TRUE} the trap identification numbers are
 #' plotted.
 #' @param showcapt logical, if \code{TRUE} circles are drawn around detectors
@@ -32,14 +37,16 @@ contours.default <- function(fit, ...){
 #' @method contours simple
 #' @S3method contours simple
 contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
-                            col = "black", trapnos = FALSE,
-                            showcapt = length(dets) == 1 && dets != "all",
+                            cols = "black", ltys = 1, trapnos = FALSE,
+                            showcapt = length(dets) == 1 && dets != "all" && !add,
                             xlim = NULL, ylim = NULL, ...){
   data <- fit$data
   n <- data$n
-  updated.arguments <- warning.contours(n, dets, add, heat, showcapt)
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
   mask <- fit$mask
   allcapt <- data$capt
   traps <- fit$traps
@@ -57,7 +64,7 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     maskdens <- exp(simpledens)*D
     maskdens <- maskdens/sum(maskdens)
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -73,15 +80,20 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
 #' @method contours toa
 #' @S3method contours toa
 contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                         heat = FALSE, col = "black", trapnos = FALSE,
-                         showcapt = length(dets) == 1 && dets != "all",
+                         heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4),
+                                         rgb(0, 0, 1, 0.4)), ltys = 1,
+                         trapnos = FALSE,
+                         showcapt = length(dets) == 1 && dets != "all" && !add,
                          xlim = NULL, ylim = NULL, ...){
   data <- fit$data
   n <- data$n
-  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
+                                        partition = partition)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
   extra.contours <- check.partition(partition)
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
@@ -117,9 +129,10 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- exp(simpledens + toadens)*D
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
-      plot.other.contours(simpledens, toadens, plot.simple, plot.extra, D, mask)
+      plot.other.contours(simpledens, toadens, plot.simple, plot.extra, D, mask,
+                          cols = cols[2:3], ltys = ltys[2:3])
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -128,14 +141,18 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @method contours ss
 #' @S3method contours ss
 contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
-                        col = "black", trapnos = FALSE,
-                        showcapt = length(dets) == 1 && dets != "all",
+                        cols = c("black", rgb(0, 1, 0, 0.4),
+                                         rgb(0, 0, 1, 0.4)), ltys = 1,
+                        trapnos = FALSE,
+                        showcapt = length(dets) == 1 && dets != "all" && !add,
                         xlim = NULL, ylim = NULL, ...){
   data <- fit$data
   n <- data$n
-  updated.arguments <- warning.contours(n, dets, add, heat, showcapt)
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
   mask <- fit$mask
   allcapt <- data$capt
   allsscapt <- data$sscapt
@@ -159,24 +176,32 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                          muss, sigmass, i)
     maskdens <- exp(ssdens)*D
     maskdens <- maskdens/sum(maskdens)
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
 #' @rdname contours
+#' @param arrows logical, indicating whether or not arrows are to be
+#' plotted to show estimated animal bearing from traps.
 #' @method contours ang
 #' @S3method contours ang
 contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                         heat = FALSE, col = "black", trapnos = FALSE,
-                         showcapt = length(dets) == 1 && dets != "all",
-                         xlim = NULL, ylim = NULL, ...){
+                         heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4),
+                                         rgb(0, 0, 1, 0.4)), ltys = 1,
+                         trapnos = FALSE,
+                         showcapt = length(dets) == 1 && dets != "all" && !add,
+                         arrows = showcapt, xlim = NULL, ylim = NULL, ...){
   data <- fit$data
   n <- data$n
-  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
+                                        partition = partition, arrows = arrows)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
+  arrows <- updated.arguments$arrows
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
   extra.contours <- check.partition(partition)
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
@@ -203,12 +228,13 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- exp(simpledens + angdens)*D
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
-      plot.other.contours(simpledens, angdens, plot.simple, plot.extra, D, mask)
+      plot.other.contours(simpledens, angdens, plot.simple, plot.extra, D, mask,
+                          cols = cols[2:3], ltys = ltys[2:3])
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
-  if (showcapt){
+  if (arrows){
     plot.arrows(traps, allcapt, allangcapt, i, heat)
   }
 }
@@ -217,15 +243,19 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @method contours disttc
 #' @S3method contours disttc
 contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                            heat = FALSE, col = "black", trapnos = FALSE,
-                            showcapt = length(dets) == 1 && dets != "all",
+                            heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4)),
+                            ltys = 1, trapnos = FALSE,
+                            showcapt = length(dets) == 1 && dets != "all" && !add,
                             xlim = NULL, ylim = NULL, ...){
   data <- fit$data
   n <- data$n
-  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
+                                        partition = partition)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
   extra.contours <- check.partition(partition)
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
@@ -255,9 +285,10 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- exp(simpledens + distdens)*D
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
-      plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask)
+      plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
+                          cols = cols[2:3], ltys = ltys[2:3])
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -266,15 +297,19 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @method contours dist
 #' @S3method contours dist
 contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                          heat = FALSE, col = "black", trapnos = FALSE,
-                          showcapt = length(dets) == 1 && dets != "all",
+                          heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4)),
+                          ltys = 1, trapnos = FALSE,
+                          showcapt = length(dets) == 1 && dets != "all" && !add,
                           xlim = NULL, ylim = NULL, ...){
   data <- fit$data
   n <- data$n
-  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, partition)
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
+                                        partition = partition)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
   extra.contours <- check.partition(partition)
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
@@ -300,15 +335,17 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- exp(simpledens + distdens)*D
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
-      plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask)
+      plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
+                          cols = cols[2:3], ltys = ltys[2:3])
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, col, ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
 ## Checks inputs and returns altered argument values.
-warning.contours <- function(n, dets, add, heat, showcapt, partition = NULL){
+warning.contours <- function(n, dets, add, heat, showcapt, cols, ltys,
+                             partition = NULL, arrows = NULL){
   if (length(dets) == 1 && dets == "all"){
     dets <- 1:n
   }
@@ -340,11 +377,24 @@ warning.contours <- function(n, dets, add, heat, showcapt, partition = NULL){
       partition <- FALSE
     }
   }
-  list(dets = dets, showcapt = showcapt, partition = partition)
+  if (!is.null(arrows)){
+    if (add & arrows){
+      warning("Setting arrows to FALSE as add is TRUE")
+      arrows <- FALSE
+    }
+  }
+  if (length(cols) == 1){
+    cols <- rep(cols, 3)
+  }
+  if (length(ltys) == 1){
+    ltys <- rep(ltys, 3)
+  }
+  list(dets = dets, showcapt = showcapt, partition = partition, arrows = arrows,
+       cols = cols, ltys = ltys)
 }
 
 ## Sets up indicators for simple and extra contour plotting.
-check.partition <- function(partition){
+check.partition <- function(partition, cols, ltys){
   if (is.logical(partition)){
     plot.simple <- partition
     plot.extra <- partition
@@ -461,7 +511,7 @@ plot.main.contour <- function(maskdens, mask, xlim, ylim, heat, col, ...){
 
 ## Plots the extra contours (i.e., when partition != FALSE).
 plot.other.contours <- function(detdens, otherdens, plot.simple,
-                                plot.extra, D, mask){
+                                plot.extra, D, mask, cols, ltys){
   secr.maskdens <- exp(detdens)*D
   secr.maskdens <- secr.maskdens/sum(secr.maskdens)
   other.maskdens <- exp(otherdens)*D
@@ -478,13 +528,13 @@ plot.other.contours <- function(detdens, otherdens, plot.simple,
       z1[xind, yind] <- secr.maskdens[j]
       z2[xind, yind] <- other.maskdens[j]
   }
-  z1col <- rgb(0, 1, 0, 0.4)
-  z2col <- rgb(0, 0, 1, 0.4)
   if (plot.simple){
-      contour(x = unique.x, y = unique.y, z = z1, add = TRUE, col = z1col)
+      contour(x = unique.x, y = unique.y, z = z1, add = TRUE, col = cols[2],
+              lty = ltys[2])
   }
   if (plot.extra){
-      contour(x = unique.x, y = unique.y, z = z2, add = TRUE, col = z2col)
+      contour(x = unique.x, y = unique.y, z = z2, add = TRUE, col = cols[1],
+              lty = ltys[1])
   }
 }
 
