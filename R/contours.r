@@ -66,7 +66,7 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     maskdens <- exp(simpledens)*D
     maskdens <- maskdens/sum(maskdens)
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -134,11 +134,12 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
       plot.other.contours(simpledens, toadens, plot.simple, plot.extra, D, mask,
                           cols = cols[2:3], ltys = ltys[2:3], ...)
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
+## No partition on signal strength as it is included in the detection function.
 #' @rdname contours
 #' @method contours ss
 #' @S3method contours ss
@@ -178,7 +179,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                          muss, sigmass, i)
     maskdens <- exp(ssdens)*D
     maskdens <- maskdens/sum(maskdens)
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -233,7 +234,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
       plot.other.contours(simpledens, angdens, plot.simple, plot.extra, D, mask,
                           cols = cols[2:3], ltys = ltys[2:3], ...)
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
   if (arrows){
@@ -290,7 +291,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
       plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
                           cols = cols[2:3], ltys = ltys[2:3], ...)
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -340,7 +341,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
       plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
                           cols = cols[2:3], ltys = ltys[2:3], ...)
     }
-    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ...)
+    plot.main.contour(maskdens, mask, xlim, ylim, heat, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -489,7 +490,7 @@ logdens.dist <- function(alldistcapt, allcapt, dist, alpha, i){
 }
 
 ## Plots the overall contour for the animal.
-plot.main.contour <- function(maskdens, mask, xlim, ylim, heat, col, ...){
+plot.main.contour <- function(maskdens, mask, xlim, ylim, heat, col, lty, ...){
   x <- mask[, 1]
   y <- mask[, 2]
   unique.x <- sort(unique(x))
@@ -517,7 +518,7 @@ plot.main.contour <- function(maskdens, mask, xlim, ylim, heat, col, ...){
                                 sum(z, na.rm = TRUE), 2), nsmall = 2)
     }
     contour(x = unique.x, y = unique.y, z = z, add = TRUE, levels = levels,
-            labels = labels, col = col, ...)
+            labels = labels, col = col, lty = lty, ...)
   }
 }
 
