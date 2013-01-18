@@ -136,7 +136,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, toadens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3], ...)
+                          problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
                       problevels, cols[1], ltys[1], ...)
@@ -239,7 +239,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, angdens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3], ...)
+                          problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
                       problevels, cols[1], ltys[1], ...)
@@ -297,7 +297,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3], ...)
+                          problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
                       problevels, cols[1], ltys[1], ...)
@@ -348,7 +348,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     maskdens <- maskdens/sum(maskdens)
     if (plot.part){
       plot.other.contours(simpledens, distdens, plot.simple, plot.extra, D, mask,
-                          cols = cols[2:3], ltys = ltys[2:3], ...)
+                          problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
                       problevels, cols[1], ltys[1], ...)
@@ -554,7 +554,8 @@ plot.main.contour <- function(maskdens, mask, xlim, ylim, heat,
 
 ## Plots the extra contours (i.e., when partition != FALSE).
 plot.other.contours <- function(detdens, otherdens, plot.simple,
-                                plot.extra, D, mask, cols, ltys, ...){
+                                plot.extra, D, mask, problevels,
+                                cols, ltys, ...){
   secr.maskdens <- exp(detdens)*D
   secr.maskdens <- secr.maskdens/sum(secr.maskdens)
   other.maskdens <- exp(otherdens)*D
@@ -571,11 +572,22 @@ plot.other.contours <- function(detdens, otherdens, plot.simple,
       z1[xind, yind] <- secr.maskdens[j]
       z2[xind, yind] <- other.maskdens[j]
   }
-  nlevels <- list(...)$nlevels
-  if (is.null(nlevels)) nlevels <- 10
   if (plot.simple){
-    zlim <- range(z1, na.rm = TRUE)
-    levels <- seq(zlim[1], zlim[2], length.out = nlevels)
+    if (is.null(problevels)){
+      nlevels <- list(...)$nlevels
+      if (is.null(nlevels)) nlevels <- 10
+      zlim <- range(z1, na.rm = TRUE)
+      levels <- seq(zlim[1], zlim[2], length.out = nlevels)
+    } else {
+      nlevels <- length(problevels)
+      zs <- sort(z1, decreasing = TRUE)
+      probs <- cumsum(zs)/sum(zs)
+      levels <- numeric(nlevels)
+      for (i in 1:nlevels){
+        levels[i] <- zs[which(abs(probs - problevels[i]) ==
+                              min(abs(probs - problevels[i])))[1]]
+      }
+    }
     labels <- numeric(nlevels)
     for (i in 1:nlevels){
       labels[i] <- format(round(sum(z1[z1 > levels[i]], na.rm = TRUE)/
@@ -585,8 +597,21 @@ plot.other.contours <- function(detdens, otherdens, plot.simple,
             labels = labels, col = cols[2], lty = ltys[2], ...)
   }
   if (plot.extra){
-    zlim <- range(z2, na.rm = TRUE)
-    levels <- seq(zlim[1], zlim[2], length.out = nlevels)
+    if (is.null(problevels)){
+      nlevels <- list(...)$nlevels
+      if (is.null(nlevels)) nlevels <- 10
+      zlim <- range(z2, na.rm = TRUE)
+      levels <- seq(zlim[1], zlim[2], length.out = nlevels)
+    } else {
+      nlevels <- length(problevels)
+      zs <- sort(z2, decreasing = TRUE)
+      probs <- cumsum(zs)/sum(zs)
+      levels <- numeric(nlevels)
+      for (i in 1:nlevels){
+        levels[i] <- zs[which(abs(probs - problevels[i]) ==
+                              min(abs(probs - problevels[i])))[1]]
+      }
+    }
     labels <- numeric(nlevels)
     for (i in 1:nlevels){
       labels[i] <- format(round(sum(z2[z2 > levels[i]], na.rm = TRUE)/
