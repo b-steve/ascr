@@ -192,6 +192,75 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
 }
 
 #' @rdname contours
+#' @method contours ss
+#' @S3method contours ss
+contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
+                           heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4),
+                                           rgb(0, 0, 1, 0.4)), ltys = 1,
+                           trapnos = FALSE, problevels = NULL,
+                           showcapt = length(dets) == 1 && dets != "all" && !add,
+                           xlim = NULL, ylim = NULL, ...){
+  data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
+                                        ltys, partition = partition, ...)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
+  partition <- updated.arguments$partition
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
+  extra.contours <- check.partition(partition)
+  plot.simple <- extra.contours$plot.simple
+  plot.extra <- extra.contours$plot.extra
+  plot.part <- plot.simple | plot.extra
+  mask <- fit$mask
+  allcapt <- data$capt
+  allsscapt <- data$sscapt
+  alltoacapt <- data$toacapt
+  traps <- fit$traps
+  dist <- data$dist
+  ntraps <- data$ntraps
+  nmask <- data$nmask
+  cutoff <- fit$data$c
+  coefs <- coef(fit)
+  if (!add & !heat){
+    make.plot(mask, xlim, ylim)
+  }
+  D <- coefs["D"]
+  ssb0 <- coefs["ssb0"]
+  ssb1 <- coefs["ssb1"]
+  sigmass <- coefs["sigmass"]
+  sigmatoa <- coefs["sigmatoa"]
+  times <- dist/330
+  muss <- ssb0 + ssb1*dist
+  allnonprobs <- pnorm(cutoff, muss, sigmass)
+  for (i in dets){
+    ssdens <- logdens.ss(allcapt, allsscapt, allnonprobs, ntraps,
+                         muss, sigmass, i)
+    ## Can only incorporate TOA part if more than one detection.
+    if (sum(allcapt[i, ]) > 1){
+      toadens <- logdens.toa(alltoacapt, allcapt, times, sigmatoa, i)
+    } else {
+      if (partition){
+        warning("Setting partition to FALSE; no TOA information.")
+        plot.part <- FALSE
+      }
+      toadens <- 0
+    }
+    maskdens <- exp(ssdens + toadens)*D
+    maskdens <- maskdens/sum(maskdens)
+    if (plot.part){
+      plot.other.contours(ssdens, toadens, plot.simple, plot.extra, D, mask,
+                          problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
+    }
+    plot.main.contour(maskdens, mask, xlim, ylim, heat,
+                      problevels, cols[1], ltys[1], ...)
+  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+}
+
+
+#' @rdname contours
 #' @param arrows logical, indicating whether or not arrows are to be
 #' plotted to show estimated animal bearing from traps.
 #' @method contours ang
