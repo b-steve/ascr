@@ -61,9 +61,11 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  D <- coefs["D"]
-  g0 <- coefs["g0"]
-  sigma <- coefs["sigma"]
+  allpars <- c("D", "g0", "sigma")
+  estpars <- names(coefs)
+  fixpars <- allpars[!allpars %in% estpars]
+  for (i in estpars) assign(i, coefs[i])
+  for (i in fixpars) assign(i, data[[i]])
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
@@ -114,10 +116,11 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  D <- coefs["D"]
-  g0 <- coefs["g0"]
-  sigma <- coefs["sigma"]
-  sigmatoa <- coefs["sigmatoa"]
+  allpars <- c("D", "g0", "sigma", "sigmatoa")
+  estpars <- names(coefs)
+  fixpars <- allpars[!allpars %in% estpars]
+  for (i in estpars) assign(i, coefs[i])
+  for (i in fixpars) assign(i, data[[i]])
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
   times <- dist/330
   for (i in dets){
@@ -174,10 +177,11 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  D <- coefs["D"]
-  ssb0 <- coefs["ssb0"]
-  ssb1 <- coefs["ssb1"]
-  sigmass <- coefs["sigmass"]
+  allpars <- c("D", "ssb0", "ssb1", "sigmass")
+  estpars <- names(coefs)
+  fixpars <- allpars[!allpars %in% estpars]
+  for (i in estpars) assign(i, coefs[i])
+  for (i in fixpars) assign(i, data[[i]])
   muss <- ssb0 + ssb1*dist
   allnonprobs <- pnorm(cutoff, muss, sigmass)
   for (i in dets){
@@ -226,11 +230,11 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  D <- coefs["D"]
-  ssb0 <- coefs["ssb0"]
-  ssb1 <- coefs["ssb1"]
-  sigmass <- coefs["sigmass"]
-  sigmatoa <- coefs["sigmatoa"]
+  allpars <- c("D", "ssb0", "ssb1", "sigmass", "sigmatoa")
+  estpars <- names(coefs)
+  fixpars <- allpars[!allpars %in% estpars]
+  for (i in estpars) assign(i, coefs[i])
+  for (i in fixpars) assign(i, data[[i]])
   times <- dist/330
   muss <- ssb0 + ssb1*dist
   allnonprobs <- pnorm(cutoff, muss, sigmass)
@@ -296,10 +300,11 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  D <- coefs["D"]
-  g0 <- coefs["g0"]
-  sigma <- coefs["sigma"]
-  kappa <- coefs["kappa"]
+  allpars <- c("D", "g0", "sigma", "kappa")
+  estpars <- names(coefs)
+  fixpars <- allpars[!allpars %in% estpars]
+  for (i in estpars) assign(i, coefs[i])
+  for (i in fixpars) assign(i, data[[i]])
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
@@ -350,12 +355,11 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  D <- coefs["D"]
-  g01 <- coefs["g01"]
-  sigma1 <- coefs["sigma1"]
-  g02 <- coefs["g02"]
-  sigma2 <- coefs["sigma2"]
-  alpha <- coefs["alpha"]
+  allpars <- c("D", "g01", "sigma1", "g02", "sigma2", "alpha")
+  estpars <- names(coefs)
+  fixpars <- allpars[!allpars %in% estpars]
+  for (i in estpars) assign(i, coefs[i])
+  for (i in fixpars) assign(i, data[[i]])
   allprobs <- matrix(0, nrow = nrow(dist), ncol = ncol(dist))
   allprobs[1, ] <- g01*exp(-dist[1, ]^2/(2*sigma1^2))
   allprobs[2, ] <- g02*exp(-dist[2, ]^2/(2*sigma2^2))
@@ -405,10 +409,11 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  D <- coefs["D"]
-  g0 <- coefs["g0"]
-  sigma <- coefs["sigma"]
-  alpha <- coefs["alpha"]
+  allpars <- c("D", "g0", "sigma", "alpha")
+  estpars <- names(coefs)
+  fixpars <- allpars[!allpars %in% estpars]
+  for (i in estpars) assign(i, coefs[i])
+  for (i in fixpars) assign(i, data[[i]])
   allprobs <- g0*exp(-dist^2/(2*sigma^2))
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
