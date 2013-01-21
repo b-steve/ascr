@@ -43,14 +43,21 @@ mrdsfit01tc <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.tra
                            clean = TRUE, verbose = FALSE, trace = FALSE)
 
 ## Comparing the models to see if the extra g0 and sigma parameters are required:
+
+## Likelihood-ratio tests both strongly suggest g01 != g02, sigma1 != sigma2
 LRTS <- 2*(logLik(mrdsfit01tc) - logLik(mrdsfit01))
 1 - pchisq(LRTS, 2)
-
-AIC(mrdsfit01tc)
-AIC(mrdsfit01)
-
 LRTS <- 2*(logLik(distfit01tc) - logLik(distfit01))
 1 - pchisq(LRTS, 2)
 
+## AICs also show the same thing.
+AIC(mrdsfit01tc)
+AIC(mrdsfit01)
 AIC(distfit01tc)
 AIC(distfit01)
+## Note that you cannot compare mrds and dist fits using AIC here as
+## the same data is not used (distances for whales seen by both
+## observers are averaged for mrds).
+
+## Contour plot example:
+contours(distfit01tc, 1, ylim = c(-10, 1000), xlim = c(-1000, 1000))

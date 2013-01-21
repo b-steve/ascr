@@ -1,3 +1,4 @@
+## Same as (3) with alpha set at 4. (50% CV)
 seed <- 6154
 D <- 1.7
 g01 <- 0.99999

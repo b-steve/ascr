@@ -1,3 +1,12 @@
+admbsecr 0.1.4
+--------------
+
+* Added a further method to contours() function. It now works with
+  the "dist" method.
+
+* When contours() is used on a fit of method "ang", arrows are plotted
+  from the traps, indicating the estimated bearing of the animal.
+
 admbsecr 0.1.3
 --------------
 
@@ -12,8 +21,7 @@ admbsecr 0.1.3
     * Each trap is associated with its own halfnormal detection
       function.
 
-  Eventually these specific cases will also be handled by
-  admbsecr().
+  Eventually these specific cases will also be handled by admbsecr().
 
 * Added further methods to contours() function. It now works with
   methods "toass", "ang", and "disttc".
