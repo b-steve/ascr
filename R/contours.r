@@ -376,6 +376,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                       problevels, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+  plot.circles(traps, allcapt, alldistcapt, i, heat)
 }
 
 #' @rdname contours
@@ -428,6 +429,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                       problevels, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
+  plot.circles(traps, allcapt, alldistcapt, i, heat)
 }
 
 ## Checks inputs and returns altered argument values.
@@ -724,8 +726,19 @@ plot.arrows <- function(traps, allcapt, allangcapt, i, heat){
          length = 0.1, col = arrowcol)
 }
 
+## Plots circles indicating estimated distance from traps.
+plot.circles <- function(traps, allcapt,alldistcapt, i, heat){
+  circlecol <- ifelse(heat, "black", "red")
+  trappos <- as.matrix(traps[which(allcapt[i, ] == 1), , drop = FALSE])
+  dists <- alldistcapt[i, which(allcapt[i, ] == 1)]
+  for (j in 1:nrow(trappos)){
+    circles(trappos[j, ], dists[j], col = circlecol, lwd = 2)
+  }
+}
 
-regefun <- function(x, y, ...){
-  col <- "red"
-  plot(x, y, col = col, ...)
+circles <- function(cent, rad, col = "black", lwd = 1){
+  angs <- seq(0, 2*pi, length.out = 100)
+  xs <- cent[1] + sin(angs)*rad
+  ys <- cent[2] + cos(angs)*rad
+  lines(xs, ys, col = col, lwd = lwd)
 }
