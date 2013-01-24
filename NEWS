@@ -1,11 +1,18 @@
 admbsecr 0.1.4
 --------------
 
-* Added a further method to contours() function. It now works with
-  the "dist" method.
+* Added a further methods to contours() function. It now works with
+  the "dist", "sstoa" and "mrds" methods.
 
 * When contours() is used on a fit of method "ang", arrows are plotted
   from the traps, indicating the estimated bearing of the animal.
+
+* The labels on contour plots now correspond to the estimated
+  probability of the individual being located within the contour,
+  rather than probability density.
+
+* The user can specify the (approximate) probability values at which
+  contours will be drawn.
 
 admbsecr 0.1.3
 --------------
