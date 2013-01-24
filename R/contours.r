@@ -432,6 +432,30 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.circles(traps, allcapt, alldistcapt, i, heat)
 }
 
+#' @rdname contours
+#' @method contours mrds
+#' @S3method contours mrds
+contours.mrds <- function(fit, dets = "all", add = FALSE, trapnos = FALSE,
+                          showcapt = length(dets) == 1 && dets != "all" && !add,
+                          xlim = NULL, ylim = NULL, ...){
+  data <- fit$data
+  n <- data$n
+  mask <- fit$mask
+  allcapt <- data$capt
+  alldistcapt <- data$indivdist
+  traps <- fit$traps
+  dist <- data$dist
+  ntraps <- data$ntraps
+  coefs <- coef(fit)
+  if (!add){
+    make.plot(mask, xlim, ylim)
+  }
+  for (i in dets){
+    plot.traps(traps, allcapt, i, FALSE, trapnos, showcapt)
+    plot.circles(traps, allcapt, alldistcapt, i, FALSE)
+  }
+}
+
 ## Checks inputs and returns altered argument values.
 warning.contours <- function(n, dets, add, heat, showcapt, cols, ltys,
                              partition = NULL, arrows = NULL, ...){
@@ -727,7 +751,7 @@ plot.arrows <- function(traps, allcapt, allangcapt, i, heat){
 }
 
 ## Plots circles indicating estimated distance from traps.
-plot.circles <- function(traps, allcapt,alldistcapt, i, heat){
+plot.circles <- function(traps, allcapt, alldistcapt, i, heat){
   circlecol <- ifelse(heat, "black", "red")
   trappos <- as.matrix(traps[which(allcapt[i, ] == 1), , drop = FALSE])
   dists <- alldistcapt[i, which(allcapt[i, ] == 1)]
