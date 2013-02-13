@@ -123,6 +123,9 @@ NULL
 #' \code{.tpl} file is located.
 #' @param method either \code{"simple"}, \code{"toa"}, \code{"ang"}, \code{"ss"}, or
 #' \code{"sstoa"}. See 'Details'.
+#' @param detfn the detection function to be used. Either halfnormal (\code{"hn"}),
+#' hazard rate (\code{"hr"}), signal strength (\code{"ss"}, see 'Details') or insertname
+#' (\code{"bo"}).
 #' @param memory value of \code{arrmblsize} in ADMB. Increase this if ADMB reports a
 #' memory error.
 #' @param profpars character vector of names of parameters over which profile likelihood
@@ -155,8 +158,8 @@ NULL
 #' @export
 admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix = NULL,
                      ssqtoa = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
-                     memory = NULL, profpars = NULL, clean = TRUE, verbose = FALSE,
-                     trace = FALSE, autogen = TRUE){
+                     detfn = "hn" , memory = NULL, profpars = NULL, clean = TRUE,
+                     verbose = FALSE, trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
   if (length(method) != 1){
     stop("method must be of length 1")
@@ -191,7 +194,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   }
   if (autogen){
     prefix <- "secr"
-    make.all.tpl.easy(memory = memory, methods = method)
+    make.all.tpl.easy(memory = memory, methods = method, detfn = detfn)
     bessel.exists <- file.access("bessel.cxx", mode = 0)
     if (bessel.exists == -1){
       make.bessel()
@@ -214,14 +217,15 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   } else if (length(dim(bincapt)) > 4){
     stop("capt array cannot have more than 4 dimensions.")
   }
+  ## Detection function parameters.
+  detnames <- c(c("g0", "sigma")[detfn == "hn" | detfn == "hr"],
+                c("par0", "par1")[detfn == "bo"],
+                c("ssb0", "ssb1", "sigmass")[detfn == "ss"],
+                "z"[detfn == "hr"])
   ## Parameter names.
-  parnames <- c("D", "g0"[!(method == "ss" | method == "sstoa")],
-                "sigma"[!(method == "ss" | method == "sstoa")],
-                "sigmatoa"[method == "toa" | method == "sstoa"],
+  parnames <- c("D", detnames,
+                "sigmatoa"[method == "toa"],
                 "kappa"[method == "ang"],
-                "ssb0"[method == "ss" | method == "sstoa"],
-                "ssb1"[method == "ss" | method == "sstoa"],
-                "sigmass"[method == "ss" | method == "sstoa"],
                 "alpha"[method == "dist"])
   ## Setting number of model parameters.
   npars <- length(parnames)
@@ -229,11 +233,14 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   default.bounds <- list(D = c(0, 1e8),
                          g0 = c(0, 1),
                          sigma = c(0, 1e5),
-                         sigmatoa = c(0, 1e5),
-                         kappa = c(0, 700),
+                         par0 = NULL,
+                         par1 = c(-10, 0),
                          ssb0 = NULL,
                          ssb1 = c(-10, 0),
                          sigmass = c(0, 1e5),
+                         z = NULL,
+                         sigmatoa = c(0, 1e5),
+                         kappa = c(0, 700),
                          alpha = c(0, 150))[parnames]
   if (!(is.list(bounds) | is.null(bounds))){
     stop("bounds must either be NULL or a list.")
@@ -253,7 +260,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (is.list(sv)){
     sv <- c(sv, recursive = TRUE)
   }
-  ##Setting sv to a vector full of "auto" if required.
+  ## Setting sv to a vector full of "auto" if required.
   if (length(sv) == 1 & sv[1] == "auto"){
     sv <- rep("auto", npars)
     names(sv) <- parnames
@@ -283,12 +290,13 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     sv[i] <- fix[[i]]
   }
   autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
-                   "sigmatoa" = autosigmatoa, "kappa" = autokappa,
+                   "par0" = autopar0, "par1" = autopar1,
                    "ssb0" = autossb0, "ssb1" = autossb1,
-                   "sigmass" = autosigmass, "alpha" = autoalpha)
+                   "sigmass" = autosigmass, "sigmatoa" = autosigmatoa,
+                   "kappa" = autokappa, "alpha" = autoalpha)
   ## Replacing "auto" elements of sv vector.
   for (i in rev(which(sv == "auto"))){
-    sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method)
+    sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method, detfn)
   }
   sv <- as.numeric(sv)
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
@@ -340,6 +348,11 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   } else {
     stop('method must be either "simple", "toa", "ang", "ss", "sstoa", "dist", or "mrds"')
   }
+  params <- list()
+  for (i in 1:npars){
+    params[[i]] <- sv[i]
+  }
+  names(params) <- parnames
   ## Removing fixed parameters from param list and adding them to the data instead.
   for (i in names(fix)){
     params[[i]] <- NULL
