@@ -17,7 +17,6 @@ PROCEDURE_SECTION
       d = dist(j,i);
       // Flag for detection function insertion.
       p1(j,i) = //#@DETFN;
-      //g0*mfexp(-square(d)/(2*square(sigma)));
       p2(j,i) = 1 - p1(j,i);
       p *= p2(j,i);
     }
