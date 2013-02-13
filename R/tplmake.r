@@ -118,7 +118,7 @@ make.all.tpl <- function(memory, methods){
 
 ## Above functions will allow you to combine methods. For now, let's just import the
 ## .tpl files as they are in the ADMB folder.
-make.all.tpl.easy <- function(memory, methods){
+make.all.tpl.easy <- function(memory, methods, detfn = "hn"){
   make.top.of.main(memory)
   simpletext <- "\nPROCEDURE_SECTION\n  // Setting up variables\n  int i,j;\n  dvariable p,lambda,L1,L2,L3;\n  dvar_matrix p1(1,ntraps,1,nmask);\n  dvar_matrix p2(1,ntraps,1,nmask);\n  dvar_matrix logp1(1,ntraps,1,nmask);\n  dvar_matrix logp2(1,ntraps,1,nmask);\n  dvar_vector pm(1,nmask);\n  dvar_vector wi1(1,ntraps);\n  dvar_vector wi2(1,ntraps);\n  // Probabilities of caputure at each location for each trap.\n  // Add a small amount to prevent zeros.\n  p1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;\n  p2=1-p1;\n  logp1=log(p1);\n  logp2=log(p2);\n  // Probability of detection at any trap for each location.\n  for(i=1; i<=nmask; i++){\n    p=1;\n    for(j=1; j<=ntraps; j++){\n      p*=p2(j)(i);\n    }\n    pm(i)=1-p;\n  }\n  L1=0;\n  // Probability of capture histories for each animal.\n  for(i=1; i<=n; i++){\n    wi1=row(capt,i);\n    wi2=1-wi1;\n    L1+=log(D*sum(mfexp(wi1*logp1+wi2*logp2)));\n  }\n  // Putting log-likelihood together.\n  lambda=A*D*sum(pm);\n  L2=-n*log(D*sum(pm));\n  L3=log_density_poisson(n,lambda);\n  f=-(L1+L2+L3);\n  if (trace == 1){\n    cout << \"D: \" << D << \", g0: \" << g0 << \", sigma: \" << sigma << \", loglik: \" << -f << endl;\n  }\n\nGLOBALS_SECTION\n  #include <float.h>\n\nREPORT_SECTION\n" 
   toatext <- "\nPROCEDURE_SECTION\n  // Setting up variables\n  int i,j;\n  dvariable p,lambda,L1,L2,L3,nzz;\n  dvar_matrix p1(1,ntraps,1,nmask);\n  dvar_matrix p2(1,ntraps,1,nmask);\n  dvar_matrix logp1(1,ntraps,1,nmask);\n  dvar_matrix logp2(1,ntraps,1,nmask);\n  dvar_vector pm(1,nmask);\n  dvar_vector wi1(1,ntraps);\n  dvar_vector wi2(1,ntraps);\n  dvar_vector toall(1,nmask);\n  // Probabilities of caputure at each location for each trap.\n  // Add a small amount to prevent zeros.\n  p1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;\n  p2=1-p1;\n  logp1=log(p1);\n  logp2=log(p2);\n  // Probability of detection at any trap for each location.\n  for(i=1; i<=nmask; i++){\n    p=1;\n    for(j=1; j<=ntraps; j++){\n      p*=p2(j)(i);\n    }\n    pm(i)=1-p;\n  }\n  L1=0;\n  // Probability of capture histories for each animal.\n  for(i=1; i<=n; i++){\n    wi1=row(capt,i);\n    wi2=1-wi1;\n    nzz=sum(wi1);\n    toall=(1-nzz)*log(sigmatoa)-((row(toassq, i))/(2*square(sigmatoa)));\n    L1+=log(sum(mfexp(log(D)+(wi1*logp1+wi2*logp2)+toall)));\n  }\n  // Putting log-likelihood together.\n  lambda=A*D*sum(pm);\n  L2=-n*log(D*sum(pm));\n  L3=log_density_poisson(n,lambda);\n  f=-(L1+L2+L3);\n  if (trace == 1){\n    cout << \"D: \" << D << \", g0: \" << g0 << \", sigma: \" << sigma << \", sigmatoa: \" << sigmatoa << \", loglik: \" << -f << endl;\n  }\n\nGLOBALS_SECTION\n  #include <float.h>\n\nREPORT_SECTION\n" 
@@ -129,7 +129,17 @@ make.all.tpl.easy <- function(memory, methods){
   mrdstext <- "\nPROCEDURE_SECTION\n  int i,j;\n  dvariable p,lambda,L1,L2,L3;\n  dvar_matrix maskp1(1,ntraps,1,nmask);\n  dvar_matrix maskp2(1,ntraps,1,nmask);\n  dvar_matrix indivp1(1,n,1,ntraps);\n  dvar_matrix indivp2(1,n,1,ntraps);\n  dvar_matrix logindivp1(1,n,1,ntraps);\n  dvar_matrix logindivp2(1,n,1,ntraps);\n  dvar_matrix logprobs(1,n,1,ntraps);\n  dvar_vector pm(1,nmask);\n  dvar_vector wi1(1,ntraps);\n  dvar_vector wi2(1,ntraps);\n  // Probability of capture for each individual at each trap.\n  maskp1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;\n  maskp2=1-maskp1;\n  // Probability of detection at any trap for each location.\n  for(i=1; i<=nmask; i++){\n    p=1;\n    for(j=1; j<=ntraps; j++){\n      p*=maskp2(j)(i);\n    }\n    pm(i)=1-p;\n  }\n  // Probability of capture histories for each animal.\n  indivp1=g0*mfexp(-square(indivdist)/(2*square(sigma)))+DBL_MIN;\n  indivp2=1-indivp1;\n  logindivp1=log(indivp1);\n  logindivp2=log(indivp2);\n  logprobs=elem_prod(logindivp1,capt)+elem_prod(logindivp2,1-capt);\n  L1=sum(logprobs)+n*log(D);\n  L2=-n*log(D*sum(pm));\n  lambda=A*D*sum(pm);\n  L3=log_density_poisson(n,lambda);\n  f=-(L1+L2+L3);\n  if (trace == 1){\n    cout << \"D: \" << D << \", g0: \" << g0 << \", sigma: \" << sigma << \", loglik: \" << -f << endl;\n  }\n\nGLOBALS_SECTION\n  #include <float.h>\n\nREPORT_SECTION\n\n"
   alltext <- c(simpletext, toatext, angtext, sstext, sstoatext, disttext, mrdstext)
   names(alltext) <- c("simple", "toa", "ang", "ss", "sstoa", "dist", "mrds")
-  cat(alltext[methods], file = "secr.tpl", append = !is.null(memory))
+  codestring <- alltext[methods]
+  if (methods != "ss" & methods != "sstoa"){
+    codesplit <- strsplit(codestring, "  // DETFNLOC\n")[[1]]
+    if (detfn == "hn"){
+      dfstr <- "  p1=g0*mfexp(-square(dist)/(2*square(sigma)))\n"
+    } else {
+      stop("detection function not supported.")
+    }
+    codestring <- paste(codesplit[1], dfstr, codesplit[2])
+  }
+  cat(codestring, file = "secr.tpl", append = !is.null(memory))
 }
 
 make.bessel <- function(){
