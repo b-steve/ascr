@@ -26,8 +26,14 @@ source("frogsetup.r")
 ## With secr package.
 simplefit1 <- secr.fit(capt, model = list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE)
 ## With admbsecr().
-simplefit2 <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir,
-                       method = "simple", verbose = TRUE, autogen = FALSE)
+simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir,
+                         method = "simple")
+simplefit.bo <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir,
+                         method = "simple", detfn = "bo")
+simplefit.hr1 <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
+                          admbwd = admb.dir, method = "simple", detfn = "hr")
+simplefit.hr2 <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
+                          fix = list(g0 = 1), method = "simple", detfn = "hr")
 
 ## Carrying out TOA analysis.
 
@@ -66,12 +72,21 @@ ss <- function(x, c, coef){
   1 - pnorm(c, ssb0 + ssb1*x, sigmass)
 }
 erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-bo <- function(x, par0, par1){
+bo <- function(x, coef){
+  par0 <- coef[2]
+  par1 <- coef[3]
   0.5 - 0.5*erf(par0 - par1*x)
 }
-sscoef <- coef(ssfit2)
-par0 <- -5.22696878161
-par1 <- -0.727442451494
-plot(x, hn(x, coef(simplefit2)), type = "l")
+hr <- function(x, coef){
+  g0 <- coef[2]
+  sigma <- coef[3]
+  z <- coef[4]
+  g0*(1 - exp(-(x/sigma)^(-z)))
+}
+
+plot(x, hn(x, coef(simplefit.hn)), type = "l")
 lines(x, ss(x, 150, coef(ssfit2)), col = "red")
-lines(x, bo(x, par0, par1), col = "green")
+lines(x, bo(x, coef(simplefit.bo)), col = "green")
+lines(x, hr(x, coef(simplefit.hr1)), col = "blue")
+hr2pars <- c(0, 1, coef(simplefit.hr2)[2:3])
+lines(x, hr(x, hr2pars), col = "brown")
