@@ -42,3 +42,7 @@ export PATH
 * Windows users may need to add the environment variable `R_SHELL` with a value that points to `cmd.exe`, which is found in the System32 folder.
 
 * An error while calling `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
+
+## Acknowledgements
+
+Continued thanks to David Borchers and Hans Skaug for their assistance with this project.
