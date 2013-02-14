@@ -12,7 +12,7 @@ make.all.tpl.easy <- function(memory, method, detfn, parnames){
   alltext <- c(simpletext, toatext, angtext, sstext, sstoatext, disttext, mrdstext)
   names(alltext) <- c("simple", "toa", "ang", "ss", "sstoa", "dist", "mrds")
   codestring <- alltext[method]
-  if (method == "simple"){
+  if (method != "ss"){
     codesplit <- strsplit(codestring, "//@DETFN")[[1]]
     if (detfn == "hn"){
       dfstr <- "g0*mfexp(-square(d)/(2*square(sigma)))"
@@ -23,15 +23,27 @@ make.all.tpl.easy <- function(memory, method, detfn, parnames){
     } else {
       stop("detection function not supported.")
     }
-    codestring <- paste(codesplit[1], dfstr, codesplit[2], sep = "")
-    codesplit <- strsplit(codestring, "//@TRACE")[[1]]
-    trstr <- paste("cout << \"", parnames[1], ": \" << ", parnames[1], " <<",
-                   paste(" \", ", parnames[-1], ": \" << ", parnames[-1], " <<",
-                         sep = "", collapse = ""), " \", loglik: \" << -f << endl",
-                   sep = "")
-    codestring <- paste(codesplit[1], trstr, codesplit[2], sep = "")
+    clen <- length(codesplit)
+    codestring <- codesplit[1]
+    if (clen > 1){
+      for (i in 2:clen){
+        codestring <- paste(codestring, dfstr, codesplit[i], sep = "")
+      }
+    }
   }
+  codesplit <- strsplit(codestring, "//@TRACE")[[1]]
+  trstr <- paste("cout << \"", parnames[1], ": \" << ", parnames[1], " <<",
+                 paste(" \", ", parnames[-1], ": \" << ", parnames[-1], " <<",
+                       sep = "", collapse = ""), " \", loglik: \" << -f << endl",
+                 sep = "")
+  codestring <- paste(codesplit[1], trstr, codesplit[2], sep = "")
   cat(codestring, file = "secr.tpl", append = !is.null(memory))
+}
+
+make.top.of.main <- function(memory){
+  if (!is.null(memory)){
+    cat("TOP_OF_MAIN_SECTION\n  arrmblsize=", memory, ";", file = "secr.tpl", sep = "")
+  }
 }
 
 make.bessel <- function(){

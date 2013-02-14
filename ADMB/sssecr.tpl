@@ -1,6 +1,7 @@
 
 PROCEDURE_SECTION
   // Setting up variables
+  const double pi=3.14159265359;
   int i, j;
   dvariable p, d;
   dvar_matrix p2(1,ntraps,1,nmask);
@@ -8,15 +9,13 @@ PROCEDURE_SECTION
   dvar_matrix logp2(1,ntraps,1,nmask);
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
-
-  const double pi=3.14159265359;
   dvar_vector ci1(1,ntraps);
   dvar_matrix muss(1,ntraps,1,nmask);
 
   muss = ssb0 + ssb1*dist;
-  for(i = 1; i <= nmask; i++){
+  for (i = 1; i <= nmask; i++){
     p=1;
-    for(j = 1; j <= ntraps; j++){
+    for (j = 1; j <= ntraps; j++){
       p2(j,i) = cumd_norm((c - muss(j,i))/sigmass);
       p *= p2(j,i);
     }
@@ -25,7 +24,7 @@ PROCEDURE_SECTION
   logp2 = log(p2 + DBL_MIN);
   dvariable L1=0;
   // Probability of capture histories for each animal.
-  for(i = 1; i <= n; i++){
+  for (i = 1; i <= n; i++){
     logp1 = 0;
     wi1 = row(sscapt,i);
     ci1 = row(capt,i);
@@ -34,7 +33,7 @@ PROCEDURE_SECTION
         logp1(j)(1,nmask) = -log(sigmass) - log(sqrt(2*pi)) + (square(wi1(j)-row(muss,j))/(-2*square(sigmass)));
       }
     }
-    L1 += log(D*sum(mfexp(ci1*logp1+(1-ci1)*logp2)+dmin));
+    L1 += log(D*sum(mfexp(ci1*logp1 + (1-ci1)*logp2) + DBL_MIN));
   }
   // Putting log-likelihood together.
   dvariable lambda = A*D*sum(pm);

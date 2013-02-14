@@ -10,9 +10,9 @@ PROCEDURE_SECTION
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
   // Probability of detection at any trap for each location.
-  for (i=1; i<=nmask; i++){
-    p=1;
-    for (j=1; j<=ntraps; j++){
+  for (i = 1; i <= nmask; i++){
+    p = 1;
+    for (j = 1; j <= ntraps; j++){
       d = dist(j,i);
       // Flag for detection function insertion.
       p1(j,i) = //@DETFN;

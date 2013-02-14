@@ -1,9 +1,8 @@
 
 PROCEDURE_SECTION
+  // Setting up variables.
   int i,j;
-  dvariable p,lambda,L1,L2,L3;
-  dvar_matrix maskp1(1,ntraps,1,nmask);
-  dvar_matrix maskp2(1,ntraps,1,nmask);
+  dvariable p, p1, d;
   dvar_matrix indivp1(1,n,1,ntraps);
   dvar_matrix indivp2(1,n,1,ntraps);
   dvar_matrix logindivp1(1,n,1,ntraps);
@@ -12,30 +11,35 @@ PROCEDURE_SECTION
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
   dvar_vector wi2(1,ntraps);
-  // Probability of capture for each individual at each trap.
-  maskp1=g0*mfexp(-square(dist)/(2*square(sigma)))+DBL_MIN;
-  maskp2=1-maskp1;
   // Probability of detection at any trap for each location.
-  for(i=1; i<=nmask; i++){
-    p=1;
-    for(j=1; j<=ntraps; j++){
-      p*=maskp2(j)(i);
+  for (i = 1; i <= nmask; i++){
+    p = 1;
+    for(j = 1; j <= ntraps; j++){
+      d = dist(j,i);
+      // Flag for detection function insertion.
+      p1 = //@DETFN;
+      p *= 1 - p1;
     }
-    pm(i)=1-p;
+    pm(i) = 1 - p + DBL_MIN;
   }
   // Probability of capture histories for each animal.
-  indivp1=g0*mfexp(-square(indivdist)/(2*square(sigma)))+DBL_MIN;
-  indivp2=1-indivp1;
-  logindivp1=log(indivp1);
-  logindivp2=log(indivp2);
-  logprobs=elem_prod(logindivp1,capt)+elem_prod(logindivp2,1-capt);
-  L1=sum(logprobs)+n*log(D);
-  L2=-n*log(D*sum(pm));
-  lambda=A*D*sum(pm);
-  L3=log_density_poisson(n,lambda);
-  f=-(L1+L2+L3);
+  for (i = 1; i <= n; i++){
+    for (j = 1; j <= ntraps; j++){
+      d = indivdist(i,j);
+      indivp1(i,j) = //@DETFN;
+      indivp2(i,j) = 1 - indivp1(i,j);
+    }
+  }
+  logindivp1 = log(p1 + DBL_MIN);
+  logindivp2 = log(p2 + DBL_MIN);
+  logprobs = elem_prod(logindivp1,capt) + elem_prod(logindivp2,1 - capt);
+  dvariable L1 = sum(logprobs) + n*log(D);
+  dvariable L2 = -n*log(D*sum(pm));
+  dvariable lambda = A*D*sum(pm);
+  dvariable L3 = log_density_poisson(n,lambda);
+  f = -(L1+L2+L3);
   if (trace == 1){
-    cout << "D: " << D << ", g0: " << g0 << ", sigma: " << sigma << ", loglik: " << -f << endl;
+    //@TRACE
   }
 
 GLOBALS_SECTION
