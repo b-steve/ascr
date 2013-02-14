@@ -15,7 +15,7 @@ PROCEDURE_SECTION
     for (j=1; j<=ntraps; j++){
       d = dist(j,i);
       // Flag for detection function insertion.
-      p1(j,i) = //#@DETFN;
+      p1(j,i) = //@DETFN;
       p2(j,i) = 1 - p1(j,i);
       p *= p2(j,i);
     }
@@ -36,7 +36,7 @@ PROCEDURE_SECTION
   dvariable L3 = log_density_poisson(n,lambda);
   f = -(L1 + L2 + L3);
   if (trace == 1){
-    //#@TRACE;
+    //@TRACE;
   }
 
 GLOBALS_SECTION
