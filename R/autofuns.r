@@ -102,6 +102,11 @@ autopar1 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = N
   -0.7
 }
 
+autoz <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                     cutoff = NULL, method = NULL, detfn = NULL){
+  1
+}
+
 ## Following are helper functions for naive sigma estimation.
 RPSV.mod <- function(capthist, traps){
   w <- split(trapvec(capthist), animalIDvec(capthist))

@@ -4,6 +4,8 @@ NULL
 
 #' Fitting SECR models in ADMB
 #'
+#' THE FOLLOWING INFORMATION IS OUT OF DATE AND REQUIRES A REWRITE.
+#'
 #' Fits an SECR model, with our without supplementary information relevant to animal
 #' location. Parameter estimation is done by maximum likelihood in ADMB.
 #'
@@ -176,6 +178,14 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (dim(capt)[2] != 1){
     stop("admbsecr only currently works for a single sampling session.")
   }
+  if (method == "ss"){
+    if (missing(detfn)){
+      detfn <- "identity"
+    } else if (!(detfn == "identity" | detfn == "log"))
+      stop("The \"ss\" method uses its own detection function. The detfn argument can either be \"identity\" or \"log\" (see 'Details' in help file).")
+  } else if (!(detfn == "hn" | detfn == "bo" | detfn == "hr")){
+    stop("Detection function must be \"hn\", \"bo\" or \"hr\"")
+  }
   if (trace){
     verbose <- TRUE
   }
@@ -191,16 +201,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   ## Moving to ADMB working directory.
   if (!is.null(admbwd)){
     setwd(admbwd)
-  }
-  if (autogen){
-    prefix <- "secr"
-    make.all.tpl.easy(memory = memory, methods = method, detfn = detfn)
-    bessel.exists <- file.access("bessel.cxx", mode = 0)
-    if (bessel.exists == -1){
-      make.bessel()
-    }
-  } else {
-    prefix <- paste(method, "secr", sep = "")
   }
   ## If NAs are present in capture history object, change to zeros.
   capt[is.na(capt)] <- 0
@@ -220,10 +220,10 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   ## Detection function parameters.
   detnames <- c(c("g0", "sigma")[detfn == "hn" | detfn == "hr"],
                 c("par0", "par1")[detfn == "bo"],
-                c("ssb0", "ssb1", "sigmass")[detfn == "ss"],
                 "z"[detfn == "hr"])
   ## Parameter names.
   parnames <- c("D", detnames,
+                c("ssb0", "ssb1", "sigmass")[method == "ss"],
                 "sigmatoa"[method == "toa"],
                 "kappa"[method == "ang"],
                 "alpha"[method == "dist"])
@@ -284,13 +284,25 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     ## Reordering sv vector.
     sv <- sv[parnames]
   }
+  ## Creating .tpl file.
+  if (autogen){
+    prefix <- "secr"
+    make.all.tpl.easy(memory = memory, method = method,
+                      detfn = detfn, parnames = parnames)
+    bessel.exists <- file.access("bessel.cxx", mode = 0)
+    if (bessel.exists == -1){
+      make.bessel()
+    }
+  } else {
+    prefix <- paste(method, "secr", sep = "")
+  }
   ## Adding fixed parameters to "sv" in case they are required for
   ## determining further start values.
   for (i in names(fix)){
     sv[i] <- fix[[i]]
   }
   autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
-                   "par0" = autopar0, "par1" = autopar1,
+                   "par0" = autopar0, "par1" = autopar1, "z" = autoz,
                    "ssb0" = autossb0, "ssb1" = autossb1,
                    "sigmass" = autosigmass, "sigmatoa" = autosigmatoa,
                    "kappa" = autokappa, "alpha" = autoalpha)
@@ -309,7 +321,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   ## Distances between traps and mask locations.
   dist <- distances(traps, mask)
   ## Setting up parameters for do_admb.
-  if (method == "simple"){
+  if (method == "simple"){ 
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,
                  dist = dist, trace = trace)
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
