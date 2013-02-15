@@ -30,8 +30,8 @@ PROCEDURE_SECTION
       indivp2(i,j) = 1 - indivp1(i,j);
     }
   }
-  logindivp1 = log(p1 + DBL_MIN);
-  logindivp2 = log(p2 + DBL_MIN);
+  logindivp1 = log(indivp1 + DBL_MIN);
+  logindivp2 = log(indivp2 + DBL_MIN);
   logprobs = elem_prod(logindivp1,capt) + elem_prod(logindivp2,1 - capt);
   dvariable L1 = sum(logprobs) + n*log(D);
   dvariable L2 = -n*log(D*sum(pm));
@@ -39,7 +39,7 @@ PROCEDURE_SECTION
   dvariable L3 = log_density_poisson(n,lambda);
   f = -(L1+L2+L3);
   if (trace == 1){
-    //@TRACE
+    //@TRACE;
   }
 
 GLOBALS_SECTION

@@ -24,13 +24,26 @@ distfit87 <- admbsecr(capthist87.dist, traps = real.traps, mask = mask87,
                       sv = c(D = 10, g0 = 0.95, sigma = 100, alpha = 5),
                       method = "dist")
 
-distfit01 <- admbsecr(capthist01.dist, traps = real.traps, mask = mask01,
+distfit01.hn <- admbsecr(capthist01.dist, traps = real.traps, mask = mask01,
                       sv = c(D = 10, g0 = 0.95, sigma = 100, alpha = 2),
                       method = "dist")
+distfit01.th <- admbsecr(capthist01.dist, traps = real.traps, mask = mask01,
+                         sv = c(D = 10, shape = -1, scale = -0.01, alpha = 2),
+                         method = "dist", detfn = "th")
+distfit01.hr <- admbsecr(capthist01.dist, traps = real.traps, mask = mask01,
+                         sv = c(D = 10, g0 = 0.95, sigma = 100, z = 5, alpha = 2),
+                         method = "dist", detfn = "hr")
 
-mrdsfit01 <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
+mrdsfit01.hn <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
                       sv = c(D = 10, g0 = 0.95, sigma = 100),
                       method = "mrds")
+mrdsfit01.th <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
+                         sv = c(D = 5, shape = -0.24, scale = -0.003),
+                         bounds = list(D = c(0, 10)),
+                         method = "mrds", detfn = "th", trace = TRUE)
+mrdsfit01.hr <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
+                         sv = c(D = 10, g0 = 0.95, sigma = 100, z = 5),
+                         method = "mrds", detfn = "hr")
 
 ## dist fit with separate detection functions for each trap:
 distfit01tc <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
@@ -61,3 +74,37 @@ AIC(distfit01)
 
 ## Contour plot example:
 contours(distfit01tc, 1, ylim = c(-10, 1000), xlim = c(-1000, 1000))
+
+## Comparison of fitted detection functions.
+hn <- function(x, coef){
+  g0 <- coef[2]
+  sigma <- coef[3]
+  g0*exp(-x^2/(2*sigma^2))
+}
+ss <- function(x, c, coef){
+  ssb0 <- coef[2]
+  ssb1 <- coef[3]
+  sigmass <- coef[4]
+  1 - pnorm(c, ssb0 + ssb1*x, sigmass)
+}
+erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+th <- function(x, coef){
+  shape <- coef[2]
+  scale <- coef[3]
+  0.5 - 0.5*erf(shape - scale*x)
+}
+hr <- function(x, coef){
+  g0 <- coef[2]
+  sigma <- coef[3]
+  z <- coef[4]
+  g0*(1 - exp(-(x/sigma)^(-z)))
+}
+x <- seq(0, 1000, 1)
+## Comparison of detection functions without TOA.
+plot(x, hn(x, coef(distfit01.hn)), type = "l", ylim = 0:1)
+lines(x, th(x, coef(distfit01.th)), col = "green")
+lines(x, hr(x, coef(distfit01.hr)), col = "blue")
+
+plot(x, hn(x, coef(mrdsfit01.hn)), type = "l", ylim = 0:1)
+lines(x, th(x, coef(mrdsfit01.th)), col = "green")
+lines(x, hr(x, coef(mrdsfit01.hr)), col = "blue")

@@ -92,14 +92,14 @@ autoalpha <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = 
   2
 }
 
-autopar0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+autoshape <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL){
   -5
 }
 
-autopar1 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+autoscale <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL){
-  -0.7
+  -0.1
 }
 
 autoz <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,

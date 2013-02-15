@@ -126,8 +126,8 @@ NULL
 #' @param method either \code{"simple"}, \code{"toa"}, \code{"ang"}, \code{"ss"}, or
 #' \code{"sstoa"}. See 'Details'.
 #' @param detfn the detection function to be used. Either halfnormal (\code{"hn"}),
-#' hazard rate (\code{"hr"}), signal strength (\code{"ss"}, see 'Details') or insertname
-#' (\code{"bo"}).
+#' hazard rate (\code{"hr"}), signal strength (\code{"ss"}, see 'Details') or threshold
+#' (\code{"th"}).
 #' @param memory value of \code{arrmblsize} in ADMB. Increase this if ADMB reports a
 #' memory error.
 #' @param profpars character vector of names of parameters over which profile likelihood
@@ -178,13 +178,13 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (dim(capt)[2] != 1){
     stop("admbsecr only currently works for a single sampling session.")
   }
-  if (method == "ss"){
+  if (method == "ss" | method == "sstoa"){
     if (missing(detfn)){
       detfn <- "identity"
     } else if (!(detfn == "identity" | detfn == "log"))
-      stop("The \"ss\" method uses its own detection function. The detfn argument can either be \"identity\" or \"log\" (see 'Details' in help file).")
-  } else if (!(detfn == "hn" | detfn == "bo" | detfn == "hr")){
-    stop("Detection function must be \"hn\", \"bo\" or \"hr\"")
+      stop("The \"ss\" and \"sstoa\" methods use their own detection function. \nThe 'detfn' argument can either be \"identity\" or \"log\" (see 'Details' in help file).")
+  } else if (!(detfn == "hn" | detfn == "th" | detfn == "hr")){
+    stop("Detection function must be \"hn\", \"th\" or \"hr\"")
   }
   if (trace){
     verbose <- TRUE
@@ -219,12 +219,12 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   }
   ## Detection function parameters.
   detnames <- c(c("g0", "sigma")[detfn == "hn" | detfn == "hr"],
-                c("par0", "par1")[detfn == "bo"],
+                c("shape", "scale")[detfn == "th"],
                 "z"[detfn == "hr"])
   ## Parameter names.
   parnames <- c("D", detnames,
-                c("ssb0", "ssb1", "sigmass")[method == "ss"],
-                "sigmatoa"[method == "toa"],
+                c("ssb0", "ssb1", "sigmass")[method == "ss" | method == "sstoa"],
+                "sigmatoa"[method == "toa" | method == "sstoa"],
                 "kappa"[method == "ang"],
                 "alpha"[method == "dist"])
   ## Setting number of model parameters.
@@ -233,8 +233,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   default.bounds <- list(D = c(0, 1e8),
                          g0 = c(0, 1),
                          sigma = c(0, 1e5),
-                         par0 = NULL,
-                         par1 = c(-10, 0),
+                         shape = NULL,
+                         scale = c(-10, 0),
                          ssb0 = NULL,
                          ssb1 = c(-10, 0),
                          sigmass = c(0, 1e5),
@@ -302,7 +302,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     sv[i] <- fix[[i]]
   }
   autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
-                   "par0" = autopar0, "par1" = autopar1, "z" = autoz,
+                   "shape" = autoshape, "scale" = autoscale, "z" = autoz,
                    "ssb0" = autossb0, "ssb1" = autossb1,
                    "sigmass" = autosigmass, "sigmatoa" = autosigmatoa,
                    "kappa" = autokappa, "alpha" = autoalpha)
@@ -394,6 +394,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   fit$traps <- traps
   fit$mask <- mask
   fit$method <- method
+  fit$detfn <- detfn
+  fit$parnames <- parnames
   class(fit) <- c(class(fit), method, "admbsecr")
   fit
 }

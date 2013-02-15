@@ -41,7 +41,7 @@ PROCEDURE_SECTION
   dvariable L3 = log_density_poisson(n,lambda);
   f = -(L1+L2+L3);
   if (trace==1){
-    //#@TRACE;
+    //@TRACE;
   }
 
 GLOBALS_SECTION

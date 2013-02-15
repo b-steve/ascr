@@ -30,7 +30,7 @@ PROCEDURE_SECTION
     wi1 = row(capt,i);
     nzz = sum(wi1);
     toall = (1-nzz)*log(sigmatoa) - ((row(toassq,i))/(2*square(sigmatoa)));
-    L1 += log(sum(mfexp(log(D) + (wi1*logp1 + (1-wi1)*logp2) + toall)));
+    L1 += log(sum(mfexp(log(D) + (wi1*logp1 + (1-wi1)*logp2) + toall)) + DBL_MIN);
   }
   // Putting log-likelihood together.
   dvariable lambda = A*D*sum(pm);
@@ -38,7 +38,7 @@ PROCEDURE_SECTION
   dvariable L3 = log_density_poisson(n,lambda);
   f = -(L1 + L2 + L3);
   if (trace == 1){
-    //@TRACE
+    //@TRACE;
   }
 
 GLOBALS_SECTION

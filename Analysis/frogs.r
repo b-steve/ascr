@@ -26,20 +26,25 @@ source("frogsetup.r")
 ## With secr package.
 simplefit1 <- secr.fit(capt, model = list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE)
 ## With admbsecr().
-simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir,
-                         method = "simple")
-simplefit.bo <- admbsecr(capt, traps = traps, mask, sv = "auto", admbwd = admb.dir,
-                         method = "simple", detfn = "bo")
+simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", method = "simple")
+simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = -1),
+                         method = "simple", detfn = "th", trace = TRUE)
 simplefit.hr1 <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
-                          admbwd = admb.dir, method = "simple", detfn = "hr")
+                          method = "simple", detfn = "hr")
 simplefit.hr2 <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
                           fix = list(g0 = 1), method = "simple", detfn = "hr")
 
 ## Carrying out TOA analysis.
 
 ## Fitting with admbsecr(). Doesn't require start values.
-toafit <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
-                    admbwd = admb.dir, method = "toa")
+toafit.hn <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+                      method = "toa")
+toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
+                      method = "toa", detfn = "th")
+toafit.hr1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+                       method = "toa", detfn = "hr")
+toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+                       fix = list(g0 = 1), method = "toa", detfn = "hr")
 
 ## Carrying out signal strength analysis.
 
@@ -72,10 +77,10 @@ ss <- function(x, c, coef){
   1 - pnorm(c, ssb0 + ssb1*x, sigmass)
 }
 erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-bo <- function(x, coef){
-  par0 <- coef[2]
-  par1 <- coef[3]
-  0.5 - 0.5*erf(par0 - par1*x)
+th <- function(x, coef){
+  shape <- coef[2]
+  scale <- coef[3]
+  0.5 - 0.5*erf(shape - scale*x)
 }
 hr <- function(x, coef){
   g0 <- coef[2]
@@ -84,9 +89,17 @@ hr <- function(x, coef){
   g0*(1 - exp(-(x/sigma)^(-z)))
 }
 
+## Comparison of detection functions without TOA.
 plot(x, hn(x, coef(simplefit.hn)), type = "l")
 lines(x, ss(x, 150, coef(ssfit2)), col = "red")
-lines(x, bo(x, coef(simplefit.bo)), col = "green")
+lines(x, th(x, coef(simplefit.bo)), col = "green")
 lines(x, hr(x, coef(simplefit.hr1)), col = "blue")
 hr2pars <- c(0, 1, coef(simplefit.hr2)[2:3])
+lines(x, hr(x, hr2pars), col = "brown")
+
+## Comparison of detection functions with TOA.
+plot(x, hn(x, coef(toafit.hn)), type = "l")
+lines(x, th(x, coef(toafit.bo)), col = "green")
+lines(x, hr(x, coef(toafit.hr1)), col = "blue")
+hr2pars <- c(0, 1, coef(toafit.hr2)[2:3])
 lines(x, hr(x, hr2pars), col = "brown")

@@ -61,12 +61,19 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  allpars <- c("D", "g0", "sigma")
+  allpars <- fit$parnames
   estpars <- names(coefs)
   fixpars <- allpars[!allpars %in% estpars]
   for (i in estpars) assign(i, coefs[i])
   for (i in fixpars) assign(i, data[[i]])
-  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  if (fit$detfn == "hn"){
+    allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  } else if (fit$detfn == "hr"){
+    allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
+  } else if (fit$detfn == "th"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     maskdens <- exp(simpledens)*D
@@ -116,12 +123,19 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  allpars <- c("D", "g0", "sigma", "sigmatoa")
+  allpars <- fit$parnames
   estpars <- names(coefs)
   fixpars <- allpars[!allpars %in% estpars]
   for (i in estpars) assign(i, coefs[i])
   for (i in fixpars) assign(i, data[[i]])
-  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  if (fit$detfn == "hn"){
+    allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  } else if (fit$detfn == "hr"){
+    allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
+  } else if (fit$detfn == "th"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  }
   times <- dist/330
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
@@ -177,7 +191,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  allpars <- c("D", "ssb0", "ssb1", "sigmass")
+  allpars <- fit$parnames
   estpars <- names(coefs)
   fixpars <- allpars[!allpars %in% estpars]
   for (i in estpars) assign(i, coefs[i])
@@ -230,7 +244,7 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  allpars <- c("D", "ssb0", "ssb1", "sigmass", "sigmatoa")
+  allpars <- fit$parnames
   estpars <- names(coefs)
   fixpars <- allpars[!allpars %in% estpars]
   for (i in estpars) assign(i, coefs[i])
@@ -300,12 +314,19 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  allpars <- c("D", "g0", "sigma", "kappa")
+  allpars <- fit$parnames
   estpars <- names(coefs)
   fixpars <- allpars[!allpars %in% estpars]
   for (i in estpars) assign(i, coefs[i])
   for (i in fixpars) assign(i, data[[i]])
-  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+    if (fit$detfn == "hn"){
+    allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  } else if (fit$detfn == "hr"){
+    allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
+  } else if (fit$detfn == "th"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     angdens <- logdens.ang(allangcapt, allcapt, ang, kappa, i)
@@ -355,7 +376,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  allpars <- c("D", "g01", "sigma1", "g02", "sigma2", "alpha")
+  allpars <- fit$parnames
   estpars <- names(coefs)
   fixpars <- allpars[!allpars %in% estpars]
   for (i in estpars) assign(i, coefs[i])
@@ -410,12 +431,19 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   if (!add & !heat){
     make.plot(mask, xlim, ylim)
   }
-  allpars <- c("D", "g0", "sigma", "alpha")
+  allpars <- fit$parnames
   estpars <- names(coefs)
   fixpars <- allpars[!allpars %in% estpars]
   for (i in estpars) assign(i, coefs[i])
   for (i in fixpars) assign(i, data[[i]])
-  allprobs <- g0*exp(-dist^2/(2*sigma^2))
+    if (fit$detfn == "hn"){
+    allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  } else if (fit$detfn == "hr"){
+    allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
+  } else if (fit$detfn == "th"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     distdens <- logdens.dist(alldistcapt, allcapt, dist, alpha, i)
