@@ -314,7 +314,7 @@ mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
 #' @param trace logical, if \code{TRUE} parameter values at each step of the fitting
 #' algorithm are printed to the R session.
 #' @export
-disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
+disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, detfn = "hn"){
   setwd(admb.dir)
   n <- dim(capt)[1]
   k <- dim(capt)[3]
@@ -326,11 +326,20 @@ disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
   bincapt[bincapt != 0] <- 1
   data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt,
                dist = dist, capt = bincapt, trace = as.numeric(trace))
-  params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
-                 g02 = sv[4], sigma2 = sv[5], alpha = sv[6])
-  bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
-                 g02 = c(0, 1), sigma2 = c(0, 1e5), alpha = c(0, 150))
-  fit <- do_admb("disttrapcovsecr", data = data, params = params, bounds = bounds,
+  if (detfn == "hn"){
+    params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
+                   g02 = sv[4], sigma2 = sv[5], alpha = sv[6])
+    bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                   g02 = c(0, 1), sigma2 = c(0, 1e5), alpha = c(0, 150))
+
+  } else if (detfn == "th"){
+    params <- list(D = sv[1], shape1 = sv[2], scale1 = sv[3], shape2 = sv[4],
+                   scale2 = sv[5], alpha = sv[6])
+    bounds <- list(D = c(0, 1e8), scale1 = c(-10, 0), scale2 = c(-10, 0),
+                   alpha = c(0, 150))
+  }
+  filename <- paste("disttrapcovsecr", detfn, sep = "")
+  fit <- do_admb(filename, data = data, params = params, bounds = bounds,
                  verbose = verbose, safe = FALSE,
                  run.opts = run.control(checkdata = "write", checkparam = "write",
                    clean_files = clean))

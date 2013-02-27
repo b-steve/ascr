@@ -3,7 +3,7 @@ PROCEDURE_SECTION
   // Setting up variables
   const double pi=3.14159265359;
   int i,j;
-  dvariable p,lambda,L1,L2,L3;
+  dvariable d,p,lambda,L1,L2,L3;
   dvar_vector p11(1,nmask);
   dvar_vector p12(1,nmask);
   dvar_vector p21(1,nmask);
@@ -17,11 +17,12 @@ PROCEDURE_SECTION
   dvar_vector beta(1,nmask);
   // Probabilities of caputure at each location for each trap.
   // Add a small amount to prevent zeros.
-  p11=g01*mfexp(-square(row(dist,1))/(2*square(sigma1)))+DBL_MIN;
-  p21=g02*mfexp(-square(row(dist,2))/(2*square(sigma2)))+DBL_MIN;
-  p12=1-p11;
-  p22=1-p21;
   for(i=1; i<=nmask; i++){
+    d = dist(1,i);
+    p11(i)=g01*mfexp(-square(d)/(2*square(sigma1)))+DBL_MIN;
+    p21(i)=g02*mfexp(-square(d)/(2*square(sigma2)))+DBL_MIN;
+    p12(i)=1-p11(i);
+    p22(i)=1-p21(i);
     logp1(1,i)=log(p11(i));
     logp1(2,i)=log(p21(i));
     logp2(1,i)=log(p12(i));

@@ -46,9 +46,12 @@ mrdsfit01.hr <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
                          method = "mrds", detfn = "hr")
 
 ## dist fit with separate detection functions for each trap:
-distfit01tc <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
-                           sv = c(10, 0.5, 100, 0.5, 100, 5), admb.dir = admb.dir,
-                           clean = TRUE, verbose = FALSE, trace = FALSE)
+distfit01tc.hn <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
+                              sv = c(10, 0.5, 100, 0.5, 100, 5), admb.dir = admb.dir,
+                              clean = TRUE, verbose = FALSE, trace = FALSE, detfn = "hn")
+distfit01tc.th <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
+                              sv = c(10, 0.5, 100, 0.5, 100, 5), admb.dir = admb.dir,
+                              clean = TRUE, verbose = FALSE, trace = FALSE, detfn = "th")
 
 ## mrds fit with seperate detection functions for each trap:
 mrdsfit01tc <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
@@ -108,3 +111,9 @@ lines(x, hr(x, coef(distfit01.hr)), col = "blue")
 plot(x, hn(x, coef(mrdsfit01.hn)), type = "l", ylim = 0:1)
 lines(x, th(x, coef(mrdsfit01.th)), col = "green")
 lines(x, hr(x, coef(mrdsfit01.hr)), col = "blue")
+
+## Comparison of detection functions for trap covariate models.
+plot(x, hn(x, coef(distfit01tc.hn)), type = "l", ylim = 0:1)
+lines(x, th(x, coef(distfit01tc.th)), col = "green")
+
+
