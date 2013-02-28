@@ -14,6 +14,10 @@ admbsecr 0.1.4
 * The user can specify the (approximate) probability values at which
   contours will be drawn.
 
+* A new argument ('detfn') has been added to admbsecr(), allowing the
+  user to choose a detection function. Options are "hn" (halfnormal),
+  "hr" (hazard rate), and "th" (threshold).
+
 admbsecr 0.1.3
 --------------
 
