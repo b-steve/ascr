@@ -65,7 +65,7 @@ SEPARABLE_FUNCTION void g_cluster(int i, const dvariable& D, const dvariable& g0
   L1=log(D);
   for(j=1; j<=ntraps; j++){
     // Calculating distance between animal i and trap j.
-    d=sqrt(square(Xi-trapsX(j))+square(Yi-trapsY(j)));
+    d=sqrt(square(Xi-trapsX(j))+square(Yi-trapsY(j)) + DBL_MIN);
     // Calculating probability of capture of animal i at trap j.
     indp=g0*mfexp(-square(d)*pow(2*square(sigma),-1))+DBL_MIN;
     // Appropriate contribution to likelihood of animal capture/evasion.
