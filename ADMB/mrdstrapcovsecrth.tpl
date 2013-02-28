@@ -12,8 +12,10 @@ PROCEDURE_SECTION
   dvar_vector wi1(1,ntraps);
   dvar_vector wi2(1,ntraps);
   // Probability of capture for each individual at each trap.
-  maskp11=g01*mfexp(-square(row(dist,1))/(2*square(sigma1)))+DBL_MIN;
-  maskp21=g02*mfexp(-square(row(dist,2))/(2*square(sigma2)))+DBL_MIN;
+  for (i=1; i<=nmask; i++){
+    maskp11(i)=0.5-0.5*(2*cumd_norm((shape1-scale1*dist(1,i))*pow(2,0.5))-1)+DBL_MIN;
+    maskp21(i)=0.5-0.5*(2*cumd_norm((shape2-scale2*dist(2,i))*pow(2,0.5))-1)+DBL_MIN;
+  }
   maskp12=1-maskp11;
   maskp22=1-maskp21;
   // Probability of detection at any trap for each location.
@@ -24,9 +26,13 @@ PROCEDURE_SECTION
     pm(i)=1-p;
   }
   // Probability of capture histories for each animal.
-  indivprobs=g01*mfexp(-square(column(indivdist,1))/(2*square(sigma1)))+DBL_MIN;
+  for (i=1; i<=n; i++){
+    indivprobs(i)=0.5-0.5*(2*cumd_norm((shape1-scale1*indivdist(i,1))*pow(2,0.5))-1)+DBL_MIN;
+  }
   logprobs=elem_prod(log(indivprobs),column(capt,1))+elem_prod(log(1-indivprobs),column(1-capt,1));
-  indivprobs=g02*mfexp(-square(column(indivdist,2))/(2*square(sigma2)))+DBL_MIN;
+  for (i=1; i<=n; i++){
+    indivprobs(i)=0.5-0.5*(2*cumd_norm((shape2-scale2*indivdist(i,1))*pow(2,0.5))-1)+DBL_MIN;
+  }
   logprobs+=elem_prod(log(indivprobs),column(capt,2))+elem_prod(log(1-indivprobs),column(1-capt,2));
   L1=sum(logprobs)+n*log(D);
   L2=-n*log(D*sum(pm));
@@ -34,7 +40,7 @@ PROCEDURE_SECTION
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
   if (trace == 1){
-    cout << "D: " << D << ", g01: " << g01 << ", sigma1: " << sigma1 << ", g02: " << g02 << ", sigma2: " << sigma2 << ", loglik: " << -f << endl;
+    cout << "D: " << D << ", shape1: " << shape1 << ", scale1: " << scale1 << ", shape2: " << shape2 << ", scale2: " << scale2 << ", loglik: " << -f << endl;
   }
 
 GLOBALS_SECTION

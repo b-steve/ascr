@@ -54,13 +54,19 @@ distfit01tc.th <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = rea
                               clean = TRUE, verbose = FALSE, trace = FALSE, detfn = "th")
 distfit01tc.hr <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
                               sv = c(10, 0.5, 100, 0.1, 0.5, 100, 0.1, 5),
-                              admb.dir = admb.dir, clean = TRUE, verbose = TRUE,
-                              trace = TRUE, detfn = "hr")
+                              admb.dir = admb.dir, clean = TRUE, verbose = FALSE,
+                              trace = FALSE, detfn = "hr")
 
 ## mrds fit with seperate detection functions for each trap:
-mrdsfit01tc <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
-                           sv = c(10, 0.5, 100, 0.5, 100), admb.dir = admb.dir,
-                           clean = TRUE, verbose = FALSE, trace = FALSE)
+mrdsfit01tc.hn <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
+                              sv = c(10, 0.5, 100, 0.5, 100), admb.dir = admb.dir,
+                              clean = TRUE, verbose = FALSE, trace = FALSE)
+mrdsfit01tc.th <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
+                              sv = coef(distfit01tc.th)[1:5], admb.dir = admb.dir,
+                              clean = TRUE, verbose = FALSE, trace = FALSE, detfn = "th")
+mrdsfit01tc.hr <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
+                              sv = coef(distfit01tc.hr)[1:7], admb.dir = admb.dir,
+                              clean = TRUE, verbose = FALSE, trace = FALSE, detfn = "hr")
 
 ## Comparing the models to see if the extra g0 and sigma parameters are required:
 
@@ -117,6 +123,7 @@ lines(x, th(x, coef(mrdsfit01.th)), col = "green")
 lines(x, hr(x, coef(mrdsfit01.hr)), col = "blue")
 
 ## Comparison of detection functions for trap covariate models.
+## Distance error model.
 ## Observer 1.
 plot(x, hn(x, coef(distfit01tc.hn)), type = "l", ylim = 0:1)
 lines(x, th(x, coef(distfit01tc.th)), col = "green")
@@ -126,3 +133,12 @@ plot(x, hn(x, coef(distfit01tc.hn)[-(1:2)]), type = "l", ylim = 0:1)
 lines(x, th(x, coef(distfit01tc.th)[-(1:2)]), col = "green")
 lines(x, hr(x, coef(distfit01tc.hr)[-(1:3)]), col = "blue")
 
+## MRDS model.
+## Observer 1.
+plot(x, hn(x, coef(mrdsfit01tc.hn)), type = "l", ylim = 0:1)
+lines(x, th(x, coef(mrdsfit01tc.th)), col = "green")
+lines(x, hr(x, coef(mrdsfit01tc.hr)), col = "blue")
+## Observer 2.
+plot(x, hn(x, coef(mrdsfit01tc.hn)[-(1:2)]), type = "l", ylim = 0:1)
+lines(x, th(x, coef(mrdsfit01tc.th)[-(1:2)]), col = "green")
+lines(x, hr(x, coef(mrdsfit01tc.hr)[-(1:3)]), col = "blue")

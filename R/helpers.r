@@ -271,7 +271,7 @@ sim.capthist.dist <- function(traps, popn, detectpars){
 #' @param trace logical, if \code{TRUE} parameter values at each step of the fitting
 #' algorithm are printed to the R session.
 #' @export
-mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
+mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, detfn = "hn"){
   setwd(admb.dir)
   n <- dim(capt)[1]
   k <- dim(capt)[3]
@@ -281,11 +281,24 @@ mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace){
   capt <- array(as.vector(capt), dim = c(n, k, dim(capt)[4]))
   data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt[, , 1],
                dist = dist, indivdist = capt[, , 2], trace = as.numeric(trace))
-  params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
-                 g02 = sv[4], sigma2 = sv[5])
-  bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
-                 g02 = c(0, 1), sigma2 = c(0, 1e5))
-  fit <- do_admb("mrdstrapcovsecr", data = data, params = params, bounds = bounds,
+  if (detfn == "hn"){
+    params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3],
+                   g02 = sv[4], sigma2 = sv[5])
+    bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                   g02 = c(0, 1), sigma2 = c(0, 1e5))
+
+  } else if (detfn == "th"){
+    params <- list(D = sv[1], shape1 = sv[2], scale1 = sv[3], shape2 = sv[4],
+                   scale2 = sv[5])
+    bounds <- list(D = c(0, 1e8), scale1 = c(-10, 0), scale2 = c(-10, 0))
+  } else if (detfn == "hr"){
+    params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3], z1 = sv[4],
+                   g02 = sv[5], sigma2 = sv[6], z2 = sv[7])
+    bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                   g02 = c(0, 1), sigma2 = c(0, 1e5))
+  }
+  filename <- paste("mrdstrapcovsecr", detfn, sep = "")
+  fit <- do_admb(filename, data = data, params = params, bounds = bounds,
                  verbose = verbose, safe = FALSE,
                  run.opts = run.control(checkdata = "write", checkparam = "write",
                    clean_files = clean))
