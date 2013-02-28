@@ -19,10 +19,10 @@ PROCEDURE_SECTION
   // Add a small amount to prevent zeros.
   for(i=1; i<=nmask; i++){
     d = dist(1,i);
-    p11(i) = 0.5 - 0.5*(2*cumd_norm((shape1 - scale1*d)*pow(2,0.5)) - 1) + DBL_MIN;
-    p21(i) = 0.5 - 0.5*(2*cumd_norm((shape2 - scale2*d)*pow(2,0.5)) - 1) + DBL_MIN;
-    p12(i) = 1 - p11(i);
-    p22(i) = 1 - p21(i);
+    p11(i)=g01*(1-mfexp(-pow(d/sigma1,-z1)))+DBL_MIN;
+    p21(i)=g02*(1-mfexp(-pow(d/sigma2,-z2)))+DBL_MIN;
+    p12(i)=1-p11(i);
+    p22(i)=1-p21(i);
     logp1(1,i)=log(p11(i));
     logp1(2,i)=log(p21(i));
     logp2(1,i)=log(p12(i));
@@ -57,7 +57,7 @@ PROCEDURE_SECTION
   L3=log_density_poisson(n,lambda);
   f=-(L1+L2+L3);
   if (trace == 1){
-  cout << "D: " << D << ", shape1: " << shape1 << ", scale1: " << scale1 << ", shape2: " << shape2 << ", scale2: " << scale2 << ", alpha: " << alpha << ", loglik: " << -f << endl;
+  cout << "D: " << D << ", g01: " << g01 << ", sigma1: " << sigma1 << ", z1: " << z1 << ", g02: " << g02 << ", sigma2: " << sigma2 << ", z2: " << z2 << ", alpha: " << alpha << ", loglik: " << -f << endl;
   }
 
 GLOBALS_SECTION

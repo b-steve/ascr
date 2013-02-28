@@ -40,7 +40,7 @@ mrdsfit01.hn <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
 mrdsfit01.th <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
                          sv = c(D = 5, shape = -0.24, scale = -0.003),
                          bounds = list(D = c(0, 10)),
-                         method = "mrds", detfn = "th", trace = TRUE)
+                         method = "mrds", detfn = "th")
 mrdsfit01.hr <- admbsecr(capthist.mrds, traps = real.traps, mask = mask01,
                          sv = c(D = 10, g0 = 0.95, sigma = 100, z = 5),
                          method = "mrds", detfn = "hr")
@@ -50,8 +50,12 @@ distfit01tc.hn <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = rea
                               sv = c(10, 0.5, 100, 0.5, 100, 5), admb.dir = admb.dir,
                               clean = TRUE, verbose = FALSE, trace = FALSE, detfn = "hn")
 distfit01tc.th <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
-                              sv = c(10, 0.5, 100, 0.5, 100, 5), admb.dir = admb.dir,
+                              sv = c(10, 0, -0.1, 0, -0.1, 5), admb.dir = admb.dir,
                               clean = TRUE, verbose = FALSE, trace = FALSE, detfn = "th")
+distfit01tc.hr <- disttrapcov(capt = capthist01.dist, mask = mask01, traps = real.traps,
+                              sv = c(10, 0.5, 100, 0.1, 0.5, 100, 0.1, 5),
+                              admb.dir = admb.dir, clean = TRUE, verbose = TRUE,
+                              trace = TRUE, detfn = "hr")
 
 ## mrds fit with seperate detection functions for each trap:
 mrdsfit01tc <- mrdstrapcov(capt = capthist.mrds, mask = mask01, traps = real.traps,
@@ -113,7 +117,12 @@ lines(x, th(x, coef(mrdsfit01.th)), col = "green")
 lines(x, hr(x, coef(mrdsfit01.hr)), col = "blue")
 
 ## Comparison of detection functions for trap covariate models.
+## Observer 1.
 plot(x, hn(x, coef(distfit01tc.hn)), type = "l", ylim = 0:1)
 lines(x, th(x, coef(distfit01tc.th)), col = "green")
-
+lines(x, hr(x, coef(distfit01tc.hr)), col = "blue")
+## Observer 2.
+plot(x, hn(x, coef(distfit01tc.hn)[-(1:2)]), type = "l", ylim = 0:1)
+lines(x, th(x, coef(distfit01tc.th)[-(1:2)]), col = "green")
+lines(x, hr(x, coef(distfit01tc.hr)[-(1:3)]), col = "blue")
 

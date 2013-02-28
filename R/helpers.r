@@ -337,6 +337,11 @@ disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, 
                    scale2 = sv[5], alpha = sv[6])
     bounds <- list(D = c(0, 1e8), scale1 = c(-10, 0), scale2 = c(-10, 0),
                    alpha = c(0, 150))
+  } else if (detfn == "hr"){
+    params <- list(D = sv[1], g01 = sv[2], sigma1 = sv[3], z1 = sv[4],
+                   g02 = sv[5], sigma2 = sv[6], z2 = sv[7], alpha = sv[8])
+    bounds <- list(D = c(0, 1e8), g01 = c(0, 1), sigma1 = c(0, 1e5),
+                   g02 = c(0, 1), sigma2 = c(0, 1e5), alpha = c(0, 150))
   }
   filename <- paste("disttrapcovsecr", detfn, sep = "")
   fit <- do_admb(filename, data = data, params = params, bounds = bounds,
