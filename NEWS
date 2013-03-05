@@ -16,7 +16,12 @@ admbsecr 0.1.4
 
 * A new argument ('detfn') has been added to admbsecr(), allowing the
   user to choose a detection function. Options are "hn" (halfnormal),
-  "hr" (hazard rate), and "th" (threshold).
+  "hr" (hazard rate), "th" (threshold), and "logth" (log-link
+  threshold).
+
+* The signal strength method now allows a log link function for
+  expected received signal strength. This is done from a call to
+  admbsecr using the argument 'detfn = "log"'.
 
 admbsecr 0.1.3
 --------------
