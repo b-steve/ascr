@@ -5,8 +5,9 @@
   admbsecr(capt, traps = NULL, mask, sv = "auto",
     bounds = NULL, fix = NULL, ssqtoa = NULL,
     cutoff = NULL, admbwd = NULL, method = "simple",
-    memory = NULL, profpars = NULL, clean = TRUE,
-    verbose = FALSE, trace = FALSE, autogen = TRUE)
+    detfn = "hn", memory = NULL, profpars = NULL,
+    clean = TRUE, verbose = FALSE, trace = FALSE,
+    autogen = TRUE)
 }
 \arguments{
   \item{capt}{an array of dimension \code{(n, S, K)}, where
@@ -80,6 +81,11 @@
   \code{"ang"}, \code{"ss"}, or \code{"sstoa"}. See
   'Details'.}
 
+  \item{detfn}{the detection function to be used. Either
+  halfnormal (\code{"hn"}), hazard rate (\code{"hr"}),
+  signal strength (\code{"ss"}, see 'Details') or threshold
+  (\code{"th"}).}
+
   \item{memory}{value of \code{arrmblsize} in ADMB.
   Increase this if ADMB reports a memory error.}
 
@@ -128,11 +134,14 @@
   of model parameters that are to be profiled.
 }
 \description{
+  THE FOLLOWING INFORMATION IS OUT OF DATE AND REQUIRES A
+  REWRITE.
+}
+\details{
   Fits an SECR model, with our without supplementary
   information relevant to animal location. Parameter
   estimation is done by maximum likelihood in ADMB.
-}
-\details{
+
   ADMB is called to fit an SECR model through use of the
   R2admb package. Different methods are used depending on
   the additional information on animal location that is

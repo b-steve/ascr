@@ -3,8 +3,10 @@
 \alias{contours.ang}
 \alias{contours.dist}
 \alias{contours.disttc}
+\alias{contours.mrds}
 \alias{contours.simple}
 \alias{contours.ss}
+\alias{contours.sstoa}
 \alias{contours.toa}
 \title{Plotting estimated animal location densities.}
 \usage{
@@ -12,41 +14,53 @@
 
   \method{contours}{simple} (fit, dets = "all",
     add = FALSE, heat = FALSE, cols = "black", ltys = 1,
-    trapnos = FALSE,
+    trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{toa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
-    ltys = 1, trapnos = FALSE,
+    ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{ss} (fit, dets = "all", add = FALSE,
     heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
-    ltys = 1, trapnos = FALSE,
+    ltys = 1, trapnos = FALSE, problevels = NULL,
+    showcapt = length(dets) == 1 && dets != "all" && !add,
+    xlim = NULL, ylim = NULL, ...)
+
+  \method{contours}{ss} (fit, dets = "all", add = FALSE,
+    partition = FALSE, heat = FALSE,
+    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{ang} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
-    ltys = 1, trapnos = FALSE,
+    ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     arrows = showcapt, xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{disttc} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
-    trapnos = FALSE,
+    trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
 
   \method{contours}{dist} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
+    trapnos = FALSE, problevels = NULL,
+    showcapt = length(dets) == 1 && dets != "all" && !add,
+    xlim = NULL, ylim = NULL, ...)
+
+  \method{contours}{mrds} (fit, dets = "all", add = FALSE,
     trapnos = FALSE,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, ...)
@@ -56,8 +70,7 @@
   \code{\link[admbsecr]{admbsecr}}.}
 
   \item{...}{additional arguments to be passed to
-  \code{\link[graphics]{contour}}. Note that these will
-  apply to the main, simple, and extra contours.}
+  \code{\link[graphics]{contour}}.}
 
   \item{dets}{which individuals' location densities are
   plotted.}

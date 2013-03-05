@@ -3,7 +3,7 @@
 \title{Fitting distance error SECR models.}
 \usage{
   disttrapcov(capt, mask, traps, sv, admb.dir, clean,
-    verbose, trace)
+    verbose, trace, detfn = "hn")
 }
 \arguments{
   \item{capt}{capture history array.}

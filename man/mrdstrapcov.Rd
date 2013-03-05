@@ -3,7 +3,7 @@
 \title{Fitting MRDS models.}
 \usage{
   mrdstrapcov(capt, mask, traps, sv, admb.dir, clean,
-    verbose, trace)
+    verbose, trace, detfn = "hn")
 }
 \arguments{
   \item{capt}{capture history array.}

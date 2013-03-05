@@ -4,7 +4,7 @@ Title: SECR models in ADMB through R.
 Version: 0.1.4
 Date: 2012-01-11
 Author: Ben Stevenson <bcs5@st-andrews.ac.uk>,
-        David Borchers <dlb@st-andrews.ac.uk>
+    David Borchers <dlb@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Depends:
     R (>= 2.15.1)
