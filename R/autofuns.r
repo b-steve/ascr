@@ -102,6 +102,16 @@ autoscale <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = 
   -0.1
 }
 
+autoshape1 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                     cutoff = NULL, method = NULL, detfn = NULL){
+  20
+}
+
+autoshape2 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                     cutoff = NULL, method = NULL, detfn = NULL){
+  3
+}
+
 autoz <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL){
   1

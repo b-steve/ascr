@@ -28,7 +28,10 @@ simplefit1 <- secr.fit(capt, model = list(D~1, g0~1, sigma~1), mask = mask, veri
 ## With admbsecr().
 simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", method = "simple")
 simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = -1),
-                         method = "simple", detfn = "th", trace = TRUE)
+                         method = "simple", detfn = "th")
+simplefit.logth <- admbsecr(capt, traps = traps, mask,
+                            sv = c(shape1 = 17.1493, shape2 = 2.9919, scale = -0.0204),
+                            method = "simple", detfn = "logth")
 simplefit.hr1 <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
                           method = "simple", detfn = "hr")
 simplefit.hr2 <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
@@ -76,11 +79,23 @@ ss <- function(x, c, coef){
   sigmass <- coef[4]
   1 - pnorm(c, ssb0 + ssb1*x, sigmass)
 }
+logss <- function(x, c, coef){
+  ssb0 <- coef[2]
+  ssb1 <- coef[3]
+  sigmass <- coef[4]
+  1 - pnorm(c, exp(ssb0 + ssb1*x), sigmass)
+}
 erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
 th <- function(x, coef){
   shape <- coef[2]
   scale <- coef[3]
   0.5 - 0.5*erf(shape - scale*x)
+}
+logth <- function(x, coef){
+  par1 <- coef[2]
+  par2 <- coef[3]
+  par3 <- coef[4]
+  0.5 - 0.5*erf(par1 - exp(par2 + par3*x))
 }
 hr <- function(x, coef){
   g0 <- coef[2]
@@ -92,10 +107,15 @@ hr <- function(x, coef){
 ## Comparison of detection functions without TOA.
 plot(x, hn(x, coef(simplefit.hn)), type = "l")
 lines(x, ss(x, 150, coef(ssfit2)), col = "red")
-lines(x, th(x, coef(simplefit.bo)), col = "green")
+lines(x, th(x, coef(simplefit.th)), col = "green")
+lines(x, logth(x, coef(simplefit.logth)), col = "orange")
 lines(x, hr(x, coef(simplefit.hr1)), col = "blue")
 hr2pars <- c(0, 1, coef(simplefit.hr2)[2:3])
 lines(x, hr(x, hr2pars), col = "brown")
+
+lines(x, logss(x, 150, coef(ssfit2.log)), col = "purple")
+
+
 
 ## Comparison of detection functions with TOA.
 plot(x, hn(x, coef(toafit.hn)), type = "l")

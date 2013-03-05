@@ -183,8 +183,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
       detfn <- "identity"
     } else if (!(detfn == "identity" | detfn == "log"))
       stop("The \"ss\" and \"sstoa\" methods use their own detection function. \nThe 'detfn' argument can either be \"identity\" or \"log\" (see 'Details' in help file).")
-  } else if (!(detfn == "hn" | detfn == "th" | detfn == "hr")){
-    stop("Detection function must be \"hn\", \"th\" or \"hr\"")
+  } else if (!(detfn == "hn" | detfn == "th" | detfn == "logth" | detfn == "hr")){
+    stop("Detection function must be \"hn\", \"th\", \"logth\" or \"hr\"")
   }
   if (trace){
     verbose <- TRUE
@@ -220,6 +220,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   ## Detection function parameters.
   detnames <- c(c("g0", "sigma")[detfn == "hn" | detfn == "hr"],
                 c("shape", "scale")[detfn == "th"],
+                c("shape1", "shape2", "scale")[detfn == "logth"],
                 "z"[detfn == "hr"])
   ## Parameter names.
   parnames <- c("D", detnames,
@@ -234,6 +235,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                          g0 = c(0, 1),
                          sigma = c(0, 1e5),
                          shape = NULL,
+                         shape1 = c(0, 1e5),
+                         shape2 = NULL,
                          scale = c(-10, 0),
                          ssb0 = NULL,
                          ssb1 = c(-10, 0),
@@ -302,7 +305,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     sv[i] <- fix[[i]]
   }
   autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
-                   "shape" = autoshape, "scale" = autoscale, "z" = autoz,
+                   "shape" = autoshape, "shape1" = autoshape1, "shape2" = autoshape2,
+                   "scale" = autoscale, "z" = autoz,
                    "ssb0" = autossb0, "ssb1" = autossb1,
                    "sigmass" = autosigmass, "sigmatoa" = autosigmatoa,
                    "kappa" = autokappa, "alpha" = autoalpha)

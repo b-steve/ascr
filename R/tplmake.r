@@ -18,6 +18,8 @@ make.all.tpl.easy <- function(memory, method, detfn, parnames){
       dfstr <- "g0*mfexp(-square(d)/(2*square(sigma)))"
     } else if (detfn == "th"){
       dfstr <- "0.5 - 0.5*(2*cumd_norm((shape - scale*d)*pow(2,0.5)) - 1)"
+    } else if (detfn == "logth"){
+      dfstr <- "0.5 - 0.5*(2*cumd_norm((shape1 - mfexp(shape2 + scale*d))*pow(2,0.5)) - 1)"
     } else if (detfn == "hr"){
       dfstr <- "g0*(1 - mfexp(-pow(d/sigma,-z)))"
     } else {
