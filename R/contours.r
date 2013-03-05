@@ -73,6 +73,9 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   } else if (fit$detfn == "th"){
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  } else if (fit$detfn == "logth"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
@@ -135,6 +138,9 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   } else if (fit$detfn == "th"){
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  } else if (fit$detfn == "logth"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   times <- dist/330
   for (i in dets){
@@ -326,6 +332,9 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   } else if (fit$detfn == "th"){
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  } else if (fit$detfn == "logth"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
@@ -443,6 +452,9 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   } else if (fit$detfn == "th"){
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+  } else if (fit$detfn == "logth"){
+    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+    allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
