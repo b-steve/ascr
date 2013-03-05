@@ -58,6 +58,8 @@ ssfit1 <- secr.fit(sscapt, model = list(D~1, g0~1, sigma~1), detectfn = 10, mask
 ## Fitting with admbsecr().
 ssfit2 <- admbsecr(capt.ss, traps = traps, mask, cutoff = 150, sv = "auto",
                    admbwd = admb.dir, method = "ss")
+ssfit2.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = 150, sv = "auto",
+                       admbwd = admb.dir, method = "ss", detfn = "log")
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
 ## Only possible with admbsecr().
@@ -107,15 +109,12 @@ hr <- function(x, coef){
 ## Comparison of detection functions without TOA.
 plot(x, hn(x, coef(simplefit.hn)), type = "l")
 lines(x, ss(x, 150, coef(ssfit2)), col = "red")
+lines(x, logss(x, 150, coef(ssfit2.log)), col = "purple")
 lines(x, th(x, coef(simplefit.th)), col = "green")
 lines(x, logth(x, coef(simplefit.logth)), col = "orange")
 lines(x, hr(x, coef(simplefit.hr1)), col = "blue")
 hr2pars <- c(0, 1, coef(simplefit.hr2)[2:3])
 lines(x, hr(x, hr2pars), col = "brown")
-
-lines(x, logss(x, 150, coef(ssfit2.log)), col = "purple")
-
-
 
 ## Comparison of detection functions with TOA.
 plot(x, hn(x, coef(toafit.hn)), type = "l")

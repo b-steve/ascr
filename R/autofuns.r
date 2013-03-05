@@ -50,7 +50,7 @@ autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL
 ## produced. Mean of received signal strengths is then converted to a
 ## mean for a truncated normal.
 autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
-                     cutoff, method, detfn = NULL){
+                     cutoff, method, detfn){
   if (method == "sstoa"){
     capthist <- capthist[, , , 1, drop = FALSE]
   }
@@ -59,7 +59,12 @@ autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = N
   sigma <- sd(ss)
   alpha <- (cutoff - mu)/sigma
   lambda <- dnorm(alpha)/(1 - pnorm(alpha))
-  mu + sigma*lambda
+  if (detfn == "identity"){
+    out <- mu + sigma*lambda
+  } else if (detfn == "log"){
+    out <- log(mu + sigma*lambda)
+  }
+  out
 }
 
 ## Assumes signal strength received is almost equal to signal strength

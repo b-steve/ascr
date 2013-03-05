@@ -12,8 +12,7 @@ PROCEDURE_SECTION
   dvar_vector ci1(1,ntraps);
   dvar_vector toall(1,nmask);
   dvar_matrix muss(1,ntraps,1,nmask);
-
-  muss = ssb0 + ssb1*dist;
+  muss = //@LINKFN(ssb0 + ssb1*dist);
   for (i = 1; i <= nmask; i++){
     p=1;
     for (j = 1; j <= ntraps; j++){
