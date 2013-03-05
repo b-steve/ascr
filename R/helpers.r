@@ -187,7 +187,7 @@ toa.ssq <- function(wit, dists) {
 #' @param popn simulated population.
 #' @param detectpars detection function parameters.
 #' @export
-sim.capthist.ss <- function(traps, popn, detectpars){
+sim.capthist.ss <- function(traps, popn, detectpars, log.link){
   ssb0 <- detectpars$beta0
   ssb1 <- detectpars$beta1
   sigmass <- detectpars$sdS
@@ -195,7 +195,10 @@ sim.capthist.ss <- function(traps, popn, detectpars){
   ntraps <- nrow(traps)
   n <- nrow(popn)
   dists <- distances(as.matrix(popn), as.matrix(traps))
-  muss <- exp(ssb0 + ssb1*dists)
+  muss <- ssb0 + ssb1*dists
+  if (log.link){
+    muss <- exp(muss)
+  }
   ss.error <- matrix(rnorm(n*ntraps, 0, sigmass), nrow = n, ncol = ntraps)
   ss <- muss + ss.error
   ss[ss < c] <- 0
