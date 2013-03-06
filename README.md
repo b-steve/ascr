@@ -18,13 +18,13 @@ To install:
 
 * For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
 
-```
+```r
 install.packages("admbsecr", repos="http://R-Forge.R-project.org")
 ```
 
 * For the very latest version (i.e., this repository):
 
-```
+```r
 library(devtools)
 install_github("admbsecr", "b-steve")
 ```
