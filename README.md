@@ -45,4 +45,6 @@ export PATH
 
 ## Acknowledgements
 
-Continued thanks to David Borchers and Hans Skaug for their assistance with this project.
+I am grateful to David Borchers and Hans Skaug for their continued assistance with this project.
+
+Additional thanks to the National Geographic Society/Waitt Grants Program (Grant #W184-11).
