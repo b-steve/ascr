@@ -17,13 +17,11 @@ To install:
 2. Install the admbsecr R library.
 
 * For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
-
 ```r
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
 
 * For the very latest version (i.e., this repository):
-
 ```r
 library(devtools)
 install_github("admbsecr", "b-steve")
@@ -48,3 +46,4 @@ export PATH
 I am grateful to David Borchers and Hans Skaug for their continued assistance with this project.
 
 Additional thanks to the National Geographic Society/Waitt Grants Program (Grant #W184-11).
+
