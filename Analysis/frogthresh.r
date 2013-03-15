@@ -168,7 +168,7 @@ for (i in 1:nsims){
   }
   ## Log-link threshold detection function.
   logthfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                           sv = logth.start, method = "simple", detfn = "logth", trace = TRUE)
+                           sv = logth.start, method = "simple", detfn = "logth")
                   , silent = TRUE)
   if (class(logthfit)[1] == "try-error"){
     logthcoef <- NA
