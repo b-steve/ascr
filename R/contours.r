@@ -545,12 +545,6 @@ warning.contours <- function(n, dets, add, heat, showcapt, cols, ltys,
       partition <- FALSE
     }
   }
-  if (!is.null(arrows)){
-    if (add & arrows){
-      warning("Setting arrows to FALSE as add is TRUE")
-      arrows <- FALSE
-    }
-  }
   if (length(cols) == 1){
     cols <- rep(cols, 3)
   }
@@ -671,7 +665,7 @@ plot.main.contour <- function(maskdens, mask, xlim, ylim, heat,
     if (is.null(xlim)) xlim <- range(x)
     if (is.null(ylim)) ylim <- range(y)
     image(x = unique.x, y = unique.y, z = z, xlab = "x", ylab = "y",
-          xlim = xlim, ylim = ylim)
+          xlim = xlim, ylim = ylim, asp = 1)
     box()
   } else {
     if (is.null(problevels)){
