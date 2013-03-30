@@ -16,7 +16,7 @@ To install:
 
 2. Install the admbsecr R library.
 
-* For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
+* For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/) (although see note below):
 ```
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
