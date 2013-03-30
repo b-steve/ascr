@@ -17,13 +17,11 @@ To install:
 2. Install the admbsecr R library.
 
 * For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
-
 ```
-install.packages("admbsecr", repos="http://R-Forge.R-project.org")
+install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
 
 * For the very latest version (i.e., this repository):
-
 ```
 library(devtools)
 install_github("admbsecr", "b-steve")
