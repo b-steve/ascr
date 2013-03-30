@@ -43,6 +43,8 @@ export PATH
 
 * An error while calling `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
 
+* Feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
+
 ## Acknowledgements
 
 I am grateful to David Borchers and Hans Skaug for their continued assistance with this project.
