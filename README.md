@@ -27,6 +27,8 @@ library(devtools)
 install_github("admbsecr", "b-steve")
 ```
 
+NOTE: Due to what I assume is a bug with R-Forge, the `install.packages()` command above seems to be installing a very old version of admbsecr. A workaround is to click [here](http://r-forge.r-project.org/R/?group_id=1506), download the appropriate file (determined by your operating system), and unzip it to your R package library directory.
+
 ## Troubleshooting
 
 * Ensure the command `admb` is recognised at the terminal command line. Mac/Unix users may have to add the following to ~/.bashrc, ~/.bash_login, or a similar script that runs on startup.
