@@ -554,9 +554,6 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 contours.mrds <- function(fit, dets = "all", add = FALSE, trapnos = FALSE,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
                           xlim = NULL, ylim = NULL, ...){
-  if (length(dets) > 1 & heat){
-    stop("Only one animal can be plotted when heat is TRUE")
-  }
   if (length(dets) > 1 & showcapt){
     warning("Setting showcapt to FALSE as length(dets) > 1")
     showcapt <- FALSE
