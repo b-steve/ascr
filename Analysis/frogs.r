@@ -27,8 +27,9 @@ source("frogsetup.r")
 simplefit1 <- secr.fit(capt, model = list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE)
 ## With admbsecr().
 simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", method = "simple")
-simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = -1),
-                         method = "simple", detfn = "th")
+simplefit.th2 <- admbsecr(capt, traps = traps, mask, sv = c(shape = -1),#c(shape = 2, scale = 0.5),
+                         #bounds = list(shape = c(-10, 10), scale = c(0, 1)),
+                         method = "simple", detfn = "th", trace = TRUE)
 simplefit.logth <- admbsecr(capt, traps = traps, mask,
                             sv = c(shape1 = 17.1493, shape2 = 2.9919, scale = -0.0204),
                             method = "simple", detfn = "logth")
@@ -44,6 +45,9 @@ toafit.hn <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
                       method = "toa")
 toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
                       method = "toa", detfn = "th")
+toafit.logth <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
+                         sv = c(shape1 = 17.1493, shape2 = 2.9919, scale = -0.0204),
+                         method = "toa", detfn = "logth")
 toafit.hr1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
                        method = "toa", detfn = "hr")
 toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
@@ -106,15 +110,24 @@ hr <- function(x, coef){
   g0*(1 - exp(-(x/sigma)^(-z)))
 }
 
+th.j <- function(x, coef){
+  shape <- coef[1]
+  scale <- coef[2]
+  erf(exp(shape - x/exp(scale)))
+}
+
 ## Comparison of detection functions without TOA.
-plot(x, hn(x, coef(simplefit.hn)), type = "l")
+pdf(file = "~/Desktop/plot.pdf")
+plot(x, hn(x, coef(simplefit.hn)), type = "l", ylab = "P(capture)", xlab = "Distance")
 lines(x, ss(x, 150, coef(ssfit2)), col = "red")
 lines(x, logss(x, 150, coef(ssfit2.log)), col = "purple")
 lines(x, th(x, coef(simplefit.th)), col = "green")
+lines(x, th.j(x, coef(simplefit.th)[-1]), lty = "dotted")
 lines(x, logth(x, coef(simplefit.logth)), col = "orange")
 lines(x, hr(x, coef(simplefit.hr1)), col = "blue")
 hr2pars <- c(0, 1, coef(simplefit.hr2)[2:3])
 lines(x, hr(x, hr2pars), col = "brown")
+dev.off()
 
 ## Comparison of detection functions with TOA.
 plot(x, hn(x, coef(toafit.hn)), type = "l")
