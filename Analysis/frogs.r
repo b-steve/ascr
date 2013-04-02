@@ -91,7 +91,7 @@ logss <- function(x, c, coef){
   sigmass <- coef[4]
   1 - pnorm(c, exp(ssb0 + ssb1*x), sigmass)
 }
-erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+erf <- function(x) 2*pnorm(x*sqrt(2)) - 1
 th <- function(x, coef){
   shape <- coef[2]
   scale <- coef[3]

@@ -21,7 +21,7 @@ admbsecr 0.1.4
 
 * The signal strength method now allows a log link function for
   expected received signal strength. This is done from a call to
-  admbsecr using the argument 'detfn = "log"'.
+  admbsecr using the arguments 'method = "ss", detfn = "log"'.
 
 admbsecr 0.1.3
 --------------

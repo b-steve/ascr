@@ -25,7 +25,7 @@ simplefit.hn <- admbsecr(capt = capthist, traps = traps, mask = mask, fix = list
                          sv = "auto", admbwd = admb.dir, method = "simple")
 simplefit.th <- admbsecr(capt = capthist, traps = traps, mask = mask,
                          sv = c(shape = -5, scale = -0.005), bounds = list(shape = c(-15, 0)),
-                         detfn = "th", method = "simple", trace = TRUE)
+                         detfn = "th", method = "simple")
 simplefit.hr1 <- admbsecr(capt = capthist, traps = traps, mask = mask, sv = "auto",
                           detfn = "hr", method = "simple", clean = FALSE)
 simplefit.hr2 <- admbsecr(capt = capthist, traps = traps, mask = mask, fix = list(g0 = 1),

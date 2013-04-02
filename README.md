@@ -16,7 +16,7 @@ To install:
 
 2. Install the admbsecr R library.
 
-* For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
+* For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/) (although see note below):
 ```
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
@@ -26,6 +26,8 @@ install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 library(devtools)
 install_github("admbsecr", "b-steve")
 ```
+
+NOTE: Due to what I assume is a bug with R-Forge, the `install.packages()` command above seems to be installing a very old version of admbsecr. A workaround is to click [here](http://r-forge.r-project.org/R/?group_id=1506), download the appropriate file (determined by your operating system), and unzip it to your R package library directory.
 
 ## Troubleshooting
 
@@ -40,6 +42,8 @@ export PATH
 * Windows users may need to add the environment variable `R_SHELL` with a value that points to `cmd.exe`, which is found in the System32 folder.
 
 * An error while calling `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
+
+* Feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
 
 ## Acknowledgements
 
