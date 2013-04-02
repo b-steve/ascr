@@ -31,7 +31,7 @@ contours.default <- function(fit, ...){
 #' are to be the same.
 #' @param trapnos logical, if \code{TRUE} the trap identification numbers are
 #' plotted.
-#' @problevels a vector indicating which probabilities should be
+#' @param problevels a vector indicating which probabilities should be
 #' associated with the levels of the contours.
 #' @param showcapt logical, if \code{TRUE} circles are drawn around detectors
 #' on which the detection was made.
@@ -216,8 +216,8 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
 }
 
 #' @rdname contours
-#' @method contours ss
-#' @S3method contours ss
+#' @method contours sstoa
+#' @S3method contours sstoa
 contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                            heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4),
                                            rgb(0, 0, 1, 0.4)), ltys = 1,

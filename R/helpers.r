@@ -186,6 +186,8 @@ toa.ssq <- function(wit, dists) {
 #' @param traps trap locations.
 #' @param popn simulated population.
 #' @param detectpars detection function parameters.
+#' @param log.link logical, if \code{TRUE} a log link functin is used for
+#' expected signal strengths.
 #' @export
 sim.capthist.ss <- function(traps, popn, detectpars, log.link){
   ssb0 <- detectpars$beta0
@@ -273,6 +275,8 @@ sim.capthist.dist <- function(traps, popn, detectpars){
 #' printed to the R session.
 #' @param trace logical, if \code{TRUE} parameter values at each step of the fitting
 #' algorithm are printed to the R session.
+#' @param detfn the detection function to be used. Either half normal (\code{"hn"}),
+#' hazard rate (\code{"hr"}) or threshold (\code{"th"}).
 #' @export
 mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, detfn = "hn"){
   setwd(admb.dir)
@@ -329,6 +333,8 @@ mrdstrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, 
 #' printed to the R session.
 #' @param trace logical, if \code{TRUE} parameter values at each step of the fitting
 #' algorithm are printed to the R session.
+#' @param detfn the detection function to be used. Either half normal (\code{"hn"}),
+#' hazard rate (\code{"hr"}) or threshold (\code{"th"}).
 #' @export
 disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, detfn = "hn"){
   setwd(admb.dir)
