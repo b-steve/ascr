@@ -63,17 +63,30 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
-  fixpars <- allpars[!allpars %in% estpars]
-  for (i in estpars) assign(i, coefs[i])
-  for (i in fixpars) assign(i, data[[i]])
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
   if (fit$detfn == "hn"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
     allprobs <- g0*exp(-dist^2/(2*sigma^2))
   } else if (fit$detfn == "hr"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
+    z <- parvals["z"]
     allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
   } else if (fit$detfn == "th"){
+    shape <- parvals["shape"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
   } else if (fit$detfn == "logth"){
+    shape1 <- parvals["shape1"]
+    shape2 <- parvals["shape2"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
@@ -128,17 +141,31 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
-  fixpars <- allpars[!allpars %in% estpars]
-  for (i in estpars) assign(i, coefs[i])
-  for (i in fixpars) assign(i, data[[i]])
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
+  sigmatoa <- parvals["sigmatoa"]
   if (fit$detfn == "hn"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
     allprobs <- g0*exp(-dist^2/(2*sigma^2))
   } else if (fit$detfn == "hr"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
+    z <- parvals["z"]
     allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
   } else if (fit$detfn == "th"){
+    shape <- parvals["shape"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
   } else if (fit$detfn == "logth"){
+    shape1 <- parvals["shape1"]
+    shape2 <- parvals["shape2"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
@@ -199,9 +226,15 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
-  fixpars <- allpars[!allpars %in% estpars]
-  for (i in estpars) assign(i, coefs[i])
-  for (i in fixpars) assign(i, data[[i]])
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
+  ssb0 <- parvals["ssb0"]
+  ssb1 <- parvals["ssb1"]
+  sigmass <- parvals["sigmass"]
   muss <- ssb0 + ssb1*dist
   allnonprobs <- pnorm(cutoff, muss, sigmass)
   for (i in dets){
@@ -252,9 +285,16 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
-  fixpars <- allpars[!allpars %in% estpars]
-  for (i in estpars) assign(i, coefs[i])
-  for (i in fixpars) assign(i, data[[i]])
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
+  ssb0 <- parvals["ssb0"]
+  ssb1 <- parvals["ssb1"]
+  sigmass <- parvals["sigmass"]
+  sigmatoa <- parvals["sigmatoa"]
   times <- dist/330
   muss <- ssb0 + ssb1*dist
   allnonprobs <- pnorm(cutoff, muss, sigmass)
@@ -322,17 +362,31 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
-  fixpars <- allpars[!allpars %in% estpars]
-  for (i in estpars) assign(i, coefs[i])
-  for (i in fixpars) assign(i, data[[i]])
-    if (fit$detfn == "hn"){
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
+  kappa <- parvals["kappa"]
+  if (fit$detfn == "hn"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
     allprobs <- g0*exp(-dist^2/(2*sigma^2))
   } else if (fit$detfn == "hr"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
+    z <- parvals["z"]
     allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
   } else if (fit$detfn == "th"){
+    shape <- parvals["shape"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
   } else if (fit$detfn == "logth"){
+    shape1 <- parvals["shape1"]
+    shape2 <- parvals["shape2"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
@@ -387,9 +441,17 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
-  fixpars <- allpars[!allpars %in% estpars]
-  for (i in estpars) assign(i, coefs[i])
-  for (i in fixpars) assign(i, data[[i]])
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
+  alpha <- parvals["alpha"]
+  g01 <- parvals["g01"]
+  g02 <- parvals["g02"]
+  sigma1 <- parvals["sigma1"]
+  sigma2 <- parvals["sigma2"]
   allprobs <- matrix(0, nrow = nrow(dist), ncol = ncol(dist))
   allprobs[1, ] <- g01*exp(-dist[1, ]^2/(2*sigma1^2))
   allprobs[2, ] <- g02*exp(-dist[2, ]^2/(2*sigma2^2))
@@ -442,17 +504,31 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
-  fixpars <- allpars[!allpars %in% estpars]
-  for (i in estpars) assign(i, coefs[i])
-  for (i in fixpars) assign(i, data[[i]])
-    if (fit$detfn == "hn"){
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
+  alpha <- parvals["alpha"]
+  if (fit$detfn == "hn"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
     allprobs <- g0*exp(-dist^2/(2*sigma^2))
   } else if (fit$detfn == "hr"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
+    z <- parvals["z"]
     allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
   } else if (fit$detfn == "th"){
+    shape <- parvals["shape"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
   } else if (fit$detfn == "logth"){
+    shape1 <- parvals["shape1"]
+    shape2 <- parvals["shape2"]
+    scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
