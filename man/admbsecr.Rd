@@ -82,9 +82,12 @@
   'Details'.}
 
   \item{detfn}{the detection function to be used. Either
-  halfnormal (\code{"hn"}), hazard rate (\code{"hr"}),
-  signal strength (\code{"ss"}, see 'Details') or threshold
-  (\code{"th"}).}
+  half normal (\code{"hn"}), hazard rate (\code{"hr"}),
+  threshold (\code{"th"}) or log-link threshold
+  (\code{"logth"}. If method is \code{"ss"}, this argument
+  gives the link function for the expected received signal
+  strengths (either \code{"identity"}, the default, or
+  \code{"log"}).}
 
   \item{memory}{value of \code{arrmblsize} in ADMB.
   Increase this if ADMB reports a memory error.}
@@ -145,46 +148,46 @@
   ADMB is called to fit an SECR model through use of the
   R2admb package. Different methods are used depending on
   the additional information on animal location that is
-  collected. These are: \itemize{ \item \code{"simple"}:
-  Normal SECR with no additional information. Parameters to
-  estimate are: \itemize{ \item D: Animal density.
+  collected. Different detection functions are used
+  depending on the relationship between detection
+  probability and distance from detector.
 
-  \item g0: Probability of detection at distance 0.
+  Note that the method \code{"ss"} is a special case in
+  that it incorporates its own detection function, and thus
+  the half normal, hazard rate (etc) options cannot be
+  specified. Instead, either \code{"identity"} (the
+  default) or \code{"log"} can be provided for the argument
+  \code{detfn}, which give the link function for the
+  estimated received signal strengths.
 
-  \item sigma: 'Standard deviation' parameter for
-  halfnormal detection function.  } \item \code{"toa"}:
-  SECR with precise time of arrival (TOA) recorded.
-  Parameters to estimate are: \itemize{ \item D: As above.
+  The parameter D, density of animals (in individuals per
+  hectare) is always estimated. The other parameters in the
+  model depend on the method and the detection function
+  used.
 
-  \item g0: As above.
+  Possible methods, along with their parameters, are as
+  follows:
 
-  \item sigma: As above.
-
-  \item sigmatoa: Error term associated with TOA.  } \item
+  \itemize{ \item \code{"simple"}: Normal SECR with no
+  additional information. No additional parameters.  \item
+  \code{"toa"}: SECR with precise time of arrival (TOA)
+  recorded: \itemize{ \item sigmatoa: Error term associated
+  with the normal distribution used to model TOA.  } \item
   \code{"ang"}: SECR with estimates of angle to animal
-  recorded. Parameters to estimate are: \itemize{ \item D:
-  As above.
-
-  \item g0: As above.
-
-  \item sigma: As above.
-
-  \item kappa: Error term associated with angle estimation.
+  recorded: \itemize{ \item kappa: Error term from a
+  Von-Mises distribution, used to model estimated angles.
   } \item \code{"ss"}: SECR with received signal strengths
-  at traps recorded. Parameters to estimate are: \itemize{
-  \item D: As above.
-
-  \item ssb0: Average signal strength at sound source.
+  at traps recorded: \itemize{ \item ssb0: Signal strength
+  at source.
 
   \item ssb1: Decrease in signal strength per unit distance
   due to sound propagation.
 
-  \item sigmass: Error term associated with signal
-  strength.  } \item \code{"sstoa"}: SECR with precise TOA
-  and received signal strengths at traps recorded.
-  Parameters to estimate are: \itemize{ \item D: As above.
-
-  \item sigmatoa: As above.
+  \item sigmass: Error term associated with the normal
+  distribution used to model signal strength.  } \item
+  \code{"sstoa"}: SECR with precise TOA and received signal
+  strengths at traps recorded: \itemize{ \item sigmatoa: As
+  above.
 
   \item ssb0: As above.
 
@@ -192,15 +195,29 @@
 
   \item sigmass: As above.  } \item \code{"dist"}: SECR
   with estimated distances between animals and traps at
-  which detections occurred. Parameters to estimate are:
-  \itemize{ \item D: As above.
+  which detections occurred: \itemize{ \item alpha: Shape
+  parameter associated with the gamma distribution used to
+  model estimated distances.  } } Possible detection
+  functions, along with their parameters, are as follows:
 
-  \item g0: As above.
+  \itemize{ \item \code{"hn"}: Half-normal detection
+  function: \itemize{ \item g0: Probability of detection at
+  distance 0.
 
-  \item sigma: As above.
+  \item sigma: Scale parameter.  } \item \code{"hr"}:
+  Hazard rate detection function: \itemize{ \item g0
 
-  \item alpha: Shape parameter associated with the gamma
-  distribution used to model estimated distances.  } }
+  \item sigma
+
+  \item z } \item \code{"th"}: Threshold detection
+  function: \itemize{ \item shape
+
+  \item scale } \item \code{"logth"}: Log-link threshold
+  detection function: \itemize{ \item shape1
+
+  \item shape2
+
+  \item scale } }
 }
 \author{
   Ben Stevenson

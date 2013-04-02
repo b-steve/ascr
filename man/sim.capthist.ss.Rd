@@ -2,7 +2,7 @@
 \alias{sim.capthist.ss}
 \title{Simulated signal strength capture history matrix}
 \usage{
-  sim.capthist.ss(traps, popn, detectpars)
+  sim.capthist.ss(traps, popn, detectpars, log.link)
 }
 \arguments{
   \item{traps}{trap locations.}
