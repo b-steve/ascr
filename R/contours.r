@@ -235,7 +235,8 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   ssb0 <- parvals["ssb0"]
   ssb1 <- parvals["ssb1"]
   sigmass <- parvals["sigmass"]
-  muss <- ssb0 + ssb1*dist
+  lpred <- ssb0 + ssb1*dist
+  if (fit$detfn == "identity") muss <- lpred else muss <- exp(lpred)
   allnonprobs <- pnorm(cutoff, muss, sigmass)
   for (i in dets){
     ssdens <- logdens.ss(allcapt, allsscapt, allnonprobs, ntraps,
