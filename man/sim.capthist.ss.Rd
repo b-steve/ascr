@@ -10,6 +10,9 @@
   \item{popn}{simulated population.}
 
   \item{detectpars}{detection function parameters.}
+
+  \item{log.link}{logical, if \code{TRUE} a log link
+  functin is used for expected signal strengths.}
 }
 \description{
   Simulating a signal strength capture history matrix.
