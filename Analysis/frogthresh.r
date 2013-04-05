@@ -27,13 +27,12 @@ traps <- read.traps(data = mics, detector = "signal")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 1
+nsims <- 500
 buffer <- 35
 mask.spacing <- 50
 
 ## True parameter values.
-#seed <- 9578
-seed <- 1
+seed <- 6846
 D <- 5270
 ssb0 <- 173
 ssb1 <- -3.1
@@ -48,6 +47,8 @@ th.start <- c(D = D, shape = -3.70, scale = -0.51)
 logth.start <- c(D = D, shape1 = 2.29, shape2 = 3.38, scale = -0.36)
 ss.start <- c(D = D, ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
 logss.start <- c(D = D, ssb0 = log(ssb0), ssb1 = -0.1, sigmass = sigmass)
+## Bounding D.
+bounds <- list(D = c(0, 15000))
 set.seed(seed)
 ## Inverse of speed of sound (in ms per metre).
 invsspd <- 1000/330
@@ -67,6 +68,7 @@ thprobs <- NULL
 logthprobs <- NULL
 ssprobs <- NULL
 logssprobs <- NULL
+mrdsprobs <- NULL
 hnres <- matrix(0, nrow = nsims, ncol = 6)
 hnfixres <- matrix(0, nrow = nsims, ncol = 5)
 hrres <- matrix(0, nrow = nsims, ncol = 7)
@@ -75,6 +77,7 @@ thres <- matrix(0, nrow = nsims, ncol = 6)
 logthres <- matrix(0, nrow = nsims, ncol = 7)
 ssres <- matrix(0, nrow = nsims, ncol = 7)
 logssres <- matrix(0, nrow = nsims, ncol = 7)
+mrdsres <- matrix(0, nrow = nsims, ncol = 6)
 colnames(hnres) <- c("D", "g0", "sigma", "logLik", "AIC", "maxgrad")
 colnames(hnfixres) <- c("D", "sigma", "logLik", "AIC", "maxgrad")
 colnames(hrres) <- c("D", "g0", "sigma", "z", "logLik", "AIC", "maxgrad")
@@ -83,6 +86,7 @@ colnames(thres) <- c("D", "shape", "scale", "logLik", "AIC", "maxgrad")
 colnames(logthres) <- c("D", "shape1", "shape2", "scale", "logLik", "AIC", "maxgrad")
 colnames(ssres) <- c("D", "ssb0", "ssb1", "sigmass", "logLik", "AIC", "maxgrad")
 colnames(logssres) <- c("D", "ssb0", "ssb1", "sigmass", "logLik", "AIC", "maxgrad")
+colnames(mrdsres) <- c("D", "shape", "scale", "logLik", "AIC", "maxgrad")
 
 ## Carrying out simulation.
 for (i in 1:nsims){
@@ -105,11 +109,11 @@ for (i in 1:nsims){
   ## Distances from detected animals to traps.
   dists <- t(distances(as.matrix(traps), as.matrix(detections)))
   ## Half normal detection function.
-  hnfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+  hnfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
                             sv = hn.start, method = "simple", detfn = "hn")
                    , silent = TRUE)
   if (class(hnfit)[1] == "try-error"){
-    hnfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+    hnfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
                               sv = "auto", method = "simple", detfn = "hn")
                      , silent = TRUE)
   }
@@ -122,12 +126,12 @@ for (i in 1:nsims){
   print("hn")
   ## Half normal detection function with fixed g0.
   hnfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                            sv = hn.start[-2], fix = list(g0 = 1),
+                            sv = hn.start[-2], fix = list(g0 = 1), bounds = bounds,
                             method = "simple", detfn = "hn")
                    , silent = TRUE)
   if (class(hnfixfit)[1] == "try-error"){
     hnfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                              sv = "auto", fix = list(g0 = 1),
+                              sv = "auto", fix = list(g0 = 1), bounds = bounds,
                               method = "simple", detfn = "hn")
                      , silent = TRUE)
   }
@@ -139,7 +143,7 @@ for (i in 1:nsims){
   }
   print("hnfix")
   ## Hazard rate detection function.
-  hrfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+  hrfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
                             sv = hr.start, method = "simple", detfn = "hr")
                    , silent = TRUE)
   if (class(hrfit)[1] == "try-error"){
@@ -152,7 +156,8 @@ for (i in 1:nsims){
   ## Half normal detection function with fixed g0.
   hrfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
                            sv = hr.start[-2], fix = list(g0 = 1),
-                           method = "simple", detfn = "hr")
+                           bounds = bounds, method = "simple",
+                           detfn = "hr")
                   , silent = TRUE)
   if (class(hrfixfit)[1] == "try-error"){
     hrfixcoef <- NA
@@ -162,7 +167,7 @@ for (i in 1:nsims){
   }
   print("hrfix")
   ## Threshold detection function.
-  thfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+  thfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
                         sv = th.start, method = "simple", detfn = "th")
                , silent = TRUE)
   if (class(thfit)[1] == "try-error"){
@@ -173,23 +178,26 @@ for (i in 1:nsims){
   }
   print("th")
   ## Log-link threshold detection function.
-  logthfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                           sv = logth.start, method = "simple", detfn = "logth")
-                  , silent = TRUE)
-  if (class(logthfit)[1] == "try-error"){
-    logthcoef <- NA
-    logthprobs <- c(logthprobs, i)
-  } else {
-    logthcoef <- c(coef(logthfit), logLik(logthfit), AIC(logthfit), logthfit$maxgrad)
-  }
-  print("logth")
+  ## logthfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+  ##                          sv = logth.start, method = "simple", detfn = "logth",
+  ##                          bounds = bounds)
+  ##                 , silent = TRUE)
+  ## if (class(logthfit)[1] == "try-error"){
+  ##   logthcoef <- NA
+  ##   logthprobs <- c(logthprobs, i)
+  ## } else {
+  ##   logthcoef <- c(coef(logthfit), logLik(logthfit), AIC(logthfit), logthfit$maxgrad)
+  ## }
+  ## print("logth")
   ## Signal strength detection function.
   ssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                         sv = ss.start, cutoff = cutoff, method = "ss",
+                        bounds = bounds,
                         detfn = "identity"), silent = TRUE)
   if (class(ssfit)[1] == "try-error"){
     ssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                           sv = "auto", cutoff = cutoff, method = "ss",
+                          bounds = bounds,
                           detfn = "identity"), silent = TRUE)
   }
   if (class(ssfit)[1] == "try-error"){
@@ -202,10 +210,10 @@ for (i in 1:nsims){
   ## Signal strength detection function with log-link.
   logssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                            sv = logss.start, cutoff = cutoff, method = "ss",
-                           detfn = "log"), silent = TRUE)
+                           detfn = "log", bounds = bounds), silent = TRUE)
   if (class(logssfit)[1] == "try-error"){
     logssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
-                             sv = "auto", cutoff = cutoff, method = "ss",
+                             bounds = bounds, sv = "auto", cutoff = cutoff, method = "ss",
                              detfn = "log"), silent = TRUE)
   }
   if (class(logssfit)[1] == "try-error"){
@@ -215,14 +223,34 @@ for (i in 1:nsims){
     logsscoef <- c(coef(logssfit), logLik(logssfit), AIC(logssfit), logssfit$maxgrad)
   }
   print("logss")
+  ## MRDS with threshold detection function.
+  capthist.mrds <- array(0, dim = c(n, 1, 6, 2))
+  capthist.mrds[, , , 1] <- capthist
+  capthist.mrds[, , , 2] <- dists
+  
+  mrdsfit <- try(admbsecr(capthist.mrds, traps = traps, mask = mask,
+                           sv = coef(thfit)[2:3],
+                           fix = list(D = 5270), method = "mrds",
+                           detfn = "th"), silent = TRUE)
+  mrdsfit <- try(admbsecr(capthist.mrds, traps = traps, mask = mask,
+                          sv = c(D = 5270, coef(mrdsfit)), bounds = bounds,
+                          method = "mrds", detfn = "th"), silent = TRUE)
+  if (class(mrdsfit)[1] == "try-error"){
+    mrdscoef <- NA
+    mrdsprobs <- c(mrdsprobs, i)
+  } else {
+    mrdscoef <- c(coef(mrdsfit), logLik(mrdsfit), AIC(mrdsfit), mrdsfit$maxgrad)
+  }
+  print("mrds")
   hnres[i, ] <- hncoef
   hnfixres[i, ] <- hnfixcoef
   hrres[i, ] <- hrcoef
   hrfixres[i, ] <- hrfixcoef
   thres[i, ] <- thcoef
-  logthres[i, ] <- logthcoef
+  ##logthres[i, ] <- logthcoef
   ssres[i, ] <- sscoef
   logssres[i, ] <- logsscoef
+  mrdsres[i, ] <- mrdscoef
   if (i == nsims){
     print(c("end", date()))
   }
@@ -234,6 +262,7 @@ write.table(hnfixres, "~/admbsecr/Results/thresh/1/hnfixres.txt", row.names = FA
 write.table(hrres, "~/admbsecr/Results/thresh/1/hrres.txt", row.names = FALSE)
 write.table(hrfixres, "~/admbsecr/Results/thresh/1/hrfixres.txt", row.names = FALSE)
 write.table(thres, "~/admbsecr/Results/thresh/1/thres.txt", row.names = FALSE)
-write.table(logthres, "~/admbsecr/Results/thresh/1/logthres.txt", row.names = FALSE)
+##write.table(logthres, "~/admbsecr/Results/thresh/1/logthres.txt", row.names = FALSE)
 write.table(ssres, "~/admbsecr/Results/thresh/1/ssres.txt", row.names = FALSE)
 write.table(logssres, "~/admbsecr/Results/thresh/1/logssres.txt", row.names = FALSE)
+write.table(mrdsres, "~/admbsecr/Results/thresh/1/mrdsres.txt", row.names = FALSE)
