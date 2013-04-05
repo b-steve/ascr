@@ -166,9 +166,9 @@ make.acoustic.captures <- function(mics, clicks, dt){
 #' @param dists distances.
 #' @return A matrix.
 #' @export
-toa.ssq <- function(wit, dists) {
+toa.ssq <- function(wit, dists, speed) {
   ssq <- function(x) sum((x - mean(x))^2)
-  v <- 330 # speed of sound
+  v <- speed # speed of sound
   wit.na <- wit
   wit.na[wit == 0] <- NA
   delt <- na.omit(as.vector(wit.na) - dists/v)

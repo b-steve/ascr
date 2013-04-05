@@ -129,8 +129,9 @@ NULL
 #' the name of the paramter to which this value applies.
 #' @param ssqtoa an optional matrix. If calculated before call to \code{admbsecr},
 #' providing this will prevent recalculation.
-#' @param cutoff The signal strength threshold of detection. Required if \code{method} is
+#' @param cutoff the signal strength threshold of detection. Required if \code{method} is
 #' \code{"ss"} or \code{"sstoa"}.
+#' @param sound.speed the speed of sound in metres per second. Used for TOA analysis.
 #' @param admbwd file path to the ADMB working directory. Only required if
 #' \code{autogen} is \code{TRUE}, in which case it points to the directory in which the
 #' \code{.tpl} file is located.
@@ -171,9 +172,9 @@ NULL
 #' @author Ben Stevenson
 #' @export
 admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix = NULL,
-                     ssqtoa = NULL, cutoff = NULL, admbwd = NULL, method = "simple",
-                     detfn = "hn" , memory = NULL, profpars = NULL, clean = TRUE,
-                     verbose = FALSE, trace = FALSE, autogen = TRUE){
+                     ssqtoa = NULL, cutoff = NULL, sound.speed = 330, admbwd = NULL,
+                     method = "simple", detfn = "hn" , memory = NULL, profpars = NULL,
+                     clean = TRUE, verbose = FALSE, trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
   if (length(method) != 1){
     stop("method must be of length 1")
@@ -343,7 +344,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
   } else if (method == "toa"){
     if (is.null(ssqtoa)){
-      ssqtoa <- apply(capt, 1, toa.ssq, dists = dist)
+      ssqtoa <- apply(capt, 1, toa.ssq, dists = dist, speed = sound.speed)
     }
     data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
                  toassq = t(ssqtoa), dist = dist, capt = bincapt, trace = trace)

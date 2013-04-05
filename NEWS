@@ -1,6 +1,8 @@
 admbsecr 0.1.5
 --------------
 
+* Added the argument sound.speed to admbsecr().
+
 admbsecr 0.1.4
 --------------
 
