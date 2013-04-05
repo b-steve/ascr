@@ -123,7 +123,6 @@ for (i in 1:nsims){
   } else {
     hncoef <- c(coef(hnfit), logLik(hnfit), AIC(hnfit), hnfit$maxgrad)
   }
-  print("hn")
   ## Half normal detection function with fixed g0.
   hnfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
                             sv = hn.start[-2], fix = list(g0 = 1), bounds = bounds,
@@ -141,7 +140,6 @@ for (i in 1:nsims){
   } else {
     hnfixcoef <- c(coef(hnfixfit), logLik(hnfixfit), AIC(hnfixfit), hnfixfit$maxgrad)
   }
-  print("hnfix")
   ## Hazard rate detection function.
   hrfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
                             sv = hr.start, method = "simple", detfn = "hr")
@@ -152,7 +150,6 @@ for (i in 1:nsims){
   } else {
     hrcoef <- c(coef(hrfit), logLik(hrfit), AIC(hrfit), hrfit$maxgrad)
   }
-  print("hr")
   ## Half normal detection function with fixed g0.
   hrfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
                            sv = hr.start[-2], fix = list(g0 = 1),
@@ -165,7 +162,6 @@ for (i in 1:nsims){
   } else {
     hrfixcoef <- c(coef(hrfixfit), logLik(hrfixfit), AIC(hrfixfit), hrfixfit$maxgrad)
   }
-  print("hrfix")
   ## Threshold detection function.
   thfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
                         sv = th.start, method = "simple", detfn = "th")
@@ -176,7 +172,6 @@ for (i in 1:nsims){
   } else {
     thcoef <- c(coef(thfit), logLik(thfit), AIC(thfit), thfit$maxgrad)
   }
-  print("th")
   ## Log-link threshold detection function.
   ## logthfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
   ##                          sv = logth.start, method = "simple", detfn = "logth",
@@ -188,7 +183,6 @@ for (i in 1:nsims){
   ## } else {
   ##   logthcoef <- c(coef(logthfit), logLik(logthfit), AIC(logthfit), logthfit$maxgrad)
   ## }
-  ## print("logth")
   ## Signal strength detection function.
   ssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                         sv = ss.start, cutoff = cutoff, method = "ss",
@@ -206,7 +200,6 @@ for (i in 1:nsims){
   } else {
     sscoef <- c(coef(ssfit), logLik(ssfit), AIC(ssfit), ssfit$maxgrad)
   }
-  print("ss")
   ## Signal strength detection function with log-link.
   logssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                            sv = logss.start, cutoff = cutoff, method = "ss",
@@ -222,7 +215,6 @@ for (i in 1:nsims){
   } else {
     logsscoef <- c(coef(logssfit), logLik(logssfit), AIC(logssfit), logssfit$maxgrad)
   }
-  print("logss")
   ## MRDS with threshold detection function.
   capthist.mrds <- array(0, dim = c(n, 1, 6, 2))
   capthist.mrds[, , , 1] <- capthist
@@ -241,7 +233,6 @@ for (i in 1:nsims){
   } else {
     mrdscoef <- c(coef(mrdsfit), logLik(mrdsfit), AIC(mrdsfit), mrdsfit$maxgrad)
   }
-  print("mrds")
   hnres[i, ] <- hncoef
   hnfixres[i, ] <- hnfixcoef
   hrres[i, ] <- hrcoef
