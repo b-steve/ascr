@@ -4,7 +4,10 @@
 autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL, cutoff = NULL,
                       method = NULL, detfn = NULL){
   obsRPSV <- RPSV.mod(bincapt, traps)
-  secr:::naivesigma(obsRPSV, traps, mask, 0, 1)
+  usge <- matrix(1, nrow = nrow(traps), ncol = ncol(capthist))
+  wt <- apply(usge > 0, 1, sum)
+  secr:::naivesigma(obsRPSV = obsRPSV, trps = traps, mask = mask,
+                    wt = wt, detectfn = 0, z = 1, tol = 0.1)
 }
 
 ## Lifted from the secr package.
