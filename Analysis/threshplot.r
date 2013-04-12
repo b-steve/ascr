@@ -18,14 +18,82 @@ for (i in 1:length(resmats)){
   probs <- c(probs, which(resmats[[i]]$maxgrad < -1))
 }
 
-dhnD <- density(hnres$D)
-dhnfixD <- density(hnfixres$D)
-dhrD <- density(hrres$D[hrres$maxgrad > -1], na.rm = TRUE)
-dhrfixD <- density(hrfixres$D[hrfixres$maxgrad > -1], na.rm = TRUE)
-dssD <- density(ssres$D[ssres$maxgrad > -1])
+hnD <- hnres$D[hnres$maxgrad > -1 & !is.na(hnres$D)]
+hnfixD <- hnfixres$D[hnfixres$maxgrad > -1 & !is.na(hnfixres$D)]
+hrD <- hrres$D[hrres$maxgrad > -1 & !is.na(hrres$D)]
+hrfixD <- hrfixres$D[hrfixres$maxgrad > -1 & !is.na(hrfixres$D)]
+ssD <- ssres$D[ssres$maxgrad > -1 & !is.na(ssres$D)]
+logssD <- logssres$D[logssres$maxgrad > -1 & !is.na(logssres$D)]
+thD <- thres$D[thres$maxgrad > -1 & !is.na(thres$D)]
+mrdsD <- mrdsres$D[mrdsres$maxgrad > -1 & !is.na(mrdsres$D)]
 
-plot(dhnD, xlim = c(3000, 8000))
-lines(dhnfixD)
-lines(dhrD)
-lines(dhrfixD)
-lines(dssD)
+
+
+dhnD <- density(hnD)
+dhnfixD <- density(hnfixD)
+dhrD <- density(hrD)
+dhrfixD <- density(hrfixD)
+dssD <- density(ssD)
+dlogssD <- density(logssD)
+dthD <- density(thD)
+dmrdsD <- density(mrdsD)
+xs <- c(dhnD$x, dhnfixD$x, dhrD$x, dhrfixD$x, dssD$x, dlogssD$x, dthD$x, dmrdsD$x)
+ys <- c(dhnD$y, dhnfixD$y, dhrD$y, dhrfixD$y, dssD$y, dlogssD$y, dthD$y, dmrdsD$y)
+
+##pdf(file = paste(resfile, "fig", sep = ""))
+plot.new()
+plot.window(xlim = range(xs), ylim = c(0, max(ys)))
+axis(1)
+axis(2, las = 1)
+abline(v = D, lty = "dotted")
+lines(dhnD, col = "blue")
+#lines(dhnfixD) # These two the same.
+lines(dhrD, col = "red")
+lines(dhrfixD, col = "purple")
+lines(dssD, col = "orange")
+lines(dlogssD, col = "darkseagreen")
+lines(dthD, col = "brown")
+lines(dmrdsD, col = "green")
+abline(h = 0, col = "grey")
+box()
+title(main = "Simulated sampling distributions of animal density",
+      xlab = expression(hat(D)), ylab = "Density")
+legend(x = "topright", legend = c("Half normal", "Hazard rate", "Hazard rate (g0 = 1)",
+                         "SS", "SS (log link)", "Threshold", "MRDS with half normal"),
+       col = c("blue", "red", "purple", "orange", "darkseagreen", "brown", "green"),
+       lty = 1)
+##dev.off()
+
+## Calculating bias
+hn.bias <- mean(hnD) - D
+hnfix.bias <- mean(hnfixD) - D
+hr.bias <- mean(hrD) - D
+hrfix.bias <- mean(hrfixD) - D
+ss.bias <- mean(ssD) - D
+logss.bias <- mean(logssD) - D
+th.bias <- mean(thD) - D
+mrds.bias <- mean(mrdsD) - D
+
+## Calculating variance
+hn.var <- var(hnD)
+hnfix.var <- var(hnfixD)
+hr.var <- var(hrD)
+hrfix.var <- var(hrfixD)
+ss.var <- var(ssD)
+logss.var <- var(logssD)
+th.var <- var(thD)
+mrds.var <- var(mrdsD)
+
+## Calculating mean square error
+hn.mse <- hn.bias^2 + hn.var
+hnfix.mse <- hnfix.bias^2 + hnfix.var
+hr.mse <- hr.bias^2 + hr.var
+hrfix.mse <- hrfix.bias^2 + hrfix.var
+ss.mse <- ss.bias^2 + ss.var
+logss.mse <- logss.bias^2 + logss.var
+th.mse <- th.bias^2 + th.var
+mrds.mse <- mrds.bias^2 + mrds.var
+
+sort(c(hn = hn.mse, hnfix = hnfix.mse, hr = hr.mse, hrfix = hrfix.mse, ss = ss.mse,
+       logss = logss.mse, th = th.mse, mrds = mrds.mse))
+
