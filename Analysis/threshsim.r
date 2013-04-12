@@ -90,6 +90,7 @@ colnames(mrdsres) <- c("D", "shape", "scale", "logLik", "AIC", "maxgrad")
 
 ## Carrying out simulation.
 for (i in 1:nsims){
+
   if (i == 1){
     print(c("start", date()))
   } else {
@@ -203,7 +204,8 @@ for (i in 1:nsims){
   ## Signal strength detection function with log-link.
   logssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                            sv = logss.start, cutoff = cutoff, method = "ss",
-                           detfn = "log", bounds = bounds), silent = TRUE)
+                           detfn = "log", bounds = list(D = c(0, 15000),
+                                            sigmass = c(4, 15))), silent = TRUE)
   if (class(logssfit)[1] == "try-error"){
     logssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                              bounds = bounds, sv = "auto", cutoff = cutoff, method = "ss",
@@ -246,7 +248,6 @@ for (i in 1:nsims){
     print(c("end", date()))
   }
 }
-
 ## To write the simulation results to a file.
 write.table(hnres, "~/admbsecr/Results/thresh/1/hnres.txt", row.names = FALSE)
 write.table(hnfixres, "~/admbsecr/Results/thresh/1/hnfixres.txt", row.names = FALSE)
