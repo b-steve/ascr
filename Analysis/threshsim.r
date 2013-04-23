@@ -142,9 +142,10 @@ for (i in 1:nsims){
     hnfixcoef <- c(coef(hnfixfit), logLik(hnfixfit), AIC(hnfixfit), hnfixfit$maxgrad)
   }
   ## Hazard rate detection function.
-  hrfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
-                            sv = hr.start, method = "simple", detfn = "hr")
-                   , silent = TRUE)
+  hrfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
+                        bounds = list(D = c(0, 15000), sigma = c(0.5, 1e+05)),
+                        sv = hr.start, method = "simple", detfn = "hr")
+               , silent = TRUE)
   if (class(hrfit)[1] == "try-error"){
     hrcoef <- NA
     hrprobs <- c(hrprobs, i)
