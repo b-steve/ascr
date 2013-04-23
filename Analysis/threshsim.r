@@ -155,8 +155,8 @@ for (i in 1:nsims){
   ## Half normal detection function with fixed g0.
   hrfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
                            sv = hr.start[-2], fix = list(g0 = 1),
-                           bounds = bounds, method = "simple",
-                           detfn = "hr")
+                           bounds = list(D = c(0, 11000), sigma = c(3, 40), z = c(0, 30)),
+                           method = "simple", detfn = "hr")
                   , silent = TRUE)
   if (class(hrfixfit)[1] == "try-error"){
     hrfixcoef <- NA
@@ -206,7 +206,8 @@ for (i in 1:nsims){
   logssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                            sv = logss.start, cutoff = cutoff, method = "ss",
                            detfn = "log", bounds = list(D = c(0, 15000),
-                                            sigmass = c(4, 15))), silent = TRUE)
+                                            sigmass = c(4, 15), ssb0 = c(-5, 20))),
+                  silent = TRUE)
   if (class(logssfit)[1] == "try-error"){
     logssfit <- try(admbsecr(capt = capthist.ss, traps = traps, mask = mask,
                              bounds = bounds, sv = "auto", cutoff = cutoff, method = "ss",
