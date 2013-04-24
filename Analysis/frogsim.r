@@ -77,7 +77,7 @@ for (i in 1:nsims){
   }
   ## Simulating data and setting things up for analysis.
   popn <- sim.popn(D = D, core = traps, buffer = buffer)
-  capthist.ss <- sim.capthist.ss(traps, popn, detectpars, log.link = FALSE)
+  capthist.ss <- sim.capthist.ss(traps, popn, detectpars, log.link = TRUE)
   capthist <- capthist.ss
   capthist[capthist > 0] <- 1
   n <- nrow(capthist)
