@@ -308,7 +308,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     make.all.tpl.easy(memory = memory, method = method,
                       detfn = detfn, parnames = parnames)
     bessel.exists <- file.access("bessel.cxx", mode = 0)
-    print(bessel.exists)
     if (bessel.exists == -1){
       make.bessel()
     }
@@ -400,7 +399,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   }
   if (autogen){
     file.remove("secr.tpl")
-    print(bessel.exists)
     if (bessel.exists == -1){
       file.remove("bessel.cxx")
     }
