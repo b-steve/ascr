@@ -100,11 +100,13 @@ NULL
 #' suitable if \code{method} is \code{"simple"}. Otherwise, the \code{1} values in
 #' this array must be changed to the value of the recorded supplementary information,
 #' which will depend on \code{method} (see 'Details'). When \code{method} is
-#' \code{"sstoa"} or \code{"mrds"}, this array must be of dimension \code{(n, S, K, 2)}.
-#' With \code{"sstoa"},  \code{capt[, , , 1]} provides the signal strength information and
-#' \code{capt[, , , 2]} provides the time of arrival information. With \code{"mrds"},
-#' \code{capt[, , , 1]} provides the binary capture history array and \code{capt[, , , 2]}
-#' provides the distances between all traps (regardless of capture) and detected animals.
+#' \code{"sstoa"}, \code{"mrds"}, or \code{"ssmrds"} this array must be of dimension
+#' \code{(n, S, K, 2)}. With \code{"sstoa"},  \code{capt[, , , 1]} provides the signal
+#' strength information and \code{capt[, , , 2]} provides the time of arrival information.
+#' With \code{"mrds"} and \code{"ssmrds"}, \code{capt[, , , 1]} provides either binary capture
+#' history array or signal strength capture history information (respectively) and
+#' \code{capt[, , , 2]} provides the distances between all traps (regardless of capture) and
+#' detected animals.
 #' @param traps a matrix containing the coordinates of trap locations. The object
 #' returned by \code{\link[secr]{read.traps}} is suitable.
 #' @param mask a mask object. The object returned by \code{\link[secr]{make.mask}} is
@@ -182,7 +184,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (method == "simple" & any(capt != 1 & capt != 0)){
     stop('capt must be binary when using the "simple" method')
   }
-  if (method == "ss" & is.null(cutoff)){
+  if ((method == "ss" | method == "sstoa" | method == "ssmrds") & is.null(cutoff)){
     stop("cutoff must be supplied for signal strength analysis")
   }
   if (!is.array(capt) | !(length(dim(capt)) == 3 | length(dim(capt)) == 4)){
@@ -191,11 +193,11 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (dim(capt)[2] != 1){
     stop("admbsecr only currently works for a single sampling session.")
   }
-  if (method == "ss" | method == "sstoa"){
+  if (method == "ss" | method == "sstoa" | method == "ssmrds"){
     if (missing(detfn)){
       detfn <- "identity"
     } else if (!(detfn == "identity" | detfn == "log"))
-      stop("The \"ss\" and \"sstoa\" methods use their own detection function. \nThe 'detfn' argument can either be \"identity\" or \"log\" (see 'Details' in help file).")
+      stop("The \"ss\", \"sstoa\" and \"ssmrds\" methods use their own detection function. \nThe 'detfn' argument can either be \"identity\" or \"log\" (see 'Details' in help file).")
   } else if (!(detfn == "hn" | detfn == "th" | detfn == "logth" | detfn == "hr")){
     stop("Detection function must be \"hn\", \"th\", \"logth\" or \"hr\"")
   }
@@ -237,7 +239,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                 "z"[detfn == "hr"])
   ## Parameter names.
   parnames <- c("D", detnames,
-                c("ssb0", "ssb1", "sigmass")[method == "ss" | method == "sstoa"],
+                c("ssb0", "ssb1", "sigmass")[method == "ss" | method == "sstoa" | method == "ssmrds"],
                 "sigmatoa"[method == "toa" | method == "sstoa"],
                 "kappa"[method == "ang"],
                 "alpha"[method == "dist"])
@@ -306,6 +308,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     make.all.tpl.easy(memory = memory, method = method,
                       detfn = detfn, parnames = parnames)
     bessel.exists <- file.access("bessel.cxx", mode = 0)
+    print(bessel.exists)
     if (bessel.exists == -1){
       make.bessel()
     }
@@ -341,23 +344,19 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,
                  dist = dist, trace = trace)
-    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
   } else if (method == "toa"){
     if (is.null(ssqtoa)){
       ssqtoa <- apply(capt, 1, toa.ssq, dists = dist, speed = sound.speed)
     }
     data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
                  toassq = t(ssqtoa), dist = dist, capt = bincapt, trace = trace)
-    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], sigmatoa = sv[4])
   } else if (method == "ang"){
     angs <- angles(traps, mask)
     data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
                  ang = angs, dist = dist, capt = bincapt, trace = trace)
-    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], kappa = sv[4])
   } else if (method == "ss"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt,
                  dist = dist, capt = bincapt, trace = trace)
-    params <- list(D = sv[1], ssb0 = sv[2], ssb1 = sv[3], sigmass = sv[4])
   } else if (method == "sstoa"){
     if (is.null(ssqtoa)){
       ssqtoa <- apply(capt[, , 1], 1, toa.ssq, dists = dist)
@@ -365,15 +364,15 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt[, , 1],
                  toacapt = capt[, , 2], toassq = t(ssqtoa), dist = dist, capt = bincapt,
                  trace = trace)
-    params <- list(D = sv[1], sigmatoa = sv[2], ssb0 = sv[3], ssb1 = sv[4], sigmass = sv[5])
   } else if (method == "dist"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt, dist = dist,
                  capt = bincapt, trace = trace)
-    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3], alpha = sv[4])
   } else if (method == "mrds"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt[, , 1],
                  dist = dist, indivdist = capt[, , 2], trace = trace)
-    params <- list(D = sv[1], g0 = sv[2], sigma = sv[3])
+  } else if (method == "ssmrds"){
+    data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt[, , 1],
+                 dist = dist, capt = bincapt, indivdist = capt[, , 2], trace = trace)
   } else {
     stop('method must be either "simple", "toa", "ang", "ss", "sstoa", "dist", or "mrds"')
   }
@@ -396,12 +395,12 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                      clean_files = clean))
   } else {
     fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
-                   safe = FALSE,
-                   run.opts = run.control(checkdata = "write",
-                     checkparam = "write", clean_files = clean))
+                   safe = FALSE, run.opts = run.control(checkdata = "write",
+                                   checkparam = "write", clean_files = clean))
   }
   if (autogen){
     file.remove("secr.tpl")
+    print(bessel.exists)
     if (bessel.exists == -1){
       file.remove("bessel.cxx")
     }
