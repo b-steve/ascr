@@ -27,7 +27,7 @@ traps <- read.traps(data = mics, detector = "signal")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 500
+nsims <- 1
 buffer <- 35
 mask.spacing <- 50
 
@@ -69,6 +69,7 @@ logthprobs <- NULL
 ssprobs <- NULL
 logssprobs <- NULL
 mrdsprobs <- NULL
+ssmrdsprobs <- NULL
 hnres <- matrix(0, nrow = nsims, ncol = 6)
 hnfixres <- matrix(0, nrow = nsims, ncol = 5)
 hrres <- matrix(0, nrow = nsims, ncol = 7)
@@ -78,6 +79,7 @@ logthres <- matrix(0, nrow = nsims, ncol = 7)
 ssres <- matrix(0, nrow = nsims, ncol = 7)
 logssres <- matrix(0, nrow = nsims, ncol = 7)
 mrdsres <- matrix(0, nrow = nsims, ncol = 6)
+ssmrdsres <- matrix(0, nrow = nsims, ncol = 7)
 colnames(hnres) <- c("D", "g0", "sigma", "logLik", "AIC", "maxgrad")
 colnames(hnfixres) <- c("D", "sigma", "logLik", "AIC", "maxgrad")
 colnames(hrres) <- c("D", "g0", "sigma", "z", "logLik", "AIC", "maxgrad")
@@ -87,6 +89,7 @@ colnames(logthres) <- c("D", "shape1", "shape2", "scale", "logLik", "AIC", "maxg
 colnames(ssres) <- c("D", "ssb0", "ssb1", "sigmass", "logLik", "AIC", "maxgrad")
 colnames(logssres) <- c("D", "ssb0", "ssb1", "sigmass", "logLik", "AIC", "maxgrad")
 colnames(mrdsres) <- c("D", "shape", "scale", "logLik", "AIC", "maxgrad")
+colnames(ssmrdsres) <- c("D", "ssb0", "ssb1", "sigmass", "logLik", "AIC", "maxgrad")
 
 ## Carrying out simulation.
 for (i in 1:nsims){
@@ -237,6 +240,18 @@ for (i in 1:nsims){
   } else {
     mrdscoef <- c(coef(mrdsfit), logLik(mrdsfit), AIC(mrdsfit), mrdsfit$maxgrad)
   }
+  capthist.ssmrds <- array(0, dim = c(n, 1, 6, 2))
+  capthist.ssmrds[, , , 1] <- capthist.ss
+  capthist.ssmrds[, , , 2] <- dists
+  ssmrdsfit <- try(admbsecr(capthist.ssmrds, traps = traps, mask = mask,
+                            sv = "auto", cutoff = 150, method = "ssmrds"),
+                   silent = TRUE)
+  if (class(ssmrdsfit)[1] == "try-error"){
+    ssmrdscoef <- NA
+    ssmrdsprobs <- c(ssmrdsprobs, i)
+  } else {
+    ssmrdscoef <- c(coef(ssmrdsfit), logLik(ssmrdsfit), AIC(ssmrdsfit), ssmrdsfit$maxgrad)
+  }
   hnres[i, ] <- hncoef
   hnfixres[i, ] <- hnfixcoef
   hrres[i, ] <- hrcoef
@@ -246,6 +261,7 @@ for (i in 1:nsims){
   ssres[i, ] <- sscoef
   logssres[i, ] <- logsscoef
   mrdsres[i, ] <- mrdscoef
+  ssmrdsres[i, ] <- ssmrdscoef
   if (i == nsims){
     print(c("end", date()))
   }
@@ -260,3 +276,4 @@ write.table(thres, "~/admbsecr/Results/thresh/1/thres.txt", row.names = FALSE)
 write.table(ssres, "~/admbsecr/Results/thresh/1/ssres.txt", row.names = FALSE)
 write.table(logssres, "~/admbsecr/Results/thresh/1/logssres.txt", row.names = FALSE)
 write.table(mrdsres, "~/admbsecr/Results/thresh/1/mrdsres.txt", row.names = FALSE)
+write.table(ssmrdsres, "~/admbsecr/Results/thresh/1/ssmrdsres.txt", row.names = FALSE)
