@@ -178,10 +178,7 @@ toa.ssq <- function(wit, dists, speed) {
 
 #' Simulated signal strength capture history matrix
 #'
-#' Simulating a signal strength capture history matrix. Signal
-#' strength detection function uses a log link function, and
-#' thus is different to \code{sim.capthist} where
-#' \code{detectfn = 10}.
+#' Simulating a signal strength capture history matrix.
 #'
 #' @param traps trap locations.
 #' @param popn simulated population.
