@@ -16,8 +16,5 @@
 }
 \description{
   Simulating a signal strength capture history matrix.
-  Signal strength detection function uses a log link
-  function, and thus is different to \code{sim.capthist}
-  where \code{detectfn = 10}.
 }
 

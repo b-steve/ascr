@@ -389,7 +389,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   ## Fitting the model.
   if (!is.null(profpars)){
     fit <- do_admb(prefix, data = data, params = params, bounds = bounds, verbose = verbose,
-                   profile = TRUE, profpars = profpars, safe = FALSE,
+                   profile = TRUE, profile.opts = list(parsvector = profpars), safe = FALSE,
                    run.opts = run.control(checkdata = "write", checkparam = "write",
                      clean_files = clean))
   } else {

@@ -164,6 +164,7 @@ make.acoustic.captures <- function(mics, clicks, dt){
 #'
 #' @param wit capture history.
 #' @param dists distances.
+#' @param speed speed of sound.
 #' @return A matrix.
 #' @export
 toa.ssq <- function(wit, dists, speed) {

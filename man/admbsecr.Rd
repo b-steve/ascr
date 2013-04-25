@@ -4,10 +4,10 @@
 \usage{
   admbsecr(capt, traps = NULL, mask, sv = "auto",
     bounds = NULL, fix = NULL, ssqtoa = NULL,
-    cutoff = NULL, admbwd = NULL, method = "simple",
-    detfn = "hn", memory = NULL, profpars = NULL,
-    clean = TRUE, verbose = FALSE, trace = FALSE,
-    autogen = TRUE)
+    cutoff = NULL, sound.speed = 330, admbwd = NULL,
+    method = "simple", detfn = "hn", memory = NULL,
+    profpars = NULL, clean = TRUE, verbose = FALSE,
+    trace = FALSE, autogen = TRUE)
 }
 \arguments{
   \item{capt}{an array of dimension \code{(n, S, K)}, where
@@ -19,14 +19,16 @@
   array must be changed to the value of the recorded
   supplementary information, which will depend on
   \code{method} (see 'Details'). When \code{method} is
-  \code{"sstoa"} or \code{"mrds"}, this array must be of
-  dimension \code{(n, S, K, 2)}. With \code{"sstoa"},
-  \code{capt[, , , 1]} provides the signal strength
-  information and \code{capt[, , , 2]} provides the time of
-  arrival information. With \code{"mrds"}, \code{capt[, , ,
-  1]} provides the binary capture history array and
-  \code{capt[, , , 2]} provides the distances between all
-  traps (regardless of capture) and detected animals.}
+  \code{"sstoa"}, \code{"mrds"}, or \code{"ssmrds"} this
+  array must be of dimension \code{(n, S, K, 2)}. With
+  \code{"sstoa"}, \code{capt[, , , 1]} provides the signal
+  strength information and \code{capt[, , , 2]} provides
+  the time of arrival information. With \code{"mrds"} and
+  \code{"ssmrds"}, \code{capt[, , , 1]} provides either
+  binary capture history array or signal strength capture
+  history information (respectively) and \code{capt[, , ,
+  2]} provides the distances between all traps (regardless
+  of capture) and detected animals.}
 
   \item{traps}{a matrix containing the coordinates of trap
   locations. The object returned by
@@ -68,9 +70,12 @@
   call to \code{admbsecr}, providing this will prevent
   recalculation.}
 
-  \item{cutoff}{The signal strength threshold of detection.
+  \item{cutoff}{the signal strength threshold of detection.
   Required if \code{method} is \code{"ss"} or
   \code{"sstoa"}.}
+
+  \item{sound.speed}{the speed of sound in metres per
+  second. Used for TOA analysis.}
 
   \item{admbwd}{file path to the ADMB working directory.
   Only required if \code{autogen} is \code{TRUE}, in which
