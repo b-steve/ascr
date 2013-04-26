@@ -19,6 +19,7 @@ load_all()
 ## Running setup code.
 setwd(work.dir)
 library(secr)
+datasource <- "Original"
 source("frogsetup.r")
 
 ## Carrying out simple SECR analysis.
