@@ -1,14 +1,21 @@
 setwd(dat.dir)
 ## Get trap locations.
-mics <- read.csv(file = "array1a-top.csv")
+
+if (datasource == "Res"){
+  mics <- read.csv(file = "Site1_estlocs.csv")
+  alldat <- read.csv("20120516site1_data_out_of_Access.csv")[501:1000, ]
+} else if (datasource == "Original"){
+  mics <- read.csv(file = "array1a-top.csv")
+  alldat <- read.csv("array1a-top-data.csv")
+}
+
 micnames <- 1:dim(mics)[1]
 mics <- cbind(micnames, mics)
 names(mics) <- c("name", "x", "y")
 add <- max(diff(mics$x), diff(mics$y))
 trap.xlim <- range(mics$x) + 0.5*c(-add, add)
 trap.ylim <- range(mics$y) + 0.5*c(-add, add)
-## Get detection data.
-alldat <- read.csv("array1a-top-data.csv")
+
 dat <- alldat
 ## Convert times to milliseconds.
 dat$tim <- alldat$startSeconds*1000
@@ -33,6 +40,11 @@ traps <- read.traps(data = mics, detector = "proximity")
 sstraps <- read.traps(data = mics, detector = "signal")
 ## Set border for plotting to be 1/4 max distance between traps.
 border <- max(dist(traps))/4
+if (datasource == "Res"){
+  buffer <- border*10
+} else if (datasource == "Original"){
+  buffer <- border*8
+}
 ## Make capture history object with times of detection
 clicks <- data.frame(session = rep(1, n), ID = 1:n, occasion = rep(1, n), trap = dat$mic,
                      tim = dat$tim, ss = dat$ss)
@@ -46,8 +58,6 @@ colnames(captures)[5:6] <- colnames(captures)[6:5]
 capt <- make.capthist(captures, traps, fmt = "trapID", noccasions = 1)
 sscapt <- make.capthist(captures, sstraps, fmt = "trapID", noccasions = 1, cutval = 150)
 captures$ss <- clicks$ss
-## Guess at buffer size. Need to experiment with this.
-buffer <- border*8
 mask <- make.mask(traps, buffer = buffer, type = "trapbuffer")
 
 ## Setting things up for TOA analysis.
