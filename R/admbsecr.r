@@ -358,7 +358,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                  dist = dist, capt = bincapt, trace = trace)
   } else if (method == "sstoa"){
     if (is.null(ssqtoa)){
-      ssqtoa <- apply(capt[, , 1], 1, toa.ssq, dists = dist)
+      ssqtoa <- apply(capt[, , 1], 1, toa.ssq, dists = dist, speed = sound.speed)
     }
     data <- list(n = n, ntraps = k, nmask = nm, A = A, c = cutoff, sscapt = capt[, , 1],
                  toacapt = capt[, , 2], toassq = t(ssqtoa), dist = dist, capt = bincapt,
