@@ -186,8 +186,10 @@ toa.ssq <- function(wit, dists, speed) {
 #' @param detectpars detection function parameters.
 #' @param log.link logical, if \code{TRUE} a log link function is used for
 #' expected signal strengths.
+#' @param re logical, if \code{TRUE} each sound is generated with a different
+#' source strength.
 #' @export
-sim.capthist.ss <- function(traps, popn, detectpars, log.link){
+sim.capthist.ss <- function(traps, popn, detectpars, log.link, re = FALSE){
   ssb0 <- detectpars$beta0
   ssb1 <- detectpars$beta1
   sigmass <- detectpars$sdS
@@ -195,7 +197,16 @@ sim.capthist.ss <- function(traps, popn, detectpars, log.link){
   ntraps <- nrow(traps)
   n <- nrow(popn)
   dists <- distances(as.matrix(popn), as.matrix(traps))
-  muss <- ssb0 + ssb1*dists
+  if (re){
+    sigmas <- detectpars$sds
+    sources <- rnorm(n, ssb0, sigmas)
+    muss <- matrix(0, nrow = n, ncol = ntraps)
+    for (i in 1:n){
+      muss[i, ] <- sources[i] + ssb1*dists[i, ]
+    }
+  } else {
+    muss2 <- ssb0 + ssb1*dists
+  }
   if (log.link){
     muss <- exp(muss)
   }
