@@ -184,7 +184,7 @@ toa.ssq <- function(wit, dists, speed) {
 #' @param traps trap locations.
 #' @param popn simulated population.
 #' @param detectpars detection function parameters.
-#' @param log.link logical, if \code{TRUE} a log link functin is used for
+#' @param log.link logical, if \code{TRUE} a log link function is used for
 #' expected signal strengths.
 #' @export
 sim.capthist.ss <- function(traps, popn, detectpars, log.link){
