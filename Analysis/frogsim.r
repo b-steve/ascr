@@ -27,19 +27,19 @@ traps <- read.traps(data = mics, detector = "signal")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 500
+nsims <- 1
 buffer <- 35
 mask.spacing <- 50
 
 ## True parameter values.
-seed <- 9578
-D <- 5270
+seed <- 5253
+D <- 4450
 g0 <- 0.99999
 sigma <- 5.60
 sigmatoa <- 0.002
-ssb0 <- 5.16
-ssb1 <- -0.02
-sigmass <- 6.20
+ssb0 <- 170
+ssb1 <- -2.50
+sigmass <- 7.00
 cutoff <- 150
 truepars <- c(D = D, g0 = g0, sigma = sigma, sigmatoa = sigmatoa,
               ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
@@ -77,7 +77,7 @@ for (i in 1:nsims){
   }
   ## Simulating data and setting things up for analysis.
   popn <- sim.popn(D = D, core = traps, buffer = buffer)
-  capthist.ss <- sim.capthist.ss(traps, popn, detectpars, log.link = TRUE)
+  capthist.ss <- sim.capthist.ss(traps, popn, detectpars, log.link = FALSE)
   capthist <- capthist.ss
   capthist[capthist > 0] <- 1
   n <- nrow(capthist)
@@ -122,7 +122,7 @@ for (i in 1:nsims){
     simplecoef <- coef(simplefit)
   }
   ## SECR model using supplementary TOA data.
-  ssqtoa <- apply(capthist.toa, 1, toa.ssq, dists = mask.dists)
+  ssqtoa <- apply(capthist.toa, 1, toa.ssq, dists = mask.dists, speed = 330)
   toafit <- try(admbsecr(capt = capthist.toa, traps = traps, mask = mask,
                          sv = truepars[1:4], ssqtoa = ssqtoa, admbwd = admb.dir,
                          method = "toa", verbose = FALSE), silent = TRUE)
