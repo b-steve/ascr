@@ -19,17 +19,18 @@ load_all()
 ## Running setup code.
 setwd(work.dir)
 library(secr)
-datasource <- "Original"
+datasource <- "Res"
 source("frogsetup.r")
+cutoff <- ifelse(datasource == "Res", 130, 150)
 
 ## Carrying out simple SECR analysis.
 
 ## With secr package.
-simplefit1 <- secr.fit(capt, model = list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE)
+simplefit1 <- secr.fit(capt, model = list(D~1, g0~1, sigma~1), mask = mask, verify = FALSE, method = "BFGS")
 ## With admbsecr().
 simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", method = "simple")
-simplefit.th2 <- admbsecr(capt, traps = traps, mask, sv = c(shape = -1),#c(shape = 2, scale = 0.5),
-                         #bounds = list(shape = c(-10, 10), scale = c(0, 1)),
+simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = -1),#c(shape = 2, scale = 0.5),
+                         bounds = list(shape = c(-10, 10), scale = c(0, 1)),
                          method = "simple", detfn = "th", trace = TRUE)
 simplefit.logth <- admbsecr(capt, traps = traps, mask,
                             sv = c(shape1 = 17.1493, shape2 = 2.9919, scale = -0.0204),
@@ -61,16 +62,16 @@ ssfit1 <- secr.fit(sscapt, model = list(D~1, g0~1, sigma~1), detectfn = 10, mask
                    verify = FALSE, steptol = 1e-4)
 
 ## Fitting with admbsecr().
-ssfit2 <- admbsecr(capt.ss, traps = traps, mask, cutoff = 150, sv = "auto",
+ssfit2 <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
                    admbwd = admb.dir, method = "ss")
-ssfit2.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = 150, sv = "auto",
+ssfit2.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
                        admbwd = admb.dir, method = "ss", detfn = "log")
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
 ## Only possible with admbsecr().
 jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
-                     bounds = list(ssb0 = c(150, 1e8)),
-                     cutoff = 150, admbwd = admb.dir, method = "sstoa")
+                     bounds = list(ssb0 = c(cutoff, 1e8)),
+                     cutoff = cutoff, admbwd = admb.dir, method = "sstoa")
 
 
 ## Comparison of fitted detection functions.
@@ -120,8 +121,8 @@ th.j <- function(x, coef){
 ## Comparison of detection functions without TOA.
 pdf(file = "~/Desktop/plot.pdf")
 plot(x, hn(x, coef(simplefit.hn)), type = "l", ylab = "P(capture)", xlab = "Distance")
-lines(x, ss(x, 150, coef(ssfit2)), col = "red")
-lines(x, logss(x, 150, coef(ssfit2.log)), col = "purple")
+lines(x, ss(x, cutoff, coef(ssfit2)), col = "red")
+lines(x, logss(x, cutoff, coef(ssfit2.log)), col = "purple")
 lines(x, th(x, coef(simplefit.th)), col = "green")
 lines(x, th.j(x, coef(simplefit.th)[-1]), lty = "dotted")
 lines(x, logth(x, coef(simplefit.logth)), col = "orange")
