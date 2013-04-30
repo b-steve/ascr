@@ -411,5 +411,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   fit$detfn <- detfn
   fit$parnames <- parnames
   class(fit) <- c(class(fit), method, "admbsecr")
+  if (fit$maxgrad < -1){
+    warning("Maximum gradient component is large, run with trace = TRUE and look for runaway parameters.")
+  }
   fit
 }
