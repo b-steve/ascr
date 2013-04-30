@@ -1,7 +1,11 @@
 admbsecr 0.1.5
 --------------
 
-* Added the argument sound.speed to admbsecr().
+* Major bug fix. Until now, method "sstoa" did not fit the correct
+  model unless the optional argument 'sstoa' was properly specified.
+
+* Added the argument sound.speed to admbsecr(), allowing the user to
+  specify the speed of sound. Defaults to 330 m/s.
 
 * Added additional method:
 
