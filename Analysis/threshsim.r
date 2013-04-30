@@ -29,7 +29,6 @@ setwd(work.dir)
 ## Setup for simulations.
 nsims <- 1
 buffer <- 35
-mask.spacing <- 50
 
 ## True parameter values.
 seed <- 6846
