@@ -21,7 +21,7 @@ load_all()
 ## Running setup code.
 setwd(work.dir)
 library(secr)
-datasource <- "Original"
+datasource <- "Res"
 source("frogsetup.r")
 cutoff <- ifelse(datasource == "Res", 130, 150)
 
@@ -79,6 +79,8 @@ ssfit2.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto
 jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                      bounds = list(ssb0 = c(cutoff, 1e8)),
                      cutoff = cutoff, admbwd = admb.dir, method = "sstoa")
+jointfit.log <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
+                         cutoff = cutoff, method = "sstoa", detfn = "log")
 
 
 ## Comparison of fitted detection functions.
