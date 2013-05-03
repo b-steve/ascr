@@ -205,7 +205,7 @@ sim.capthist.ss <- function(traps, popn, detectpars, log.link, re = FALSE){
       muss[i, ] <- sources[i] + ssb1*dists[i, ]
     }
   } else {
-    muss2 <- ssb0 + ssb1*dists
+    muss <- ssb0 + ssb1*dists
   }
   if (log.link){
     muss <- exp(muss)
