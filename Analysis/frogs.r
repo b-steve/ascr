@@ -55,9 +55,10 @@ toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
 ##                         method = "toa", detfn = "logth")
 if (datasource == "Res") hr1.bounds <- list(D = c(0, 10000)) else hr1.bounds <- NULL
 toafit.hr1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
-                       bounds = hr1.bounds, method = "toa", detfn = "hr")
+                       bounds = hr1.bounds, method = "toa", detfn = "hr", trace = TRUE)
+if (datasource == "Res") hr2.bounds <- list(sigma = c(0, 1000)) else hr2.bounds <- NULL
 toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
-                       fix = list(g0 = 1), method = "toa", detfn = "hr")
+                       bounds = hr2.bounds, fix = list(g0 = 1), method = "toa", detfn = "hr", trace = TRUE)
 
 ## Carrying out signal strength analysis.
 
