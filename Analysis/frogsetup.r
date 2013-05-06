@@ -1,6 +1,5 @@
 setwd(dat.dir)
 ## Get trap locations.
-
 if (datasource == "Res"){
   mics <- read.csv(file = "Site1_estlocs.csv")
   alldat <- read.csv("20120516site1_data_out_of_Access.csv")[501:1000, ]
@@ -8,6 +7,7 @@ if (datasource == "Res"){
   mics <- read.csv(file = "array1a-top.csv")
   alldat <- read.csv("array1a-top-data.csv")
 }
+setwd(work.dir)
 
 micnames <- 1:dim(mics)[1]
 mics <- cbind(micnames, mics)

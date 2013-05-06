@@ -16,8 +16,6 @@ library(devtools)
 load_all()
 ##library(admbsecr)
 
-
-
 ## Running setup code.
 setwd(work.dir)
 library(secr)
