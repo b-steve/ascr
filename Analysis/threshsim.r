@@ -27,7 +27,7 @@ traps <- read.traps(data = mics, detector = "signal")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 500
+nsims <- 5
 buffer <- 35
 
 ## True parameter values.
@@ -40,15 +40,16 @@ sigmatoa <- 0.0018
 cutoff <- 130
 detectpars <- list(beta0 = ssb0, beta1 = ssb1, sdS = sigmass, cutval = cutoff)
 ## Sensible start values for different detection functions.
-hn.start <- c(D = D, g0 = 0.99999, sigma = 5.60)
-hr.start <- c(D = D, g0 = 0.99999, sigma = 5.60, z = 12)
-th.start <- c(D = D, shape = -3.70, scale = -0.51)
+hn.start <- c(D = D, g0 = 0.99999, sigma = 8.20)
+hr.start <- c(D = D, g0 = 0.99999, sigma = 9.50, z = 6.10)
+th.start <- c(D = D, shape = -2.00, scale = -0.17)
 logth.start <- c(D = D, shape1 = 2.29, shape2 = 3.38, scale = -0.36)
 ss.start <- c(D = D, ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
-logss.start <- c(D = D, ssb0 = log(ssb0), ssb1 = -0.1, sigmass = sigmass)
+logss.start <- c(D = D, ssb0 = log(ssb0), ssb1 = -0.05, sigmass = sigmass)
 ssmrds.start <- c(D = D, ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
 ## Bounding D.
 bounds <- list(D = c(0, 15000))
+hr.bounds <- list(D = c(0, 15000), z = c(-5, 70))
 set.seed(seed)
 ## Inverse of speed of sound (in ms per metre).
 invsspd <- 1000/330
@@ -97,7 +98,6 @@ colnames(sstoares) <- c("D", "ssb0", "ssb1", "sigmass", "sigmatoa", "logLik", "A
 colnames(logsstoares) <- c("D", "ssb0", "ssb1", "sigmass", "sigmatoa", "logLik", "AIC", "maxgrad")
 ## Carrying out simulation.
 for (i in 1:nsims){
-
   if (i == 1){
     print(c("start", date()))
   } else {
@@ -132,12 +132,12 @@ for (i in 1:nsims){
   capthist.joint <- array(c(capthist.ss, capthist.toa), dim = c(dim(capthist), 2))
   ## Half normal detection function.
   hnfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
-                            sv = hn.start, method = "simple", detfn = "hn")
-                   , silent = TRUE)
+                        sv = hn.start, method = "simple", detfn = "hn")
+               , silent = TRUE)
   if (class(hnfit)[1] == "try-error"){
     hnfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask, bounds = bounds,
-                              sv = "auto", method = "simple", detfn = "hn")
-                     , silent = TRUE)
+                          sv = "auto", method = "simple", detfn = "hn")
+                 , silent = TRUE)
   }
   if (!class(hnfit)[1] == "try-error"){
     hncoef <- c(coef(hnfit), logLik(hnfit), AIC(hnfit), hnfit$maxgrad)
@@ -156,14 +156,14 @@ for (i in 1:nsims){
   } else toahncoef <- NA
   ## Half normal detection function with fixed g0.
   hnfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                            sv = hn.start[-2], fix = list(g0 = 1), bounds = bounds,
-                            method = "simple", detfn = "hn")
-                   , silent = TRUE)
+                           sv = hn.start[-2], fix = list(g0 = 1), bounds = bounds,
+                           method = "simple", detfn = "hn")
+                  , silent = TRUE)
   if (class(hnfixfit)[1] == "try-error"){
     hnfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                              sv = "auto", fix = list(g0 = 1), bounds = bounds,
-                              method = "simple", detfn = "hn")
-                     , silent = TRUE)
+                             sv = "auto", fix = list(g0 = 1), bounds = bounds,
+                             method = "simple", detfn = "hn")
+                    , silent = TRUE)
   }
   if (!class(hnfixfit)[1] == "try-error"){
     hnfixcoef <- c(coef(hnfixfit), logLik(hnfixfit), AIC(hnfixfit), hnfixfit$maxgrad)
@@ -174,7 +174,7 @@ for (i in 1:nsims){
                               method = "toa", detfn = "hn"), silent = TRUE)
   if (class(toahnfixfit)[1] == "try-error"){
     toahnfixfit <- try(admbsecr(capt = capthist.toa, traps = traps, mask = mask, bounds = bounds,
-                             sv = "auto", fix = list(g0 = 1), method = "toa", detfn = "hn")
+                                sv = "auto", fix = list(g0 = 1), method = "toa", detfn = "hn")
                        , silent = TRUE)
   }
   if (!class(hnfit)[1] == "try-error"){
@@ -182,14 +182,14 @@ for (i in 1:nsims){
   } else toahnfixcoef <- NA
   ## Hazard rate detection function.
   hrfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
-                        bounds = bounds, sv = hr.start, method = "simple", detfn = "hr")
+                        bounds = hr.bounds, sv = hr.start, method = "simple", detfn = "hr")
                , silent = TRUE)
   if (!class(hrfit)[1] == "try-error"){
     hrcoef <- c(coef(hrfit), logLik(hrfit), AIC(hrfit), hrfit$maxgrad)
   } else hrcoef <- NA
   ## TOA with hazard rate detection function.
   toahrfit <- try(admbsecr(capt = capthist.toa, traps = traps, mask = mask,
-                           bounds = bounds, sv = c(hr.start, sigmatoa = sigmatoa),
+                           bounds = hr.bounds, sv = c(hr.start, sigmatoa = sigmatoa),
                            method = "toa", detfn = "hr")
                   , silent = TRUE)
   if (!class(hrfit)[1] == "try-error"){
@@ -198,7 +198,7 @@ for (i in 1:nsims){
   ## Hazard rate detection function with fixed g0.
   hrfixfit <- try(admbsecr(capt = capthist, traps = traps, mask = mask,
                            sv = hr.start[-2], fix = list(g0 = 1),
-                           bounds = bounds, method = "simple", detfn = "hr")
+                           bounds = hr.bounds, method = "simple", detfn = "hr")
                   , silent = TRUE)
   if (!class(hrfixfit)[1] == "try-error"){
     hrfixcoef <- c(coef(hrfixfit), logLik(hrfixfit), AIC(hrfixfit), hrfixfit$maxgrad)
@@ -206,7 +206,7 @@ for (i in 1:nsims){
   ## TOA with hazard rate detection function with fixed g0.
   toahrfixfit <- try(admbsecr(capt = capthist.toa, traps = traps, mask = mask,
                               sv = c(hr.start[-2], sigmatoa = sigmatoa), fix = list(g0 = 1),
-                              bounds = bounds, method = "toa", detfn = "hr")
+                              bounds = hr.bounds, method = "toa", detfn = "hr")
                      , silent = TRUE)
   if (!class(hrfixfit)[1] == "try-error"){
     toahrfixcoef <- c(coef(toahrfixfit), logLik(toahrfixfit), AIC(toahrfixfit), toahrfixfit$maxgrad)
@@ -220,8 +220,8 @@ for (i in 1:nsims){
   } else thcoef <- NA
   ## TOA with threshold detection function.
   toathfit <- try(admbsecr(capt = capthist.toa, traps = traps, mask = mask, bounds = bounds,
-                           sv = c(th.start, sigmatoa = sigmatoa), method = "toa", detfn = "th")
-                  , silent = TRUE)
+                           sv = c(th.start, sigmatoa = sigmatoa), method = "toa", detfn = "th",
+                           scalefactors = c(sigmatoa = 5000)), silent = TRUE)
   if (!class(thfit)[1] == "try-error"){
     toathcoef <- c(coef(toathfit), logLik(toathfit), AIC(toathfit), toathfit$maxgrad)
   } else toathcoef <- NA
@@ -288,14 +288,10 @@ for (i in 1:nsims){
   capthist.mrds <- array(0, dim = c(n, 1, 6, 2))
   capthist.mrds[, , , 1] <- capthist
   capthist.mrds[, , , 2] <- dists
-  
   mrdsfit <- try(admbsecr(capthist.mrds, traps = traps, mask = mask,
-                           sv = coef(thfit)[2:3],
-                           fix = list(D = 5270), method = "mrds",
-                           detfn = "th"), silent = TRUE)
-  mrdsfit <- try(admbsecr(capthist.mrds, traps = traps, mask = mask,
-                          sv = c(D = 5270, coef(mrdsfit)), bounds = bounds,
-                          method = "mrds", detfn = "th"), silent = TRUE)
+                          sv = coef(thfit)[2:3],
+                          method = "mrds",
+                          detfn = "th"), silent = TRUE)
   if (!class(mrdsfit)[1] == "try-error"){
     mrdscoef <- c(coef(mrdsfit), logLik(mrdsfit), AIC(mrdsfit), mrdsfit$maxgrad)
   } else mrdscoef <- NA
@@ -305,8 +301,8 @@ for (i in 1:nsims){
   capthist.ssmrds[, , , 2] <- dists
   ssmrdsfit <- try(admbsecr(capthist.ssmrds, traps = traps, mask = mask,
                             bounds = list(ssb0 = c(cutoff, 250)),
-                            sv = ssmrds.start, cutoff = cutoff, method = "ssmrds",
-                            trace = TRUE), silent = TRUE)
+                            sv = ssmrds.start, cutoff = cutoff, method = "ssmrds")
+                   , silent = TRUE)
   if (!class(ssmrdsfit)[1] == "try-error"){
     ssmrdscoef <- c(coef(ssmrdsfit), logLik(ssmrdsfit), AIC(ssmrdsfit), ssmrdsfit$maxgrad)
   } else ssmrdscoef <- NA
