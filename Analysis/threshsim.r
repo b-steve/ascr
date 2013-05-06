@@ -27,7 +27,7 @@ traps <- read.traps(data = mics, detector = "signal")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 5
+nsims <- 500
 buffer <- 35
 
 ## True parameter values.
