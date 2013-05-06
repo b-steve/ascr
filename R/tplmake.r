@@ -1,6 +1,6 @@
 ## Functions for automatic generation of a .tpl file from admbsecr().
 
-make.all.tpl.easy <- function(memory, method, detfn, parnames){
+make.all.tpl.easy <- function(memory, method, detfn, parnames, scalefactors){
   make.top.of.main(memory)
   simpletext <- "\nPROCEDURE_SECTION\n  // Setting up variables\n  int i, j;\n  dvariable p, d;\n  dvar_matrix p1(1,ntraps,1,nmask);\n  dvar_matrix p2(1,ntraps,1,nmask);\n  dvar_matrix logp1(1,ntraps,1,nmask);\n  dvar_matrix logp2(1,ntraps,1,nmask);\n  dvar_vector pm(1,nmask);\n  dvar_vector wi1(1,ntraps);\n  // Probability of detection at any trap for each location.\n  for (i = 1; i <= nmask; i++){\n    p = 1;\n    for (j = 1; j <= ntraps; j++){\n      d = dist(j,i);\n      // Flag for detection function insertion.\n      p1(j,i) = //@DETFN;\n      p2(j,i) = 1 - p1(j,i);\n      p *= p2(j,i);\n    }\n    pm(i) = 1 - p + DBL_MIN;\n  }\n  logp1 = log(p1 + DBL_MIN);\n  logp2 = log(p2 + DBL_MIN);\n  dvariable L1 = 0;\n  // Probability of capture histories for each animal.\n  for (i = 1; i <= n; i++){\n    wi1 = row(capt,i);\n    L1 += log(D*sum(mfexp(wi1*logp1 + (1 - wi1)*logp2)) + DBL_MIN);\n  }\n\n  // Putting log-likelihood together.\n  dvariable lambda = A*D*sum(pm);\n  dvariable L2 = -n*log(D*sum(pm));\n  dvariable L3 = log_density_poisson(n,lambda);\n  f = -(L1 + L2 + L3);\n  if (trace == 1){\n    //@TRACE;\n  }\n\nGLOBALS_SECTION\n  #include <float.h>\n\nREPORT_SECTION\n" 
   toatext <- "\nPROCEDURE_SECTION\n  // Setting up variables\n  int i, j;\n  dvariable p, d, nzz;\n  dvar_matrix p1(1,ntraps,1,nmask);\n  dvar_matrix p2(1,ntraps,1,nmask);\n  dvar_matrix logp1(1,ntraps,1,nmask);\n  dvar_matrix logp2(1,ntraps,1,nmask);\n  dvar_vector pm(1,nmask);\n  dvar_vector wi1(1,ntraps);\n  dvar_vector toall(1,nmask);\n  // Probability of detection at any trap for each location.\n  for (i = 1; i <= nmask; i++){\n    p = 1;\n    for (j = 1; j <= ntraps; j++){\n      d = dist(j,i);\n      // Flag for detection function insertion.\n      p1(j,i) = //@DETFN;\n      p2(j,i) = 1 - p1(j,i);\n      p *= p2(j,i);\n    }\n    pm(i) = 1 - p + DBL_MIN;\n  }\n  logp1 = log(p1 + DBL_MIN);\n  logp2 = log(p2 + DBL_MIN);\n  dvariable L1=0;\n  // Probability of capture histories for each animal.\n  for (i = 1; i <= n; i++){\n    wi1 = row(capt,i);\n    nzz = sum(wi1);\n    toall = (1-nzz)*log(sigmatoa) - ((row(toassq,i))/(2*square(sigmatoa)));\n    L1 += log(sum(mfexp(log(D) + (wi1*logp1 + (1-wi1)*logp2) + toall)) + DBL_MIN);\n  }\n  // Putting log-likelihood together.\n  dvariable lambda = A*D*sum(pm);\n  dvariable L2 = -n*log(D*sum(pm));\n  dvariable L3 = log_density_poisson(n,lambda);\n  f = -(L1 + L2 + L3);\n  if (trace == 1){\n    //@TRACE;\n  }\n\nGLOBALS_SECTION\n  #include <float.h>\n\nREPORT_SECTION\n" 
@@ -44,6 +44,15 @@ make.all.tpl.easy <- function(memory, method, detfn, parnames){
                        sep = "", collapse = ""), " \", loglik: \" << -f << endl",
                  sep = "")
   codestring <- splitinsert(codesplit, trstr)
+  ## Adding scale factors.
+  if (!is.null(scalefactors)){
+    scalestring <- "PARAMETER_SECTION\n"
+    for (i in names(scalefactors)){
+      scalestring <- paste(scalestring, "  !! ", i, ".set_scalefactor(",
+                           scalefactors[i], ");\n", sep = "")
+    }
+    codestring <- paste(scalestring, codestring, sep = "")
+  }
   cat(codestring, file = "secr.tpl", append = !is.null(memory))
 }
 

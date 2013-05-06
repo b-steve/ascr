@@ -148,6 +148,7 @@ NULL
 #' memory error.
 #' @param profpars character vector of names of parameters over which profile likelihood
 #' should occur.
+#' @param scalefactors named vector of scale factors for model parameters.
 #' @param clean logical, if \code{TRUE} ADMB files are cleaned after fitting of the model.
 #' @param verbose logical, if \code{TRUE} ADMB details, along with error messages, are
 #' printed to the R session.
@@ -177,7 +178,8 @@ NULL
 admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix = NULL,
                      ssqtoa = NULL, cutoff = NULL, sound.speed = 330, admbwd = NULL,
                      method = "simple", detfn = "hn" , memory = NULL, profpars = NULL,
-                     clean = TRUE, verbose = FALSE, trace = FALSE, autogen = TRUE){
+                     scalefactors = NULL, clean = TRUE, verbose = FALSE, trace = FALSE,
+                     autogen = TRUE){
   ## Warnings for incorrect input.
   if (length(method) != 1){
     stop("method must be of length 1")
@@ -303,18 +305,6 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     ## Reordering sv vector.
     sv <- sv[parnames]
   }
-  ## Creating .tpl file.
-  if (autogen){
-    prefix <- "secr"
-    make.all.tpl.easy(memory = memory, method = method,
-                      detfn = detfn, parnames = parnames)
-    bessel.exists <- file.access("bessel.cxx", mode = 0)
-    if (bessel.exists == -1){
-      make.bessel()
-    }
-  } else {
-    prefix <- paste(method, "secr", sep = "")
-  }
   ## Adding fixed parameters to "sv" in case they are required for
   ## determining further start values.
   for (i in names(fix)){
@@ -340,7 +330,42 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   traps <- as.matrix(traps)
   ## Distances between traps and mask locations.
   dist <- distances(traps, mask)
-  ## Setting up parameters for do_admb.
+  ## Sorting out scale factors
+  if (!is.null(scalefactors)){
+    fs <- names(scalefactors) %in% names(fix)
+    if (any(fs)){
+      scalefactors <- scalefactors[!fs]
+      warning("Scale factors that are specified for fixed parameters are being ignored.")
+    }
+    ms <- names(scalefactors %in% parnames)
+    if (!all(ms)){
+      scalefactors <- scalefactors[ms]
+      warning("Scale factors are specified for unmodelled parameters. These are being ignored.")
+    }
+  }
+  ## Setting sigmatoa scale factor.
+  if ("sigmatoa" %in% parnames & !("sigmatoa" %in% names(fix))){
+    if (is.null(scalefactors)){
+      scalefactors <- c(sigmatoa = 1000)
+    } else {
+      if (is.na(scalefactors["sigmatoa"])){ 
+        scalefactors <- c(scalefactors, sigmatoa = 1000)
+      }
+    }
+  }
+  ## Creating .tpl file.
+  if (autogen){
+    prefix <- "secr"
+    make.all.tpl.easy(memory = memory, method = method, detfn = detfn,
+                      parnames = parnames, scalefactors = scalefactors)
+    bessel.exists <- file.access("bessel.cxx", mode = 0)
+    if (bessel.exists == -1){
+      make.bessel()
+    }
+  } else {
+    prefix <- paste(method, "secr", sep = "")
+  }
+  ## Setting up data for do_admb.
   if (method == "simple"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt,
                  dist = dist, trace = trace)
