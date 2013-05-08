@@ -289,7 +289,7 @@ for (i in 1:nsims){
   capthist.mrds[, , , 1] <- capthist
   capthist.mrds[, , , 2] <- dists
   mrdsfit <- try(admbsecr(capthist.mrds, traps = traps, mask = mask,
-                          sv = coef(thfit)[2:3],
+                          sv = coef(thfit)[1:3],
                           method = "mrds",
                           detfn = "th"), silent = TRUE)
   if (!class(mrdsfit)[1] == "try-error"){
