@@ -49,7 +49,9 @@ logss.start <- c(D = D, ssb0 = log(ssb0), ssb1 = -0.05, sigmass = sigmass)
 ssmrds.start <- c(D = D, ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
 ## Bounding D.
 bounds <- list(D = c(0, 15000))
-hr.bounds <- list(D = c(0, 15000), z = c(-5, 70))
+hr.bounds <- list(D = c(0, 15000), z = c(-5, 20), sigma = c(1, 50))
+toahr.bounds <- list(D = c(0, 15000), z = c(-5, 70), sigmatoa = c(0, 0.1))
+logsstoa.bounds <- list(D = c(0, 15000), sigmatoa = c(0, 0.1), sigmass = c(0, 50))
 set.seed(seed)
 ## Inverse of speed of sound (in ms per metre).
 invsspd <- 1000/330
@@ -206,7 +208,7 @@ for (i in 1:nsims){
   ## TOA with hazard rate detection function with fixed g0.
   toahrfixfit <- try(admbsecr(capt = capthist.toa, traps = traps, mask = mask,
                               sv = c(hr.start[-2], sigmatoa = sigmatoa), fix = list(g0 = 1),
-                              bounds = hr.bounds, method = "toa", detfn = "hr")
+                              bounds = toahr.bounds, method = "toa", detfn = "hr")
                      , silent = TRUE)
   if (!class(hrfixfit)[1] == "try-error"){
     toahrfixcoef <- c(coef(toahrfixfit), logLik(toahrfixfit), AIC(toahrfixfit), toahrfixfit$maxgrad)
@@ -274,11 +276,11 @@ for (i in 1:nsims){
   ## Joint TOA/SS analysis with log-link.
   logsstoafit <- try(admbsecr(capt = capthist.joint, traps = traps, mask = mask,
                               sv = c(logss.start, sigmatoa = sigmatoa), cutoff = cutoff,
-                              method = "sstoa", detfn = "log", bounds = bounds),
+                              method = "sstoa", detfn = "log", bounds = logsstoa.bounds),
                      silent = TRUE)
   if (class(logsstoafit)[1] == "try-error"){
     logsstoafit <- try(admbsecr(capt = capthist.joint, traps = traps, mask = mask,
-                                bounds = bounds, sv = "auto", cutoff = cutoff, method = "sstoa",
+                                bounds = logsstoa.bounds, sv = "auto", cutoff = cutoff, method = "sstoa",
                                 detfn = "log"), silent = TRUE)
   }
   if (!class(logsstoafit)[1] == "try-error"){
@@ -345,4 +347,3 @@ write.table(toahrfixres, "~/admbsecr/Results/thresh/2/toahrfixres.txt", row.name
 write.table(toathres, "~/admbsecr/Results/thresh/2/toathres.txt", row.names = FALSE)
 write.table(sstoares, "~/admbsecr/Results/thresh/2/sstoares.txt", row.names = FALSE)
 write.table(logsstoares, "~/admbsecr/Results/thresh/2/logsstoares.txt", row.names = FALSE)
-
