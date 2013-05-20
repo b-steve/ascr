@@ -49,9 +49,10 @@ logss.start <- c(D = D, ssb0 = log(ssb0), ssb1 = -0.05, sigmass = sigmass)
 ssmrds.start <- c(D = D, ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
 ## Bounding D.
 bounds <- list(D = c(0, 15000))
-hr.bounds <- list(D = c(0, 15000), z = c(-5, 20), sigma = c(1, 50))
-toahr.bounds <- list(D = c(0, 15000), z = c(-5, 70), sigmatoa = c(0, 0.1))
-logsstoa.bounds <- list(D = c(0, 15000), sigmatoa = c(0, 0.1), sigmass = c(0, 50))
+hr.bounds <- list(D = c(0, 15000), z = c(0, 20), sigma = c(1, 50))
+toahr.bounds <- list(D = c(0, 15000), z = c(0, 20), sigmatoa = c(0, 0.1))
+logsstoa.bounds <- list(D = c(0, 15000), ssb0 = c(0, 7), sigmatoa = c(0, 0.1),
+                        sigmass = c(0, 50))
 set.seed(seed)
 ## Inverse of speed of sound (in ms per metre).
 invsspd <- 1000/330
