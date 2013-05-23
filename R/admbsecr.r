@@ -255,7 +255,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                          shape = NULL,
                          shape1 = c(0, 1e5),
                          shape2 = NULL,
-                         scale = c(-10, 0),
+                         scale = c(0, 1e5),
                          ssb0 = NULL,
                          ssb1 = c(-10, 0),
                          sigmass = c(0, 1e5),

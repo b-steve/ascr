@@ -18,7 +18,7 @@ make.all.tpl.easy <- function(memory, method, detfn, parnames, scalefactors){
     if (detfn == "hn"){
       dfstr <- "g0*mfexp(-square(d)/(2*square(sigma)))"
     } else if (detfn == "th"){
-      dfstr <- "0.5 - 0.5*(2*cumd_norm((shape - scale*d)*pow(2,0.5)) - 1)"
+      dfstr <- "0.5 - 0.5*(2*cumd_norm((d/scale - shape)*pow(2,0.5)) - 1)"
     } else if (detfn == "logth"){
       dfstr <- "0.5 - 0.5*(2*cumd_norm((shape1 - mfexp(shape2 + scale*d))*pow(2,0.5)) - 1)"
     } else if (detfn == "hr"){
