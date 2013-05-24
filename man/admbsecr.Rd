@@ -6,8 +6,8 @@
     bounds = NULL, fix = NULL, ssqtoa = NULL,
     cutoff = NULL, sound.speed = 330, admbwd = NULL,
     method = "simple", detfn = "hn", memory = NULL,
-    profpars = NULL, clean = TRUE, verbose = FALSE,
-    trace = FALSE, autogen = TRUE)
+    profpars = NULL, scalefactors = NULL, clean = TRUE,
+    verbose = FALSE, trace = FALSE, autogen = TRUE)
 }
 \arguments{
   \item{capt}{an array of dimension \code{(n, S, K)}, where
@@ -99,6 +99,9 @@
 
   \item{profpars}{character vector of names of parameters
   over which profile likelihood should occur.}
+
+  \item{scalefactors}{named vector of scale factors for
+  model parameters.}
 
   \item{clean}{logical, if \code{TRUE} ADMB files are
   cleaned after fitting of the model.}
