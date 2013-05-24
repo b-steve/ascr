@@ -413,7 +413,7 @@ detfn.default <- function(fit, ...){
 #' @param d vector of distances from which probabilities are calculated.
 #' @method detfn hn
 #' @S3method detfn hn
-detfn.hn <- function(fit, d){
+detfn.hn <- function(fit, d, ...){
   coefs <- coef(fit)
   g0 <- ifelse("g0" %in% names(coefs), coefs["g0"], fit$data[["g0"]])
   sigma <- ifelse("sigma" %in% names(coefs), coefs["sigma"], fit$data[["sigma"]])
@@ -423,7 +423,7 @@ detfn.hn <- function(fit, d){
 #' @rdname detfn
 #' @method detfn hr
 #' @S3method detfn hr
-detfn.hr <- function(fit, d){
+detfn.hr <- function(fit, d, ...){
   coefs <- coef(fit)
   g0 <- ifelse("g0" %in% names(coefs), coefs["g0"], fit$data[["g0"]])
   sigma <- ifelse("sigma" %in% names(coefs), coefs["sigma"], fit$data[["sigma"]])
@@ -434,7 +434,7 @@ detfn.hr <- function(fit, d){
 #' @rdname detfn
 #' @method  detfn ss
 #' @S3method detfn ss
-detfn.ss <- function(fit, d){
+detfn.ss <- function(fit, d, ...){
   link <- fit$detfn
   cutoff <- fit$data[["c"]]
   coefs <- coef(fit)
@@ -451,9 +451,14 @@ detfn.ss <- function(fit, d){
 }
 
 #' @rdname detfn
+#' @method  detfn sstoa
+#' @S3method detfn sstoa
+detfn.sstoa <- detfn.ss
+
+#' @rdname detfn
 #' @method detfn th
 #' @S3method detfn th
-detfn.th <- function(fit, d){
+detfn.th <- function(fit, d, ...){
   coefs <- coef(fit)
   shape <- ifelse("shape" %in% names(coefs), coefs["shape"], fit$data[["shape"]])
   scale <- ifelse("scale" %in% names(coefs), coefs["scale"], fit$data[["scale"]])
