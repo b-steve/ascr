@@ -7,7 +7,7 @@ PROCEDURE_SECTION
   dvar_vector pm(1,nmask);
   dvar_matrix p2(1,ntraps,1,nmask);
   dvar_matrix muss(1,ntraps,1,nmask);
-  muss = //@LINKFN(ssb0 + ssb1*dist);
+  muss = //@LINKFN(ssb0 - ssb1*dist);
   for (i = 1; i <= nmask; i++){
     p = 1;
     for(j = 1; j <= ntraps; j++){
@@ -21,7 +21,7 @@ PROCEDURE_SECTION
   for (i = 1; i <= n; i++){
     for (j = 1; j <= ntraps; j++){
       d = indivdist(i,j);
-      indivmuss = //@LINKFN(ssb0 + ssb1*d);
+      indivmuss = //@LINKFN(ssb0 - ssb1*d);
       if (capt(i,j) == 0){
         L1 += log(cumd_norm((c - indivmuss)/sigmass) + DBL_MIN);
       } else {
