@@ -54,10 +54,10 @@ toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
 ##                         method = "toa", detfn = "logth")
 if (datasource == "Res") hr1.bounds <- list(D = c(0, 10000)) else hr1.bounds <- NULL
 toafit.hr1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
-                       bounds = hr1.bounds, method = "toa", detfn = "hr", trace = TRUE)
+                       bounds = hr1.bounds, method = "toa", detfn = "hr")
 if (datasource == "Res") hr2.bounds <- list(sigma = c(0, 1000)) else hr2.bounds <- NULL
 toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
-                       bounds = hr2.bounds, fix = list(g0 = 1), method = "toa", detfn = "hr", trace = TRUE)
+                       bounds = hr2.bounds, fix = list(g0 = 1), method = "toa", detfn = "hr")
 
 ## Carrying out signal strength analysis.
 
@@ -69,7 +69,7 @@ toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
 ssfit2 <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
                    admbwd = admb.dir, method = "ss")
 ssfit2.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
-                       bounds = list(ssb1 = c(-5, 0)),
+                       bounds = list(ssb1 = c(0, 5)),
                        admbwd = admb.dir, method = "ss", detfn = "log")
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.

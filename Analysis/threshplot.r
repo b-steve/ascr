@@ -68,3 +68,8 @@ for (i in 1:length(modnames)){
 names(mses) <- modnames
 sort(mses)
 
+
+
+for (i in namesD){
+  print(c(i, length(get(i))))
+}
