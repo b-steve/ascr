@@ -202,10 +202,10 @@ sim.capthist.ss <- function(traps, popn, detectpars, log.link, re = FALSE){
     sources <- rnorm(n, ssb0, sigmas)
     muss <- matrix(0, nrow = n, ncol = ntraps)
     for (i in 1:n){
-      muss[i, ] <- sources[i] + ssb1*dists[i, ]
+      muss[i, ] <- sources[i] - ssb1*dists[i, ]
     }
   } else {
-    muss <- ssb0 + ssb1*dists
+    muss <- ssb0 - ssb1*dists
   }
   if (log.link){
     muss <- exp(muss)
