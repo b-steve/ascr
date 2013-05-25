@@ -75,7 +75,7 @@ autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = N
 ## paramter bound.
 autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL){
-  -0.1
+  0.1
 }
 
 ## Assumes signal strength received is equal to signal strength
@@ -102,12 +102,12 @@ autoalpha <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = 
 
 autoshape <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL){
-  -5
+  5
 }
 
 autoscale <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL){
-  -0.1
+  10
 }
 
 autoshape1 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,

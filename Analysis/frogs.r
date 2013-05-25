@@ -30,8 +30,7 @@ cutoff <- ifelse(datasource == "Res", 130, 150)
 
 ## With admbsecr().
 simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", method = "simple")
-simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = -2.63, scale = -0.36),
-                         bounds = list(shape = c(-10, 0), scale = c(-5, 5)),
+simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = 2.63, scale = 3),
                          method = "simple", detfn = "th")
 ##simplefit.logth <- admbsecr(capt, traps = traps, mask,
 ##                            sv = c(shape1 = 17.1493, shape2 = 2.9919, scale = -0.0204),
@@ -47,7 +46,7 @@ simplefit.hr2 <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
 toafit.hn <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
                       method = "toa")
 toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
-                      sv = c(shape = -2.63, scale = -0.36),
+                      sv = c(shape = 2.63, scale = 3),
                       method = "toa", detfn = "th")
 ##toafit.logth <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
 ##                         sv = c(shape1 = 17.1493, shape2 = 2.9919, scale = -0.0204),
@@ -55,10 +54,10 @@ toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
 ##                         method = "toa", detfn = "logth")
 if (datasource == "Res") hr1.bounds <- list(D = c(0, 10000)) else hr1.bounds <- NULL
 toafit.hr1 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
-                       bounds = hr1.bounds, method = "toa", detfn = "hr", trace = TRUE)
+                       bounds = hr1.bounds, method = "toa", detfn = "hr")
 if (datasource == "Res") hr2.bounds <- list(sigma = c(0, 1000)) else hr2.bounds <- NULL
 toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
-                       bounds = hr2.bounds, fix = list(g0 = 1), method = "toa", detfn = "hr", trace = TRUE)
+                       bounds = hr2.bounds, fix = list(g0 = 1), method = "toa", detfn = "hr")
 
 ## Carrying out signal strength analysis.
 
@@ -70,7 +69,7 @@ toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
 ssfit2 <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
                    admbwd = admb.dir, method = "ss")
 ssfit2.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
-                       bounds = list(ssb1 = c(-5, 0)),
+                       bounds = list(ssb1 = c(0, 5)),
                        admbwd = admb.dir, method = "ss", detfn = "log")
 
 ## Carrying out analysis with both signal strength and TOA information incorporated.
@@ -81,6 +80,11 @@ jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
 jointfit.log <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                          cutoff = cutoff, method = "sstoa", detfn = "log")
 
+
+## Profile likelihood confidence interval? Doesn't work properly.
+jointfit.prof <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
+                     bounds = list(ssb0 = c(cutoff, 1e8)),
+                     cutoff = cutoff, admbwd = admb.dir, method = "sstoa", profpars = "D")
 
 ## Comparison of fitted detection functions.
 x <- seq(0, 20, 0.01)

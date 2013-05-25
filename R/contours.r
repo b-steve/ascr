@@ -82,7 +82,7 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
     shape <- parvals["shape"]
     scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+    allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
@@ -161,7 +161,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     shape <- parvals["shape"]
     scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+    allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
@@ -235,7 +235,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   ssb0 <- parvals["ssb0"]
   ssb1 <- parvals["ssb1"]
   sigmass <- parvals["sigmass"]
-  lpred <- ssb0 + ssb1*dist
+  lpred <- ssb0 - ssb1*dist
   if (fit$detfn == "identity") muss <- lpred else muss <- exp(lpred)
   allnonprobs <- pnorm(cutoff, muss, sigmass)
   for (i in dets){
@@ -297,7 +297,7 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   sigmass <- parvals["sigmass"]
   sigmatoa <- parvals["sigmatoa"]
   times <- dist/330
-  muss <- ssb0 + ssb1*dist
+  muss <- ssb0 - ssb1*dist
   allnonprobs <- pnorm(cutoff, muss, sigmass)
   for (i in dets){
     ssdens <- logdens.ss(allcapt, allsscapt, allnonprobs, ntraps,
@@ -383,7 +383,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     shape <- parvals["shape"]
     scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+    allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
@@ -525,7 +525,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     shape <- parvals["shape"]
     scale <- parvals["scale"]
     erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-    allprobs <- 0.5 - 0.5*erf(shape - scale*dist)
+    allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
