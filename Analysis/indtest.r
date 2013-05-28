@@ -34,7 +34,7 @@ traps <- read.traps(data = mics, detector = "signal")
 
 setwd(work.dir)
 ## Setup for simulations.
-nsims <- 500
+nsims <- 100
 buffer <- 35
 
 ## True parameter values.
@@ -124,3 +124,4 @@ for (i in 1:nsims){
   }
 }
 
+write.table(res, file = "~/admbsecr/Results/ind/1/res.txt")
