@@ -21,6 +21,8 @@ for (i in files){
 source("pars.r")
 
 ## Setting up vectors with estimated D and density objects.
+## Everything done in square meters (so densities divided by 10000).
+D <- D/10000
 xs <- NULL
 ys <- NULL
 modnames <- NULL
@@ -33,7 +35,7 @@ for (i in resnames){
   namesD <- c(namesD, name)
   dname <- paste("d", name, sep = "")
   dnames <- c(dnames, dname)
-  assign(name, get(i)$D[get(i)$maxgrad > -1 & !is.na(get(i)$D)])
+  assign(name, get(i)$D[get(i)$maxgrad > -1 & !is.na(get(i)$D)]/10000)
   assign(dname, density(get(name)))
   xs <- c(xs, get(dname)$x)
   ys <- c(ys, get(dname)$y)

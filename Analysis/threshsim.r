@@ -299,16 +299,3 @@ write.table(toahrfixres, "~/admbsecr/Results/thresh/2/toahrfixres.txt", row.name
 write.table(toathres, "~/admbsecr/Results/thresh/2/toathres.txt", row.names = FALSE)
 write.table(sstoares, "~/admbsecr/Results/thresh/2/sstoares.txt", row.names = FALSE)
 write.table(logsstoares, "~/admbsecr/Results/thresh/2/logsstoares.txt", row.names = FALSE)
-
-hrfixfit <- admbsecr(capt = capthist, traps = traps, mask = mask,
-                     sv = hr.start[-2],
-                     fix = list(g0 = 1),
-                     bounds = hr.bounds, method = "simple", detfn = "hr", trace = TRUE)
-
-
-
-1699.29
-
-fit <- try.admbsecr(sv = hr.start[-2], capt = capthist, traps = traps, mask = mask,
-                    fix = list(g0 = 1),
-                    bounds = hr.bounds, method = "simple", detfn = "hr")#, trace = TRUE)

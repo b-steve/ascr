@@ -16,54 +16,55 @@
     add = FALSE, heat = FALSE, cols = "black", ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, ...)
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{toa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, ...)
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{ss} (fit, dets = "all", add = FALSE,
     heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, ...)
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{sstoa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, ...)
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{ang} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    arrows = showcapt, xlim = NULL, ylim = NULL, ...)
+    arrows = showcapt, xlim = NULL, ylim = NULL,
+    axes = TRUE, ...)
 
   \method{contours}{disttc} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, ...)
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{dist} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, ...)
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{mrds} (fit, dets = "all", add = FALSE,
     trapnos = FALSE,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, ...)
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 }
 \arguments{
   \item{fit}{a fitted model returned by
@@ -103,6 +104,8 @@
 
   \item{ylim}{numeric vector of length 2, giving the y
   coordinate range.}
+
+  \item{axes}{logical, if \code{TRUE} axes are plotted.}
 
   \item{partition}{if logical, \code{TRUE} indicates that
   the contributions to the countour due to both the binary

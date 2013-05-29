@@ -37,13 +37,14 @@ contours.default <- function(fit, ...){
 #' on which the detection was made.
 #' @param xlim numeric vector of length 2, giving the x coordinate range.
 #' @param ylim numeric vector of length 2, giving the y coordinate range.
+#' @param axes logical, if \code{TRUE} axes are plotted.
 #' @method contours simple
 #' @S3method contours simple
 contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                             cols = "black", ltys = 1, trapnos = FALSE,
                             problevels = NULL,
                             showcapt = length(dets) == 1 && dets != "all" && !add,
-                            xlim = NULL, ylim = NULL, ...){
+                            xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -59,7 +60,7 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   ntraps <- data$ntraps
   coefs <- coef(fit)
   if (!add & !heat){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
@@ -115,7 +116,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 0, 1, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         xlim = NULL, ylim = NULL, ...){
+                         xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -137,7 +138,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   ntraps <- data$ntraps
   coefs <- coef(fit)
   if (!add & !heat){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
@@ -203,7 +204,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                                          rgb(0, 0, 1, 0.4)), ltys = 1,
                         trapnos = FALSE, problevels = NULL,
                         showcapt = length(dets) == 1 && dets != "all" && !add,
-                        xlim = NULL, ylim = NULL, ...){
+                        xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -222,7 +223,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   cutoff <- fit$data$c
   coefs <- coef(fit)
   if (!add & !heat){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
@@ -257,7 +258,7 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                            rgb(0, 0, 1, 0.4)), ltys = 1,
                            trapnos = FALSE, problevels = NULL,
                            showcapt = length(dets) == 1 && dets != "all" && !add,
-                           xlim = NULL, ylim = NULL, ...){
+                           xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -282,7 +283,7 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   cutoff <- fit$data$c
   coefs <- coef(fit)
   if (!add & !heat){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
@@ -335,7 +336,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 0, 1, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         arrows = showcapt, xlim = NULL, ylim = NULL, ...){
+                         arrows = showcapt, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -359,7 +360,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   ntraps <- data$ntraps
   coefs <- coef(fit)
   if (!add & !heat){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
@@ -416,7 +417,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                             heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4)),
                             ltys = 1, trapnos = FALSE, problevels = NULL,
                             showcapt = length(dets) == 1 && dets != "all" && !add,
-                            xlim = NULL, ylim = NULL, ...){
+                            xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -438,7 +439,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   ntraps <- data$ntraps
   coefs <- coef(fit)
   if (!add & !heat){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
@@ -479,7 +480,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4)),
                           ltys = 1, trapnos = FALSE, problevels = NULL,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
-                          xlim = NULL, ylim = NULL, ...){
+                          xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -501,7 +502,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   ntraps <- data$ntraps
   coefs <- coef(fit)
   if (!add & !heat){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   allpars <- fit$parnames
   estpars <- names(coefs)
@@ -554,7 +555,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @S3method contours mrds
 contours.mrds <- function(fit, dets = "all", add = FALSE, trapnos = FALSE,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
-                          xlim = NULL, ylim = NULL, ...){
+                          xlim = NULL, ylim = NULL, axes = TRUE, ...){
   if (length(dets) > 1 & showcapt){
     warning("Setting showcapt to FALSE as length(dets) > 1")
     showcapt <- FALSE
@@ -569,7 +570,7 @@ contours.mrds <- function(fit, dets = "all", add = FALSE, trapnos = FALSE,
   ntraps <- data$ntraps
   coefs <- coef(fit)
   if (!add){
-    make.plot(mask, xlim, ylim)
+    make.plot(mask, xlim, ylim, axes)
   }
   for (i in dets){
     plot.traps(traps, allcapt, i, FALSE, trapnos, showcapt)
@@ -655,10 +656,16 @@ check.partition <- function(partition, cols, ltys){
 }
 
 ## Generates the axes and plotting area.
-make.plot <- function(mask, xlim, ylim){
+make.plot <- function(mask, xlim, ylim, axes){
   if (is.null(xlim)) xlim <- range(mask[, 1])
   if (is.null(ylim)) ylim <- range(mask[, 2])
-  plot(mask, type = "n", xlim = xlim, ylim = ylim, asp = 1)
+  plot.new()
+  plot.window(xlim = xlim, ylim = ylim, asp = 1)
+  if (axes){
+    axis(1)
+    axis(2)
+  }
+  box()
 }
 
 ## Calculates the log of the animal density due to binary capture history data.
