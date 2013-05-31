@@ -33,10 +33,12 @@ for (i in resnames){
   modnames <- c(modnames, modname)
   name <- paste(modname, "D", sep = "")
   namesD <- c(namesD, name)
+  se.name <- paste("se", modname, sep = ".")
   dname <- paste("d", name, sep = "")
   dnames <- c(dnames, dname)
   assign(name, get(i)$D[get(i)$maxgrad > -1 & !is.na(get(i)$D)]/10000)
   assign(dname, density(get(name)))
+  assign(se.name, get(i)$se.D[get(i)$maxgrad > -1 & !is.na(get(i)$D)]/10000)
   xs <- c(xs, get(dname)$x)
   ys <- c(ys, get(dname)$y)
 }
@@ -70,8 +72,21 @@ for (i in 1:length(modnames)){
 names(mses) <- modnames
 sort(mses)
 
-
+## Calculating CI coverage.
+in.ci <- function(ci, par) ci[1] <= par & ci[2] >= par
+cov <- NULL
+for (i in 1:length(modnames)){
+  ds <- get(namesD[i])
+  ses <- get(paste("se", modnames[i], sep = "."))
+  cis <- matrix(0, nrow = length(ds), ncol = 2)
+  cis[, 1] <- ds - 1.96*ses
+  cis[, 2] <- ds + 1.96*ses
+  cov <- c(cov, mean(apply(cis, 1, in.ci, par = D)))
+}
+names(cov) <- modnames
+sort(cov, decreasing = TRUE)
 
 for (i in namesD){
   print(c(i, length(get(i))))
 }
+
