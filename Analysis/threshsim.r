@@ -52,8 +52,8 @@ ssmrds.start <- c(D = D, ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass)
 bounds <- list(D = c(0, 15000))
 hr.bounds <- list(D = c(0, 15000), z = c(0, 20), sigma = c(1, 50))
 toahr.bounds <- list(D = c(0, 15000), z = c(0, 20), sigmatoa = c(0, 0.1))
-logsstoa.bounds <- list(D = c(0, 15000), ssb0 = c(0, 7), sigmatoa = c(0, 0.1),
-                        sigmass = c(0, 50))
+logsstoa.bounds <- list(D = c(0, 15000), ssb0 = c(0, 7), ssb1 = c(0, 5),
+                        sigmatoa = c(0, 0.1), sigmass = c(0, 50))
 set.seed(seed)
 ## Inverse of speed of sound (in ms per metre).
 invsspd <- 1000/330
@@ -177,7 +177,7 @@ for (i in 1:nsims){
   } else hrcoef <- NA
   ## TOA with hazard rate detection function.
   toahrfit <- try.admbsecr(sv = c(hr.start, sigmatoa = sigmatoa), capt = capthist.toa,
-                           traps = traps, mask = mask, bounds = hr.bounds, 
+                           traps = traps, mask = mask, bounds = hr.bounds,
                            method = "toa", detfn = "hr")
   if (!class(hrfit)[1] == "try-error"){
     toahrcoef <- c(coef(toahrfit), stdEr(toahrfit), logLik(toahrfit), AIC(toahrfit), toahrfit$maxgrad)
@@ -247,7 +247,7 @@ for (i in 1:nsims){
   capthist.mrds[, , , 1] <- capthist
   capthist.mrds[, , , 2] <- dists
   mrdsfit <- try.admbsecr(sv = coef(thfit)[1:3], capthist.mrds, traps = traps, mask = mask,
-                          method = "mrds", detfn = "th")
+                          bounds = list(scale = c(1, 15)), method = "mrds", detfn = "th")
   if (!class(mrdsfit)[1] == "try-error"){
     mrdscoef <- c(coef(mrdsfit), stdEr(mrdsfit), logLik(mrdsfit), AIC(mrdsfit), mrdsfit$maxgrad)
   } else mrdscoef <- NA
