@@ -5,8 +5,6 @@ NULL
 
 #' Fitting SECR models in ADMB
 #'
-#' THE FOLLOWING INFORMATION IS OUT OF DATE AND REQUIRES A REWRITE.
-#'
 #' Fits an SECR model, with our without supplementary information relevant to animal
 #' location. Parameter estimation is done by maximum likelihood in ADMB.
 #'
@@ -23,7 +21,7 @@ NULL
 #' The parameter D, density of animals (in individuals per hectare) is always estimated.
 #' The other parameters in the model depend on the method and the detection function used.
 #'
-#' Possible methods, along with their parameters, are as follows:
+#' Possible methods, along with their additional parameters, are as follows:
 #'
 #' \itemize{
 #'    \item \code{"simple"}: Normal SECR with no additional information. No additional parameters.
@@ -41,7 +39,7 @@ NULL
 #'          \item ssb0:     Signal strength at source.
 #'
 #'          \item ssb1:     Decrease in signal strength per unit distance due to sound
-#'                      propagation.
+#'                          propagation.
 #'
 #'          \item sigmass:  Error term associated with the normal distribution used to model signal strength.
 #'    }
@@ -61,6 +59,22 @@ NULL
 #'    \itemize{
 #'          \item alpha:    Shape parameter associated with the gamma distribution
 #'                          used to model estimated distances.
+#'    }
+#'    \item \code{"angdist"}: SECR with estimates of angle and distance to animal recorded:
+#'    \itemize{
+#'          \item kappa:    As above.
+#'
+#'          \item alpha:    As above.
+#'    }
+#'    \item \code{"mrds"}: Mark-recapture distance sampling. Equivalent to SECR, but with known animal
+#'      locations. No additional parameters.
+#'    \item \code{"ssmrds"}: Mark-recapture distance sampling with signal strength information:
+#'    \itemize{
+#'          \item ssb0:     As above.
+#'
+#'          \item ssb1:     As above.
+#'
+#'          \item sigmass:  As above.
 #'    }
 #' }
 #' Possible detection functions, along with their parameters, are as follows:
@@ -102,12 +116,15 @@ NULL
 #' this array must be changed to the value of the recorded supplementary information,
 #' which will depend on \code{method} (see 'Details'). When \code{method} is
 #' \code{"sstoa"}, \code{"mrds"}, or \code{"ssmrds"} this array must be of dimension
-#' \code{(n, S, K, 2)}. With \code{"sstoa"},  \code{capt[, , , 1]} provides the signal
-#' strength information and \code{capt[, , , 2]} provides the time of arrival information.
-#' With \code{"mrds"} and \code{"ssmrds"}, \code{capt[, , , 1]} provides either binary capture
-#' history array or signal strength capture history information (respectively) and
-#' \code{capt[, , , 2]} provides the distances between all traps (regardless of capture) and
-#' detected animals.
+#' \code{(n, S, K, 2)}. With joint supplementary information (\code{"sstoa"} or
+#' \code{"angdist"}), \code{capt[, , , 1]} and \code{capt[, , , 2]} each provide the
+#' different types of supplementary information, the order of which is alphabetical (also
+#' given by the order indicated in the method name, for example for method \code{"sstoa"},
+#' \code{capt[, , , 1]} and \code{capt[, , , 2]} provide the signal strength and time of
+#' arrival information, respectively). With \code{"mrds"} and \code{"ssmrds"},
+#' \code{capt[, , , 1]} provides either binary capture history array or signal strength
+#' capture history information (respectively) and \code{capt[, , , 2]} provides the
+#' distances between all traps (regardless of capture) and detected animals.
 #' @param traps a matrix containing the coordinates of trap locations. The object
 #' returned by \code{\link[secr]{read.traps}} is suitable.
 #' @param mask a mask object. The object returned by \code{\link[secr]{make.mask}} is
@@ -147,8 +164,12 @@ NULL
 #' @param memory value of \code{arrmblsize} in ADMB. Increase this if ADMB reports a
 #' memory error.
 #' @param profpars character vector of names of parameters over which profile likelihood
-#' should occur.
-#' @param scalefactors named vector of scale factors for model parameters.
+#' should occur. UNTESTED.
+#' @param scalefactors named vector of scale factors for model parameters. ADMB works best
+#' when parameters are of similar magnitudes. Setting a scale factor, \code{s}, for a
+#' parameter, \code{p}, results in \code{admbsecr} dealing with \code{s*p} rather than
+#' \code{p}, and should therefore be used when parameters are of different magnitudes. All
+#' parameter estimates and standard errors still refer to \code{p}.
 #' @param clean logical, if \code{TRUE} ADMB files are cleaned after fitting of the model.
 #' @param verbose logical, if \code{TRUE} ADMB details, along with error messages, are
 #' printed to the R session.
@@ -170,7 +191,7 @@ NULL
 #' The latter takes arguments \code{level} and \code{method}, which specify the confidence
 #' level and calculation method respectively. The default method gives quadratic (Wald)
 #' intervals based on approximate standard errors; \code{"profile"} gives profile
-#' likelihood intervals, and can be used if the \code{admbsecr()} parameter
+#' likelihood intervals (UNTESTED), and can be used if the \code{admbsecr()} parameter
 #' \code{profpars} is non-null and provides names of model parameters that are to be
 #' profiled.
 #' @author Ben Stevenson
@@ -244,8 +265,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   parnames <- c("D", detnames,
                 c("ssb0", "ssb1", "sigmass")[method == "ss" | method == "sstoa" | method == "ssmrds"],
                 "sigmatoa"[method == "toa" | method == "sstoa"],
-                "kappa"[method == "ang"],
-                "alpha"[method == "dist"])
+                "kappa"[method == "ang" | method == "angdist"],
+                "alpha"[method == "dist" | method == "angdist"])
   ## Setting number of model parameters.
   npars <- length(parnames)
   ## Setting up bounds.
@@ -392,6 +413,11 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   } else if (method == "dist"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt, dist = dist,
                  capt = bincapt, trace = trace)
+  } else if (method == "angdist"){
+    angs <- angles(traps, mask)
+    data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt[, , 1],
+                 distcapt = capt[, , 2], ang = angs, dist = dist, capt = bincapt,
+                 trace = trace)
   } else if (method == "mrds"){
     data <- list(n = n, ntraps = k, nmask = nm, A = A, capt = capt[, , 1],
                  dist = dist, indivdist = capt[, , 2], trace = trace)
