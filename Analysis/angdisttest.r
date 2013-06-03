@@ -20,7 +20,7 @@ library(CircStats)
 setwd(admbsecr.dir)
 library(devtools)
 load_all(".")
-##library(admbsecr)
+##library(admbsecr) # Use this if not loading with devtools.
 
 setwd(work.dir)
 ## Setup for simulations.
@@ -36,7 +36,6 @@ g0 <- 1
 sigma <- 1250
 kappa <- 70
 alpha <- 750 # Arbitrarily chosen value.
-truepars <- c(D = D, g0 = g0, sigma = sigma, kappa = kappa, alpha = alpha)
 detectpars <- list(g0 = g0, sigma = sigma)
 
 ## Setting up mask and traps.
@@ -45,10 +44,6 @@ ntraps <- nrow(traps)
 mask <- make.mask(traps, spacing = mask.spacing, type = "trapbuffer", buffer = buffer)
 nmask <- nrow(mask)
 A <- attr(mask, "area")
-mask.dists <- distances(as.matrix(traps), as.matrix(mask))
-mask.angs <- angles(as.matrix(traps), as.matrix(mask))
-simprobs <- NULL
-angprobs <- NULL
 res <- matrix(0, nrow = nsims, ncol = 5)
 colnames(res) <- c("D", "sigma", "kappa", "alpha", "maxgrad")
 
@@ -88,10 +83,8 @@ for (i in 1:nsims){
   capthist.joint[, , , 1] <- capthist.ang
   capthist.joint[, , , 2] <- capthist.dist
   fit.joint <- admbsecr(capthist.joint, traps = traps, mask = mask, method = "angdist",
-                        detfn = "hn",
-                        sv = c(D = D, sigma = sigma, alpha = alpha, kappa = kappa),
-                        bounds = list(alpha = c(0, 10000)),
-                        fix = list(g0 = 1),
-                        scalefactors = c(D = 100000, kappa = 15))
+                        detfn = "hn", bounds = list(alpha = c(0, 10000)),
+                        sv = c(D = D, sigma = sigma, alpha = alpha, kappa = kappa),                     
+                        fix = list(g0 = 1), scalefactors = c(D = 100000, kappa = 15))
   res[i, ] <- c(coef(fit.joint), fit.joint$maxgrad)
 }
