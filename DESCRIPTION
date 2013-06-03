@@ -24,3 +24,4 @@ Collate:
     'helpers.r'
     'tplmake.r'
     'contours.r'
+    'simsecr.r'

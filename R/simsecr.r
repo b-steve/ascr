@@ -23,6 +23,9 @@ sim.secr <- function(fit){
   popn <- sim.popn(D = allcoefs["D"], core = core, buffer = buffer)
   popn.dists <- distances(as.matrix(popn), as.matrix(traps))
   bincapt <- sim.bincapt(popn.dists, method, detfn, allcoefs)
+  ## Unfinished.
 }
 
 sim.bincapt <- function(popn.dists, method, detfn, allcoefs){
+  ## Unfinished.
+}
