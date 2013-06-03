@@ -5,9 +5,21 @@ admbsecr 0.1.5
   model unless the optional argument 'sstoa' was properly specified.
 
 * Added the argument sound.speed to admbsecr(), allowing the user to
-  specify the speed of sound. Defaults to 330 m/s.
+  specify the speed of sound. Only used for methods using time of
+  arrival data. Defaults to 330 m/s.
 
-* Added additional method:
+* Reparameterisation of the signal strength and threshold detection
+  functions. For the signal strength detection function, the parameter
+  'ssb1' is now always positive. For the threshold detection function,
+  larger "shape" means higher probability of detection at distance 0,
+  larger "scale" means animals further away are more easily
+  detected. Before these were the cases as the parameters decreased,
+  which was not very sensible.
+
+* Added additional methods:
+
+    * "angdist" -- SECR with both estimated angles and distances to 
+      animals.
 
     * "ssmrds" -- SECR with known animal locations and recorded signal
       strengths. Mostly of academic interest to see the sampling
