@@ -80,9 +80,6 @@ sim.extra.ss <- function(fit, bincapt, det.dists, ...){
 ##
 ##}
 
-#' @method sim.extra ang
-#' @
-
 #' Estimated detection probability from a fitted model.
 #'
 #' Calculates the probability of detection for given distances from a
@@ -127,6 +124,8 @@ detfn.hr <- function(fit, d, ...){
 ## Returns probabilities if prob = TRUE, otherwise returns expected
 ## signal strengths.
 #' @rdname detfn
+#' @param prob logical, if \code{TRUE}, capture probability is returned.
+#' If \code{FALSE}, expected signal strengths are returned.
 #' @method  detfn ss
 #' @S3method detfn ss
 detfn.ss <- function(fit, d, prob = TRUE, ...){

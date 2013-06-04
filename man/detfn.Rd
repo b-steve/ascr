@@ -13,9 +13,9 @@
 
   \method{detfn}{hr} (fit, d, ...)
 
-  \method{detfn}{ss} (fit, d, ...)
+  \method{detfn}{ss} (fit, d, prob = TRUE, ...)
 
-  \method{detfn}{sstoa} (fit, d, ...)
+  \method{detfn}{sstoa} (fit, d, prob = TRUE, ...)
 
   \method{detfn}{th} (fit, d, ...)
 }
@@ -27,6 +27,10 @@
 
   \item{d}{vector of distances from which probabilities are
   calculated.}
+
+  \item{prob}{logical, if \code{TRUE}, capture probability
+  is returned. If \code{FALSE}, expected signal strengths
+  are returned.}
 }
 \description{
   Calculates the probability of detection for given
