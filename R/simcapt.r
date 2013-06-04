@@ -25,8 +25,9 @@ sim.capt <- function(fit){
   bincapt <- sim.bincapt(fit, popn.dists)
   dets <- apply(bincapt, 1, function(x) any(x != 0))
   det.dists <- popn.dists[dets, ]
+  det.locs <- popn[dets, ]
   bincapt <- bincapt[dets, ]
-  sim.extra(fit, )
+  sim.extra(fit, bincapt, det.dists, det.locs)
 }
 
 sim.bincapt <- function(fit, popn.dists){
@@ -67,18 +68,65 @@ sim.extra.default <- function(fit, ...){
 }
 
 #' @S3method sim.extra simple
-sim.extra.simple <- function(fit, bincapt, det.dists, ...){
+sim.extra.simple <- function(fit, bincapt, det.dists, det.locs, ...){
+  dim <- dim(bincapt)
+  dim(bincapt) <- c(dim[1], 1, dim[2])
   bincapt
 }
 
 #' @S3method sim.extra ss
-sim.extra.ss <- function(fit, bincapt, det.dists, ...){
+sim.extra.ss <- function(fit, bincapt, det.dists, det.locs, ...){
+  dim <- dim(bincapt)
+  dim(bincapt) <- c(dim[1], 1, dim[2])
   bincapt
 }
 
-##sim.extra.ang <- function(fit, bincapt, det.dists, ...){
-##
-##}
+#' @S3method sim.extra ang
+sim.extra.ang <- function(fit, bincapt, det.dists, det.locs, ...){
+  traps <- fit$traps
+  kappa <- getpar(fit, "kappa")
+  dim <- dim(bincapt)
+  ndets <- sum(bincapt)
+  angcapt <- angles(det.locs, traps)*bincapt
+  angcapt[bincapt == 1] <- (angcapt[bincapt == 1] +
+      rvm(ndets, mean = 1, k = kappa)) %% (2*pi)
+  angcapt[angcapt == 0 & bincapt == 1] <- 2*pi
+  dim(angcapt) <- c(dim[1], 1, dim[2])
+  angcapt
+}
+
+#' @S3method sim.extra dist
+sim.extra.dist <- function(fit, bincapt, det.dists, det.locs, ...){
+  alpha <- getpar(fit, "alpha")
+  dim <- dim(bincapt)
+  ndets <- sum(bincapt)
+  distcapt <- det.dists*bincapt
+  betas <- alpha/distcapt[bincapt == 1]
+  distcapt[bincapt == 1] <- rgamma(ndets, shape = alpha, rate = betas)
+  dim(distcapt) <- c(dim[1], 1, dim[2])
+  distcapt
+}
+
+sim.extra.angdist <- function(fit, bincapt, det.dists, det.locs, ...){
+  traps <- fit$traps
+  alpha <- getpar(fit, "alpha")
+  kappa <- getpar(fit, "kappa")
+  dim <- dim(bincapt)
+  ndets <- sum(bincapt)
+  angcapt <- angles(det.locs, traps)*bincapt
+  angcapt[bincapt == 1] <- (angcapt[bincapt == 1] +
+      rvm(ndets, mean = 1, k = kappa)) %% (2*pi)
+  angcapt[angcapt == 0 & bincapt == 1] <- 2*pi
+  dim(angcapt) <- c(dim[1], 1, dim[2])
+  distcapt <- det.dists*bincapt
+  betas <- alpha/distcapt[bincapt == 1]
+  distcapt[bincapt == 1] <- rgamma(ndets, shape = alpha, rate = betas)
+  dim(distcapt) <- dim(angcapt)
+  jointcapt <- array(0, dim = dim(angcapt))
+  jointcapt[, , , 1] <- angcapt
+  jointcapt[, , , 2] <- distcapt
+  jointcapt
+}
 
 #' Estimated detection probability from a fitted model.
 #'
@@ -104,9 +152,8 @@ detfn.default <- function(fit, ...){
 #' @method detfn hn
 #' @S3method detfn hn
 detfn.hn <- function(fit, d, ...){
-  coefs <- coef(fit)
-  g0 <- ifelse("g0" %in% names(coefs), coefs["g0"], fit$data[["g0"]])
-  sigma <- ifelse("sigma" %in% names(coefs), coefs["sigma"], fit$data[["sigma"]])
+  g0 <- getpar(fit, "g0")
+  sigma <- getpar(fit, "sigma")
   g0*exp(-(d^2/(2*sigma^2)))
 }
 
@@ -114,10 +161,9 @@ detfn.hn <- function(fit, d, ...){
 #' @method detfn hr
 #' @S3method detfn hr
 detfn.hr <- function(fit, d, ...){
-  coefs <- coef(fit)
-  g0 <- ifelse("g0" %in% names(coefs), coefs["g0"], fit$data[["g0"]])
-  sigma <- ifelse("sigma" %in% names(coefs), coefs["sigma"], fit$data[["sigma"]])
-  z <- ifelse("z" %in% names(coefs), coefs["z"], fit$data[["z"]])
+  g0 <- getpar(fit, "g0")
+  sigma <- getpar(fit, "sigma")
+  z <- getpar(fit, "z")
   g0*(1 - exp(-((d/sigma)^-z)))
 }
 
@@ -131,11 +177,10 @@ detfn.hr <- function(fit, d, ...){
 detfn.ss <- function(fit, d, prob = TRUE, ...){
   link <- fit$detfn
   cutoff <- fit$data[["c"]]
-  coefs <- coef(fit)
   invlink <- c(log = exp, identity = identity)[[link]]
-  ssb0 <- ifelse("ssb0" %in% names(coefs), coefs["ssb0"], fit$data[["ssb0"]])
-  ssb1 <- ifelse("ssb1" %in% names(coefs), coefs["ssb1"], fit$data[["ssb1"]])
-  sigmass <- ifelse("sigmass" %in% names(coefs), coefs["sigmass"], fit$data[["sigmass"]])
+  ssb0 <- getpar(fit, "ssb0")
+  ssb1 <- getpar(fit, "ssb1")
+  sigmass <- getpar(fit, "sigmass")
   muss <- invlink(ssb0 - ssb1*d)
   if (prob){
     out <- 1 - pnorm((cutoff - muss)/sigmass)
@@ -154,8 +199,7 @@ detfn.sstoa <- detfn.ss
 #' @method detfn th
 #' @S3method detfn th
 detfn.th <- function(fit, d, ...){
-  coefs <- coef(fit)
-  shape <- ifelse("shape" %in% names(coefs), coefs["shape"], fit$data[["shape"]])
-  scale <- ifelse("scale" %in% names(coefs), coefs["scale"], fit$data[["scale"]])
+  shape <- getpar(fit, "shape")
+  scale <- getpar(fit, "scale")
   0.5 - 0.5*erf(d/scale - shape)
 }

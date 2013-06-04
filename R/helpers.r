@@ -390,3 +390,8 @@ disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, 
 ## Error function
 erf <- function(x) 2*pnorm(x*sqrt(2)) - 1
 
+## Extract a parameter
+getpar <- function(fit, par){
+  coefs <- coef(fit)
+  ifelse(par %in% names(coefs), coefs[par], fit$data[[par]])
+}
