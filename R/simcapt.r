@@ -51,13 +51,6 @@ sim.bincapt <- function(fit, popn.dists){
   bincapt
 }
 
-#' Simulated supplementary information.
-#'
-#' Simulates matrices of additional information using parameter estimates
-#' from a fitted model returned by \code{admbsecr()}.
-#'
-#' @param fit a fitted model returnd by \code{\link[admbsecr]{admbsecr}}.
-#' @param ... additional arguments
 sim.extra <- function(fit, ...){
   UseMethod("sim.extra", fit)
 }
