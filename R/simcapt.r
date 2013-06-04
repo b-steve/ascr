@@ -80,9 +80,9 @@ sim.extra.ang <- function(fit, bincapt, det.dists, det.locs, ...){
   kappa <- getpar(fit, "kappa")
   dim <- dim(bincapt)
   ndets <- sum(bincapt)
-  angcapt <- angles(det.locs, traps)*bincapt
+  angcapt <- t(angles(traps, det.locs))*bincapt
   angcapt[bincapt == 1] <- (angcapt[bincapt == 1] +
-      rvm(ndets, mean = 1, k = kappa)) %% (2*pi)
+      rvm(ndets, mean = 0, k = kappa)) %% (2*pi)
   angcapt[angcapt == 0 & bincapt == 1] <- 2*pi
   dim(angcapt) <- c(dim[1], 1, dim[2])
   angcapt
@@ -107,9 +107,9 @@ sim.extra.angdist <- function(fit, bincapt, det.dists, det.locs, ...){
   kappa <- getpar(fit, "kappa")
   dim <- dim(bincapt)
   ndets <- sum(bincapt)
-  angcapt <- angles(det.locs, traps)*bincapt
+  angcapt <- t(angles(traps, det.locs))*bincapt
   angcapt[bincapt == 1] <- (angcapt[bincapt == 1] +
-      rvm(ndets, mean = 1, k = kappa)) %% (2*pi)
+      rvm(ndets, mean = 0, k = kappa)) %% (2*pi)
   angcapt[angcapt == 0 & bincapt == 1] <- 2*pi
   dim(angcapt) <- c(dim[1], 1, dim[2])
   distcapt <- det.dists*bincapt
