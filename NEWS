@@ -8,6 +8,9 @@ admbsecr 0.1.5
   specify the speed of sound. Only used for methods using time of
   arrival data. Defaults to 330 m/s.
 
+* Added 'scalefactors' argument to admbsecr() to allow for better
+  fitting when parameters are of different magnitudes.
+
 * Reparameterisation of the signal strength and threshold detection
   functions. For the signal strength detection function, the parameter
   'ssb1' is now always positive. For the threshold detection function,
@@ -18,14 +21,14 @@ admbsecr 0.1.5
 
 * Added additional methods:
 
-    * "angdist" -- SECR with both estimated angles and distances to 
+    * "angdist" -- SECR with both estimated angles and distances to
       animals.
 
     * "ssmrds" -- SECR with known animal locations and recorded signal
       strengths. Mostly of academic interest to see the sampling
       distribution of our estimates when we use all the spatial
       information we possibly have while fitting a signal strength
-      model.        
+      model.
 
 admbsecr 0.1.4
 --------------
