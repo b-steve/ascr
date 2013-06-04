@@ -100,6 +100,7 @@ sim.extra.dist <- function(fit, bincapt, det.dists, det.locs, ...){
   distcapt
 }
 
+#' @S3method sim.extra angdist
 sim.extra.angdist <- function(fit, bincapt, det.dists, det.locs, ...){
   traps <- fit$traps
   alpha <- getpar(fit, "alpha")
@@ -115,7 +116,7 @@ sim.extra.angdist <- function(fit, bincapt, det.dists, det.locs, ...){
   betas <- alpha/distcapt[bincapt == 1]
   distcapt[bincapt == 1] <- rgamma(ndets, shape = alpha, rate = betas)
   dim(distcapt) <- dim(angcapt)
-  jointcapt <- array(0, dim = dim(angcapt))
+  jointcapt <- array(0, dim = c(dim(angcapt), 2))
   jointcapt[, , , 1] <- angcapt
   jointcapt[, , , 2] <- distcapt
   jointcapt
