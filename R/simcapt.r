@@ -1,21 +1,52 @@
 ## Simulates capt matrix suitable for admbsecr(), from either a model
 ## fit (using estimated parameters) or from provided values.
 
-sim.capt <- function(fit){
-  method <- fit$method
-  detfn <- fit$detfn
-  traps <- fit$traps
-  mask <- fit$mask
-  fitcoefs <- coef(fit)
-  allparnames <- fit$parnames
-  coefparnames <- names(fitcoefs)
-  dataparnames <- allparnames[!allparnames %in% coefparnames]
-  fixcoefs <- numeric(length(dataparnames))
-  names(fixcoefs) <- dataparnames
-  for (i in dataparnames){
-    fixcoefs[i] <- fit$data[[i]]
+#' Simulating SECR data
+#'
+#' Simulates SECR data capture histories in the correct format for use with
+#' \code{\link[admbsecr]{admbsecr}}.
+#'
+#' If \code{fit} is provided then no other arguments are required. Otherwise, at least
+#' \code{traps}, \code{mask}, \code{pars}, \code{method}, and \code{detfn} are needed.
+#'
+#' @param fit a fitted \code{admbsecr} model object which provides the method,
+#' detection function, and parameter values from which to generate capture
+#' histories.
+#' @param traps a matrix containing the coordinates of trap locations. The object
+#' returned by \code{\link[secr]{read.traps}} is suitable.
+#' @param mask a mask object. The object returned by \code{\link[secr]{make.mask}} is
+#' suitable.
+#' @param pars a named vector of parameter values.
+#' @param method the \code{admbsecr} method which specifies the additional information
+#' to be simulated.
+#' @param detfn the admbsecr detection function to be used.
+#' @param cutoff the signal strength threshold of detection. Required if \code{method}
+#' is \code{"ss"} or \code{"sstoa"}.
+#' @param sound.speed the speed of sound in metres per second. Used for TOA analysis.
+#' @export
+sim.capt <- function(fit, traps = NULL, mask = NULL, pars = NULL, method = NULL,
+                     detfn = NULL, cutoff = NULL, sound.speed = NULL){
+  if (!missing(fit)){
+    method <- fit$method
+    detfn <- fit$detfn
+    traps <- fit$traps
+    mask <- fit$mask
+    fitcoefs <- coef(fit)
+    allparnames <- fit$parnames
+    coefparnames <- names(fitcoefs)
+    dataparnames <- allparnames[!allparnames %in% coefparnames]
+    fixcoefs <- numeric(length(dataparnames))
+    names(fixcoefs) <- dataparnames
+    for (i in dataparnames){
+      fixcoefs[i] <- fit$data[[i]]
+    }
+    allcoefs <- c(fitcoefs, fixcoefs)
+  } else {
+    allcoefs <- pars
+    fit <- list(traps = traps, mask = mask, coefficients = allcoefs,
+                data = list(c = cutoff), method = method, detfn = detfn)
+    class(fit) <- c("admbsim", method, detfn)
   }
-  allcoefs <- c(fitcoefs, fixcoefs)
   buffer <- 0
   range.x <- range(mask[, 1])
   range.y <- range(mask[, 2])
@@ -67,11 +98,10 @@ sim.extra.simple <- function(fit, bincapt, det.dists, det.locs, ...){
   bincapt
 }
 
-#' @S3method sim.extra ss
-sim.extra.ss <- function(fit, bincapt, det.dists, det.locs, ...){
-  dim <- dim(bincapt)
-  dim(bincapt) <- c(dim[1], 1, dim[2])
-  bincapt
+#' @S3method sim.extra toa
+sim.extra.toa <- function(fit, bincapt, det.dists, det.locs, ...){
+  ## TO DO
+  stop("Method not yet implemented.")
 }
 
 #' @S3method sim.extra ang
@@ -86,6 +116,19 @@ sim.extra.ang <- function(fit, bincapt, det.dists, det.locs, ...){
   angcapt[angcapt == 0 & bincapt == 1] <- 2*pi
   dim(angcapt) <- c(dim[1], 1, dim[2])
   angcapt
+}
+
+#' @S3method sim.extra ss
+sim.extra.ss <- function(fit, bincapt, det.dists, det.locs, ...){
+  dim <- dim(bincapt)
+  dim(bincapt) <- c(dim[1], 1, dim[2])
+  bincapt
+}
+
+#' @S3method sim.extra sstoa
+sim.extra.sstoa <- function(fit, bincapt, det.dists, det.locs, ...){
+  ## TO DO
+  stop("Method not yet implemented.")
 }
 
 #' @S3method sim.extra dist
@@ -120,6 +163,18 @@ sim.extra.angdist <- function(fit, bincapt, det.dists, det.locs, ...){
   jointcapt[, , , 1] <- angcapt
   jointcapt[, , , 2] <- distcapt
   jointcapt
+}
+
+#' @S3method sim.extra mrds
+sim.extra.mrds <- function(fit, bincapt, det.dists, det.locs, ...){
+  ## TO DO
+  stop("Method not yet implemented.")
+}
+
+#' @S3method sim.extra ssmrds
+sim.extra.ssmrds <- function(fit, bincapt, det.dists, det.locs, ...){
+  ## TO DO
+  stop("Method not yet implemented.")
 }
 
 #' Estimated detection probability from a fitted model.
@@ -196,4 +251,9 @@ detfn.th <- function(fit, d, ...){
   shape <- getpar(fit, "shape")
   scale <- getpar(fit, "scale")
   0.5 - 0.5*erf(d/scale - shape)
+}
+
+#' @S3method coef admbsim
+coef.admbsim <- function(object, ...){
+  object$coefficients
 }
