@@ -24,8 +24,8 @@
 #' is \code{"ss"} or \code{"sstoa"}.
 #' @param sound.speed the speed of sound in metres per second. Used for TOA analysis.
 #' @export
-sim.capt <- function(fit, traps = NULL, mask = NULL, pars = NULL, method = NULL,
-                     detfn = NULL, cutoff = NULL, sound.speed = NULL){
+sim.capt <- function(fit, traps = NULL, mask = NULL, pars = NULL, method = "simple",
+                     detfn = "hn", cutoff = NULL, sound.speed = NULL){
   if (!missing(fit)){
     method <- fit$method
     detfn <- fit$detfn
