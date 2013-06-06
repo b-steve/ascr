@@ -23,7 +23,7 @@ source("gibbonsetup.r")
 setwd(work.dir)
 
 simplefit.hn <- admbsecr(capt = capthist, traps = traps, mask = mask, fix = list(g0 = 1),
-                         sv = "auto", admbwd = admb.dir, method = "simple")
+                         sv = "auto", method = "simple")
 simplefit.th <- admbsecr(capt = capthist, traps = traps, mask = mask, sv = "auto",
                          detfn = "th", method = "simple")
 simplefit.hr1 <- admbsecr(capt = capthist, traps = traps, mask = mask, sv = "auto",
