@@ -23,9 +23,10 @@
 #' @param cutoff the signal strength threshold of detection. Required if \code{method}
 #' is \code{"ss"} or \code{"sstoa"}.
 #' @param sound.speed the speed of sound in metres per second. Used for TOA analysis.
+#' @param calls number of calls to be emitted by each individual.
 #' @export
 sim.capt <- function(fit, traps = NULL, mask = NULL, pars = NULL, method = "simple",
-                     detfn = "hn", cutoff = NULL, sound.speed = NULL){
+                     detfn = "hn", cutoff = NULL, sound.speed = NULL, calls = 1){
   if (!missing(fit)){
     method <- fit$method
     detfn <- fit$detfn
@@ -51,7 +52,10 @@ sim.capt <- function(fit, traps = NULL, mask = NULL, pars = NULL, method = "simp
   range.x <- range(mask[, 1])
   range.y <- range(mask[, 2])
   core <- data.frame(x = range.x, y = range.y)
-  popn <- sim.popn(D = allcoefs["D"], core = core, buffer = buffer)
+  popn <- sim.popn(D = allcoefs["D"]/calls, core = core, buffer = buffer)
+  if (calls != 1){
+    popn <- 0 ## UNFINISHED
+  }
   popn.dists <- distances(as.matrix(popn), as.matrix(traps))
   bincapt <- sim.bincapt(fit, popn.dists)
   dets <- apply(bincapt, 1, function(x) any(x != 0))

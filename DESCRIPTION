@@ -25,3 +25,4 @@ Collate:
     'helpers.r'
     'simcapt.r'
     'tplmake.r'
+    'secorrect.r'
