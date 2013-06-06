@@ -1,6 +1,7 @@
 
 PROCEDURE_SECTION
   // Setting up variables.
+  const double DBL_MIN = 1e-150;
   int i,j;
   dvariable p, p1, d;
   dvar_matrix indivp1(1,n,1,ntraps);
@@ -41,8 +42,5 @@ PROCEDURE_SECTION
   if (trace == 1){
     //@TRACE;
   }
-
-GLOBALS_SECTION
-  #include <float.h>
 
 

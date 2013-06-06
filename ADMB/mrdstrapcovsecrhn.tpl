@@ -1,6 +1,7 @@
 
 PROCEDURE_SECTION
   int i;
+  const double DBL_MIN = 1e-150;
   dvariable p,lambda,L1,L2,L3;
   dvar_vector maskp11(1,nmask);
   dvar_vector maskp12(1,nmask);
@@ -43,7 +44,5 @@ PROCEDURE_SECTION
     cout << "D: " << D << ", g01: " << g01 << ", sigma1: " << sigma1 << ", g02: " << g02 << ", sigma2: " << sigma2 << ", loglik: " << -f << endl;
   }
 
-GLOBALS_SECTION
-  #include <float.h>
 
 
