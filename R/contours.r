@@ -469,20 +469,25 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 }
 
 #' @rdname contours
+#' @param circles logical, indicating whether or not circles are to be
+#' plotted to show estimated animal distance from traps.
 #' @method contours dist
 #' @S3method contours dist
 contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4)),
                           ltys = 1, trapnos = FALSE, problevels = NULL,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
-                          xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                          circles = showcapt, xlim = NULL, ylim = NULL,
+                          axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
-                                        partition = partition, ...)
+                                        partition = partition, circles = circles,
+                                        ...)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
+  circles <- updated.arguments$circles
   cols <- updated.arguments$cols
   ltys <- updated.arguments$ltys
   extra.contours <- check.partition(partition)
@@ -527,7 +532,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     scale <- parvals["scale"]
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
-  if (length(dets) == 1){
+  if (length(dets) == 1 & circles){
     plot.circles(traps, allcapt, alldistcapt, i, heat)
   }
   for (i in dets){
@@ -553,15 +558,18 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                              rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
                              ltys = 1, trapnos = FALSE, problevels = NULL,
                              showcapt = length(dets) == 1 && dets != "all" && !add,
-                             arrows = showcapt, xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                             arrows = showcapt, circles = showcapt, xlim = NULL,
+                             ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
-                                        partition = partition, arrows = arrows, ...)
+                                        partition = partition, arrows = arrows,
+                                        circles = circles, ...)
   dets <- updated.arguments$dets
   showcapt <- updated.arguments$showcapt
   partition <- updated.arguments$partition
   arrows <- updated.arguments$arrows
+  circles <- updated.arguments$circles
   cols <- updated.arguments$cols
   ltys <- updated.arguments$ltys
   extra.contours <- check.partition(partition)
@@ -610,7 +618,9 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   if (length(dets) == 1){
-    plot.circles(traps, allcapt, alldistcapt, dets, heat)
+    if (circles){
+      plot.circles(traps, allcapt, alldistcapt, dets, heat)
+    }
     if (arrows){
       plot.arrows(traps, allcapt, allangcapt, dets, heat)
     }
@@ -664,7 +674,7 @@ contours.mrds <- function(fit, dets = "all", add = FALSE, trapnos = FALSE,
 
 ## Checks inputs and returns altered argument values.
 warning.contours <- function(n, dets, add, heat, showcapt, cols, ltys,
-                             partition = NULL, arrows = NULL, ...){
+                             partition = NULL, arrows = NULL, circles = NULL, ...){
   if (length(dets) == 1 && dets == "all"){
     dets <- 1:n
   }
@@ -711,7 +721,7 @@ warning.contours <- function(n, dets, add, heat, showcapt, cols, ltys,
     ltys <- rep(ltys, 4)
   }
   list(dets = dets, showcapt = showcapt, partition = partition, arrows = arrows,
-       cols = cols, ltys = ltys)
+       circles = circles, cols = cols, ltys = ltys)
 }
 
 ## Sets up indicators for simple and extra contour plotting.
