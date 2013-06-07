@@ -12,6 +12,7 @@
 #' @param fit a fitted \code{admbsecr} model object which provides the method,
 #' detection function, and parameter values from which to generate capture
 #' histories.
+#' @param calls a vector containing call frequencies from monitored individuals.
 #' @param traps a matrix containing the coordinates of trap locations. The object
 #' returned by \code{\link[secr]{read.traps}} is suitable.
 #' @param mask a mask object. The object returned by \code{\link[secr]{make.mask}} is
@@ -23,10 +24,10 @@
 #' @param cutoff the signal strength threshold of detection. Required if \code{method}
 #' is \code{"ss"} or \code{"sstoa"}.
 #' @param sound.speed the speed of sound in metres per second. Used for TOA analysis.
-#' @param calls number of calls to be emitted by each individual.
 #' @export
-sim.capt <- function(fit, traps = NULL, mask = NULL, pars = NULL, method = "simple",
-                     detfn = "hn", cutoff = NULL, sound.speed = NULL, calls = 1){
+sim.capt <- function(fit, calls = 1, traps = NULL, mask = NULL, pars = NULL,
+                     method = "simple", detfn = "hn", cutoff = NULL,
+                     sound.speed = NULL){
   if (!missing(fit)){
     method <- fit$method
     detfn <- fit$detfn
@@ -48,15 +49,36 @@ sim.capt <- function(fit, traps = NULL, mask = NULL, pars = NULL, method = "simp
                 data = list(c = cutoff), method = method, detfn = detfn)
     class(fit) <- c("admbsim", method, detfn)
   }
+  ntraps <- nrow(traps)
   buffer <- 0
   range.x <- range(mask[, 1])
   range.y <- range(mask[, 2])
   core <- data.frame(x = range.x, y = range.y)
-  popn <- sim.popn(D = allcoefs["D"]/calls, core = core, buffer = buffer)
-  if (calls != 1){
-    popn <- 0 ## UNFINISHED
-  }
+  popn <- as.matrix(sim.popn(D = allcoefs["D"]/mean(calls),
+                             core = core, buffer = buffer))
   popn.dists <- distances(as.matrix(popn), as.matrix(traps))
+  if (length(calls) != 1 | calls[1] != 1){
+    n <- nrow(popn)
+    freqs <- resample(calls, size = n, replace = TRUE)
+    ncalls <- sum(freqs)
+    pos <- c(1, cumsum(freqs) + 1)
+    call.popn <- matrix(0, nrow = ncalls, ncol = 2)
+    rownames(call.popn) <- 1:ncalls
+    colnames(call.popn) <- c("x", "y")
+    call.popn.dists <- matrix(0, nrow = ncalls, ncol = ntraps)
+    rownames(call.popn.dists) <- 1:ncalls
+    colnames(call.popn.dists) <- 1:ntraps
+    for (i in 1:n){
+      for (j in 1:2){
+        call.popn[pos[i]:(pos[i + 1] - 1), j] <- popn[i, j]
+      }
+      for (j in 1:ntraps){
+        call.popn.dists[pos[i]:(pos[i + 1] - 1), j] <- popn.dists[i, j]
+      }
+    }
+    popn <- call.popn
+    popn.dists <- call.popn.dists
+  }
   bincapt <- sim.bincapt(fit, popn.dists)
   dets <- apply(bincapt, 1, function(x) any(x != 0))
   det.dists <- popn.dists[dets, ]
@@ -260,4 +282,8 @@ calc.detfn.th <- function(fit, d, ...){
 #' @S3method coef admbsim
 coef.admbsim <- function(object, ...){
   object$coefficients
+}
+
+resample <- function(x, ...){
+  x[sample.int(length(x), ...)]
 }

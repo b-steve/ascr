@@ -126,7 +126,8 @@ NULL
 #' capture history information (respectively) and \code{capt[, , , 2]} provides the
 #' distances between all traps (regardless of capture) and detected animals.
 #' @param traps a matrix containing the coordinates of trap locations. The object
-#' returned by \code{\link[secr]{read.traps}} is suitable.
+#' returned by \code{\link[secr]{read.traps}} is suitable, and is required for automatic
+#' generation of start values.
 #' @param mask a mask object. The object returned by \code{\link[secr]{make.mask}} is
 #' suitable.
 #' @param sv either \code{"auto"}, or a named vector. If \code{auto}, starting values for
@@ -345,9 +346,11 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
   bincapt <- matrix(as.vector(bincapt), nrow = n, ncol = k)
   capt <- array(as.vector(capt), dim = c(n, k, dim(capt)[4][length(dim(capt)) == 4]))
+  mask.obj <- mask
   mask <- as.matrix(mask)
   ## No. of mask locations.
   nm <- nrow(mask)
+  traps.obj <- traps
   traps <- as.matrix(traps)
   ## Distances between traps and mask locations.
   dist <- distances(traps, mask)
@@ -458,7 +461,9 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   setwd(currwd)
   fit$data <- data
   fit$traps <- traps
+  fit$traps.obj <- traps.obj
   fit$mask <- mask
+  fit$mask.obj <- mask.obj
   fit$method <- method
   fit$detfn <- detfn
   fit$parnames <- parnames
