@@ -37,7 +37,8 @@
 
   \item{traps}{a matrix containing the coordinates of trap
   locations. The object returned by
-  \code{\link[secr]{read.traps}} is suitable.}
+  \code{\link[secr]{read.traps}} is suitable, and is
+  required for automatic generation of start values.}
 
   \item{mask}{a mask object. The object returned by
   \code{\link[secr]{make.mask}} is suitable.}
