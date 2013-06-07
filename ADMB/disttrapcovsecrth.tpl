@@ -1,7 +1,7 @@
 
 PROCEDURE_SECTION
   // Setting up variables
-  const double pi=3.14159265359;
+  const double DBL_MIN = 1e-150;
   int i,j;
   dvariable d,p,lambda,L1,L2,L3;
   dvar_vector p11(1,nmask);
@@ -60,7 +60,5 @@ PROCEDURE_SECTION
   cout << "D: " << D << ", shape1: " << shape1 << ", scale1: " << scale1 << ", shape2: " << shape2 << ", scale2: " << scale2 << ", alpha: " << alpha << ", loglik: " << -f << endl;
   }
 
-GLOBALS_SECTION
-  #include <float.h>
 
-REPORT_SECTION
+

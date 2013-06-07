@@ -390,77 +390,60 @@ disttrapcov <- function(capt, mask, traps, sv, admb.dir, clean, verbose, trace, 
 ## Error function
 erf <- function(x) 2*pnorm(x*sqrt(2)) - 1
 
-#' Estimated detection probability from a fitted model.
+## Extract a parameter
+getpar <- function(fit, par){
+  coefs <- coef(fit)
+  ifelse(par %in% names(coefs), coefs[par], fit$data[[par]])
+}
+
+#' Show estimated detection function
 #'
-#' Calculates the probability of detection for given distances from a
-#' fit returned by \code{admbsecr()}.
+#' Plots the estimated detection function from an \code{admbsecr} fit.
 #'
-#' @param fit a fitted model returned by \code{\link[admbsecr]{admbsecr}}.
-#' @param ... additional arguments.
-#' @rdname detfn
+#' @param fit a fitted model from \code{admbsecr()}.
+#' @param xlim x-axis limits.
+#' @param ylim y-axis limits.
+#' @param xlab x-axis label.
+#' @param ylab y-axis label.
+#' @param add logical, if \code{TRUE}, add to existing plot.
+#' @param ... further arguments to be passed to plotting functions.
 #' @export
-detfn <- function(fit, ...){
-  UseMethod("detfn", fit)
-}
-
-#' @S3method contours default
-detfn.default <- function(fit, ...){
-  stop(paste("This function does not work with admbsecr fits with detection function ",
-             "\"", fit$detfn, "\"", sep = ""))
-}
-
-#' @rdname detfn
-#' @param d vector of distances from which probabilities are calculated.
-#' @method detfn hn
-#' @S3method detfn hn
-detfn.hn <- function(fit, d, ...){
-  coefs <- coef(fit)
-  g0 <- ifelse("g0" %in% names(coefs), coefs["g0"], fit$data[["g0"]])
-  sigma <- ifelse("sigma" %in% names(coefs), coefs["sigma"], fit$data[["sigma"]])
-  g0*exp(-(d^2/(2*sigma^2)))
-}
-
-#' @rdname detfn
-#' @method detfn hr
-#' @S3method detfn hr
-detfn.hr <- function(fit, d, ...){
-  coefs <- coef(fit)
-  g0 <- ifelse("g0" %in% names(coefs), coefs["g0"], fit$data[["g0"]])
-  sigma <- ifelse("sigma" %in% names(coefs), coefs["sigma"], fit$data[["sigma"]])
-  z <- ifelse("z" %in% names(coefs), coefs["z"], fit$data[["z"]])
-  g0*(1 - exp(-((d/sigma)^-z)))
-}
-
-#' @rdname detfn
-#' @method  detfn ss
-#' @S3method detfn ss
-detfn.ss <- function(fit, d, ...){
-  link <- fit$detfn
-  cutoff <- fit$data[["c"]]
-  coefs <- coef(fit)
-  if (link == "identity"){
-    invlink <- identity
+show.detfn <- function(fit, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
+                       add = FALSE, ...){
+  if (!add){
+    if (is.null(xlim)){
+      x <- 1
+      xprob <- 1
+      while (xprob > 0.001 & x < 5000){
+        x <- x + 1
+        xprob <- calc.detfn(fit, x)
+      }
+      xlim <- c(0, x)
+    }
+    if (is.null(ylim)){
+      ylim <- c(0, 1)
+    }
+    if (is.null(xlab)){
+      xlab <- "Distance (metres)"
+    }
+    if (is.null(ylab)){
+      ylab <- "Detection probability"
+    }
   } else {
-    invlink <- exp
+    xlim <- par("usr")[1:2]
   }
-  ssb0 <- ifelse("ssb0" %in% names(coefs), coefs["ssb0"], fit$data[["ssb0"]])
-  ssb1 <- ifelse("ssb1" %in% names(coefs), coefs["ssb1"], fit$data[["ssb1"]])
-  sigmass <- ifelse("sigmass" %in% names(coefs), coefs["sigmass"], fit$data[["sigmass"]])
-  muss <- invlink(ssb0 - ssb1*d)
-  1 - pnorm((cutoff - muss)/sigmass)
-}
-
-#' @rdname detfn
-#' @method  detfn sstoa
-#' @S3method detfn sstoa
-detfn.sstoa <- detfn.ss
-
-#' @rdname detfn
-#' @method detfn th
-#' @S3method detfn th
-detfn.th <- function(fit, d, ...){
-  coefs <- coef(fit)
-  shape <- ifelse("shape" %in% names(coefs), coefs["shape"], fit$data[["shape"]])
-  scale <- ifelse("scale" %in% names(coefs), coefs["scale"], fit$data[["scale"]])
-  0.5 - 0.5*erf(d/scale - shape)
+  xx <- seq(xlim[1], xlim[2], length.out = 1000)
+  yy <- calc.detfn(fit, xx)
+  if (!add){
+    par(xaxs = "i")
+    plot.new()
+    plot.window(xlim = xlim, ylim = ylim, ...)
+    axis(1)
+    axis(2)
+    box()
+    abline(h = 0, col = "lightgrey")
+    abline(h = 1, col = "lightgrey")
+    title(xlab = xlab, ylab = ylab, ...)
+  }
+  lines(xx, yy, ...)
 }

@@ -1,7 +1,7 @@
 
 PROCEDURE_SECTION
   // Setting up variables
-  const double pi=3.14159265359;
+  const double DBL_MIN = 1e-150;
   int i,j;
   dvariable d,p,lambda,L1,L2,L3;
   dvar_vector p11(1,nmask);
@@ -60,7 +60,6 @@ PROCEDURE_SECTION
   cout << "D: " << D << ", g01: " << g01 << ", sigma1: " << sigma1 << ", z1: " << z1 << ", g02: " << g02 << ", sigma2: " << sigma2 << ", z2: " << z2 << ", alpha: " << alpha << ", loglik: " << -f << endl;
   }
 
-GLOBALS_SECTION
-  #include <float.h>
 
-REPORT_SECTION
+
+

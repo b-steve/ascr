@@ -1,6 +1,7 @@
 \name{contours}
 \alias{contours}
 \alias{contours.ang}
+\alias{contours.angdist}
 \alias{contours.dist}
 \alias{contours.disttc}
 \alias{contours.mrds}
@@ -20,28 +21,28 @@
 
   \method{contours}{toa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
-    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{ss} (fit, dets = "all", add = FALSE,
     heat = FALSE,
-    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{sstoa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
-    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{ang} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
-    cols = c("black", rgb(0, 1, 0, 0.4), rgb(0, 0, 1, 0.4)),
+    cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     arrows = showcapt, xlim = NULL, ylim = NULL,
@@ -49,17 +50,26 @@
 
   \method{contours}{disttc} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
-    cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
+    cols = c("black", rgb(0, 0, 1, 0.4)), ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
     xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{dist} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
-    cols = c("black", rgb(0, 1, 0, 0.4)), ltys = 1,
+    cols = c("black", rgb(0, 0, 1, 0.4)), ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, axes = TRUE, ...)
+    circles = showcapt, xlim = NULL, ylim = NULL,
+    axes = TRUE, ...)
+
+  \method{contours}{angdist} (fit, dets = "all",
+    add = FALSE, partition = FALSE, heat = FALSE,
+    cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
+    ltys = 1, trapnos = FALSE, problevels = NULL,
+    showcapt = length(dets) == 1 && dets != "all" && !add,
+    arrows = showcapt, circles = showcapt, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{mrds} (fit, dets = "all", add = FALSE,
     trapnos = FALSE,
@@ -83,8 +93,10 @@
   instead of contours.}
 
   \item{cols}{a vector specifying the colours of the main,
-  extra, and simple contours, in that order. Can be of
-  length 1 if all three are to be the same.}
+  simple, and extra contours, in that order. Can be of
+  length 1 if they are all to be the same. This vector can
+  have length of four or more if there are more than one
+  set of extra contours.}
 
   \item{ltys}{vector specifying the line types for the
   main, simple, and extra contours, in that order. Can be
@@ -119,6 +131,10 @@
 
   \item{arrows}{logical, indicating whether or not arrows
   are to be plotted to show estimated animal bearing from
+  traps.}
+
+  \item{circles}{logical, indicating whether or not circles
+  are to be plotted to show estimated animal distance from
   traps.}
 }
 \description{

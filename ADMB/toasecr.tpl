@@ -1,6 +1,7 @@
 
 PROCEDURE_SECTION
   // Setting up variables
+  const double DBL_MIN = 1e-150;
   int i, j;
   dvariable p, d, nzz;
   dvar_matrix p1(1,ntraps,1,nmask);
@@ -41,7 +42,5 @@ PROCEDURE_SECTION
     //@TRACE;
   }
 
-GLOBALS_SECTION
-  #include <float.h>
 
-REPORT_SECTION
+

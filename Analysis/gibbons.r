@@ -20,23 +20,22 @@ load_all()
 setwd(work.dir)
 library(secr)
 source("gibbonsetup.r")
+setwd(work.dir)
 
 simplefit.hn <- admbsecr(capt = capthist, traps = traps, mask = mask, fix = list(g0 = 1),
-                         sv = "auto", admbwd = admb.dir, method = "simple")
-simplefit.th <- admbsecr(capt = capthist, traps = traps, mask = mask,
-                         sv = c(shape = -5, scale = -0.005), bounds = list(shape = c(-15, 0)),
+                         sv = "auto", method = "simple")
+simplefit.th <- admbsecr(capt = capthist, traps = traps, mask = mask, sv = "auto",
                          detfn = "th", method = "simple")
 simplefit.hr1 <- admbsecr(capt = capthist, traps = traps, mask = mask, sv = "auto",
-                          detfn = "hr", method = "simple", clean = FALSE)
+                          detfn = "hr", method = "simple")
 simplefit.hr2 <- admbsecr(capt = capthist, traps = traps, mask = mask, fix = list(g0 = 1),
                           sv = c(sigma = 1000, z = 5.5), detfn = "hr", method = "simple",
-                          bounds = list(sigma = c(0, 4000)), clean = FALSE, trace = TRUE)
+                          bounds = list(sigma = c(0, 4000)))
 
 ## Carrying out angle analysis with admbsecr().
 anglefit.hn <- admbsecr(capt = radians, traps = traps, mask = mask, fix = list(g0 = 1),
                         sv = "auto", method = "ang")
-anglefit.th <- admbsecr(capt = radians, traps = traps, mask = mask,
-                        sv = c(shape = -5, scale = -0.005), bounds = list(shape = c(-15, 0)),
+anglefit.th <- admbsecr(capt = radians, traps = traps, mask = mask, sv = "auto",
                         detfn = "th", method = "ang")
 anglefit.hr1 <- admbsecr(capt = radians, traps = traps, mask = mask, sv = "auto",
                          detfn = "hr", method = "ang")

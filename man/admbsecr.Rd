@@ -21,14 +21,19 @@
   \code{method} (see 'Details'). When \code{method} is
   \code{"sstoa"}, \code{"mrds"}, or \code{"ssmrds"} this
   array must be of dimension \code{(n, S, K, 2)}. With
-  \code{"sstoa"}, \code{capt[, , , 1]} provides the signal
-  strength information and \code{capt[, , , 2]} provides
-  the time of arrival information. With \code{"mrds"} and
-  \code{"ssmrds"}, \code{capt[, , , 1]} provides either
-  binary capture history array or signal strength capture
-  history information (respectively) and \code{capt[, , ,
-  2]} provides the distances between all traps (regardless
-  of capture) and detected animals.}
+  joint supplementary information (\code{"sstoa"} or
+  \code{"angdist"}), \code{capt[, , , 1]} and \code{capt[,
+  , , 2]} each provide the different types of supplementary
+  information, the order of which is alphabetical (also
+  given by the order indicated in the method name, for
+  example for method \code{"sstoa"}, \code{capt[, , , 1]}
+  and \code{capt[, , , 2]} provide the signal strength and
+  time of arrival information, respectively). With
+  \code{"mrds"} and \code{"ssmrds"}, \code{capt[, , , 1]}
+  provides either binary capture history array or signal
+  strength capture history information (respectively) and
+  \code{capt[, , , 2]} provides the distances between all
+  traps (regardless of capture) and detected animals.}
 
   \item{traps}{a matrix containing the coordinates of trap
   locations. The object returned by
@@ -98,10 +103,16 @@
   Increase this if ADMB reports a memory error.}
 
   \item{profpars}{character vector of names of parameters
-  over which profile likelihood should occur.}
+  over which profile likelihood should occur. UNTESTED.}
 
   \item{scalefactors}{named vector of scale factors for
-  model parameters.}
+  model parameters. ADMB works best when parameters are of
+  similar magnitudes. Setting a scale factor, \code{s}, for
+  a parameter, \code{p}, results in \code{admbsecr} dealing
+  with \code{s*p} rather than \code{p}, and should
+  therefore be used when parameters are of different
+  magnitudes. All parameter estimates and standard errors
+  still refer to \code{p}.}
 
   \item{clean}{logical, if \code{TRUE} ADMB files are
   cleaned after fitting of the model.}
@@ -140,19 +151,17 @@
   calculation method respectively. The default method gives
   quadratic (Wald) intervals based on approximate standard
   errors; \code{"profile"} gives profile likelihood
-  intervals, and can be used if the \code{admbsecr()}
-  parameter \code{profpars} is non-null and provides names
-  of model parameters that are to be profiled.
+  intervals (UNTESTED), and can be used if the
+  \code{admbsecr()} parameter \code{profpars} is non-null
+  and provides names of model parameters that are to be
+  profiled.
 }
 \description{
-  THE FOLLOWING INFORMATION IS OUT OF DATE AND REQUIRES A
-  REWRITE.
-}
-\details{
   Fits an SECR model, with our without supplementary
   information relevant to animal location. Parameter
   estimation is done by maximum likelihood in ADMB.
-
+}
+\details{
   ADMB is called to fit an SECR model through use of the
   R2admb package. Different methods are used depending on
   the additional information on animal location that is
@@ -173,8 +182,8 @@
   model depend on the method and the detection function
   used.
 
-  Possible methods, along with their parameters, are as
-  follows:
+  Possible methods, along with their additional parameters,
+  are as follows:
 
   \itemize{ \item \code{"simple"}: Normal SECR with no
   additional information. No additional parameters.  \item
@@ -205,7 +214,20 @@
   with estimated distances between animals and traps at
   which detections occurred: \itemize{ \item alpha: Shape
   parameter associated with the gamma distribution used to
-  model estimated distances.  } } Possible detection
+  model estimated distances.  } \item \code{"angdist"}:
+  SECR with estimates of angle and distance to animal
+  recorded: \itemize{ \item kappa: As above.
+
+  \item alpha: As above.  } \item \code{"mrds"}:
+  Mark-recapture distance sampling. Equivalent to SECR, but
+  with known animal locations. No additional parameters.
+  \item \code{"ssmrds"}: Mark-recapture distance sampling
+  with signal strength information: \itemize{ \item ssb0:
+  As above.
+
+  \item ssb1: As above.
+
+  \item sigmass: As above.  } } Possible detection
   functions, along with their parameters, are as follows:
 
   \itemize{ \item \code{"hn"}: Half-normal detection
