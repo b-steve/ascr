@@ -23,9 +23,10 @@ contours.default <- function(fit, ...){
 #' @param add logical, if \code{TRUE} the contours are added to an already
 #' existing plot.
 #' @param heat logical, if \code{TRUE} a levelplot is used instead of contours.
-#' @param cols a vector specifying the colours of the main, extra, and
-#' simple contours, in that order. Can be of length 1 if all three are
-#' to be the same.
+#' @param cols a vector specifying the colours of the main, simple, and
+#' extra contours, in that order. Can be of length 1 if they are all
+#' to be the same. This vector can have length of four or more if there are
+#' more than one set of extra contours.
 #' @param ltys vector specifying the line types for the main, simple,
 #' and extra contours, in that order. Can be of length 1 if all three
 #' are to be the same.
@@ -82,13 +83,11 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   } else if (fit$detfn == "th"){
     shape <- parvals["shape"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   for (i in dets){
@@ -112,8 +111,8 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
 #' @method contours toa
 #' @S3method contours toa
 contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                         heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4),
-                                         rgb(0, 0, 1, 0.4)), ltys = 1,
+                         heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4),
+                                         rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
                          xlim = NULL, ylim = NULL, axes = TRUE, ...){
@@ -161,13 +160,11 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   } else if (fit$detfn == "th"){
     shape <- parvals["shape"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   times <- dist/330
@@ -200,8 +197,8 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @method contours ss
 #' @S3method contours ss
 contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
-                        cols = c("black", rgb(0, 1, 0, 0.4),
-                                         rgb(0, 0, 1, 0.4)), ltys = 1,
+                        cols = c("black", rgb(0, 0, 1, 0.4),
+                                         rgb(0, 1, 0, 0.4)), ltys = 1,
                         trapnos = FALSE, problevels = NULL,
                         showcapt = length(dets) == 1 && dets != "all" && !add,
                         xlim = NULL, ylim = NULL, axes = TRUE, ...){
@@ -254,8 +251,8 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
 #' @method contours sstoa
 #' @S3method contours sstoa
 contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                           heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4),
-                                           rgb(0, 0, 1, 0.4)), ltys = 1,
+                           heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4),
+                                           rgb(0, 1, 0, 0.4)), ltys = 1,
                            trapnos = FALSE, problevels = NULL,
                            showcapt = length(dets) == 1 && dets != "all" && !add,
                            xlim = NULL, ylim = NULL, axes = TRUE, ...){
@@ -332,8 +329,8 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @method contours ang
 #' @S3method contours ang
 contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                         heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4),
-                                         rgb(0, 0, 1, 0.4)), ltys = 1,
+                         heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4),
+                                         rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
                          arrows = showcapt, xlim = NULL, ylim = NULL, axes = TRUE, ...){
@@ -383,14 +380,15 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   } else if (fit$detfn == "th"){
     shape <- parvals["shape"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
+  }
+  if (arrows & length(dets) == 1){
+    plot.arrows(traps, allcapt, allangcapt, i, heat)
   }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
@@ -405,16 +403,13 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                       problevels, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
-  if (arrows){
-    plot.arrows(traps, allcapt, allangcapt, i, heat)
-  }
 }
 
 #' @rdname contours
 #' @method contours disttc
 #' @S3method contours disttc
 contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                            heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4)),
+                            heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4)),
                             ltys = 1, trapnos = FALSE, problevels = NULL,
                             showcapt = length(dets) == 1 && dets != "all" && !add,
                             xlim = NULL, ylim = NULL, axes = TRUE, ...){
@@ -477,7 +472,7 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @method contours dist
 #' @S3method contours dist
 contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
-                          heat = FALSE, cols = c("black", rgb(0, 1, 0, 0.4)),
+                          heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4)),
                           ltys = 1, trapnos = FALSE, problevels = NULL,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
                           xlim = NULL, ylim = NULL, axes = TRUE, ...){
@@ -525,14 +520,15 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   } else if (fit$detfn == "th"){
     shape <- parvals["shape"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
   } else if (fit$detfn == "logth"){
     shape1 <- parvals["shape1"]
     shape2 <- parvals["shape2"]
     scale <- parvals["scale"]
-    erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
+  }
+  if (length(dets) == 1){
+    plot.circles(traps, allcapt, alldistcapt, i, heat)
   }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
@@ -547,7 +543,94 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                       problevels, cols[1], ltys[1], ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
-  plot.circles(traps, allcapt, alldistcapt, i, heat)
+}
+
+#' @rdname contours
+#' @method contours angdist
+#' @S3method contours angdist
+contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
+                             heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4),
+                                             rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
+                             ltys = 1, trapnos = FALSE, problevels = NULL,
+                             showcapt = length(dets) == 1 && dets != "all" && !add,
+                             arrows = showcapt, xlim = NULL, ylim = NULL, axes = TRUE, ...){
+  data <- fit$data
+  n <- data$n
+  updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
+                                        partition = partition, arrows = arrows, ...)
+  dets <- updated.arguments$dets
+  showcapt <- updated.arguments$showcapt
+  partition <- updated.arguments$partition
+  arrows <- updated.arguments$arrows
+  cols <- updated.arguments$cols
+  ltys <- updated.arguments$ltys
+  extra.contours <- check.partition(partition)
+  plot.simple <- extra.contours$plot.simple
+  plot.extra <- extra.contours$plot.extra
+  plot.part <- plot.simple | plot.extra
+  mask <- fit$mask
+  allcapt <- data$capt
+  allangcapt <- data$angcapt
+  alldistcapt <- data$distcapt
+  traps <- fit$traps
+  dist <- data$dist
+  ang <- data$ang
+  ntraps <- data$ntraps
+  coefs <- coef(fit)
+  if (!add & !heat){
+    make.plot(mask, xlim, ylim, axes)
+  }
+  allpars <- fit$parnames
+  estpars <- names(coefs)
+  parvals <- numeric(length(allpars))
+  names(parvals) <- allpars
+  for (i in allpars){
+    parvals[i] <- ifelse(i %in% estpars, coefs[i], data[[i]])
+  }
+  D <- parvals["D"]
+  kappa <- parvals["kappa"]
+  if (fit$detfn == "hn"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
+    allprobs <- g0*exp(-dist^2/(2*sigma^2))
+  } else if (fit$detfn == "hr"){
+    g0 <- parvals["g0"]
+    sigma <- parvals["sigma"]
+    z <- parvals["z"]
+    allprobs <- g0*(1 - exp(-(dist/sigma)^(-z)))
+  } else if (fit$detfn == "th"){
+    shape <- parvals["shape"]
+    scale <- parvals["scale"]
+    allprobs <- 0.5 - 0.5*erf(dist/scale - shape)
+  } else if (fit$detfn == "logth"){
+    shape1 <- parvals["shape1"]
+    shape2 <- parvals["shape2"]
+    scale <- parvals["scale"]
+    allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
+  }
+  if (length(dets) == 1){
+    plot.circles(traps, allcapt, alldistcapt, dets, heat)
+    if (arrows){
+      plot.arrows(traps, allcapt, allangcapt, dets, heat)
+    }
+  }
+  for (i in dets){
+    simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
+    angdens <- logdens.ang(allangcapt, allcapt, ang, kappa, i)
+    distdens <- logdens.dist(alldistcapt, allcapt, dist, alpha, i)
+    maskdens <- exp(simpledens + angdens + distdens)*D
+    maskdens <- maskdens/sum(maskdens)
+    if (plot.part){
+      plot.other.contours(simpledens, angdens, plot.simple, plot.extra, D, mask,
+                          problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
+      plot.other.contours(simpledens, distdens, FALSE, plot.extra, D, mask,
+                          problevels, cols = cols[c(2, 4)],
+                          ltys = ltys[c(2, 4)], ...)
+    }
+    plot.main.contour(maskdens, mask, xlim, ylim, heat,
+                      problevels, cols[1], ltys[1], ...)
+  }
+  plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
 
 #' @rdname contours
@@ -621,10 +704,10 @@ warning.contours <- function(n, dets, add, heat, showcapt, cols, ltys,
     }
   }
   if (length(cols) == 1){
-    cols <- rep(cols, 3)
+    cols <- rep(cols, 4)
   }
   if (length(ltys) == 1){
-    ltys <- rep(ltys, 3)
+    ltys <- rep(ltys, 4)
   }
   list(dets = dets, showcapt = showcapt, partition = partition, arrows = arrows,
        cols = cols, ltys = ltys)
@@ -816,7 +899,7 @@ plot.other.contours <- function(detdens, otherdens, plot.simple,
                                 sum(z1, na.rm = TRUE), 2), nsmall = 2)
     }
     contour(x = unique.x, y = unique.y, z = z1, add = TRUE, levels = levels,
-            labels = labels, col = cols[2], lty = ltys[2], ...)
+            labels = labels, col = cols[1], lty = ltys[1], ...)
   }
   if (plot.extra){
     if (is.null(problevels)){
@@ -840,7 +923,7 @@ plot.other.contours <- function(detdens, otherdens, plot.simple,
                                 sum(z2, na.rm = TRUE), 2), nsmall = 2)
     }
     contour(x = unique.x, y = unique.y, z = z2, add = TRUE, levels = levels,
-            labels = labels, col = cols[1], lty = ltys[1], ...)
+            labels = labels, col = cols[2], lty = ltys[2], ...)
   }
 }
 
