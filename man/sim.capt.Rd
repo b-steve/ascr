@@ -2,14 +2,17 @@
 \alias{sim.capt}
 \title{Simulating SECR data}
 \usage{
-  sim.capt(fit, traps = NULL, mask = NULL, pars = NULL,
-    method = "simple", detfn = "hn", cutoff = NULL,
-    sound.speed = NULL, calls = 1)
+  sim.capt(fit, calls = 1, traps = NULL, mask = NULL,
+    pars = NULL, method = "simple", detfn = "hn",
+    cutoff = NULL, sound.speed = NULL)
 }
 \arguments{
   \item{fit}{a fitted \code{admbsecr} model object which
   provides the method, detection function, and parameter
   values from which to generate capture histories.}
+
+  \item{calls}{a vector containing call frequencies from
+  monitored individuals.}
 
   \item{traps}{a matrix containing the coordinates of trap
   locations. The object returned by
@@ -31,9 +34,6 @@
 
   \item{sound.speed}{the speed of sound in metres per
   second. Used for TOA analysis.}
-
-  \item{calls}{number of calls to be emitted by each
-  individual.}
 }
 \description{
   Simulates SECR data capture histories in the correct
