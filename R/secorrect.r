@@ -29,4 +29,18 @@ se.correct <- function(fit, calls, size){
   fit
 }
 
-
+#' @S3method summary secorrect
+summary.secorrect <- function(object, ...){
+  coef.p <- unlist(coef(object,"par"))
+  s.err <- object$se.correct$se.corrected
+  tvalue <- coef.p/s.err
+  dn <- c("Estimate", "Std. Error")
+  pvalue <- 2 * pnorm(-abs(tvalue))
+  coef.table <- cbind(coef.p, s.err, tvalue, pvalue)
+  dimnames(coef.table) <- list(names(coef.p), c(dn,
+                                                "z value", "Pr(>|z|)"))
+  ans <- c(list(coefficients=coef.table),
+           object[c("loglik","fn","npar")])
+  class(ans) <- "summary.admb"
+  ans
+}
