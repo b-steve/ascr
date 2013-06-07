@@ -283,7 +283,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                          z = NULL,
                          sigmatoa = c(0, 1e5),
                          kappa = c(0, 700),
-                         alpha = c(0, 150))[parnames]
+                         alpha = c(0, 10000))[parnames]
   if (!(is.list(bounds) | is.null(bounds))){
     stop("bounds must either be NULL or a list.")
   } else {
