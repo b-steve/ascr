@@ -414,7 +414,7 @@ show.detfn <- function(fit, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
     if (is.null(xlim)){
       x <- 1
       xprob <- 1
-      while (xprob > 0.001){
+      while (xprob > 0.001 & x < 5000){
         x <- x + 1
         xprob <- calc.detfn(fit, x)
       }
@@ -424,7 +424,7 @@ show.detfn <- function(fit, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
       ylim <- c(0, 1)
     }
     if (is.null(xlab)){
-      xlab <- "Distance"
+      xlab <- "Distance (metres)"
     }
     if (is.null(ylab)){
       ylab <- "Detection probability"
