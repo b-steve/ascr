@@ -83,8 +83,8 @@ for (i in 1:nsims){
   capthist.joint[, , , 1] <- capthist.ang
   capthist.joint[, , , 2] <- capthist.dist
   fit.joint <- admbsecr(capthist.joint, traps = traps, mask = mask, method = "angdist",
-                        detfn = "hn", bounds = list(alpha = c(0, 10000)),
-                        sv = c(D = D, sigma = sigma, alpha = alpha, kappa = kappa),                     
+                        detfn = "hn",
+                        sv = c(D = D, sigma = sigma, alpha = alpha, kappa = kappa),
                         fix = list(g0 = 1), scalefactors = c(D = 100000, kappa = 15))
   res[i, ] <- c(coef(fit.joint), fit.joint$maxgrad)
 }
