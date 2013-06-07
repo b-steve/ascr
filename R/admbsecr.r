@@ -372,7 +372,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     if (is.null(scalefactors)){
       scalefactors <- c(sigmatoa = 1000)
     } else {
-      if (is.na(scalefactors["sigmatoa"])){ 
+      if (is.na(scalefactors["sigmatoa"])){
         scalefactors <- c(scalefactors, sigmatoa = 1000)
       }
     }
@@ -460,10 +460,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   }
   setwd(currwd)
   fit$data <- data
-  fit$traps <- traps
-  fit$traps.obj <- traps.obj
-  fit$mask <- mask
-  fit$mask.obj <- mask.obj
+  fit$traps <- traps.obj
+  fit$mask <- mask.obj
   fit$method <- method
   fit$detfn <- detfn
   fit$parnames <- parnames

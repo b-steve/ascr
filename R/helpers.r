@@ -396,6 +396,16 @@ getpar <- function(fit, par){
   ifelse(par %in% names(coefs), coefs[par], fit$data[[par]])
 }
 
+## Extract mask object from fit.
+getmask <- function(fit){
+  as.matrix(fit$mask)
+}
+
+## Extract traps object from fit.
+gettraps <- function(fit){
+  as.matrix(fit$traps)
+}
+
 #' Show estimated detection function
 #'
 #' Plots the estimated detection function from an \code{admbsecr} fit.

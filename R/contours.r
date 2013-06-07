@@ -54,9 +54,9 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   showcapt <- updated.arguments$showcapt
   cols <- updated.arguments$cols
   ltys <- updated.arguments$ltys
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ntraps <- data$ntraps
   coefs <- coef(fit)
@@ -129,10 +129,10 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   alltoacapt <- data$toacapt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ntraps <- data$ntraps
   coefs <- coef(fit)
@@ -210,10 +210,10 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   showcapt <- updated.arguments$showcapt
   cols <- updated.arguments$cols
   ltys <- updated.arguments$ltys
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   allsscapt <- data$sscapt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ntraps <- data$ntraps
   nmask <- data$nmask
@@ -269,11 +269,11 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   allsscapt <- data$sscapt
   alltoacapt <- data$toacapt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ntraps <- data$ntraps
   nmask <- data$nmask
@@ -348,10 +348,10 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   allangcapt <- data$angcapt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ang <- data$ang
   ntraps <- data$ntraps
@@ -426,10 +426,10 @@ contours.disttc <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   alldistcapt <- data$distcapt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ntraps <- data$ntraps
   coefs <- coef(fit)
@@ -494,10 +494,10 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   alldistcapt <- data$distcapt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ntraps <- data$ntraps
   coefs <- coef(fit)
@@ -576,11 +576,11 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   allangcapt <- data$angcapt
   alldistcapt <- data$distcapt
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ang <- data$ang
   ntraps <- data$ntraps
@@ -656,10 +656,10 @@ contours.mrds <- function(fit, dets = "all", add = FALSE, trapnos = FALSE,
   }
   data <- fit$data
   n <- data$n
-  mask <- fit$mask
+  mask <- getmask(fit)
   allcapt <- data$capt
   alldistcapt <- data$indivdist
-  traps <- fit$traps
+  traps <- gettraps(fit)
   dist <- data$dist
   ntraps <- data$ntraps
   coefs <- coef(fit)

@@ -31,8 +31,8 @@ sim.capt <- function(fit, calls = 1, traps = NULL, mask = NULL, pars = NULL,
   if (!missing(fit)){
     method <- fit$method
     detfn <- fit$detfn
-    traps <- fit$traps
-    mask <- fit$mask
+    traps <- gettraps(fit)
+    mask <- getmask(fit)
     fitcoefs <- coef(fit)
     allparnames <- fit$parnames
     coefparnames <- names(fitcoefs)
@@ -132,7 +132,7 @@ sim.extra.toa <- function(fit, bincapt, det.dists, det.locs, ...){
 
 #' @S3method sim.extra ang
 sim.extra.ang <- function(fit, bincapt, det.dists, det.locs, ...){
-  traps <- fit$traps
+  traps <- gettraps(fit)
   kappa <- getpar(fit, "kappa")
   dim <- dim(bincapt)
   ndets <- sum(bincapt)
@@ -171,7 +171,7 @@ sim.extra.dist <- function(fit, bincapt, det.dists, det.locs, ...){
 
 #' @S3method sim.extra angdist
 sim.extra.angdist <- function(fit, bincapt, det.dists, det.locs, ...){
-  traps <- fit$traps
+  traps <- gettraps(fit)
   alpha <- getpar(fit, "alpha")
   kappa <- getpar(fit, "kappa")
   dim <- dim(bincapt)
