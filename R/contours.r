@@ -589,6 +589,7 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   }
   D <- parvals["D"]
   kappa <- parvals["kappa"]
+  alpha <- parvals["alpha"]
   if (fit$detfn == "hn"){
     g0 <- parvals["g0"]
     sigma <- parvals["sigma"]
