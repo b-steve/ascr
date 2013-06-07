@@ -395,3 +395,55 @@ getpar <- function(fit, par){
   coefs <- coef(fit)
   ifelse(par %in% names(coefs), coefs[par], fit$data[[par]])
 }
+
+#' Show estimated detection function
+#'
+#' Plots the estimated detection function from an \code{admbsecr} fit.
+#'
+#' @param fit a fitted model from \code{admbsecr()}.
+#' @param xlim x-axis limits.
+#' @param ylim y-axis limits.
+#' @param xlab x-axis label.
+#' @param ylab y-axis label.
+#' @param add logical, if \code{TRUE}, add to existing plot.
+#' @param ... further arguments to be passed to plotting functions.
+#' @export
+show.detfn <- function(fit, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
+                       add = FALSE, ...){
+  if (!add){
+    if (is.null(xlim)){
+      x <- 1
+      xprob <- 1
+      while (xprob > 0.001){
+        x <- x + 1
+        xprob <- calc.detfn(fit, x)
+      }
+      xlim <- c(0, x)
+    }
+    if (is.null(ylim)){
+      ylim <- c(0, 1)
+    }
+    if (is.null(xlab)){
+      xlab <- "Distance"
+    }
+    if (is.null(ylab)){
+      ylab <- "Detection probability"
+    }
+  } else {
+    xlim <- par("usr")[1:2]
+  }
+  xx <- seq(xlim[1], xlim[2], length.out = 1000)
+  yy <- calc.detfn(fit, xx)
+  if (!add){
+    par(xaxs = "i")
+    plot.new()
+    plot.window(xlim = xlim, ylim = ylim, ...)
+    axis(1)
+    axis(2)
+    box()
+    abline(h = 0, col = "lightgrey")
+    abline(h = 1, col = "lightgrey")
+    title(xlab = xlab, ylab = ylab, ...)
+  }
+  lines(xx, yy, ...)
+}
