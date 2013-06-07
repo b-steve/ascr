@@ -70,7 +70,7 @@ sim.bincapt <- function(fit, popn.dists){
   if (fit$method == "ss" | fit$method == "sstoa"){
     coefs <- coef(fit)
     cutoff <- fit$data[["c"]]
-    muss <- detfn(fit, popn.dists, prob = FALSE)
+    muss <- calc.detfn(fit, popn.dists, prob = FALSE)
     sigmass <- ifelse("sigmass" %in% names(coefs), coefs["sigmass"],
                       fit$data[["sigmass"]])
     errors <- matrix(rnorm(prod(dim), sd = sigmass),
@@ -78,7 +78,7 @@ sim.bincapt <- function(fit, popn.dists){
     ss <- muss + errors
     bincapt <- ifelse(ss < cutoff, 0, ss)
   } else {
-    capt.probs <- detfn(fit, popn.dists)
+    capt.probs <- calc.detfn(fit, popn.dists)
     capt.rnos <- matrix(runif(prod(dim)), nrow = dim[1], ncol = dim[2])
     bincapt <- capt.rnos <= capt.probs
     bincapt <- ifelse(bincapt, 1, 0)
@@ -188,32 +188,32 @@ sim.extra.ssmrds <- function(fit, bincapt, det.dists, det.locs, ...){
 #'
 #' @param fit a fitted model returned by \code{\link[admbsecr]{admbsecr}}.
 #' @param ... additional arguments.
-#' @rdname detfn
+#' @rdname calc.detfn
 #' @export
-detfn <- function(fit, ...){
-  UseMethod("detfn", fit)
+calc.detfn <- function(fit, ...){
+  UseMethod("calc.detfn", fit)
 }
 
-#' @S3method detfn default
-detfn.default <- function(fit, ...){
+#' @S3method calc.detfn default
+calc.detfn.default <- function(fit, ...){
   stop(paste("This function does not work with admbsecr fits with detection function ",
-             "\"", fit$detfn, "\"", sep = ""))
+             "\"", fit$calc.detfn, "\"", sep = ""))
 }
 
-#' @rdname detfn
+#' @rdname calc.detfn
 #' @param d vector of distances from which probabilities are calculated.
-#' @method detfn hn
-#' @S3method detfn hn
-detfn.hn <- function(fit, d, ...){
+#' @method calc.detfn hn
+#' @S3method calc.detfn hn
+calc.detfn.hn <- function(fit, d, ...){
   g0 <- getpar(fit, "g0")
   sigma <- getpar(fit, "sigma")
   g0*exp(-(d^2/(2*sigma^2)))
 }
 
-#' @rdname detfn
-#' @method detfn hr
-#' @S3method detfn hr
-detfn.hr <- function(fit, d, ...){
+#' @rdname calc.detfn
+#' @method calc.detfn hr
+#' @S3method calc.detfn hr
+calc.detfn.hr <- function(fit, d, ...){
   g0 <- getpar(fit, "g0")
   sigma <- getpar(fit, "sigma")
   z <- getpar(fit, "z")
@@ -222,13 +222,13 @@ detfn.hr <- function(fit, d, ...){
 
 ## Returns probabilities if prob = TRUE, otherwise returns expected
 ## signal strengths.
-#' @rdname detfn
+#' @rdname calc.detfn
 #' @param prob logical, if \code{TRUE}, capture probability is returned.
 #' If \code{FALSE}, expected signal strengths are returned.
-#' @method  detfn ss
-#' @S3method detfn ss
-detfn.ss <- function(fit, d, prob = TRUE, ...){
-  link <- fit$detfn
+#' @method  calc.detfn ss
+#' @S3method calc.detfn ss
+calc.detfn.ss <- function(fit, d, prob = TRUE, ...){
+  link <- fit$calc.detfn
   cutoff <- fit$data[["c"]]
   invlink <- c(log = exp, identity = identity)[[link]]
   ssb0 <- getpar(fit, "ssb0")
@@ -243,15 +243,15 @@ detfn.ss <- function(fit, d, prob = TRUE, ...){
   out
 }
 
-#' @rdname detfn
-#' @method  detfn sstoa
-#' @S3method detfn sstoa
-detfn.sstoa <- detfn.ss
+#' @rdname calc.detfn
+#' @method  calc.detfn sstoa
+#' @S3method calc.detfn sstoa
+calc.detfn.sstoa <- calc.detfn.ss
 
-#' @rdname detfn
-#' @method detfn th
-#' @S3method detfn th
-detfn.th <- function(fit, d, ...){
+#' @rdname calc.detfn
+#' @method calc.detfn th
+#' @S3method calc.detfn th
+calc.detfn.th <- function(fit, d, ...){
   shape <- getpar(fit, "shape")
   scale <- getpar(fit, "scale")
   0.5 - 0.5*erf(d/scale - shape)
