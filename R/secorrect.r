@@ -11,7 +11,7 @@ se.correct <- function(fit, calls, size){
   res <- matrix(0, nrow = size, ncol = npars + 1)
   traps <- fit$traps
   class(traps) <- "proximity"
-  names(res) <- c(names(coefs), "maxgrad")
+  colnames(res) <- c(names(coefs), "maxgrad")
   for (i in 1:size){
     capt <- sim.capt(fit, calls = calls)
     bootfit <- admbsecr(capt, traps = fit$traps.obj, mask = fit$mask.obj)
