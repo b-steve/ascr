@@ -280,7 +280,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                          ssb0 = NULL,
                          ssb1 = c(0, 10),
                          sigmass = c(0, 1e5),
-                         z = NULL,
+                         z = c(0, 1e5),
                          sigmatoa = c(0, 1e5),
                          kappa = c(0, 700),
                          alpha = c(0, 10000))[parnames]
