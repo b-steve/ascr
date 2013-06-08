@@ -29,6 +29,7 @@ se.correct <- function(fit, calls, size){
   fit
 }
 
+## Modified from R2admb.
 #' @S3method summary secorrect
 summary.secorrect <- function(object, ...){
   coef.p <- unlist(coef(object,"par"))
@@ -43,4 +44,9 @@ summary.secorrect <- function(object, ...){
            object[c("loglik","fn","npar")])
   class(ans) <- "summary.admb"
   ans
+}
+
+#' @S3method stdEr secorrect
+stdEr.secorrect <- function(object, ...){
+  object$se.correct$se.corrected
 }
