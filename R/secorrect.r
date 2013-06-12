@@ -15,7 +15,7 @@ se.correct <- function(fit, calls, size){
   fix <- fit[["fix"]]
   cutoff <- fit$data[["c"]]
   sound.speed <- fit[["sound.speed"]]
-  method <- fit[["method"]
+  method <- fit[["method"]]
   detfn <- fit[["detfn"]]
   memory <- fit[["memory"]]
   colnames(res) <- c(names(coefs), "maxgrad")

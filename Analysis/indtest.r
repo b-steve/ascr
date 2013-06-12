@@ -69,7 +69,6 @@ for (i in 1:nsims){
 
 save.image(file = "indtest.RData")
 
-setwd("~/")
 load(file = "~/admbsecr/Analysis/indtest.RData")
 
 library(plyr)
@@ -84,9 +83,3 @@ Ds <- pars[, 1]
 Ds.c <- pars.c[, 1]
 D.se <- ses[, 1]
 D.se.c <- ses.c[, 1]
-
-sigmas <- pars[, 3]
-mean(sigmas)
-sd(sigmas)
-sigma.se <- ses[, 3]
-sigma.se.c <- ses.c[, 3]
