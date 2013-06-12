@@ -4,12 +4,27 @@ admbsecr 0.1.5
 * Major bug fix. Until now, method "sstoa" did not fit the correct
   model unless the optional argument 'sstoa' was properly specified.
 
+* Added a new function, sim.capt(), which simulates a capture history
+  array using either provided parameter values or those from a model
+  object.
+
+* Added functions calc.detfn() and show.detfn(), which calculate
+  detection probabilities and plot estimated detection functions,
+  respectively.
+
+* Added function se.correct(), which corrects standard errors via a
+  bootstrap-like method in situations where multiple rows of the
+  capture history correspond to a single individual.
+
 * Added the argument sound.speed to admbsecr(), allowing the user to
   specify the speed of sound. Only used for methods using time of
   arrival data. Defaults to 330 m/s.
 
 * Added 'scalefactors' argument to admbsecr() to allow for better
   fitting when parameters are of different magnitudes.
+
+* Added 'circles' argument to contours(), so that the plotting of
+  circles representing estimated distances is now optional.
 
 * Reparameterisation of the signal strength and threshold detection
   functions. For the signal strength detection function, the parameter
