@@ -9,12 +9,22 @@ se.correct <- function(fit, calls, size){
   coefs <- coef(fit)
   npars <- length(coefs)
   res <- matrix(0, nrow = size, ncol = npars + 1)
-  traps <- fit$traps
-  mask <- fit$mask
+  traps <- fit[["traps"]]
+  mask <- fit[["mask"]]
+  bounds <- fit[["bounds"]]
+  fix <- fit[["fix"]]
+  cutoff <- fit$data[["c"]]
+  sound.speed <- fit[["sound.speed"]]
+  method <- fit[["method"]
+  detfn <- fit[["detfn"]]
+  memory <- fit[["memory"]]
   colnames(res) <- c(names(coefs), "maxgrad")
   for (i in 1:size){
-    capt <- sim.capt(fit, calls = calls)
-    bootfit <- admbsecr(capt, traps = traps, mask = mask)
+    capt <- sim.capt(fit = fit, calls = calls)
+    bootfit <- admbsecr(capt = capt, traps = traps, mask = mask, sv = coefs,
+                        bounds = bounds, fix = fix, cutoff = cutoff,
+                        sound.speed = sound.speed, method = method,
+                        detfn = detfn, memory = memory)
     res[i, ] <- c(coef(bootfit), bootfit$maxgrad)
   }
   conv <- res[, "maxgrad"] > -1

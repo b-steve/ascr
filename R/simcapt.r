@@ -250,7 +250,7 @@ calc.detfn.hr <- function(fit, d, ...){
 #' @method  calc.detfn ss
 #' @S3method calc.detfn ss
 calc.detfn.ss <- function(fit, d, prob = TRUE, ...){
-  link <- fit$calc.detfn
+  link <- fit$detfn
   cutoff <- fit$data[["c"]]
   invlink <- c(log = exp, identity = identity)[[link]]
   ssb0 <- getpar(fit, "ssb0")

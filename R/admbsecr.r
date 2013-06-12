@@ -462,6 +462,11 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   fit$data <- data
   fit$traps <- traps.obj
   fit$mask <- mask.obj
+  fit$bounds <- bounds
+  fit$fix <- fix
+  fit$sound.speed <- sound.speed
+  fit$memory <- memory
+  fit$scalefactors <- scalefactors
   fit$method <- method
   fit$detfn <- detfn
   fit$parnames <- parnames
