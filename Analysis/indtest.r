@@ -40,18 +40,12 @@ buffer <- 35
 ## True parameter values.
 seed <- 3038
 ## D 10 times smaller than usual as each frog emits 10 sounds.
-D <- 170
-ssb0 <- 160
-ssb1 <- 2.40
-sigmass <- 9.0
-sigmatoa <- 0.0018
-cutoff <- 130
-detectpars <- list(beta0 = ssb0, beta1 = ssb1, sdS = sigmass, cutval = cutoff)
-sv <- c(D = D, ssb0 = ssb0, ssb1 = ssb1, sigmass = sigmass, sigmatoa = sigmatoa)
+D <- 1750
+g0 <- 1
+sigma <- 8
+pars <- c(D = D, g0 = g0, sigma = sigma)
 bounds <- NULL
 set.seed(seed)
-## Inverse of speed of sound (in ms per metre).
-invsspd <- 1000/330
 ## Calls per frog
 cpf <- 10
 
@@ -61,67 +55,38 @@ mask <- make.mask(traps, buffer = buffer, type = "trapbuffer")
 nmask <- nrow(mask)
 A <- attr(mask, "area")
 
-## Function for stable model fitting.
-try.admbsecr <- function(sv = "auto", ...){
-  res <- try(admbsecr(sv = sv, ...), silent = TRUE)
-  if (class(res)[1] == "try-error"){
-    res <- try(admbsecr(sv = "auto", ...), silent = TRUE)
-  }
-  res
-}
-
-res <- matrix(0, nrow = nsims, ncol = 8)
-colnames(res) <- c("D", "ssb0", "ssb1", "sigmass", "sigmatoa", "se.D",
-                   "logLik", "maxgrad")
-
+res <- list()
+res.se <- list()
 for (i in 1:nsims){
-  if (i == 1){
-    print(c("start", date()))
-  } else {
-    print(c(i, date()))
-  }
-  popn.i <- as.matrix(sim.popn(D = D, core = traps, buffer = buffer))
-  popn <- matrix(0, nrow = cpf*nrow(popn.i), ncol = 2)
-  for (j in 1:nrow(popn.i)){
-    popn[(10*j - 9):(10*j), 1] <- popn.i[j, 1]
-    popn[(10*j - 9):(10*j), 2] <- popn.i[j, 2]
-  }
-  capthist.ss <- sim.capthist.ss(traps, popn, detectpars, log.link = FALSE)
-  capthist <- capthist.ss
-  capthist[capthist > 0] <- 1
-  n <- nrow(capthist)
-  ndets <- sum(capthist)
-  ## IDs for detected animals.
-  cue.ids <- unique(as.numeric(rownames(capthist)))
-  ## Cartesian coordinates of detected animals.
-  detections <- popn[cue.ids, ]
-  ## Distances from detected animals to traps.
-  dists <- t(distances(as.matrix(traps), as.matrix(detections)))
-  ## Generating TOA data (see frogsim.r)
-  capthist.toa <- array(0, dim = dim(capthist))
-  for (j in 1:n){
-    for (k in 1:ntraps){
-      if (capthist[j, 1, k] == 1){
-        dist <- dists[j, k]
-        meantoa <- cue.ids[j] + invsspd*dist/1000
-        capthist.toa[j, 1, k] <- rnorm(1, meantoa, sigmatoa)
-      } else {
-        capthist.toa[j, 1, k] <- 0
-      }
-    }
-  }
-  capthist.joint <- array(c(capthist.ss, capthist.toa), dim = c(dim(capthist), 2))
-  fit <- try.admbsecr(sv = sv, capt = capthist.joint, traps = traps, mask = mask,
-                      cutoff = cutoff, bounds = bounds, method = "sstoa",
-                      detfn = "identity")
-  if (class(fit)[1] != "try-error"){
-    res[i, ] <- c(coef(fit), stdEr(fit)[1], logLik(fit), fit$maxgrad)
-  } else{
-    res[i, ] <- NA
-  } 
-  if (i == nsims){
-    print(c("end", date()))
-  }
+  capt <- sim.capt(traps = traps, calls = cpf, mask = mask, pars = pars)
+  fit <- admbsecr(capt, traps = traps, mask = mask, sv = pars)
+  fit.se <- se.correct(fit, calls = cpf, size = 100)
+  res[[i]] <- fit
+  res.se[[i]] <- fit.se
+  save.image(file = "indtest.RData")
+  print(c(date(), i))
 }
 
-write.table(res, file = "~/admbsecr/Results/ind/1/res.txt")
+save.image(file = "indtest.RData")
+
+setwd("~/")
+load(file = "~/admbsecr/Analysis/indtest.RData")
+
+library(plyr)
+library(admbsecr)
+
+pars <- laply(res, coef)
+pars.c <- laply(res.se, function(object) object$se.correct$coefficients.corrected)
+ses <- laply(res, stdEr)
+ses.c <- laply(res.se, function(object) object$se.correct$se.corrected)
+
+Ds <- pars[, 1]
+Ds.c <- pars.c[, 1]
+D.se <- ses[, 1]
+D.se.c <- ses.c[, 1]
+
+sigmas <- pars[, 3]
+mean(sigmas)
+sd(sigmas)
+sigma.se <- ses[, 3]
+sigma.se.c <- ses.c[, 3]
