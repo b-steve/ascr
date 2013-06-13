@@ -48,6 +48,7 @@ bounds <- NULL
 set.seed(seed)
 ## Calls per frog
 cpf <- 10
+bounds <- list(D = c(0, 20000), sigma <- c(0, 30))
 
 ## Setting up mask and traps.
 ntraps <- nrow(traps)
@@ -59,7 +60,8 @@ res <- list()
 res.se <- list()
 for (i in 1:nsims){
   capt <- sim.capt(traps = traps, calls = cpf, mask = mask, pars = pars)
-  fit <- admbsecr(capt, traps = traps, mask = mask, sv = pars, fix = list(g0 = 1))
+  fit <- admbsecr(capt, traps = traps, mask = mask, sv = pars, fix = list(g0 = 1),
+                  bounds = bounds)
   fit.se <- se.correct(fit, calls = cpf, size = 100)
   res[[i]] <- fit
   res.se[[i]] <- fit.se
