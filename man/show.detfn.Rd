@@ -2,11 +2,17 @@
 \alias{show.detfn}
 \title{Show estimated detection function}
 \usage{
-  show.detfn(fit, xlim = NULL, ylim = NULL, xlab = NULL,
-    ylab = NULL, add = FALSE, ...)
+  show.detfn(fit = NULL, detfn = NULL, pars = NULL,
+    xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
+    add = FALSE, ...)
 }
 \arguments{
   \item{fit}{a fitted model from \code{admbsecr()}.}
+
+  \item{detfn}{the detection function to be plotted.}
+
+  \item{pars}{parameter values for the chosen detection
+  function.}
 
   \item{xlim}{x-axis limits.}
 
