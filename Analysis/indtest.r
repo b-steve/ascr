@@ -60,11 +60,15 @@ res <- list()
 res.se <- list()
 for (i in 1:nsims){
   capt <- sim.capt(traps = traps, calls = cpf, mask = mask, pars = pars)
-  fit <- admbsecr(capt, traps = traps, mask = mask, sv = pars, fix = list(g0 = 1),
-                  bounds = bounds)
-  fit.se <- se.correct(fit, calls = cpf, size = 100)
-  res[[i]] <- fit
-  res.se[[i]] <- fit.se
+  fit <- try.admbsecr(sv = pars, capt = capt, traps = traps, mask = mask,
+                      fix = list(g0 = 1), bounds = bounds)
+  if (class(fit)[1] == "try-error"){
+    res[[i]] <- "error"
+  } else {
+    fit.se <- se.correct(fit, calls = cpf, size = 100)
+    res[[i]] <- fit
+    res.se[[i]] <- fit.se
+  }
   save.image(file = "indtest.RData")
   print(c(date(), i))
 }

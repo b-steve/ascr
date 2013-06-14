@@ -21,11 +21,16 @@ se.correct <- function(fit, calls, size){
   colnames(res) <- c(names(coefs), "maxgrad")
   for (i in 1:size){
     capt <- sim.capt(fit = fit, calls = calls)
-    bootfit <- admbsecr(capt = capt, traps = traps, mask = mask, sv = coefs,
-                        bounds = bounds, fix = fix, cutoff = cutoff,
-                        sound.speed = sound.speed, method = method,
-                        detfn = detfn, memory = memory)
-    res[i, ] <- c(coef(bootfit), bootfit$maxgrad)
+    bootfit <- try.admbsecr(sv = coefs, capt = capt, traps = traps, mask = mask,
+                            bounds = bounds, fix = fix, cutoff = cutoff,
+                            sound.speed = sound.speed, method = method,
+                            detfn = detfn, memory = memory)
+    if (class(bootfit)[1] == "try-error"){
+      res[i, ] <- NA
+      warning(paste("Failed convergence on iteration", i, sep = " "))
+    } else {
+      res[i, ] <- c(coef(bootfit), bootfit$maxgrad)
+    }
   }
   conv <- res[, "maxgrad"] > -1
   res <- res[conv, -which(colnames(res) == "maxgrad")]
