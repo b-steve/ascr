@@ -411,6 +411,8 @@ gettraps <- function(fit){
 #' Plots the estimated detection function from an \code{admbsecr} fit.
 #'
 #' @param fit a fitted model from \code{admbsecr()}.
+#' @param detfn the detection function to be plotted.
+#' @param pars parameter values for the chosen detection function.
 #' @param xlim x-axis limits.
 #' @param ylim y-axis limits.
 #' @param xlab x-axis label.
@@ -418,8 +420,17 @@ gettraps <- function(fit){
 #' @param add logical, if \code{TRUE}, add to existing plot.
 #' @param ... further arguments to be passed to plotting functions.
 #' @export
-show.detfn <- function(fit, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
-                       add = FALSE, ...){
+show.detfn <- function(fit = NULL, detfn = NULL, pars = NULL, xlim = NULL,
+                       ylim = NULL, xlab = NULL, ylab = NULL, add = FALSE,
+                       ...){
+  if (is.null(fit)){
+    if (is.null(detfn) | is.null(detfn)){
+      stop("If fit is NULL, both detfn and pars must be provided.")
+    } else {
+      fit <- list(coefficients = pars)
+      class(fit) <- detfn
+    }
+  }
   if (!add){
     if (is.null(xlim)){
       x <- 1
@@ -456,4 +467,19 @@ show.detfn <- function(fit, xlim = NULL, ylim = NULL, xlab = NULL, ylab = NULL,
     title(xlab = xlab, ylab = ylab, ...)
   }
   lines(xx, yy, ...)
+}
+
+#' Function for stable model fitting.
+#'
+#' Tries to fit an admbsecr model, and reverts to automatic start values if it fails.
+#'
+#' @param sv named vector of start values.
+#' @param ... further arguments passed to \code{admbsecr}.
+#' @export
+try.admbsecr <- function(sv = "auto", ...){
+  res <- try(admbsecr(sv = sv, ...), silent = TRUE)
+  if (class(res)[1] == "try-error"){
+    res <- try(admbsecr(sv = "auto", ...), silent = TRUE)
+  }
+  res
 }
