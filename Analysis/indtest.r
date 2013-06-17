@@ -41,14 +41,15 @@ buffer <- 35
 seed <- 3038
 ## D 10 times smaller than usual as each frog emits 10 sounds.
 D <- 1750
-g0 <- 1
-sigma <- 8
-pars <- c(D = D, g0 = g0, sigma = sigma)
+shape <- 2.39
+scale <- 5.35
+pars <- c(D = D, shape = shape, scale = scale)
 bounds <- NULL
 set.seed(seed)
 ## Calls per frog
 cpf <- 10
 bounds <- list(D = c(0, 20000), sigma <- c(0, 30))
+scalefactors <- c(shape = 1000, scale = 1000)
 
 ## Setting up mask and traps.
 ntraps <- nrow(traps)
@@ -59,9 +60,10 @@ A <- attr(mask, "area")
 res <- list()
 res.se <- list()
 for (i in 1:nsims){
-  capt <- sim.capt(traps = traps, calls = cpf, mask = mask, pars = pars)
+  capt <- sim.capt(traps = traps, calls = cpf, mask = mask, pars = pars, detfn = "th")
+  system.time({
   fit <- try.admbsecr(sv = pars, capt = capt, traps = traps, mask = mask,
-                      fix = list(g0 = 1), bounds = bounds)
+                      detfn = "th", bounds = bounds, scalefactors = scalefactors)})
   if (class(fit)[1] == "try-error"){
     res[[i]] <- "error"
   } else {
@@ -84,6 +86,8 @@ pars <- laply(res, coef)
 pars.c <- laply(res.se, function(object) object$se.correct$coefficients.corrected)
 ses <- laply(res, stdEr)
 ses.c <- laply(res.se, function(object) object$se.correct$se.corrected)
+
+ns <- laply(res.se, function(object) dim(object$se.correct$boots)[1])
 
 Ds <- pars[, 1]
 Ds.c <- pars.c[, 1]
