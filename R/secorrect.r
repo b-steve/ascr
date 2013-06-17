@@ -17,6 +17,7 @@ se.correct <- function(fit, calls, size){
   sound.speed <- fit[["sound.speed"]]
   method <- fit[["method"]]
   detfn <- fit[["detfn"]]
+  scalefactors <- fit[["scalefactors"]]
   memory <- fit[["memory"]]
   colnames(res) <- c(names(coefs), "maxgrad")
   for (i in 1:size){
@@ -24,7 +25,8 @@ se.correct <- function(fit, calls, size){
     bootfit <- try.admbsecr(sv = coefs, capt = capt, traps = traps, mask = mask,
                             bounds = bounds, fix = fix, cutoff = cutoff,
                             sound.speed = sound.speed, method = method,
-                            detfn = detfn, memory = memory)
+                            detfn = detfn, memory = memory,
+                            scalefactors = scalefactors)
     if (class(bootfit)[1] == "try-error"){
       res[i, ] <- NA
       warning(paste("Failed convergence on iteration", i, sep = " "))
