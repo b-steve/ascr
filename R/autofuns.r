@@ -22,7 +22,7 @@ autoD <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, meth
     sigma <- sv["sigma"]
   }
   n/(sum(pdot(mask, traps, 0,
-              list(g0 = g0, sigma = sigma), 1))*A)/mean(cpi)
+              list(g0 = g0, sigma = sigma), 1))*A)
 }
 
 autoDa <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL, detfn, cpi = NULL){
@@ -36,10 +36,11 @@ autoDa <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, met
     sigma <- sv["sigma"]
   }
   n/(sum(pdot(mask, traps, 0,
-              list(g0 = g0, sigma = sigma), 1))*A)
+              list(g0 = g0, sigma = sigma), 1))*A)/mean(cpi)
 }
 
 automuC <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL, detfn, cpi = NULL){
+    print(cpi)
   mean(cpi)
 }
 

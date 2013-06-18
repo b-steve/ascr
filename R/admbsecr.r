@@ -277,8 +277,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   ## Setting up bounds.
   default.bounds <- list(D = c(0, 1e8),
                          Da = c(0, 1e8),
-                         muC = NULL,
-                         sdC = c(0, 1e8),
+                         muC = c(0, 1e8),
+                         sigmaC = c(0, 1e5),
                          g0 = c(0, 1),
                          sigma = c(0, 1e5),
                          shape = NULL,
@@ -441,6 +441,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   }
   if (fitDa){
     data$cpi <- cpi
+    data$nr <- length(cpi)
   }
   params <- list()
   for (i in 1:npars){
