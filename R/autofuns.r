@@ -40,7 +40,6 @@ autoDa <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, met
 }
 
 automuC <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL, detfn, cpi = NULL){
-    print(cpi)
   mean(cpi)
 }
 
