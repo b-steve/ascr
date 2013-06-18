@@ -4,6 +4,7 @@
 
 PROCEDURE_SECTION
   // Setting up variables
+  const double pi = 3.14159265359;
   const double DBL_MIN = 1e-150;
   int i, j;
   dvariable p, d, nzz;
