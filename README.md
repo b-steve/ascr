@@ -12,7 +12,7 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 
 To install:
 
-1. Download and install [AD Model Builder](http://admb-project.org/).
+1. Download and install [AD Model Builder](http://admb-project.org/). Note that a future version of admbsecr will not require an ADMB install.
 
 2. Install the admbsecr R library.
 
@@ -21,29 +21,30 @@ To install:
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
 
-* For the very latest version (i.e., this repository):
+* For the very latest version (i.e., this repository, requires Rtools to be installed):
 ```
 library(devtools)
 install_github("admbsecr", "b-steve")
+```
+
+* The admbsecr currently uses the devolopment version of the R2admb package. There may be issues using the version on CRAN. To install:
+```
+install_github("R2admb", "bbolker", subdir = "R2admb")
 ```
 
 NOTE: Due to what I assume is a bug with R-Forge, the `install.packages()` command above seems to be installing a very old version of admbsecr. A workaround is to click [here](http://r-forge.r-project.org/R/?group_id=1506), download the appropriate file (determined by your operating system), and unzip it to your R package library directory.
 
 ## Troubleshooting
 
-* Ensure the command `admb` is recognised at the terminal command line. Mac/Unix users may have to add the following to ~/.bashrc, ~/.bash_login, or a similar script that runs on startup.
-```bash
-#!/bin/bash
-export ADMB_HOME=/path/to/admb/
-PATH=$PATH:$ADMB_HOME/bin
-export PATH
-```
+* Ensure the command `admb` is recognised at the terminal command line. If not, you probably need to add ADMB to your system path.
+
+* Ensure that the ADMB simple example works from the terminal command line. ADMB installation instructions should cover how to do this.
 
 * Windows users may need to add the environment variable `R_SHELL` with a value that points to `cmd.exe`, which is found in the System32 folder.
 
 * An error while calling `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
 
-* Feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
+* This R library is very much in development, so things are likely to go wrong. Please feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
 
 ## Acknowledgements
 
