@@ -1,4 +1,7 @@
 
+// Flag for creating sdreport_number for D
+//@SDREPD
+
 PROCEDURE_SECTION
   // Setting up variables
   const double pi = 3.14159265359;
@@ -12,6 +15,9 @@ PROCEDURE_SECTION
   dvar_vector wi1(1,ntraps);
   dvar_vector ci1(1,ntraps);
   dvar_matrix muss(1,ntraps,1,nmask);
+  f = 0;
+  // Flag for specifying D
+  //@SPECD
   muss = //@LINKFN(ssb0 - ssb1*dist);
   for (i = 1; i <= nmask; i++){
     p=1;
@@ -39,7 +45,7 @@ PROCEDURE_SECTION
   dvariable lambda = A*D*sum(pm);
   dvariable L2 = -n*log(D*sum(pm));
   dvariable L3 = log_density_poisson(n,lambda);
-  f = -(L1+L2+L3);
+  f -= L1 + L2 + L3;
   if (trace==1){
     //@TRACE;
   }

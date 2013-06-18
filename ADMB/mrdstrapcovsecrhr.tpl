@@ -1,4 +1,7 @@
 
+// Flag for creating sdreport_number for D
+//@SDREPD
+
 PROCEDURE_SECTION
   int i;
   const double DBL_MIN = 1e-150;
@@ -12,6 +15,9 @@ PROCEDURE_SECTION
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
   dvar_vector wi2(1,ntraps);
+  f = 0;
+  // Flag for specifying D
+  //@SPECD
   // Probability of capture for each individual at each trap.
   for (i=1; i<=nmask; i++){
     maskp11(i)=g01*(1 - mfexp(-pow(dist(1,i)/sigma1,-z1)))+DBL_MIN;
@@ -39,7 +45,7 @@ PROCEDURE_SECTION
   L2=-n*log(D*sum(pm));
   lambda=A*D*sum(pm);
   L3=log_density_poisson(n,lambda);
-  f=-(L1+L2+L3);
+  f -= L1 + L2 + L3;
   if (trace == 1){
     cout << "D: " << D << ", g01: " << g01 << ", sigma1: " << sigma1 << ", g02: " << g02 << ", sigma2: " << sigma2 << ", loglik: " << -f << endl;
   }

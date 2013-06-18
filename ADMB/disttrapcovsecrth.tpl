@@ -1,4 +1,7 @@
 
+// Flag for creating sdreport_number for D
+//@SDREPD
+
 PROCEDURE_SECTION
   // Setting up variables
   const double DBL_MIN = 1e-150;
@@ -15,6 +18,9 @@ PROCEDURE_SECTION
   dvar_vector wi2(1,ntraps);
   dvar_vector distll(1,nmask);
   dvar_vector beta(1,nmask);
+  f = 0;
+  // Flag for specifying D
+  //@SPECD
   // Probabilities of caputure at each location for each trap.
   // Add a small amount to prevent zeros.
   for(i=1; i<=nmask; i++){
@@ -55,7 +61,7 @@ PROCEDURE_SECTION
   lambda=A*D*sum(pm);
   L2=-n*log(D*sum(pm));
   L3=log_density_poisson(n,lambda);
-  f=-(L1+L2+L3);
+  f -= L1 + L2 + L3;
   if (trace == 1){
   cout << "D: " << D << ", shape1: " << shape1 << ", scale1: " << scale1 << ", shape2: " << shape2 << ", scale2: " << scale2 << ", alpha: " << alpha << ", loglik: " << -f << endl;
   }
