@@ -33,16 +33,8 @@ sim.capt <- function(fit, calls = 1, traps = NULL, mask = NULL, pars = NULL,
     detfn <- fit$detfn
     traps <- gettraps(fit)
     mask <- getmask(fit)
-    fitcoefs <- coef(fit)
     allparnames <- fit$parnames
-    coefparnames <- names(fitcoefs)
-    dataparnames <- allparnames[!allparnames %in% coefparnames]
-    fixcoefs <- numeric(length(dataparnames))
-    names(fixcoefs) <- dataparnames
-    for (i in dataparnames){
-      fixcoefs[i] <- fit$data[[i]]
-    }
-    allcoefs <- c(fitcoefs, fixcoefs)
+    allcoefs <- getpar(fit, allparnames)
   } else {
     allcoefs <- pars
     fit <- list(traps = traps, mask = mask, coefficients = allcoefs,
@@ -54,7 +46,7 @@ sim.capt <- function(fit, calls = 1, traps = NULL, mask = NULL, pars = NULL,
   range.x <- range(mask[, 1])
   range.y <- range(mask[, 2])
   core <- data.frame(x = range.x, y = range.y)
-  popn <- as.matrix(sim.popn(D = allcoefs["D"]/mean(calls),
+  popn <- as.matrix(sim.popn(D = getpar(fit, "D")/mean(calls),
                              core = core, buffer = buffer))
   popn.dists <- distances(as.matrix(popn), as.matrix(traps))
   if (length(calls) != 1 | calls[1] != 1){

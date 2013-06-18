@@ -14,6 +14,7 @@ se.correct <- function(fit, calls, size){
   bounds <- fit[["bounds"]]
   fix <- fit[["fix"]]
   cutoff <- fit$data[["c"]]
+  cpi <- fit$data[["cpi"]]
   sound.speed <- fit[["sound.speed"]]
   method <- fit[["method"]]
   detfn <- fit[["detfn"]]
@@ -22,10 +23,11 @@ se.correct <- function(fit, calls, size){
   colnames(res) <- c(names(coefs), "maxgrad")
   for (i in 1:size){
     capt <- sim.capt(fit = fit, calls = calls)
+    cpi.boot <- sample(cpi, replace = TRUE)
     bootfit <- try.admbsecr(sv = coefs, capt = capt, traps = traps, mask = mask,
                             bounds = bounds, fix = fix, cutoff = cutoff,
-                            sound.speed = sound.speed, method = method,
-                            detfn = detfn, memory = memory,
+                            cpi = cpi.boot, sound.speed = sound.speed,
+                            method = method, detfn = detfn, memory = memory,
                             scalefactors = scalefactors)
     if (class(bootfit)[1] == "try-error"){
       res[i, ] <- NA
