@@ -3,10 +3,10 @@
 #' Corrects standard errors from an \code{admbsecr} fit.
 #'
 #' @param fit an \code{admbsecr} model fit.
-#' @param calls a vector containing call frequencies from monitored individuals.
 #' @param size number of bootstrap samples.
-se.correct <- function(fit, calls, size){
-  coefs <- coef(fit)
+se.correct <- function(fit, size){
+  coefs <- coef(fit, type = "all")
+  start <- coef(fit)
   npars <- length(coefs)
   res <- matrix(0, nrow = size, ncol = npars + 1)
   traps <- fit[["traps"]]
@@ -15,6 +15,9 @@ se.correct <- function(fit, calls, size){
   fix <- fit[["fix"]]
   cutoff <- fit$data[["c"]]
   cpi <- fit$data[["cpi"]]
+  if (is.null(cpi)){
+    stop("Standard error correction can only be applied to fits utilising calls per individual information")
+  }
   sound.speed <- fit[["sound.speed"]]
   method <- fit[["method"]]
   detfn <- fit[["detfn"]]
@@ -22,9 +25,9 @@ se.correct <- function(fit, calls, size){
   memory <- fit[["memory"]]
   colnames(res) <- c(names(coefs), "maxgrad")
   for (i in 1:size){
-    capt <- sim.capt(fit = fit, calls = calls)
     cpi.boot <- sample(cpi, replace = TRUE)
-    bootfit <- try.admbsecr(sv = coefs, capt = capt, traps = traps, mask = mask,
+    capt <- sim.capt(fit = fit, calls = round(cpi))
+    bootfit <- try.admbsecr(sv = start, capt = capt, traps = traps, mask = mask,
                             bounds = bounds, fix = fix, cutoff = cutoff,
                             cpi = cpi.boot, sound.speed = sound.speed,
                             method = method, detfn = detfn, memory = memory,
@@ -33,7 +36,7 @@ se.correct <- function(fit, calls, size){
       res[i, ] <- NA
       warning(paste("Failed convergence on iteration", i, sep = " "))
     } else {
-      res[i, ] <- c(coef(bootfit), bootfit$maxgrad)
+      res[i, ] <- c(coef(bootfit, type = "all"), bootfit$maxgrad)
     }
   }
   conv <- res[, "maxgrad"] > -1
