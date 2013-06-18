@@ -1,4 +1,7 @@
 
+// Flag for creating sdreport_number for D
+//@SDREPD
+
 PROCEDURE_SECTION
   // Setting up variables
   const double DBL_MIN = 1e-150;
@@ -10,6 +13,8 @@ PROCEDURE_SECTION
   dvar_matrix logp2(1,ntraps,1,nmask);
   dvar_vector pm(1,nmask);
   dvar_vector wi1(1,ntraps);
+  // Flag for specifying D
+  //@SPECD
   // Probability of detection at any trap for each location.
   for (i = 1; i <= nmask; i++){
     p = 1;

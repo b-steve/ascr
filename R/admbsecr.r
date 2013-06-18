@@ -152,6 +152,8 @@ NULL
 #' providing this will prevent recalculation.
 #' @param cutoff the signal strength threshold of detection. Required if \code{method} is
 #' \code{"ss"} or \code{"sstoa"}.
+#' @param cpi numeric vector, used for acoustic surveys only. Contains number of calls emitted
+#' independently monitored individuals over the course of the survey.
 #' @param sound.speed the speed of sound in metres per second. Used for TOA analysis.
 #' @param admbwd file path to the ADMB working directory. Only required if
 #' \code{autogen} is \code{TRUE}, in which case it points to the directory in which the
@@ -198,10 +200,10 @@ NULL
 #' @author Ben Stevenson
 #' @export
 admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix = NULL,
-                     ssqtoa = NULL, cutoff = NULL, sound.speed = 330, admbwd = NULL,
-                     method = "simple", detfn = "hn" , memory = NULL, profpars = NULL,
-                     scalefactors = NULL, clean = TRUE, verbose = FALSE, trace = FALSE,
-                     autogen = TRUE){
+                     ssqtoa = NULL, cutoff = NULL, cpi = NULL, sound.speed = 330,
+                     admbwd = NULL, method = "simple", detfn = "hn" , memory = NULL,
+                     profpars = NULL, scalefactors = NULL, clean = TRUE, verbose = FALSE,
+                     trace = FALSE, autogen = TRUE){
   ## Warnings for incorrect input.
   if (length(method) != 1){
     stop("method must be of length 1")
@@ -252,6 +254,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   A <- attr(mask, "area")
   bincapt <- capt
   bincapt[capt > 0] <- 1
+  ## Logical flag indicating whether Da needs to be fitted.
+  fitDa <- !is.null(cpi)
   if (length(dim(bincapt)) == 4){
     bincapt <- bincapt[, , , 1, drop = FALSE]
   } else if (length(dim(bincapt)) > 4){
@@ -263,7 +267,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                 c("shape1", "shape2", "scale")[detfn == "logth"],
                 "z"[detfn == "hr"])
   ## Parameter names.
-  parnames <- c("D", detnames,
+  parnames <- c("D"[!fitDa], "Da"[fitDa], "muC"[fitDa], "sigmaC"[fitDa], detnames,
                 c("ssb0", "ssb1", "sigmass")[method == "ss" | method == "sstoa" | method == "ssmrds"],
                 "sigmatoa"[method == "toa" | method == "sstoa"],
                 "kappa"[method == "ang" | method == "angdist"],
@@ -272,6 +276,9 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   npars <- length(parnames)
   ## Setting up bounds.
   default.bounds <- list(D = c(0, 1e8),
+                         Da = c(0, 1e8),
+                         muC = NULL,
+                         sdC = c(0, 1e8),
                          g0 = c(0, 1),
                          sigma = c(0, 1e5),
                          shape = NULL,
@@ -332,7 +339,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   for (i in names(fix)){
     sv[i] <- fix[[i]]
   }
-  autofuns <- list("D" = autoD, "g0" = autog0, "sigma" = autosigma,
+  autofuns <- list("D" = autoD, "Da" = autoDa, "muC" = automuC, "sigmaC" = autosigmaC,
+                   "g0" = autog0, "sigma" = autosigma,
                    "shape" = autoshape, "shape1" = autoshape1, "shape2" = autoshape2,
                    "scale" = autoscale, "z" = autoz,
                    "ssb0" = autossb0, "ssb1" = autossb1,
@@ -340,7 +348,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                    "kappa" = autokappa, "alpha" = autoalpha)
   ## Replacing "auto" elements of sv vector.
   for (i in rev(which(sv == "auto"))){
-    sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method, detfn)
+    sv[i] <- autofuns[[names(sv)[i]]](capt, bincapt, traps, mask, sv, cutoff, method, detfn, cpi)
   }
   sv <- as.numeric(sv)
   ## Removing attributes from capt and mask objects as do_admb cannot handle them.
@@ -381,7 +389,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (autogen){
     prefix <- "secr"
     make.all.tpl.easy(memory = memory, method = method, detfn = detfn,
-                      parnames = parnames, scalefactors = scalefactors)
+                      parnames = parnames, scalefactors = scalefactors,
+                      cpi = cpi)
     bessel.exists <- file.access("bessel.cxx", mode = 0)
     if (bessel.exists == -1){
       make.bessel()
@@ -429,6 +438,9 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
                  dist = dist, capt = bincapt, indivdist = capt[, , 2], trace = trace)
   } else {
     stop('method must be either "simple", "toa", "ang", "ss", "sstoa", "dist", or "mrds"')
+  }
+  if (fitDa){
+    data$cpi <- cpi
   }
   params <- list()
   for (i in 1:npars){
