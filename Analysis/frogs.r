@@ -23,6 +23,8 @@ datasource <- "Res"
 source("frogsetup.r")
 cutoff <- ifelse(datasource == "Res", 130, 150)
 
+cpi <- c(rep(17, 4), rep(16, 2), rep(15, 2))
+
 ## Carrying out simple SECR analysis.
 
 ## With secr package.
@@ -86,69 +88,47 @@ jointfit.prof <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                      bounds = list(ssb0 = c(cutoff, 1e8)),
                      cutoff = cutoff, admbwd = admb.dir, method = "sstoa", profpars = "D")
 
-## Comparison of fitted detection functions.
-x <- seq(0, 20, 0.01)
-hn <- function(x, coef){
-  g0 <- coef[2]
-  sigma <- coef[3]
-  g0*exp(-x^2/(2*sigma^2))
-}
-ss <- function(x, c, coef){
-  ssb0 <- coef[2]
-  ssb1 <- coef[3]
-  sigmass <- coef[4]
-  1 - pnorm(c, ssb0 + ssb1*x, sigmass)
-}
-logss <- function(x, c, coef){
-  ssb0 <- coef[2]
-  ssb1 <- coef[3]
-  sigmass <- coef[4]
-  1 - pnorm(c, exp(ssb0 + ssb1*x), sigmass)
-}
-erf <- function(x) 2*pnorm(x*sqrt(2)) - 1
-th <- function(x, coef){
-  shape <- coef[2]
-  scale <- coef[3]
-  0.5 - 0.5*erf(shape - scale*x)
-}
-logth <- function(x, coef){
-  par1 <- coef[2]
-  par2 <- coef[3]
-  par3 <- coef[4]
-  0.5 - 0.5*erf(par1 - exp(par2 + par3*x))
-}
-hr <- function(x, coef){
-  g0 <- coef[2]
-  sigma <- coef[3]
-  z <- coef[4]
-  g0*(1 - exp(-(x/sigma)^(-z)))
-}
 
-th.j <- function(x, coef){
-  shape <- coef[1]
-  scale <- coef[2]
-  erf(exp(shape - x/exp(scale)))
-}
+## Analysis from SS/TOA frog paper (with cpi):
+simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", method = "simple",
+                         cpi = cpi)
+simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = 2.63, scale = 3),
+                         method = "simple", detfn = "th", cpi = cpi)
+simplefit.hr <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
+                         fix = list(g0 = 1), method = "simple", detfn = "hr",
+                         cpi = cpi)
+simplefit.hn.c <- se.correct(simplefit.hn, 100)
+simplefit.th.c <- se.correct(simplefit.th, 100)
+simplefit.hr.c <- se.correct(simplefit.hr, 100)
 
-## Comparison of detection functions without TOA.
-pdf(file = "~/Desktop/plot.pdf")
-plot(x, hn(x, coef(simplefit.hn)), type = "l", ylab = "P(capture)",
-     xlab = "Distance", ylim = c(0, 1))
-lines(x, ss(x, cutoff, coef(ssfit2)), col = "red")
-lines(x, logss(x, cutoff, coef(ssfit2.log)), col = "purple")
-lines(x, th(x, coef(simplefit.th)), col = "green")
-##lines(x, th.j(x, coef(simplefit.th)[-1]), lty = "dotted")
-##lines(x, logth(x, coef(simplefit.logth)), col = "orange")
-lines(x, hr(x, coef(simplefit.hr1)), col = "blue")
-hr2pars <- c(0, 1, coef(simplefit.hr2)[2:3])
-lines(x, hr(x, hr2pars), col = "brown")
-dev.off()
+## Fitting with admbsecr(). Doesn't require start values.
+toafit.hn <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+                      method = "toa", cpi = cpi)
+toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
+                      sv = c(shape = 2.63, scale = 3),
+                      method = "toa", detfn = "th", cpi = cpi)
+if (datasource == "Res") hr2.bounds <- list(sigma = c(0, 1000)) else hr2.bounds <- NULL
+toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+                       bounds = hr2.bounds, fix = list(g0 = 1), method = "toa", detfn = "hr",
+                       cpi = cpi)
+toafit.hn.c <- secorrect(toafit.hn, 100)
+toafit.th.c <- secorrect(toafit.th, 100)
+toafit.hr.c <- secorrect(toafit.hr, 100)
 
-## Comparison of detection functions with TOA.
-x <- seq(0, 30, 0.01)
-plot(x, hn(x, coef(toafit.hn)), type = "l", ylab = "P(capture)",
-     xlab = "Distance", ylim = c(0, 1))
-lines(x, th(x, coef(toafit.th)), col = "green")
-lines(x, hr(x, coef(toafit.hr1)), col = "blue")
-hr2pars <- c(0, 1, coef(toafit.hr2)[2:3])
-lines(x, hr(x, hr2pars), col = "brown")
+ssfit <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
+                   method = "ss", cpi = cpi)
+ssfit.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
+                       bounds = list(ssb1 = c(0, 5)),  method = "ss", detfn = "log",
+                       cpi = cpi)
+ssfit.c <- secorrect(ssfit, 100)
+ssfit.log.c <- secorrect(ssfit.log)
+
+jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
+                     bounds = list(ssb0 = c(cutoff, 1e8)),
+                     cutoff = cutoff, admbwd = admb.dir, method = "sstoa",
+                     cpi = cpi)
+jointfit.log <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
+                         cutoff = cutoff, method = "sstoa", detfn = "log",
+                         cpi = cpi)
+jointfit.c <- secorrect(ssfit, 100)
+jointfit.log.c <- secorrect(jointfit.log, 100)
