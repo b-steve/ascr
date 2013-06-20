@@ -93,3 +93,11 @@ Ds <- pars[, 1]
 Ds.c <- pars.c[, 1]
 D.se <- ses[, 1]
 D.se.c <- ses.c[, 1]
+
+cis <- cis.c <- matrix(0, nrow = nsims, ncol = 2)
+for (i in 1:nsims){
+  cis[i, ] <- Ds[i] + c(-1, 1)*1.96*D.se[i]
+  cis.c[i, ] <- Ds.c[i] + c(-1, 1)*1.96*D.se.c[i]
+}
+cov <- mean(apply(cis, 1, function(x, mu) mu >= x[1] & mu <= x[2], mu = D))
+cov.c <- mean(apply(cis.c, 1, function(x, mu) mu >= x[1] & mu <= x[2], mu = D))
