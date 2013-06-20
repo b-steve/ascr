@@ -12,7 +12,7 @@ if (.Platform$OS == "unix"){
   sep <- "\\"
 }
 admb.dir <- paste(admbsecr.dir, "ADMB", sep = sep)
-work.dir <- paste(admbsecr.dir, "Analysis", sep = sep)
+work.dir <- paste(admbsecr.dir, "Analysis/tests", sep = sep)
 dat.dir <- paste(admbsecr.dir, "Data", sep = sep)
 
 ## Get required libraries.
@@ -77,7 +77,7 @@ for (i in 1:nsims){
 
 save.image(file = "indtest.RData")
 
-load(file = "~/admbsecr/Analysis/indtest.RData")
+load(file = "~/admbsecr/Results/ind/1")
 
 library(plyr)
 library(admbsecr)
