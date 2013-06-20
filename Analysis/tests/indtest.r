@@ -61,9 +61,8 @@ res <- list()
 res.se <- list()
 for (i in 1:nsims){
   capt <- sim.capt(traps = traps, calls = cpf, mask = mask, pars = pars, detfn = "th")
-  system.time({
   fit <- try.admbsecr(sv = pars, capt = capt, traps = traps, mask = mask,
-                      detfn = "th", bounds = bounds, scalefactors = scalefactors)})
+                      detfn = "th", bounds = bounds, scalefactors = scalefactors)
   if (class(fit)[1] == "try-error"){
     res[[i]] <- "error"
   } else {
