@@ -4,10 +4,11 @@
 \usage{
   admbsecr(capt, traps = NULL, mask, sv = "auto",
     bounds = NULL, fix = NULL, ssqtoa = NULL,
-    cutoff = NULL, sound.speed = 330, admbwd = NULL,
-    method = "simple", detfn = "hn", memory = NULL,
-    profpars = NULL, scalefactors = NULL, clean = TRUE,
-    verbose = FALSE, trace = FALSE, autogen = TRUE)
+    cutoff = NULL, cpi = NULL, sound.speed = 330,
+    admbwd = NULL, method = "simple", detfn = "hn",
+    memory = NULL, profpars = NULL, scalefactors = NULL,
+    clean = TRUE, verbose = FALSE, trace = FALSE,
+    autogen = TRUE)
 }
 \arguments{
   \item{capt}{an array of dimension \code{(n, S, K)}, where
@@ -79,6 +80,10 @@
   \item{cutoff}{the signal strength threshold of detection.
   Required if \code{method} is \code{"ss"} or
   \code{"sstoa"}.}
+
+  \item{cpi}{numeric vector, used for acoustic surveys
+  only. Contains number of calls emitted independently
+  monitored individuals over the course of the survey.}
 
   \item{sound.speed}{the speed of sound in metres per
   second. Used for TOA analysis.}
