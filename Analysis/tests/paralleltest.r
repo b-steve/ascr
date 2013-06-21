@@ -48,8 +48,7 @@ mask <- make.mask(traps, buffer = buffer, type = "trapbuffer")
 nmask <- nrow(mask)
 A <- attr(mask, "area")
 
-FUN <- function(i, traps = traps, calls = calls, mask = mask, pars = pars,
-                detfn = detfn, bounds = bounds, scalefactors = scalefactors){
+FUN <- function(i, traps, calls, mask, pars, detfn, bounds, scalefactors){
   set.seed(50)
   workdir <- getwd()
   dirname <- paste("fit", i, sep = ".")
@@ -65,7 +64,7 @@ FUN <- function(i, traps = traps, calls = calls, mask = mask, pars = pars,
 
 series.time <- system.time({
   res.series <- lapply(1:nsims, FUN, traps = traps, calls = cpf, mask = mask, pars = pars,
-                       detfn = detfn, bounds = bounds, scalefactors = scalefactors)
+                       detfn = "th", bounds = bounds, scalefactors = scalefactors)
 })
 
 ncores <- getOption("cl.cores", detectCores())
