@@ -231,6 +231,13 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   if (trace){
     verbose <- TRUE
   }
+  if (!is.null(cpi)){
+    if (length(cpi) < 2){
+      stop("cpi must must be at least 2 length.")
+    } else if (min(cpi) == max(cpi)){
+      stop("cpi must not have variance 0.")
+    }
+  }
   trace <- as.numeric(trace)
   currwd <- getwd()
   ## If traps is NULL, see if it is provided as part of capt.
