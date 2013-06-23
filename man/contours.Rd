@@ -17,36 +17,40 @@
     add = FALSE, heat = FALSE, cols = "black", ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, axes = TRUE, ...)
+    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
+    ...)
 
   \method{contours}{toa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, axes = TRUE, ...)
+    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
+    ...)
 
   \method{contours}{ss} (fit, dets = "all", add = FALSE,
     heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, axes = TRUE, ...)
+    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
+    ...)
 
   \method{contours}{sstoa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, axes = TRUE, ...)
+    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
+    ...)
 
   \method{contours}{ang} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    arrows = showcapt, xlim = NULL, ylim = NULL,
-    axes = TRUE, ...)
+    arrows = showcapt, mask = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{disttc} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
@@ -60,21 +64,22 @@
     cols = c("black", rgb(0, 0, 1, 0.4)), ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    circles = showcapt, xlim = NULL, ylim = NULL,
-    axes = TRUE, ...)
+    circles = showcapt, mask = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{angdist} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    arrows = showcapt, circles = showcapt, xlim = NULL,
-    ylim = NULL, axes = TRUE, ...)
+    arrows = showcapt, circles = showcapt, mask = NULL,
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{mrds} (fit, dets = "all", add = FALSE,
     trapnos = FALSE,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    xlim = NULL, ylim = NULL, axes = TRUE, ...)
+    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
+    ...)
 }
 \arguments{
   \item{fit}{a fitted model returned by
@@ -110,6 +115,10 @@
 
   \item{showcapt}{logical, if \code{TRUE} circles are drawn
   around detectors on which the detection was made.}
+
+  \item{mask}{the mask object over which to draw the
+  contours. If \code{NULL} the mask from \code{fit} is
+  used.}
 
   \item{xlim}{numeric vector of length 2, giving the x
   coordinate range.}
