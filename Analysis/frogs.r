@@ -78,7 +78,7 @@ ssfit2.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto
 ## Only possible with admbsecr().
 jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                      bounds = list(ssb0 = c(cutoff, 1e8)),
-                     cutoff = cutoff, admbwd = admb.dir, method = "sstoa")
+                     cutoff = cutoff, method = "sstoa")
 jointfit.log <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                          cutoff = cutoff, method = "sstoa", detfn = "log")
 

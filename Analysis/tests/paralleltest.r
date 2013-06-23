@@ -49,14 +49,13 @@ nmask <- nrow(mask)
 A <- attr(mask, "area")
 
 FUN <- function(i, traps, calls, mask, pars, detfn, bounds, scalefactors){
-  set.seed(50)
   workdir <- getwd()
   dirname <- paste("fit", i, sep = ".")
   system(paste("mkdir", dirname, sep = " "))
   setwd(dirname)
   capt <- sim.capt(traps = traps, calls = calls, mask = mask, pars = pars, detfn = "th")
   fit <- try.admbsecr(sv = pars, capt = capt, traps = traps, mask = mask,
-                      detfn = "th", bounds = bounds, scalefactors = scalefactors)
+                      detfn = detfn, bounds = bounds, scalefactors = scalefactors)
   setwd(workdir)
   system(paste("rm -rf", dirname, sep = " "))
   fit
@@ -70,7 +69,6 @@ series.time <- system.time({
 ncores <- getOption("cl.cores", detectCores())
 myCluster <- makeCluster(ncores)
 clusterEvalQ(myCluster, {
-  require(secr)
   require(admbsecr)
 })
 
