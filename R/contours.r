@@ -36,6 +36,8 @@ contours.default <- function(fit, ...){
 #' associated with the levels of the contours.
 #' @param showcapt logical, if \code{TRUE} circles are drawn around detectors
 #' on which the detection was made.
+#' @param mask the mask object over which to draw the contours. If \code{NULL}
+#' the mask from \code{fit} is used.
 #' @param xlim numeric vector of length 2, giving the x coordinate range.
 #' @param ylim numeric vector of length 2, giving the y coordinate range.
 #' @param axes logical, if \code{TRUE} axes are plotted.
@@ -45,7 +47,7 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                             cols = "black", ltys = 1, trapnos = FALSE,
                             problevels = NULL,
                             showcapt = length(dets) == 1 && dets != "all" && !add,
-                            xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                            mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -54,11 +56,15 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   showcapt <- updated.arguments$showcapt
   cols <- updated.arguments$cols
   ltys <- updated.arguments$ltys
-  mask <- getmask(fit)
   allcapt <- data$capt
   traps <- gettraps(fit)
-  dist <- data$dist
   ntraps <- data$ntraps
+  if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+  } else {
+    dist <- distances(traps, mask)
+  }
   coefs <- coef(fit)
   if (!add & !heat){
     make.plot(mask, xlim, ylim, axes)
@@ -115,7 +121,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                         mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -129,12 +135,16 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- getmask(fit)
   allcapt <- data$capt
   alltoacapt <- data$toacapt
   traps <- gettraps(fit)
-  dist <- data$dist
   ntraps <- data$ntraps
+  if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+  } else {
+    dist <- distances(traps, mask)
+  }
   coefs <- coef(fit)
   if (!add & !heat){
     make.plot(mask, xlim, ylim, axes)
@@ -201,7 +211,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                         trapnos = FALSE, problevels = NULL,
                         showcapt = length(dets) == 1 && dets != "all" && !add,
-                        xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                        mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -214,10 +224,14 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
   allcapt <- data$capt
   allsscapt <- data$sscapt
   traps <- gettraps(fit)
-  dist <- data$dist
   ntraps <- data$ntraps
-  nmask <- data$nmask
   cutoff <- fit$data$c
+  if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+  } else {
+    dist <- distances(traps, mask)
+  }
   coefs <- coef(fit)
   if (!add & !heat){
     make.plot(mask, xlim, ylim, axes)
@@ -255,7 +269,7 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                            rgb(0, 1, 0, 0.4)), ltys = 1,
                            trapnos = FALSE, problevels = NULL,
                            showcapt = length(dets) == 1 && dets != "all" && !add,
-                           xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                           mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -269,14 +283,19 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- getmask(fit)
   allcapt <- data$capt
   allsscapt <- data$sscapt
   alltoacapt <- data$toacapt
   traps <- gettraps(fit)
-  dist <- data$dist
   ntraps <- data$ntraps
-  nmask <- data$nmask
+  if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+    nmask <- data$nmask
+  } else {
+    dist <- distances(traps, mask)
+    nmask <- dim(mask)[1]
+  }
   cutoff <- fit$data$c
   coefs <- coef(fit)
   if (!add & !heat){
@@ -333,7 +352,8 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         arrows = showcapt, xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                         arrows = showcapt, mask = NULL, xlim = NULL, ylim = NULL,
+                         axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -348,13 +368,19 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- getmask(fit)
   allcapt <- data$capt
   allangcapt <- data$angcapt
   traps <- gettraps(fit)
-  dist <- data$dist
-  ang <- data$ang
   ntraps <- data$ntraps
+  if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+    ang <- data$ang
+  } else {
+    dist <- distances(traps, mask)
+    ang <- angles(traps, mask)
+    nmask <- dim(mask)[1]
+  }
   coefs <- coef(fit)
   if (!add & !heat){
     make.plot(mask, xlim, ylim, axes)
@@ -477,8 +503,8 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4)),
                           ltys = 1, trapnos = FALSE, problevels = NULL,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
-                          circles = showcapt, xlim = NULL, ylim = NULL,
-                          axes = TRUE, ...){
+                          circles = showcapt, mask = NULL, xlim = NULL,
+                          ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -494,12 +520,18 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- getmask(fit)
   allcapt <- data$capt
   alldistcapt <- data$distcapt
   traps <- gettraps(fit)
-  dist <- data$dist
   ntraps <- data$ntraps
+    if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+    nmask <- data$nmask
+  } else {
+    dist <- distances(traps, mask)
+    nmask <- dim(mask)[1]
+  }
   coefs <- coef(fit)
   if (!add & !heat){
     make.plot(mask, xlim, ylim, axes)
@@ -558,7 +590,7 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                              rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
                              ltys = 1, trapnos = FALSE, problevels = NULL,
                              showcapt = length(dets) == 1 && dets != "all" && !add,
-                             arrows = showcapt, circles = showcapt, xlim = NULL,
+                             arrows = showcapt, circles = showcapt, mask = NULL, xlim = NULL,
                              ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
@@ -576,14 +608,19 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
   plot.simple <- extra.contours$plot.simple
   plot.extra <- extra.contours$plot.extra
   plot.part <- plot.simple | plot.extra
-  mask <- getmask(fit)
   allcapt <- data$capt
   allangcapt <- data$angcapt
   alldistcapt <- data$distcapt
   traps <- gettraps(fit)
-  dist <- data$dist
-  ang <- data$ang
   ntraps <- data$ntraps
+  if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+    ang <- data$ang
+  } else {
+    dist <- distances(traps, mask)
+    ang <- angles(traps, mask)
+  }
   coefs <- coef(fit)
   if (!add & !heat){
     make.plot(mask, xlim, ylim, axes)
@@ -649,19 +686,24 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
 #' @S3method contours mrds
 contours.mrds <- function(fit, dets = "all", add = FALSE, trapnos = FALSE,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
-                          xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                          mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   if (length(dets) > 1 & showcapt){
     warning("Setting showcapt to FALSE as length(dets) > 1")
     showcapt <- FALSE
   }
   data <- fit$data
   n <- data$n
-  mask <- getmask(fit)
   allcapt <- data$capt
   alldistcapt <- data$indivdist
   traps <- gettraps(fit)
-  dist <- data$dist
   ntraps <- data$ntraps
+    if (is.null(mask)){
+    mask <- getmask(fit)
+    dist <- data$dist
+  } else {
+    dist <- distances(traps, mask)
+    nmask <- dim(mask)[1]
+  }
   coefs <- coef(fit)
   if (!add){
     make.plot(mask, xlim, ylim, axes)
