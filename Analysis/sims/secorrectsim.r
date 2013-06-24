@@ -52,6 +52,7 @@ ntraps <- nrow(traps)
 mask <- make.mask(traps, buffer = buffer, type = "trapbuffer")
 nmask <- nrow(mask)
 A <- attr(mask, "area")
+cat("start: ", date(), "\n", file = "prog.txt", sep = "")
 
 FUN <- function(i, traps, calls, mask, pars, detfn, bounds, scalefactors, nboots, seeds){
   set.seed(seeds[i])
@@ -67,11 +68,12 @@ FUN <- function(i, traps, calls, mask, pars, detfn, bounds, scalefactors, nboots
   } else {
     fit.sec <- se.correct(fit, size = nboots, calls = calls)
   }
-  out <- list(fit = fit, fit.sec = fit.se)
+  out <- list(fit = fit, fit.sec = fit.sec)
   setwd(workdir)
   system(paste("rm -rf", dirname, sep = " "))
   filename <- paste("fits/fits", i, "RData", sep = ".")
   save(out, file = filename)
+  cat(i, ": ", date(), "\n", file = "prog.txt", append = TRUE)
   out
 }
 
@@ -87,4 +89,4 @@ parallel.time <- system.time({
                             seeds = seeds)
 })
 stopCluster(myCluster)
-save.image(file = "allres.RData"))
+save.image(file = "allres.RData")
