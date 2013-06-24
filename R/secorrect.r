@@ -5,7 +5,7 @@
 #' @param fit an \code{admbsecr} model fit.
 #' @param size number of bootstrap samples.
 #' @export
-se.correct <- function(fit, size){
+se.correct <- function(fit, size, calls = NULL){
   coefs <- coef(fit, type = "all")
   start <- coef(fit)
   npars <- length(coefs)
@@ -15,10 +15,12 @@ se.correct <- function(fit, size){
   bounds <- fit[["bounds"]]
   fix <- fit[["fix"]]
   cutoff <- fit$data[["c"]]
-  cpi <- fit$data[["cpi"]]
-  if (is.null(cpi)){
-    stop("Standard error correction can only be applied to fits utilising calls per individual information")
+  if (is.null(calls)){
+    cpi <- fit$data[["cpi"]]
+  } else {
+    cpi <- calls
   }
+  boot.calls <- length(cpi) > 1
   sound.speed <- fit[["sound.speed"]]
   method <- fit[["method"]]
   detfn <- fit[["detfn"]]
@@ -26,7 +28,11 @@ se.correct <- function(fit, size){
   memory <- fit[["memory"]]
   colnames(res) <- c(names(coefs), "maxgrad")
   for (i in 1:size){
-    cpi.boot <- sample(cpi, replace = TRUE)
+    if (boot.calls){
+      cpi.boot <- sample(cpi, replace = TRUE)
+    } else {
+      cpi.boot <- NULL
+    }
     capt <- sim.capt(fit = fit, calls = round(cpi))
     bootfit <- try.admbsecr(sv = start, capt = capt, traps = traps, mask = mask,
                             bounds = bounds, fix = fix, cutoff = cutoff,

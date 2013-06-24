@@ -65,12 +65,12 @@ FUN <- function(i, traps, calls, mask, pars, detfn, bounds, scalefactors, nboots
   if (class(fit)[1] == "try-error"){
     fit.sec <- "error"
   } else {
-    fit.sec <- se.correct(fit, calls = calls, size = nboots)
+    fit.sec <- se.correct(fit, size = nboots, calls = calls)
   }
   out <- list(fit = fit, fit.sec = fit.se)
   setwd(workdir)
   system(paste("rm -rf", dirname, sep = " "))
-  filename <- paste("fits/fits", i, sep = ".")
+  filename <- paste("fits/fits", i, "RData", sep = ".")
   save(out, file = filename)
   out
 }
@@ -87,3 +87,4 @@ parallel.time <- system.time({
                             seeds = seeds)
 })
 stopCluster(myCluster)
+save.image(file = "allres.RData"))
