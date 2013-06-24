@@ -4,6 +4,9 @@
 #'
 #' @param fit an \code{admbsecr} model fit.
 #' @param size number of bootstrap samples.
+#' @param calls a vector containing the numbers of calls emitted from
+#' recorded individuals. If \code{NULL}, this defaults to what
+#' is provided by \code{fit}.
 #' @export
 se.correct <- function(fit, size, calls = NULL){
   coefs <- coef(fit, type = "all")
