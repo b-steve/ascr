@@ -4,6 +4,7 @@
 #'
 #' @param fit an \code{admbsecr} model fit.
 #' @param size number of bootstrap samples.
+#' @export
 se.correct <- function(fit, size){
   coefs <- coef(fit, type = "all")
   start <- coef(fit)
