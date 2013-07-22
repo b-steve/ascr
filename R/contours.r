@@ -100,7 +100,6 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   for (i in dets){
-    print(i)
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     maskdens <- exp(simpledens)*D
     maskdens <- maskdens/sum(maskdens)
@@ -421,7 +420,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   if (arrows & length(dets) == 1){
-    plot.arrows(traps, allcapt, allangcapt, i, heat)
+    plot.arrows(traps, allcapt, allangcapt, dets, heat)
   }
   for (i in dets){
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)

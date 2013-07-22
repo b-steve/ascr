@@ -41,7 +41,7 @@ sstraps <- read.traps(data = mics, detector = "signal")
 ## Set border for plotting to be 1/4 max distance between traps.
 border <- max(dist(traps))/4
 if (datasource == "Res"){
-  buffer <- border*10
+  buffer <- border*15#border*10
 } else if (datasource == "Original"){
   buffer <- border*8
 }
