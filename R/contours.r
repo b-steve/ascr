@@ -49,7 +49,7 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                             cols = "black", ltys = 1, trapnos = FALSE,
                             problevels = NULL,
                             showcapt = length(dets) == 1 && dets != "all" && !add,
-                            point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                            point.ests = FALSE, mask = NULL, xlim = NULL, ylim = NULL,
                             axes = TRUE, ...){
   data <- fit$data
   n <- data$n
@@ -124,7 +124,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                         point.ests = FALSE, mask = NULL, xlim = NULL, ylim = NULL,
                          axes = TRUE, ...){
   data <- fit$data
   n <- data$n
@@ -215,7 +215,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                         trapnos = FALSE, problevels = NULL,
                         showcapt = length(dets) == 1 && dets != "all" && !add,
-                        point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                        point.ests = FALSE, mask = NULL, xlim = NULL, ylim = NULL,
                         axes = TRUE, ...){
   data <- fit$data
   n <- data$n
@@ -274,7 +274,7 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                            rgb(0, 1, 0, 0.4)), ltys = 1,
                            trapnos = FALSE, problevels = NULL,
                            showcapt = length(dets) == 1 && dets != "all" && !add,
-                           point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                           point.ests = FALSE, mask = NULL, xlim = NULL, ylim = NULL,
                            axes = TRUE, ...){
   data <- fit$data
   n <- data$n
@@ -358,7 +358,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         arrows = showcapt, point.ests = TRUE, mask = NULL,
+                         arrows = showcapt, point.ests = FALSE, mask = NULL,
                          xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
@@ -509,7 +509,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4)),
                           ltys = 1, trapnos = FALSE, problevels = NULL,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
-                          circles = showcapt, point.ests = TRUE, mask = NULL,
+                          circles = showcapt, point.ests = FALSE, mask = NULL,
                           xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
@@ -596,7 +596,7 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                              rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
                              ltys = 1, trapnos = FALSE, problevels = NULL,
                              showcapt = length(dets) == 1 && dets != "all" && !add,
-                             arrows = showcapt, circles = showcapt, point.ests = TRUE,
+                             arrows = showcapt, circles = showcapt, point.ests = FALSE,
                              mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
