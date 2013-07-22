@@ -36,6 +36,8 @@ contours.default <- function(fit, ...){
 #' associated with the levels of the contours.
 #' @param showcapt logical, if \code{TRUE} circles are drawn around detectors
 #' on which the detection was made.
+#' @param point.ests logical, if \code{TRUE} the best estimate of the individual's
+#' location is plotted with a point.
 #' @param mask the mask object over which to draw the contours. If \code{NULL}
 #' the mask from \code{fit} is used.
 #' @param xlim numeric vector of length 2, giving the x coordinate range.
@@ -47,7 +49,8 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                             cols = "black", ltys = 1, trapnos = FALSE,
                             problevels = NULL,
                             showcapt = length(dets) == 1 && dets != "all" && !add,
-                            mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                            point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                            axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -97,11 +100,12 @@ contours.simple <- function(fit, dets = "all", add = FALSE, heat = FALSE,
     allprobs <- 0.5 - 0.5*erf(shape1 - exp(shape2 + scale*dist))
   }
   for (i in dets){
+    print(i)
     simpledens <- logdens.simple(allcapt, allprobs, ntraps, i)
     maskdens <- exp(simpledens)*D
     maskdens <- maskdens/sum(maskdens)
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
-                      problevels, cols[1], ltys[1], ...)
+                      problevels, cols[1], ltys[1], point.ests, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -121,7 +125,8 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                         point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                         axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -197,7 +202,7 @@ contours.toa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
-                      problevels, cols[1], ltys[1], ...)
+                      problevels, cols[1], ltys[1], point.ests, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -211,7 +216,8 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                         trapnos = FALSE, problevels = NULL,
                         showcapt = length(dets) == 1 && dets != "all" && !add,
-                        mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                        point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                        axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -256,7 +262,7 @@ contours.ss <- function(fit, dets = "all", add = FALSE, heat = FALSE,
     maskdens <- exp(ssdens)*D
     maskdens <- maskdens/sum(maskdens)
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
-                      problevels, cols[1], ltys[1], ...)
+                      problevels, cols[1], ltys[1], point.ests, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -269,7 +275,8 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                            rgb(0, 1, 0, 0.4)), ltys = 1,
                            trapnos = FALSE, problevels = NULL,
                            showcapt = length(dets) == 1 && dets != "all" && !add,
-                           mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
+                           point.ests = TRUE, mask = NULL, xlim = NULL, ylim = NULL,
+                           axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols,
@@ -336,7 +343,7 @@ contours.sstoa <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
-                      problevels, cols[1], ltys[1], ...)
+                      problevels, cols[1], ltys[1], point.ests, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -352,8 +359,8 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                          rgb(0, 1, 0, 0.4)), ltys = 1,
                          trapnos = FALSE, problevels = NULL,
                          showcapt = length(dets) == 1 && dets != "all" && !add,
-                         arrows = showcapt, mask = NULL, xlim = NULL, ylim = NULL,
-                         axes = TRUE, ...){
+                         arrows = showcapt, point.ests = TRUE, mask = NULL,
+                         xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -426,7 +433,7 @@ contours.ang <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
-                      problevels, cols[1], ltys[1], ...)
+                      problevels, cols[1], ltys[1], point.ests, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -503,8 +510,8 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           heat = FALSE, cols = c("black", rgb(0, 0, 1, 0.4)),
                           ltys = 1, trapnos = FALSE, problevels = NULL,
                           showcapt = length(dets) == 1 && dets != "all" && !add,
-                          circles = showcapt, mask = NULL, xlim = NULL,
-                          ylim = NULL, axes = TRUE, ...){
+                          circles = showcapt, point.ests = TRUE, mask = NULL,
+                          xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -577,7 +584,7 @@ contours.dist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           problevels, cols = cols[2:3], ltys = ltys[2:3], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
-                      problevels, cols[1], ltys[1], ...)
+                      problevels, cols[1], ltys[1], point.ests, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -590,8 +597,8 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                                              rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
                              ltys = 1, trapnos = FALSE, problevels = NULL,
                              showcapt = length(dets) == 1 && dets != "all" && !add,
-                             arrows = showcapt, circles = showcapt, mask = NULL, xlim = NULL,
-                             ylim = NULL, axes = TRUE, ...){
+                             arrows = showcapt, circles = showcapt, point.ests = TRUE,
+                             mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE, ...){
   data <- fit$data
   n <- data$n
   updated.arguments <- warning.contours(n, dets, add, heat, showcapt, cols, ltys,
@@ -676,7 +683,7 @@ contours.angdist <- function(fit, dets = "all", add = FALSE, partition = FALSE,
                           ltys = ltys[c(2, 4)], ...)
     }
     plot.main.contour(maskdens, mask, xlim, ylim, heat,
-                      problevels, cols[1], ltys[1], ...)
+                      problevels, cols[1], ltys[1], point.ests, ...)
   }
   plot.traps(traps, allcapt, i, heat, trapnos, showcapt)
 }
@@ -867,7 +874,7 @@ logdens.dist <- function(alldistcapt, allcapt, dist, alpha, i){
 
 ## Plots the overall contour for the animal.
 plot.main.contour <- function(maskdens, mask, xlim, ylim, heat,
-                              problevels, col, lty, ...){
+                              problevels, col, lty, point.ests, ...){
   x <- mask[, 1]
   y <- mask[, 2]
   unique.x <- sort(unique(x))
@@ -907,6 +914,10 @@ plot.main.contour <- function(maskdens, mask, xlim, ylim, heat,
     }
     contour(x = unique.x, y = unique.y, z = z, add = TRUE, levels = levels,
             labels = labels, col = col, lty = lty, ...)
+  }
+  if (point.ests){
+    maxdens <- which(maskdens == max(maskdens))
+    points(x[maxdens], y[maxdens], pch = 19)
   }
 }
 
