@@ -30,8 +30,8 @@ setwd(work.dir)
 ## Setup for simulations.
 seed <- 15338
 set.seed(seed)
-nsims <- 4
-nboots <- 100
+nsims <- 500
+nboots <- 1000
 seeds <- sample(1:1000000, size = nsims)
 buffer <- 35
 
