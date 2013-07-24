@@ -51,9 +51,9 @@ se.correct <- function(fit, size, calls = NULL){
   }
   conv <- res[, "maxgrad"] > -1
   res <- res[conv, -which(colnames(res) == "maxgrad")]
-  bias <- apply(res, 2, mean) - coefs
+  bias <- apply(res, 2, mean, na.rm = TRUE) - coefs
   coefficients.corrected <- coefs - bias
-  se.corrected <- apply(res, 2, sd)
+  se.corrected <- apply(res, 2, sd, na.rm = TRUE)
   out <- list(boots = res, coefficients.corrected = coefficients.corrected,
               se.corrected = se.corrected)
   fit$se.correct <- out
