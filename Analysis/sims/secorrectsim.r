@@ -88,7 +88,7 @@ clusterEvalQ(myCluster, {
   require(admbsecr)
 })
 parallel.time <- system.time({
-  res.parallel <- parLapply(myCluster, 1:nsims[-fit.ids], FUN, traps = traps, calls = cpf,
+  res.parallel <- parLapply(myCluster, (1:nsims)[-fit.ids], FUN, traps = traps, calls = cpf,
                             mask = mask, pars = pars, detfn = detfn, bounds = bounds,
                             scalefactors = scalefactors, nboots = nboots,
                             seeds = seeds)
