@@ -80,7 +80,7 @@ FUN <- function(i, traps, calls, mask, pars, detfn, bounds, scalefactors, nboots
 ## Work out sims that haven't run
 library(plyr)
 fit.files <- list.files("fits")
-fit.ids <- laply(strsplit(fit.files, "[.]"), function(x) x[2])
+fit.ids <- as.numeric(laply(strsplit(fit.files, "[.]"), function(x) x[2]))
 
 ncores <- getOption("cl.cores", detectCores())
 myCluster <- makeCluster(ncores)
