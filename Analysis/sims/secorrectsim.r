@@ -77,13 +77,18 @@ FUN <- function(i, traps, calls, mask, pars, detfn, bounds, scalefactors, nboots
   out
 }
 
+## Work out sims that haven't run
+library(plyr)
+fit.files <- list.files("fits")
+fit.ids <- laply(strsplit(fit.files, "[.]"), function(x) x[2])
+
 ncores <- getOption("cl.cores", detectCores())
 myCluster <- makeCluster(ncores)
 clusterEvalQ(myCluster, {
   require(admbsecr)
 })
 parallel.time <- system.time({
-  res.parallel <- parLapply(myCluster, 1:nsims, FUN, traps = traps, calls = cpf,
+  res.parallel <- parLapply(myCluster, 1:nsims[-fit.ids], FUN, traps = traps, calls = cpf,
                             mask = mask, pars = pars, detfn = detfn, bounds = bounds,
                             scalefactors = scalefactors, nboots = nboots,
                             seeds = seeds)
