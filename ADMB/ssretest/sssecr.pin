@@ -1,0 +1,22 @@
+# "simplesecr_gen.pin" produced by pin_write() from R2admb Mon Sep 24 10:43:14 2012
+# D 
+# 700
+
+# ssb0 
+# 190
+
+# ssb1 
+# -0.1
+
+# sigmass
+# 2
+
+# Number of parameters = 4  Objective function value = 627.438  Maximum gradient component = 1.27840e-05
+# D:
+373.770685604
+# ssb0:
+177.448104379
+# ssb1:
+-2.52618669554
+# sigmass:
+6.89523612929
