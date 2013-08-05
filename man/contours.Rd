@@ -17,40 +17,40 @@
     add = FALSE, heat = FALSE, cols = "black", ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
-    ...)
+    point.ests = FALSE, mask = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{toa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
-    ...)
+    point.ests = FALSE, mask = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{ss} (fit, dets = "all", add = FALSE,
     heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
-    ...)
+    point.ests = FALSE, mask = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{sstoa} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    mask = NULL, xlim = NULL, ylim = NULL, axes = TRUE,
-    ...)
+    point.ests = FALSE, mask = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{ang} (fit, dets = "all", add = FALSE,
     partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    arrows = showcapt, mask = NULL, xlim = NULL,
-    ylim = NULL, axes = TRUE, ...)
+    arrows = showcapt, point.ests = FALSE, mask = NULL,
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{disttc} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
@@ -64,16 +64,17 @@
     cols = c("black", rgb(0, 0, 1, 0.4)), ltys = 1,
     trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    circles = showcapt, mask = NULL, xlim = NULL,
-    ylim = NULL, axes = TRUE, ...)
+    circles = showcapt, point.ests = FALSE, mask = NULL,
+    xlim = NULL, ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{angdist} (fit, dets = "all",
     add = FALSE, partition = FALSE, heat = FALSE,
     cols = c("black", rgb(0, 0, 1, 0.4), rgb(0, 1, 0, 0.4), rgb(1, 0, 0, 0.4)),
     ltys = 1, trapnos = FALSE, problevels = NULL,
     showcapt = length(dets) == 1 && dets != "all" && !add,
-    arrows = showcapt, circles = showcapt, mask = NULL,
-    xlim = NULL, ylim = NULL, axes = TRUE, ...)
+    arrows = showcapt, circles = showcapt,
+    point.ests = FALSE, mask = NULL, xlim = NULL,
+    ylim = NULL, axes = TRUE, ...)
 
   \method{contours}{mrds} (fit, dets = "all", add = FALSE,
     trapnos = FALSE,
@@ -115,6 +116,10 @@
 
   \item{showcapt}{logical, if \code{TRUE} circles are drawn
   around detectors on which the detection was made.}
+
+  \item{point.ests}{logical, if \code{TRUE} the best
+  estimate of the individual's location is plotted with a
+  point.}
 
   \item{mask}{the mask object over which to draw the
   contours. If \code{NULL} the mask from \code{fit} is
