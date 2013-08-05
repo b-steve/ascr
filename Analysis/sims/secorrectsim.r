@@ -82,10 +82,10 @@ library(plyr)
 fit.files <- list.files("fits")
 fit.ids <- as.numeric(laply(strsplit(fit.files, "[.]"), function(x) x[2]))
 
-ncores <- getOption("cl.cores", detectCores())
+ncores <- 12 #getOption("cl.cores", detectCores())
 myCluster <- makeCluster(ncores)
 clusterEvalQ(myCluster, {
-  require(admbsecr)
+  library(devtools); load_all("~/admbsecr")
 })
 parallel.time <- system.time({
   res.parallel <- parLapply(myCluster, (1:nsims)[-fit.ids], FUN, traps = traps, calls = cpf,
