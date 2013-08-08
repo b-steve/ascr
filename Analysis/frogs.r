@@ -23,7 +23,7 @@ datasource <- "Res"
 source("frogsetup.r")
 cutoff <- ifelse(datasource == "Res", 130, 150)
 
-cpi <- c(rep(17, 4), rep(16, 2), rep(15, 2))
+cpi <- c(rep(17, 4), rep(16, 2), rep(15, 2))*(25/60)
 
 ## Carrying out simple SECR analysis.
 
@@ -88,47 +88,49 @@ jointfit.prof <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                      bounds = list(ssb0 = c(cutoff, 1e8)),
                      cutoff = cutoff, admbwd = admb.dir, method = "sstoa", profpars = "D")
 
+###########################################################################################
 
 ## Analysis from SS/TOA frog paper (with cpi):
-simplefit.hn <- admbsecr(capt, traps = traps, mask, sv = "auto", method = "simple",
-                         cpi = cpi)
-simplefit.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = 2.63, scale = 3),
+simplefit2.hn <- admbsecr(capt, traps = traps, mask, sv = "auto",
+                          fix = list(g0 = 1), method = "simple",
+                          cpi = cpi)
+simplefit2.th <- admbsecr(capt, traps = traps, mask, sv = c(shape = 2.63, scale = 3),
                          method = "simple", detfn = "th", cpi = cpi)
-simplefit.hr <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
+simplefit2.hr <- admbsecr(capt, traps = traps, mask, sv = c(sigma = 7, z = 12),
                          fix = list(g0 = 1), method = "simple", detfn = "hr",
                          cpi = cpi)
-simplefit.hn.c <- se.correct(simplefit.hn, 100)
-simplefit.th.c <- se.correct(simplefit.th, 100)
-simplefit.hr.c <- se.correct(simplefit.hr, 100)
+simplefit.hn.c <- se.correct(simplefit2.hn, 100)
+simplefit.th.c <- se.correct(simplefit2.th, 100)
+simplefit.hr.c <- se.correct(simplefit2.hr, 100)
 
 ## Fitting with admbsecr(). Doesn't require start values.
-toafit.hn <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+toafit2.hn <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
                       method = "toa", cpi = cpi)
-toafit.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
+toafit2.th <- admbsecr(capt = capt.toa, traps = traps, mask = mask,
                       sv = c(shape = 2.63, scale = 3),
                       method = "toa", detfn = "th", cpi = cpi)
 if (datasource == "Res") hr2.bounds <- list(sigma = c(0, 1000)) else hr2.bounds <- NULL
-toafit.hr2 <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
+toafit2.hr <- admbsecr(capt = capt.toa, traps = traps, mask = mask, sv = "auto",
                        bounds = hr2.bounds, fix = list(g0 = 1), method = "toa", detfn = "hr",
                        cpi = cpi)
-toafit.hn.c <- secorrect(toafit.hn, 100)
-toafit.th.c <- secorrect(toafit.th, 100)
-toafit.hr.c <- secorrect(toafit.hr, 100)
+toafit.hn.c <- se.correct(toafit2.hn, 100)
+toafit.th.c <- se.correct(toafit2.th, 100)
+toafit.hr.c <- se.correct(toafit2.hr, 100)
 
 ssfit <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
                    method = "ss", cpi = cpi)
 ssfit.log <- admbsecr(capt.ss, traps = traps, mask, cutoff = cutoff, sv = "auto",
                        bounds = list(ssb1 = c(0, 5)),  method = "ss", detfn = "log",
                        cpi = cpi)
-ssfit.c <- secorrect(ssfit, 100)
-ssfit.log.c <- secorrect(ssfit.log)
+ssfit.c <- se.correct(ssfit, 100)
+ssfit.log.c <- se.correct(ssfit.log, 100)
 
-jointfit <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
+jointfit2 <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                      bounds = list(ssb0 = c(cutoff, 1e8)),
                      cutoff = cutoff, admbwd = admb.dir, method = "sstoa",
                      cpi = cpi)
-jointfit.log <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
+jointfit2.log <- admbsecr(capt = capt.joint, traps = traps, mask = mask,
                          cutoff = cutoff, method = "sstoa", detfn = "log",
                          cpi = cpi)
-jointfit.c <- secorrect(ssfit, 100)
-jointfit.log.c <- secorrect(jointfit.log, 100)
+jointfit.c <- se.correct(jointfit2, cpi)
+jointfit.log.c <- se.correct(jointfit2.log, cpi)
