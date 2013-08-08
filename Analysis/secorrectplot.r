@@ -8,8 +8,7 @@ source("~/admbsecr/Results/secorrect/1/pars.r")
 
 ## Determining the fit identifications that were successful.
 setwd("~/admbsecr/Results/secorrect/1/fits")
-fit.files <- list.files()
-
+fit.files <- paste("fits", 1:500, "RData", sep = ".")
 nfits <- length(fit.files)
 
 Ds <- numeric(500)
@@ -36,16 +35,22 @@ for (i in fit.files){
 
 mean(Ds)
 mean(Ds.c)
-mean(ses, na.rm = TRUE)
+sd(Ds)
+sd(Ds.c)
+mean(ses)
 mean(ses.c)
 
-cis.norm <- matrix(0, nrow = 500, ncol = 2)
-cis.perc <- matrix(0, nrow = 500, ncol = 2)
+cis.wald <- matrix(0, nrow = 500, ncol = 2)
+cis.c.norm <- matrix(0, nrow = 500, ncol = 2)
+cis.c.perc <- matrix(0, nrow = 500, ncol = 2)
 for (i in 1:500){
-  cis.norm[i, ] <- Ds.c[i] + c(-1, 1)*qnorm(0.975)*ses.c[i]
-  cis.perc[i, ] <- quantile(boots.l[[i]][, 1], c(0.025, 0.975), na.rm = TRUE)
+  cis.wald[i, ] <- Ds[i] + c(-1, 1)*qnorm(0.975)*ses[i]
+  cis.c.norm[i, ] <- Ds.c[i] + c(-1, 1)*qnorm(0.975)*ses.c[i]
+  cis.c.perc[i, ] <- quantile(boots.l[[i]][, 1], c(0.025, 0.975), na.rm = TRUE)
 }
-cov.norm <- apply(cis.norm, 1, function(x) x[1] <= 1750 & x[2] >= 1750)
-mean(cov.norm)
-cov.perc <- apply(cis.perc, 1, function(x) x[1] <= 1750 & x[2] >= 1750)
-mean(cov.perc)
+cov.wald <- apply(cis.wald, 1, function(x) x[1] <= 1750 & x[2] >= 1750)
+mean(cov.wald)
+cov.c.norm <- apply(cis.c.norm, 1, function(x) x[1] <= 1750 & x[2] >= 1750)
+mean(cov.c.norm)
+cov.c.perc <- apply(cis.c.perc, 1, function(x) x[1] <= 1750 & x[2] >= 1750)
+mean(cov.c.perc)
