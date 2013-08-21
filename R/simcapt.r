@@ -79,6 +79,8 @@ sim.capt <- function(fit, calls = 1, traps = NULL, mask = NULL, pars = NULL,
   sim.extra(fit, bincapt, det.dists, det.locs)
 }
 
+## Will produce a binary capture history for all methods other than
+## those using a signal strength detection function.
 sim.bincapt <- function(fit, popn.dists){
   dim <- dim(popn.dists)
   if (fit$method == "ss" | fit$method == "sstoa"){
@@ -118,8 +120,20 @@ sim.extra.simple <- function(fit, bincapt, det.dists, det.locs, ...){
 
 #' @S3method sim.extra toa
 sim.extra.toa <- function(fit, bincapt, det.dists, det.locs, ...){
-  ## TO DO
-  stop("Method not yet implemented.")
+  sigmatoa <- getpar(fit, "sigmatoa")
+  dim <- dim(bincapt)
+  n <- dim[1]
+  ntraps <- dim[2]
+  ndets <- sum(bincapt)
+  errors <- rnorm(ndets, 0, sigmatoa)
+  ## Start times are arbitrarily 100*id.no
+  toacapt <- matrix(rep(100*(1:n), ntraps), nrow = n, ncol = ntraps)*bincapt
+  ## Need to set up expected arrival times
+  travel.time <- det.dists/330
+  toacapt[bincapt == 1] <- toacapt[bincapt == 1] + travel.time[bincapt == 1] +
+      errors
+  dim(toacapt) <- c(dim[1], 1, dim[2])
+  toacapt
 }
 
 #' @S3method sim.extra ang
@@ -136,6 +150,7 @@ sim.extra.ang <- function(fit, bincapt, det.dists, det.locs, ...){
   angcapt
 }
 
+## Does not do anything as bincapt already returns SS information.
 #' @S3method sim.extra ss
 sim.extra.ss <- function(fit, bincapt, det.dists, det.locs, ...){
   dim <- dim(bincapt)
@@ -143,10 +158,27 @@ sim.extra.ss <- function(fit, bincapt, det.dists, det.locs, ...){
   bincapt
 }
 
+## Does not do anything as bincapt already returns SS information.
 #' @S3method sim.extra sstoa
 sim.extra.sstoa <- function(fit, bincapt, det.dists, det.locs, ...){
-  ## TO DO
-  stop("Method not yet implemented.")
+  sscapt <- bincapt
+  ## Add zero to coerce to numeric.
+  bincapt <- 0 + bincapt != 0
+  sigmatoa <- getpar(fit, "sigmatoa")
+  dim <- dim(bincapt)
+  n <- dim[1]
+  ntraps <- dim[2]
+  ndets <- sum(bincapt)
+  errors <- rnorm(ndets, 0, sigmatoa)
+  ## Start times are arbitrarily 100*id.no
+  toacapt <- matrix(rep(100*(1:n), ntraps), nrow = n, ncol = ntraps)*bincapt
+  ## Need to set up expected arrival times
+  travel.time <- det.dists/330
+  toacapt[bincapt == 1] <- toacapt[bincapt == 1] + travel.time[bincapt == 1] +
+      errors
+  dim(toacapt) <- c(dim[1], 1, dim[2])
+  dim(sscapt) <- c(dim[1], 1, dim[2])
+  array(c(sscapt, toacapt), dim = c(dim[1], 1, dim[2], 2))
 }
 
 #' @S3method sim.extra dist
