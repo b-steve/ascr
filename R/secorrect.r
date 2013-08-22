@@ -82,3 +82,8 @@ summary.secorrect <- function(object, ...){
 stdEr.secorrect <- function(object, ...){
   object$se.correct$se.corrected
 }
+
+#' @S3method coef secorrect
+coef.secorrect <- function(object, ...){
+  object$se.correct$coefficients.corrected
+}
