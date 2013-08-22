@@ -393,7 +393,15 @@ erf <- function(x) 2*pnorm(x*sqrt(2)) - 1
 ## Extract a parameter
 getpar <- function(fit, par){
   coefs <- coef(fit, type = "all")
-  out <- ifelse(par %in% names(coefs), coefs[par], fit$data[[par]])
+  n <- length(par)
+  out <- numeric(n)
+  for (i in 1:n){
+    if (any(par[i] == names(coefs))){
+      out[i] <- coefs[par[i]]
+    } else {
+      out[i] <- fit$data[[par[i]]]
+    }
+  }
   names(out) <- par
   out
 }

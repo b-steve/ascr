@@ -64,8 +64,9 @@ se.correct <- function(fit, size, calls = NULL){
 ## Modified from R2admb.
 #' @S3method summary secorrect
 summary.secorrect <- function(object, ...){
-  coef.p <- unlist(coef(object,"par"))
-  s.err <- object$se.correct$se.corrected
+  parnames <- names(object$se.correct$coefficients.corrected)
+  coef.p <- object$se.correct$coefficients.corrected[parnames != "D"]
+  s.err <- object$se.correct$se.corrected[parnames != "D"]
   tvalue <- coef.p/s.err
   dn <- c("Estimate", "Std. Error")
   pvalue <- 2 * pnorm(-abs(tvalue))
