@@ -20,13 +20,14 @@ To install:
 ```
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
-This requires the newest version of R. Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
+This requires the newest version of R.
 
 * For the very latest version (i.e., this repository, requires Rtools to be installed):
 ```
 library(devtools)
 install_github("admbsecr", "b-steve")
 ```
+Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
 
 * The admbsecr currently uses the devolopment version of the R2admb package. There may be issues using the version on CRAN. To install:
 ```
