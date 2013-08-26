@@ -16,23 +16,23 @@ To install:
 
 2. Install the admbsecr R library.
 
-* For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/) (although see note below):
+* For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
 ```
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
+This requires the newest version of R.
 
 * For the very latest version (i.e., this repository, requires Rtools to be installed):
 ```
 library(devtools)
 install_github("admbsecr", "b-steve")
 ```
+Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
 
 * The admbsecr currently uses the devolopment version of the R2admb package. There may be issues using the version on CRAN. To install:
 ```
 install_github("R2admb", "bbolker", subdir = "R2admb")
 ```
-
-NOTE: Due to what I assume is a bug with R-Forge, the `install.packages()` command above seems to be installing a very old version of admbsecr. A workaround is to click [here](http://r-forge.r-project.org/R/?group_id=1506), download the appropriate file (determined by your operating system), and unzip it to your R package library directory.
 
 ## Troubleshooting
 
