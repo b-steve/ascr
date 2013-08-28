@@ -15,7 +15,16 @@ Ds <- numeric(500)
 Ds.c <- numeric(500)
 ses <- numeric(500)
 ses.c <- numeric(500)
+shs <- numeric(500)
+shs.c <- numeric(500)
+shs.ses <- numeric(500)
+shs.ses.c <- numeric(500)
+scs <- numeric(500)
+scs.c <- numeric(500)
+scs.ses <- numeric(500)
+scs.ses.c <- numeric(500)
 boots.l <- list()
+
 
 j <- 1
 for (i in fit.files){
@@ -29,6 +38,14 @@ for (i in fit.files){
   Ds.c[j] <- out$fit.sec$se.correct$coefficients.corrected[1]
   ses[j] <- out$fit$se[1]
   ses.c[j] <- out$fit.sec$se.correct$se.corrected[1]
+  shs[j] <- out$fit$coefficients[2]
+  shs.c[j] <- out$fit.sec$se.correct$coefficients.corrected[2]
+  shs.ses[j] <- out$fit$se[2]
+  shs.ses.c[j] <- out$fit.sec$se.correct$se.corrected[2]
+  scs[j] <- out$fit$coefficients[3]
+  scs.c[j] <- out$fit.sec$se.correct$coefficients.corrected[3]
+  scs.ses[j] <- out$fit$se[3]
+  scs.ses.c[j] <- out$fit.sec$se.correct$se.corrected[3]
   boots.l[[j]] <- boots
   j <- j + 1
 }
@@ -39,6 +56,20 @@ sd(Ds)
 sd(Ds.c)
 mean(ses)
 mean(ses.c)
+
+mean(shs)
+mean(shs.c)
+sd(shs)
+sd(shs.c)
+mean(shs.ses)
+mean(shs.ses.c)
+
+mean(scs)
+mean(scs.c)
+sd(scs)
+sd(scs.c)
+mean(scs.ses)
+mean(scs.ses.c)
 
 cis.wald <- matrix(0, nrow = 500, ncol = 2)
 cis.c.norm <- matrix(0, nrow = 500, ncol = 2)
