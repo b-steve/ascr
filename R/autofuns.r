@@ -1,13 +1,25 @@
 ## Functions that automatically generate starting values for parameters.
 
 ## Lifted from the secr package.
-autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL, cutoff = NULL,
-                      method = NULL, detfn = NULL, cpi = NULL){
-  obsRPSV <- RPSV.mod(bincapt, traps)
-  usge <- matrix(1, nrow = nrow(traps), ncol = ncol(capthist))
-  wt <- apply(usge > 0, 1, sum)
-  secr:::naivesigma(obsRPSV = obsRPSV, trps = traps, mask = mask,
-                    wt = wt, detectfn = 0, z = 1, tol = 0.1)
+autosigma2 <- function(capt, traps, mask = NULL, sv = NULL, cutoff = NULL,
+                       method = NULL, detfn = NULL, cpi = NULL){
+  bincapt <- capt$bincapt
+  ave.rc.dist <- function(x){
+    trap.ids <- which(x == 1)
+    if (length(trap.ids) > 1){
+      rc.locs <- traps[trap.ids, ]
+      rc.dists <- distances(rc.locs, rc.locs)
+      w <- length(rc.dists[rc.dists > 0])
+      out <- mean(rc.dists[rc.dists > 0])
+    } else {
+      out <- NA
+      w <- NA
+    }
+    c(out, w)
+  }
+  mean.dists <- apply(bincapt, 1, ave.rc.dist)
+  mean.dists <- mean.dists[, !is.na(mean.dists[1, ])]
+  sum(mean.dists[1, ]*mean.dists[2, ])/sum(mean.dists[2, ])
 }
 
 ## Lifted from the secr package.
@@ -23,6 +35,11 @@ autoD <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, meth
   }
   n/(sum(pdot(mask, traps, 0,
               list(g0 = g0, sigma = sigma), 1))*A)
+}
+
+## Write own pdot function.
+autoD2 <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL, detfn, cpi = NULL){
+  1000
 }
 
 autoDa <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL, detfn, cpi = NULL){
@@ -48,6 +65,11 @@ autosigmaC <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL,
 }
 
 ## Don't think we can estimate this in advance for a single session.
+autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                   cutoff = NULL, method = NULL, detfn = NULL, cpi = NULL){
+  0.95
+}
+
 autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                    cutoff = NULL, method = NULL, detfn = NULL, cpi = NULL){
   0.95

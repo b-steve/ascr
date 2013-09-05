@@ -496,3 +496,49 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
   }
   fit
 }
+
+#' Fitting SECR models in ADMB
+#'
+#' Fits an SECR model, with our without supplementary information
+#' relevant to animal location. Parameter estimation is done by
+#' maximum likelihood through and ADMB executible.
+#'
+#' @param capt A list with named components, containing the capture
+#' history and supplementary information.
+#'
+admbsecr2 <- function(capt, detfn, traps, mask, sv = NULL, fix, trace){
+  if (is.null(capt$bincapt)){
+    stop("The binary capture history must be provided as a component of 'capt'.")
+  }
+  n <- nrow(capt$bincapt)
+  ntraps <- nrow(traps)
+  nmask <- nrow(mask)
+  A <- attr(mask, "area")
+  dist <- distances(traps, mask)
+  detfns <- c("hn", "hr", "th", "lth", "ss", "logss")
+  detfn.id <- which(detfn == detns)
+  detpar.names <- switch(detfn,
+                         hn = c("g0", "sigma"),
+                         hr = c("g0", "sigma", "z"),
+                         th = c("shape", "scale"),
+                         lth = c("shape1", "shape2", "scale"),
+                         ss = c("b0.ss", "b1.ss", "sigma.ss"),
+                         logss = c("b0.ss", "b1.ss", "sigma.ss"))
+  ## TODO: Sort out how to determine supplementary parameter names.
+  suppar.names <- NULL
+  par.names <- c("D", detpar.names, suppar.names)
+  npar <- length(par.names)
+  ## Sorting out start values.
+  sv.old <- sv
+  sv <- vector("list", length = npar)
+  names(sv) <- par.names
+  sv[names(sv.old)] <- sv.old
+  sv <- numeric(npar)
+  names(sv) <- par.names
+  auto.names <- par.names[!names(sv) %in% names(sv.old)]
+  sv.funs <- paste("auto", auto.names, "2", sep = "")
+  for (i in seq(1, length(auto.names), length.out = length(auto.names))){
+    sv[auto.names[i]] <- eval(call(sv.funs[i], capt, bincapt, traps, mask,
+                                   sv, cutoff, method, detfn, cpi))
+  }
+}
