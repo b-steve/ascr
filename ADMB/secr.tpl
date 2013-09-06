@@ -1,9 +1,6 @@
 DATA_SECTION
-  init_vector D_bounds(1,2)
-  number D_lb
-  number D_ub
-  !! D_lb = D_bounds[1];
-  !! D_ub = D_bounds[2];
+  init_number D_lb
+  init_number D_ub
   init_number D_phase
   init_number D_sf
   init_int n_detpars

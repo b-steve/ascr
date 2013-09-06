@@ -505,10 +505,43 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
 #'
 #' @param capt A list with named components, containing the capture
 #' history and supplementary information.
+#' @param traps A matrix with two columns. The rows provide Cartesian
+#' coordinates for trap locations.
+#' @param mask A matrix with two columns. The rows provide Cartesian
+#' coordinates for the mask point locations.
+#' @param detfn A character string specifying the detection function
+#' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
+#' (threshold), "lth" (log-link threshold), "ss" (signal strength), or
+#' "logss" (log-link signal strength). If either of the latter two are
+#' used, signal strength information must be provided in \code{capt}.
+#' @param sv A named list. Component names are parameter names, and
+#' each component is a start value for the associated parameter.
+#' @param bounds A named list. Component names are parameter names,
+#' and each components is a vector of length two, specifying the
+#' bounds for the associated parameter.
+#' @param fix A named list. Component names are parameter names to be
+#' fixed, and each component is the fixed value for the associated
+#' parameter.
+#' @param scalefactors A named list. Component names are parameter
+#' names, and each components is a scalefactor for the associated
+#' parameter.
+#' @param trace logical, if \code{TRUE} parameter values at each step
+#' of the optimisation algorithm are printed to the R session.
 #'
-admbsecr2 <- function(capt, detfn, traps, mask, sv = NULL, fix, trace){
+#'
+admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
+                      fix = NULL, scalefactors = NULL, trace = FALSE){
   if (is.null(capt$bincapt)){
     stop("The binary capture history must be provided as a component of 'capt'.")
+  }
+  if (!is.list(sv) & !is.null(sv)){
+    stop("The 'sv' argument must be 'NULL' or a list")
+  }
+  if (!is.list(bounds) & !is.null(bounds)){
+    stop("The 'bounds' argument must be 'NULL' or a list")
+  }
+  if (!is.list(fix) & !is.null(fix)){
+    stop("The 'fix' argument must be 'NULL' or a list")
   }
   n <- nrow(capt$bincapt)
   ntraps <- nrow(traps)
@@ -527,18 +560,63 @@ admbsecr2 <- function(capt, detfn, traps, mask, sv = NULL, fix, trace){
   ## TODO: Sort out how to determine supplementary parameter names.
   suppar.names <- NULL
   par.names <- c("D", detpar.names, suppar.names)
-  npar <- length(par.names)
+  npars <- length(par.names)
   ## Sorting out start values.
   sv.old <- sv
-  sv <- vector("list", length = npar)
+  sv <- vector("list", length = npars)
   names(sv) <- par.names
   sv[names(sv.old)] <- sv.old
-  sv <- numeric(npar)
-  names(sv) <- par.names
+  sv[names(fix)] <- fix
   auto.names <- par.names[!names(sv) %in% names(sv.old)]
   sv.funs <- paste("auto", auto.names, "2", sep = "")
   for (i in seq(1, length(auto.names), length.out = length(auto.names))){
     sv[auto.names[i]] <- eval(call(sv.funs[i], capt, bincapt, traps, mask,
                                    sv, cutoff, method, detfn, cpi))
   }
+  phases <- vector("list", length = npars)
+  for (i in par.names){
+    if (any(i == names(fix))){
+      phases[[i]] <- -1
+    } else {
+      phases[[i]] <- 0
+    }
+  }
+  D.phase <- phases["D"]
+  detpar.phase <- phases[detpar.names]
+  suppar.phase <- phases[suppar.names]
+  default.bounds <- list(D = c(0, 1e8),
+                         Da = c(0, 1e8),
+                         muC = c(0, 1e8),
+                         sigmaC = c(0, 1e5),
+                         g0 = c(0, 1),
+                         sigma = c(0, 1e5),
+                         shape = c(-1e8, 1e8),
+                         shape1 = c(0, 1e5),
+                         shape2 = c(-1e8, 1e8),
+                         scale = c(0, 1e5),
+                         ssb0 = c(0, 1e8),
+                         ssb1 = c(0, 10),
+                         sigmass = c(0, 1e5),
+                         z = c(0, 1e5),
+                         sigmatoa = c(0, 1e5),
+                         kappa = c(0, 700),
+                         alpha = c(0, 10000))[parnames]
+  bound.changes <- bounds
+  bounds <- default.bounds
+  for (i in names(default.bounds)){
+    if (i %in% names(bound.changes)){
+      bounds[[i]] <- bound.changes[[i]]
+    }
+  }
+  D.bounds <- bounds[["D"]]
+  D.lb <- D.bounds[1]
+  D.ub <- D.bounds[2]
+  detpar.bounds <- bounds[detpar.names]
+  detpar.lb <- sapply(detpar.bounds, function(x) x[1])
+  detpar.ub <- sapply(detpar.bounds, function(x) x[2])
+  suppar.bounds <- bounds[suppar.names]
+  suppar.lb <- sapply(suppar.bounds, function(x) x[1])
+  suppar.ub <- sapply(suppar.bounds, function(x) x[2])
+  scalefactors <- vector("list", length = npars)
 }
+
