@@ -1,8 +1,16 @@
 ## Functions that automatically generate starting values for parameters.
 
 ## Lifted from the secr package.
-autosigma2 <- function(capt, traps, mask = NULL, sv = NULL, cutoff = NULL,
-                       method = NULL, detfn = NULL, cpi = NULL){
+autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL, cutoff = NULL,
+                      method = NULL, detfn = NULL, cpi = NULL){
+  obsRPSV <- RPSV.mod(bincapt, traps)
+  usge <- matrix(1, nrow = nrow(traps), ncol = ncol(capthist))
+  wt <- apply(usge > 0, 1, sum)
+  secr:::naivesigma(obsRPSV = obsRPSV, trps = traps, mask = mask,
+                    wt = wt, detectfn = 0, z = 1, tol = 0.1)
+}
+
+autosigma2 <- function(capt, traps){
   bincapt <- capt$bincapt
   ave.rc.dist <- function(x){
     trap.ids <- which(x == 1)
@@ -38,7 +46,7 @@ autoD <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, meth
 }
 
 ## Write own pdot function.
-autoD2 <- function(capthist = NULL, bincapt, traps, mask, sv, cutoff = NULL, method = NULL, detfn, cpi = NULL){
+autoD2 <- function(capt, traps){
   1000
 }
 
@@ -70,8 +78,7 @@ autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, s
   0.95
 }
 
-autog0 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
-                   cutoff = NULL, method = NULL, detfn = NULL, cpi = NULL){
+autog02 <- function(capt, traps){
   0.95
 }
 
