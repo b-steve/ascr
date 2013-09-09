@@ -9,9 +9,9 @@ DATA_SECTION
   init_ivector detpars_phase(1,n_detpars)
   init_vector detpars_sf(1,n_detpars)
   init_int n_suppars
-  init_vector suppars_lb(1,3)
-  init_vector suppars_ub(1,3)
-  init_ivector suppars_phase(1,3)
+  init_vector suppars_lb(1,n_suppars)
+  init_vector suppars_ub(1,n_suppars)
+  init_ivector suppars_phase(1,n_suppars)
   init_vector suppars_sf(1,n_suppars)
   init_number detfn_id
   init_number trace
@@ -23,36 +23,61 @@ DATA_SECTION
   init_number n_freqs
   init_vector call_freqs(1,n_freqs)
   init_matrix capt_bin(1,n,1,n_traps)
-  init_ivector ang_dim(1,2)
+  init_int fit_angs
   int nr_ang
   int nc_ang
-  !! nr_ang = ang_dim[1];
-  !! nc_ang = ang_dim[2];
-  init_matrix capt_ang(1,nr_ang,1,nc_ang);
-  init_ivector dist_dim(1,2)
+  !! if (fit_angs == 1){
+  !!   nr_ang = n;
+  !!   nc_ang = n_traps;
+  !! } else {
+  !!   nr_ang = 1;
+  !!   nc_ang = 1;
+  !! }
+  init_matrix capt_ang(1,nr_ang,1,nc_ang)
+  init_int fit_dists
   int nr_dist
   int nc_dist
-  !! nr_dist = dist_dim[1];
-  !! nc_dist = dist_dim[2];
-  init_matrix capt_dist(1,nr_dist,1,nc_dist);
-  init_ivector ss_dim(1,2)
+  !! if (fit_dists == 1){
+  !!   nr_dist = n;
+  !!   nc_dist = n_traps;
+  !! } else {
+  !!   nr_dist = 1;
+  !!   nc_dist = 1;
+  !! }
+  init_matrix capt_dist(1,nr_dist,1,nc_dist)
+  init_int fit_ss
   int nr_ss
   int nc_ss
-  !! nr_ss = ss_dim[1];
-  !! nc_ss = ss_dim[2];
-  init_matrix capt_ss(1,nr_ss,1,nc_ss);
-  init_ivector toa_dim(1,2)
+  !! if (fit_ss == 1){
+  !!   nr_ss = n;
+  !!   nc_ss = n_traps;
+  !! } else {
+  !!   nr_ss = 1;
+  !!   nc_ss = 1;
+  !! }
+  init_matrix capt_ss(1,nr_ss,1,nc_ss)
+  init_int fit_toas
   int nr_toa
   int nc_toa
-  !! nr_toa = toa_dim[1];
-  !! nc_toa = toa_dim[2];
+  !! if (fit_toas == 1){
+  !!   nr_toa = n;
+  !!   nc_toa = n_traps;
+  !! } else {
+  !!   nr_toa = 1;
+  !!   nc_toa = 1;
+  !! }
   init_matrix capt_toa(1,nr_toa,1,nc_toa)
-  init_ivector mrds_dim(1,2)
+  init_int fit_mrds
   int nr_mrds
   int nc_mrds
-  !! nr_mrds = mrds_dim[1];
-  !! nc_mrds = mrds_dim[2];
-  init_matrix mrds_dist(1,nr_mrds,1,nc_mrds);
+  !! if (fit_mrds == 1){
+  !!   nr_mrds = n;
+  !!   nc_mrds = n_traps;
+  !! } else {
+  !!   nr_mrds = 1;
+  !!   nc_mrds = 1;
+  !! }
+  init_matrix mrds_dist(1,nr_mrds,1,nc_mrds)
   init_matrix dists(1,n_traps,1,n_mask)
 
 PARAMETER_SECTION
@@ -88,11 +113,13 @@ PROCEDURE_SECTION
   }
   dvar_vector capt_hist(1, n_traps);
   dvar_vector secr_contrib(1, n_mask);
+  // Contribution due to capture history.
   for (int i = 1; i <= n_mask; i++){
     f -= log(sum(mfexp(capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs)) + DBL_MIN);
   }
   // Contribution from n.
   f -= log_dpois(n, A*D*sum_probs);
+  // Extra bit that falls out of ll.
   f -= -n*log(D*sum_probs);
   // Printing trace.
   if (trace){

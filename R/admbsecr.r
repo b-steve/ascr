@@ -531,7 +531,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
 #'
 admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       fix = NULL, scalefactors = NULL, trace = FALSE){
-  if (is.null(capt$bincapt)){
+  capt.bin <- capt$bincapt
+  if (is.null(capt.bin)){
     stop("The binary capture history must be provided as a component of 'capt'.")
   }
   if (!is.list(sv) & !is.null(sv)){
@@ -543,9 +544,9 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   if (!is.list(fix) & !is.null(fix)){
     stop("The 'fix' argument must be 'NULL' or a list")
   }
-  n <- nrow(capt$bincapt)
-  ntraps <- nrow(traps)
-  nmask <- nrow(mask)
+  n <- nrow(capt.bin)
+  n.traps <- nrow(traps)
+  n.mask <- nrow(mask)
   A <- attr(mask, "area")
   dist <- distances(traps, mask)
   detfns <- c("hn", "hr", "th", "lth", "ss", "logss")
@@ -560,6 +561,8 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   ## TODO: Sort out how to determine supplementary parameter names.
   suppar.names <- NULL
   par.names <- c("D", detpar.names, suppar.names)
+  n.detpars <- length(detpar.names)
+  n.suppars <- length(suppar.names)
   npars <- length(par.names)
   ## Sorting out start values.
   sv.old <- sv
@@ -573,6 +576,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     sv[auto.names[i]] <- eval(call(sv.funs[i], capt, bincapt, traps, mask,
                                    sv, cutoff, method, detfn, cpi))
   }
+  ## Sorting out phases.
   phases <- vector("list", length = npars)
   for (i in par.names){
     if (any(i == names(fix))){
@@ -581,9 +585,10 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       phases[[i]] <- 0
     }
   }
-  D.phase <- phases["D"]
-  detpar.phase <- phases[detpar.names]
-  suppar.phase <- phases[suppar.names]
+  D.phase <- phases[["D"]]
+  detpars.phase <- c(phases[detpar.names], recursive = TRUE)
+  suppars.phase <- c(phases[suppar.names], recursive = TRUE)
+  ## Sorting out bounds.
   default.bounds <- list(D = c(0, 1e8),
                          Da = c(0, 1e8),
                          muC = c(0, 1e8),
@@ -600,7 +605,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                          z = c(0, 1e5),
                          sigmatoa = c(0, 1e5),
                          kappa = c(0, 700),
-                         alpha = c(0, 10000))[parnames]
+                         alpha = c(0, 10000))[par.names]
   bound.changes <- bounds
   bounds <- default.bounds
   for (i in names(default.bounds)){
@@ -612,11 +617,43 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   D.lb <- D.bounds[1]
   D.ub <- D.bounds[2]
   detpar.bounds <- bounds[detpar.names]
-  detpar.lb <- sapply(detpar.bounds, function(x) x[1])
-  detpar.ub <- sapply(detpar.bounds, function(x) x[2])
+  detpars.lb <- sapply(detpar.bounds, function(x) x[1])
+  detpars.ub <- sapply(detpar.bounds, function(x) x[2])
   suppar.bounds <- bounds[suppar.names]
-  suppar.lb <- sapply(suppar.bounds, function(x) x[1])
-  suppar.ub <- sapply(suppar.bounds, function(x) x[2])
-  scalefactors <- vector("list", length = npars)
+  suppars.lb <- sapply(suppar.bounds, function(x) x[1])
+  suppars.ub <- sapply(suppar.bounds, function(x) x[2])
+  ## Sorting out scalefactors.
+  sf <- vector("list", length = npars)
+  for (i in par.names){
+    sf[i] <- ifelse(i %in% names(scalefactors), scalefactors[i], 1)
+  }
+  D.sf <- sf[["D"]]
+  detpars.sf <- c(sf[detpar.names], recursive = TRUE)
+  suppars.sf <- c(sf[suppar.names], recursive = TRUE)
+  dbl.min <- 1e-150
+  ## Some stuff being set as defaults for testing.
+  n.freqs <- 1
+  call.freqs <- 1
+  fit.angs <- 0
+  fit.dists <- 0
+  fit.ss <- 0
+  fit.toas <- 0
+  fit.mrds <- 0
+  capt.ang <- ifelse(fit.angs, capt$ang, 0)
+  capt.dist <- ifelse(fit.dist, capt$dist, 0)
+  capt.ss <- ifelse(fit.ss, capt$ss, 0)
+  capt.toa <- ifelse(fit.toa, capt$toa, 0)
+  mrds.dist <- ifelse(fit.mrds, capt$mrds, 0)
+  ###
+  dists <- distances(traps, mask)
+  data.list <- list(D.lb, D.ub, D.phase, D.sf, n.detpars, detpars.lb,
+                    detpars.ub, detpars.phase, detpars.sf, n.suppars,
+                    suppars.lb, suppars.ub, suppars.phase, suppars.sf,
+                    detfn.id, as.numeric(trace), dbl.min, n, n.traps,
+                    n.mask, A, n.freqs, call.freqs, capt.bin,
+                    fit.angs, capt.ang, fit.dists, capt.dist, fit.ss,
+                    capt.ss, fit.toas, capt.toa, fit.mrds, mrds.dist,
+                    dists)
+  write_pin("secr", list(sv))
+  write_dat("secr", data.list)
 }
-
