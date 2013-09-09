@@ -493,3 +493,22 @@ try.admbsecr <- function(sv = "auto", ...){
   }
   res
 }
+
+## Adapted from R2admb.
+read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
+  if (verbose) 
+    cat("reading output ...\n")
+  parfn <- paste(fn, "par", sep = ".")
+  if (!file.exists(parfn)) 
+    stop("couldn't find parameter file ", parfn)
+  L <- c(list(fn = fn), read_pars(fn))
+  if (checkterm) {
+    v <- with(L, vcov[seq(npar), seq(npar)])
+    ev <- try(eigen(solve(v))$value, silent = TRUE)
+    L$eratio <- if (inherits(ev, "try-error")) 
+      NA
+    else min(ev)/max(ev)
+  }
+  class(L) <- "admb"
+  L
+}
