@@ -26,12 +26,18 @@ DATA_SECTION
   init_int fit_angs
   int nr_ang
   int nc_ang
+  int nr_angmat
+  int nc_angmat
   !! if (fit_angs == 1){
   !!   nr_ang = n;
   !!   nc_ang = n_traps;
+  !!   nr_angmat = n_traps;
+  !!   nc_angmat = n_mask;
   !! } else {
   !!   nr_ang = 1;
   !!   nc_ang = 1;
+  !!   nr_angmat = 1;
+  !!   nc_angmat = 1;
   !! }
   init_matrix capt_ang(1,nr_ang,1,nc_ang)
   init_int fit_dists
@@ -79,6 +85,30 @@ DATA_SECTION
   !! }
   init_matrix mrds_dist(1,nr_mrds,1,nc_mrds)
   init_matrix dists(1,n_traps,1,n_mask)
+  init_matrix angs(1,n_traps,1,n_mask)
+  int any_suppars
+  !! if (fit_angs + fit_dists + fit_toas > 1){
+  !!   any_suppars = 1;
+  !! } else {
+  !!   any_suppars = 0;
+  !! }
+  // Sorting out positions in suppars.
+  int kappa_ind
+  int alpha_ind
+  int sigma_toa_ind
+  int curr_ind
+  !! curr_ind = 1;
+  !! if (fit_angs){
+  !!   kappa_ind = curr_ind;
+  !!   curr_ind++;
+  !! }
+  !! if (fit_dists){
+  !!   alpha_ind = curr_ind;
+  !!   curr_ind++;
+  !! }
+  !! if (fit_toas){
+  !!   sigma_toa_ind = curr_ind;
+  !! }
 
 PARAMETER_SECTION
   objective_function_value f
@@ -105,30 +135,45 @@ PROCEDURE_SECTION
       dist = dists(j, i);
       capt_prob = detfn(dist, detpars);
       // Compare to calculating these outside loop.
-      log_capt_probs[j, i] = log(capt_prob + DBL_MIN);
-      log_evade_probs[j, i] = log(1 - capt_prob + DBL_MIN);
+      log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
+      log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
       undet_prob *= 1 - capt_prob;
     }
-    sum_probs += 1 - undet_prob;
+    sum_probs += 1 - undet_prob + DBL_MIN;
   }
   dvar_vector capt_hist(1, n_traps);
-  dvar_vector secr_contrib(1, n_mask);
+  // Set up vector with length m if supp info, 0 otherwise.
+  dvar_vector supp_contrib(1, n_mask);
   // Contribution due to capture history.
-  for (int i = 1; i <= n_mask; i++){
-    f -= log(sum(mfexp(capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs)) + DBL_MIN);
+  for (int i = 1; i <= n; i++){
+    capt_hist = row(capt_bin, i);
+    supp_contrib = 0;
+    for (int j = 1; j <= n_traps; j++){
+    //  Try setting up a ragged array of capture locations for each individual instead. 
+      if (capt_bin(i, j)){
+        if (fit_angs){
+          supp_contrib += suppars[kappa_ind]*cos(capt_ang(i, j) - row(angs, j));
+         
+        }
+      }
+    }
+    supp_contrib -= sum(capt_hist)*log(2*pi*bessi0(suppars[kappa_ind]));
+    f -= log(sum(mfexp(capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs + supp_contrib)) + DBL_MIN);
   }
   // Contribution from n.
   f -= log_dpois(n, A*D*sum_probs);
   // Extra bit that falls out of ll.
-  f -= -n*log(D*sum_probs);
+  f -= -n*log(sum_probs);
   // Printing trace.
   if (trace){
     cout << "D: " << D << ", ";
-    for (int i; i <= n_detpars; i++){
+    for (int i = 1; i <= n_detpars; i++){
       cout << "DF Par " << i << ": " << detpars[i] << ", ";
     }
-    for (int i; i <= n_suppars; i++){
-      cout << "Supp Par " << i << ": " << detpars[i] << ", ";
+    if (any_suppars){
+      for (int i = 1; i <= n_suppars; i++){
+        cout << "Supp Par " << i << ": " << suppars[i] << ", ";
+      }
     }
     cout << "LL: " << -f << endl;
   }
