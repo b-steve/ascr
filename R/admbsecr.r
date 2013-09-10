@@ -699,11 +699,10 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   }
 
   file.copy(exe.loc, exe.dest)
-  ##system("./secr")
   run_admb("secr", verbose = trace)
-  file.remove("secr")
   out <- read.admbsecr("secr")
   clean_admb("secr")
+  file.remove(exe.dest, "secr.pin", "secr.dat")
   out
 }
 
