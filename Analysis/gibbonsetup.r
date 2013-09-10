@@ -11,7 +11,7 @@ mask.dists <- distances(as.matrix(traps), as.matrix(mask))
 mask.angs <- angles(as.matrix(traps), as.matrix(mask))
 ndets <- nrow(gibbons)
 ncues <- length(unique(gibbons$group.id))
-radians <- array(NA, dim = c(ncues, 1, ntraps),
+radians <- array(0, dim = c(ncues, 1, ntraps),
                  dimnames = list(group = unique(gibbons$group.id),
                    occasion = 1, post = c("A", "B", "C")))
 for(det in 1:ndets){
