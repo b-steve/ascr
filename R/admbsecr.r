@@ -691,8 +691,14 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   write_pin("secr", sv)
   write_dat("secr", data.list)
   ##exe.loc <- paste(installed.packages()["admbsecr", ]["LibPath"], "ADMB", "secr", sep = "/")
-  exe.loc <- "/home/ben/admbsecr/ADMB/secr"
-  file.copy(exe.loc, "secr")
+  exe.loc <- "~/admbsecr/ADMB/secr"
+  exe.dest <- "secr"
+  if (.Platform$OS == "windows"){
+    exe.loc <- paste(exe.loc, "exe", sep = ".")
+    exe.dest <- paste(exe.dest, "exe", sep = ".")
+  }
+
+  file.copy(exe.loc, exe.dest)
   ##system("./secr")
   run_admb("secr", verbose = trace)
   file.remove("secr")
