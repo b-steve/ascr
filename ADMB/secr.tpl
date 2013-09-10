@@ -87,7 +87,7 @@ DATA_SECTION
   init_matrix dists(1,n_traps,1,n_mask)
   init_matrix angs(1,n_traps,1,n_mask)
   int any_suppars
-  !! if (fit_angs + fit_dists + fit_toas > 1){
+  !! if (fit_angs + fit_dists + fit_toas > 0){
   !!   any_suppars = 1;
   !! } else {
   !!   any_suppars = 0;
@@ -149,11 +149,11 @@ PROCEDURE_SECTION
     capt_hist = row(capt_bin, i);
     supp_contrib = 0;
     for (int j = 1; j <= n_traps; j++){
-    //  Try setting up a ragged array of capture locations for each individual instead. 
+    //  Try setting up a ragged array of capture locations for each individual instead.
       if (capt_bin(i, j)){
         if (fit_angs){
           supp_contrib += suppars[kappa_ind]*cos(capt_ang(i, j) - row(angs, j));
-         
+
         }
       }
     }
