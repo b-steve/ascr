@@ -698,7 +698,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     exe.dest <- paste(exe.dest, "exe", sep = ".")
   }
 
-  file.copy(exe.loc, exe.dest)
+  file.copy(exe.loc, exe.dest, overwrite = TRUE)
   run_admb("secr", verbose = trace)
   out <- read.admbsecr("secr")
   clean_admb("secr")
