@@ -86,11 +86,16 @@ DATA_SECTION
   init_matrix mrds_dist(1,nr_mrds,1,nc_mrds)
   init_matrix dists(1,n_traps,1,n_mask)
   init_matrix angs(1,n_traps,1,n_mask)
+  // Indicator for supplementary information.
+  // Also sorting out length of supp_contrib.
   int any_suppars
+  int n_supp_contrib
   !! if (fit_angs + fit_dists + fit_toas > 0){
   !!   any_suppars = 1;
+  !!   n_supp_contrib = n_mask;
   !! } else {
   !!   any_suppars = 0;
+  !!   n_supp_contrib = 1;
   !! }
   // Sorting out positions in suppars.
   int kappa_ind
@@ -142,23 +147,32 @@ PROCEDURE_SECTION
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
   dvar_vector capt_hist(1, n_traps);
-  // Set up vector with length m if supp info, 0 otherwise.
-  dvar_vector supp_contrib(1, n_mask);
+  dvar_vector supp_contrib(1, n_supp_contrib);
+  dvar_vector total_contrib(1, n_mask);
   // Contribution due to capture history.
   for (int i = 1; i <= n; i++){
     capt_hist = row(capt_bin, i);
+    // Contribution from capture locations.
+    total_contrib = capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs;
+    // Contribution from supplementary information.
     supp_contrib = 0;
-    for (int j = 1; j <= n_traps; j++){
-    //  Try setting up a ragged array of capture locations for each individual instead.
-      if (capt_bin(i, j)){
-        if (fit_angs){
-          supp_contrib += suppars[kappa_ind]*cos(capt_ang(i, j) - row(angs, j));
-
+    if (any_suppars){
+      supp_contrib(1, n_mask) = 0;
+      for (int j = 1; j <= n_traps; j++){
+      //  Try setting up a ragged array of capture locations for each individual instead.
+        if (capt_bin(i, j)){
+          if (fit_angs){
+            supp_contrib += suppars[kappa_ind]*cos(capt_ang(i, j) - row(angs, j));
+          }
         }
       }
+      if (fit_angs){
+        supp_contrib -= sum(capt_hist)*log(2*pi*bessi0(suppars[kappa_ind]));
+      }
+      total_contrib += supp_contrib;
     }
-    supp_contrib -= sum(capt_hist)*log(2*pi*bessi0(suppars[kappa_ind]));
-    f -= log(sum(mfexp(capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs + supp_contrib)) + DBL_MIN);
+    //f -= log(sum(mfexp(capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs + supp_contrib)) + DBL_MIN);
+    f -= log(sum(mfexp(total_contrib)) + DBL_MIN);
   }
   // Contribution from n.
   f -= log_dpois(n, A*D*sum_probs);
