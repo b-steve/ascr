@@ -548,7 +548,6 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   n.traps <- nrow(traps)
   n.mask <- nrow(mask)
   A <- attr(mask, "area")
-  dist <- distances(traps, mask)
   detfns <- c("hn", "hr", "th", "lth", "ss", "logss")
   detfn.id <- which(detfn == detfns)
   detpar.names <- switch(detfn,
@@ -666,6 +665,11 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   } else {
     angs <- 0
   }
+  if (fit.toas){
+    toa.ssq <- t(apply(capt$toa, 1, toa.ssq, dists = dists, speed = 330))
+  } else {
+    toa.ssq <- 0
+  }
   ## kludge to fix no. parameters for no supplementary information.
   if (n.suppars == 0){
     n.suppars <- max(c(n.suppars, 1))
@@ -687,7 +691,8 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     capt.dist, fit_ss = as.numeric(fit.ss), capt_ss =
                     capt.ss, fit_toas = as.numeric(fit.toas), capt_toa
                     = capt.toa, fit_mrds = as.numeric(fit.mrds),
-                    mrds_dist = mrds.dist, dists = dists, angs = angs)
+                    mrds_dist = mrds.dist, dists = dists, angs = angs,
+                    toa_ssq = toa.ssq)
   write_pin("secr", sv)
   write_dat("secr", data.list)
   ##exe.loc <- paste(installed.packages()["admbsecr", ]["LibPath"], "ADMB", "secr", sep = "/")

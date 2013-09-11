@@ -65,12 +65,18 @@ DATA_SECTION
   init_int fit_toas
   int nr_toa
   int nc_toa
+  int nr_toa_ssq
+  int nc_toa_ssq
   !! if (fit_toas == 1){
   !!   nr_toa = n;
   !!   nc_toa = n_traps;
+  !!   nr_toa_ssq = n;
+  !!   nc_toa_ssq = n_mask;
   !! } else {
   !!   nr_toa = 1;
   !!   nc_toa = 1;
+  !!   nr_toa_ssq = 1;
+  !!   nc_toa_ssq = 1;
   !! }
   init_matrix capt_toa(1,nr_toa,1,nc_toa)
   init_int fit_mrds
@@ -85,17 +91,14 @@ DATA_SECTION
   !! }
   init_matrix mrds_dist(1,nr_mrds,1,nc_mrds)
   init_matrix dists(1,n_traps,1,n_mask)
-  init_matrix angs(1,n_traps,1,n_mask)
+  init_matrix angs(1,nr_angmat,1,nc_angmat)
+  init_matrix toa_ssq(1,nr_toa_ssq,1,nc_toa_ssq)
   // Indicator for supplementary information.
-  // Also sorting out length of supp_contrib.
   int any_suppars
-  int n_supp_contrib
   !! if (fit_angs + fit_dists + fit_toas > 0){
   !!   any_suppars = 1;
-  !!   n_supp_contrib = n_mask;
   !! } else {
   !!   any_suppars = 0;
-  !!   n_supp_contrib = 1;
   !! }
   // Sorting out positions in suppars.
   int kappa_ind
@@ -147,7 +150,6 @@ PROCEDURE_SECTION
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
   dvar_vector capt_hist(1, n_traps);
-  dvar_vector supp_contrib(1, n_supp_contrib);
   dvar_vector total_contrib(1, n_mask);
   // Contribution due to capture history.
   for (int i = 1; i <= n; i++){
@@ -155,23 +157,28 @@ PROCEDURE_SECTION
     // Contribution from capture locations.
     total_contrib = capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs;
     // Contribution from supplementary information.
-    supp_contrib = 0;
     if (any_suppars){
-      supp_contrib(1, n_mask) = 0;
+      dvar_vector supp_contrib(1, n_mask);
+      supp_contrib = 0;
       for (int j = 1; j <= n_traps; j++){
       //  Try setting up a ragged array of capture locations for each individual instead.
         if (capt_bin(i, j)){
+	  // Contribution from bearings.
           if (fit_angs){
             supp_contrib += suppars[kappa_ind]*cos(capt_ang(i, j) - row(angs, j));
           }
         }
       }
+      // Constant part of von Mises density.
       if (fit_angs){
         supp_contrib -= sum(capt_hist)*log(2*pi*bessi0(suppars[kappa_ind]));
       }
+      if (fit_toas){
+	// Try saving sigma_toa separately.
+        supp_contrib += (1 - sum(capt_hist))*log(suppars[sigma_toa_ind]) - (row(toa_ssq, i)/(2*square(suppars[sigma_toa_ind])));
+      }
       total_contrib += supp_contrib;
     }
-    //f -= log(sum(mfexp(capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs + supp_contrib)) + DBL_MIN);
     f -= log(sum(mfexp(total_contrib)) + DBL_MIN);
   }
   // Contribution from n.
