@@ -1,4 +1,4 @@
-
+  sdreport_number esa
 // Flag for creating sdreport_number for D
 //@SDREPD
 
@@ -48,8 +48,10 @@ PROCEDURE_SECTION
     }
     L1 += log(sum(mfexp(log(D) + (wi1*logp1 + (1 - wi1)*logp2) + distll)) + DBL_MIN);
   }
+  // Calculating esa.
+  esa = A*sum(pm);
   // Putting log-likelihood together.
-  dvariable lambda = A*D*sum(pm);
+  dvariable lambda = D*esa;
   dvariable L2 = -n*log(D*sum(pm));
   dvariable L3 = log_density_poisson(n,lambda);
   f -= L1 + L2 + L3;
