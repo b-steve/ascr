@@ -126,6 +126,7 @@ PARAMETER_SECTION
   !! D.set_scalefactor(D_sf);
   !! detpars.set_scalefactor(detpars_sf);
   !! suppars.set_scalefactor(suppars_sf);
+  sdreport_number esa
 
 PROCEDURE_SECTION
   detfn_pointer detfn = get_detfn(detfn_id);
@@ -181,8 +182,10 @@ PROCEDURE_SECTION
     }
     f -= log(sum(mfexp(total_contrib)) + DBL_MIN);
   }
+  // Calculating ESA.
+  esa = A*sum_probs;
   // Contribution from n.
-  f -= log_dpois(n, A*D*sum_probs);
+  f -= log_dpois(n, D*esa);
   // Extra bit that falls out of ll.
   f -= -n*log(sum_probs);
   // Printing trace.
