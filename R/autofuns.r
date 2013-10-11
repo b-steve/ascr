@@ -10,6 +10,8 @@ autosigma <- function(capthist = NULL, bincapt, traps, mask, sv = NULL, cutoff =
                     wt = wt, detectfn = 0, z = 1, tol = 0.1)
 }
 
+## Not lifted from the secr package.
+## Grabs the average recapture distance, or something.
 autosigma2 <- function(capt, traps){
   bincapt <- capt$bincapt
   ave.rc.dist <- function(x){
@@ -91,6 +93,10 @@ autosigmatoa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = N
   ##   capthist <- capthist[, , , 2, drop = FALSE]
   ## }
   ## mean(apply(capthist, 1, function(x) sd(x[x != 0])), na.rm = TRUE)
+  0.0025
+}
+
+autosigma.toa2 <- function(capt, traps){
   0.0025
 }
 

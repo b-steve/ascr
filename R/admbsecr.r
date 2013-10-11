@@ -695,6 +695,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     toa_ssq = toa.ssq)
   write_pin("secr", sv)
   write_dat("secr", data.list)
+  ## TODO: Find a clever way of accesing executable.
   ##exe.loc <- paste(installed.packages()["admbsecr", ]["LibPath"], "ADMB", "secr", sep = "/")
   exe.loc <- "~/admbsecr/ADMB/secr"
   exe.dest <- "secr"
@@ -707,7 +708,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   run_admb("secr", verbose = trace)
   out <- read.admbsecr("secr")
   clean_admb("secr")
-  file.remove(exe.dest, "secr.pin", "secr.dat")
+  #file.remove(exe.dest, "secr.pin", "secr.dat")
   out
 }
 
