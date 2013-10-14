@@ -524,7 +524,8 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
 #' parameter.
 #' @param scalefactors A named list. Component names are parameter
 #' names, and each components is a scalefactor for the associated
-#' parameter.
+#' parameter. The default behaviour is to automatically select
+#' scalefactors based on parameter start values.
 #' @param trace logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
 #'
@@ -643,9 +644,15 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     suppars.ub <- 0
   }
   ## Sorting out scalefactors.
-  sf <- vector("list", length = npars)
-  for (i in par.names){
-    sf[i] <- ifelse(i %in% names(scalefactors), scalefactors[i], 1)
+  if (is.null(scalefactors)){
+    sv.vec <- c(sv, recursive = TRUE)
+    sf <- max(sv.vec)/sv.vec
+  } else {
+    sf <- numeric(npars)
+    names(sf) <- par.names
+    for (i in par.names){
+      sf[i] <- ifelse(i %in% names(scalefactors), scalefactors[i], 1)
+    }
   }
   D.sf <- sf[["D"]]
   detpars.sf <- c(sf[detpar.names], recursive = TRUE)
@@ -693,22 +700,21 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     = capt.toa, fit_mrds = as.numeric(fit.mrds),
                     mrds_dist = mrds.dist, dists = dists, angs = angs,
                     toa_ssq = toa.ssq)
+  ## TODO: Find a clever way of accesing executable.
+  ##exe.dir <- paste(installed.packages()["admbsecr", ]["LibPath"], "ADMB", sep = "/")
+  exe.dir <- "~/admbsecr/ADMB"
+  curr.dir <- getwd()
+  setwd(exe.dir)
+  curr.files <- list.files()
   write_pin("secr", sv)
   write_dat("secr", data.list)
-  ## TODO: Find a clever way of accesing executable.
-  ##exe.loc <- paste(installed.packages()["admbsecr", ]["LibPath"], "ADMB", "secr", sep = "/")
-  exe.loc <- "~/admbsecr/ADMB/secr"
-  exe.dest <- "secr"
-  if (.Platform$OS == "windows"){
-    exe.loc <- paste(exe.loc, "exe", sep = ".")
-    exe.dest <- paste(exe.dest, "exe", sep = ".")
-  }
-
-  file.copy(exe.loc, exe.dest, overwrite = TRUE)
-  run_admb("secr", verbose = trace)
+  ##run_admb("secr", verbose = trace)
+  system("./secr -ind secr.dat -ainp secr.pin", ignore.stdout = !trace)
   out <- read.admbsecr("secr")
-  clean_admb("secr")
-  #file.remove(exe.dest, "secr.pin", "secr.dat")
+  all.files <- list.files()
+  new.files <- all.files[!all.files %in% curr.files]
+  file.remove(new.files)
+  setwd(curr.dir)
   out
 }
 
