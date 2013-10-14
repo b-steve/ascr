@@ -157,6 +157,12 @@ autoalpha <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = 
   2
 }
 
+autoalpha2 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
+                       cutoff = NULL, method = NULL, detfn = NULL, cpi = NULL){
+  2
+}
+
+
 autoshape <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL, cpi = NULL){
   5
