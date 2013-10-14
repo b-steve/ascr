@@ -117,6 +117,7 @@ DATA_SECTION
   !! if (fit_toas){
   !!   sigma_toa_ind = curr_ind;
   !! }
+  number dist
 
 PARAMETER_SECTION
   objective_function_value f
@@ -127,16 +128,18 @@ PARAMETER_SECTION
   !! detpars.set_scalefactor(detpars_sf);
   !! suppars.set_scalefactor(suppars_sf);
   sdreport_number esa
+  number sum_probs
+  number undet_prob
+  number capt_prob
+  matrix log_capt_probs(1,n_traps,1,n_mask)
+  matrix log_evade_probs(1,n_traps,1,n_mask)
+  vector capt_hist(1,n_traps)
+  vector total_contrib(1,n_mask)
 
 PROCEDURE_SECTION
   detfn_pointer detfn = get_detfn(detfn_id);
-  const double pi = 3.141592653589793238463;
   f = 0.0;
   // Calculating mask detection probabilities.
-  double dist;
-  dvariable sum_probs, undet_prob, capt_prob;
-  dvar_matrix log_capt_probs(1, n_traps, 1, n_mask);
-  dvar_matrix log_evade_probs(1, n_traps, 1, n_mask);
   sum_probs = 0;
   for (int i = 1; i <= n_mask; i++){
     undet_prob = 1;
@@ -150,8 +153,6 @@ PROCEDURE_SECTION
     }
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
-  dvar_vector capt_hist(1, n_traps);
-  dvar_vector total_contrib(1, n_mask);
   // Contribution due to capture history.
   for (int i = 1; i <= n; i++){
     capt_hist = row(capt_bin, i);
@@ -166,17 +167,27 @@ PROCEDURE_SECTION
         if (capt_bin(i, j)){
 	  // Contribution from bearings.
           if (fit_angs){
-            supp_contrib += suppars[kappa_ind]*cos(capt_ang(i, j) - row(angs, j));
+            supp_contrib += suppars(kappa_ind)*cos(capt_ang(i, j) - row(angs, j));
           }
+	  if (fit_dists){
+	    // Try saving alpha separately.
+	    dvar_vector beta(1, n_mask);
+	    beta = suppars(alpha_ind)/row(dists, j);
+	    supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - (beta*capt_dist(i, j));
+	  }
         }
       }
       // Constant part of von Mises density.
       if (fit_angs){
-        supp_contrib -= sum(capt_hist)*log(2*pi*bessi0(suppars[kappa_ind]));
+        supp_contrib -= sum(capt_hist)*log(2*M_PI*bessi0(suppars(kappa_ind)));
       }
+      // Constant part of the gamma density.
+      if (fit_dists){
+      	supp_contrib -= sum(capt_hist)*gammln(suppars(alpha_ind));
+      }     
       if (fit_toas){
 	// Try saving sigma_toa separately.
-        supp_contrib += (1 - sum(capt_hist))*log(suppars[sigma_toa_ind]) - (row(toa_ssq, i)/(2*square(suppars[sigma_toa_ind])));
+        supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row(toa_ssq, i)/(2*square(suppars(sigma_toa_ind))));
       }
       total_contrib += supp_contrib;
     }
@@ -192,11 +203,11 @@ PROCEDURE_SECTION
   if (trace){
     cout << "D: " << D << ", ";
     for (int i = 1; i <= n_detpars; i++){
-      cout << "DF Par " << i << ": " << detpars[i] << ", ";
+      cout << "DF Par " << i << ": " << detpars(i) << ", ";
     }
     if (any_suppars){
       for (int i = 1; i <= n_suppars; i++){
-        cout << "Supp Par " << i << ": " << suppars[i] << ", ";
+        cout << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
     cout << "LL: " << -f << endl;
