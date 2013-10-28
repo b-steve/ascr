@@ -38,7 +38,9 @@
 
   \item{scalefactors}{A named list. Component names are
   parameter names, and each components is a scalefactor for
-  the associated parameter.}
+  the associated parameter. The default behaviour is to
+  automatically select scalefactors based on parameter
+  start values.}
 
   \item{trace}{logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
