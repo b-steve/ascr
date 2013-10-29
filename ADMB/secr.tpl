@@ -56,12 +56,18 @@ DATA_SECTION
   init_int linkfn_id
   int nr_ss
   int nc_ss
+  int nr_expected_ss
+  int nc_expected_ss
   !! if (fit_ss == 1){
   !!   nr_ss = n;
   !!   nc_ss = n_traps;
+  !!   nr_expected_ss = n_traps;
+  !!   nc_expected_ss = n_mask;
   !! } else {
   !!   nr_ss = 1;
   !!   nc_ss = 1;
+  !!   nr_expected_ss = 1;
+  !!   nc_expected_ss = 1;
   !! }
   init_matrix capt_ss(1,nr_ss,1,nc_ss)
   init_int fit_toas
@@ -135,13 +141,12 @@ PARAMETER_SECTION
   number capt_prob
   matrix log_capt_probs(1,n_traps,1,n_mask)
   matrix log_evade_probs(1,n_traps,1,n_mask)
-  matrix expected_ss(1,n_traps,1,n_mask)
+  matrix expected_ss(1,nr_expected_ss,1,nr_expected_ss)
   vector capt_hist(1,n_traps)
   vector total_contrib(1,n_mask)
 
 PROCEDURE_SECTION
   detfn_pointer detfn = get_detfn(detfn_id);
-  linkfn_pointer linkfn = get_linkfn(linkfn_id);
   f = 0.0;
   // Calculating mask detection probabilities.
   sum_probs = 0;
@@ -150,7 +155,6 @@ PROCEDURE_SECTION
     for (int j = 1; j <= n_traps; j++){
       dist = dists(j, i);
       capt_prob = detfn(dist, detpars, cutoff);
-      //if (i == 1 && j == 1) cout << dist << " " << detpars << " " << cutoff << " " << capt_prob << endl; exit(1001);
       // Compare to calculating these outside loop.
       log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
       log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
@@ -158,7 +162,10 @@ PROCEDURE_SECTION
     }
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
-  expected_ss = detpars(1) - detpars(2)*dists;
+  // Use expected ss in capt_prob above to save recalculation.
+  if (fit_ss){
+    expected_ss = detpars(1) - detpars(2)*dists;
+  }
   // Contribution due to capture history.
   for (int i = 1; i <= n; i++){
     log_capt_probs = 0;
