@@ -526,12 +526,15 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
 #' names, and each components is a scalefactor for the associated
 #' parameter. The default behaviour is to automatically select
 #' scalefactors based on parameter start values.
+#' @param cutoff The signal strength threshold, above which sounds are
+#' identified as detections.
 #' @param trace logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
-#'
+#' @param clean logical, if \code{TRUE} ADMB output files are removed.
 #'
 admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-                      fix = NULL, scalefactors = NULL, trace = FALSE, clean = TRUE){
+                      fix = NULL, scalefactors = NULL, ss.link = "identity",
+                      cutoff = NULL, trace = FALSE, clean = TRUE){
   capt.bin <- capt$bincapt
   if (is.null(capt.bin)){
     stop("The binary capture history must be provided as a component of 'capt'.")
@@ -549,15 +552,6 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   n.traps <- nrow(traps)
   n.mask <- nrow(mask)
   A <- attr(mask, "area")
-  detfns <- c("hn", "hr", "th", "lth", "ss", "logss")
-  detfn.id <- which(detfn == detfns)
-  detpar.names <- switch(detfn,
-                         hn = c("g0", "sigma"),
-                         hr = c("g0", "sigma", "z"),
-                         th = c("shape", "scale"),
-                         lth = c("shape.1", "shape.2", "scale"),
-                         ss = c("b0.ss", "b1.ss", "sigma.ss"),
-                         logss = c("b0.ss", "b1.ss", "sigma.ss"))
   ## TODO: Sort out how to determine supplementary parameter names.
   supp.types <- c("ang", "dist", "ss", "toa", "mrds")
   fit.types <- supp.types %in% names(capt)
@@ -573,6 +567,28 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   capt.toa <- if (fit.toas) capt$toa else 0
   mrds.dist <- if (fit.mrds) capt$mrds else 0
   suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("ang", "dist", "toa")]]
+  if (fit.ss){
+    if (ss.link == "identity"){
+      detfn <- "ss"
+      linkfn.id <- 1
+    } else if (ss.link == "log"){
+      detfn <- "log.ss"
+      linkfn.id <- 2
+    } else {
+      stop("ss.link must be either \"identity\" or \"log\"")
+    }
+  } else {
+    linkfn.id <- 3
+  }
+  detfns <- c("hn", "hr", "th", "lth", "ss", "log.ss")
+  detfn.id <- which(detfn == detfns)
+  detpar.names <- switch(detfn,
+                         hn = c("g0", "sigma"),
+                         hr = c("g0", "sigma", "z"),
+                         th = c("shape", "scale"),
+                         lth = c("shape.1", "shape.2", "scale"),
+                         ss = c("b0.ss", "b1.ss", "sigma.ss"),
+                         logss = c("b0.ss", "b1.ss", "sigma.ss"))
   par.names <- c("D", detpar.names, suppar.names)
   n.detpars <- length(detpar.names)
   n.suppars <- length(suppar.names)
@@ -677,6 +693,9 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   } else {
     toa.ssq <- 0
   }
+  if (is.null(cutoff)){
+    cutoff <- 0
+  }
   ## kludge to fix no. parameters for no supplementary information.
   if (n.suppars == 0){
     n.suppars <- max(c(n.suppars, 1))
@@ -695,9 +714,10 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     call.freqs, capt_bin = capt.bin, fit_angs =
                     as.numeric(fit.angs), capt_ang = capt.ang,
                     fit_dists = as.numeric(fit.dists), capt_dist =
-                    capt.dist, fit_ss = as.numeric(fit.ss), capt_ss =
-                    capt.ss, fit_toas = as.numeric(fit.toas), capt_toa
-                    = capt.toa, fit_mrds = as.numeric(fit.mrds),
+                    capt.dist, fit_ss = as.numeric(fit.ss), cutoff =
+                    cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss,
+                    fit_toas = as.numeric(fit.toas), capt_toa =
+                    capt.toa, fit_mrds = as.numeric(fit.mrds),
                     mrds_dist = mrds.dist, dists = dists, angs = angs,
                     toa_ssq = toa.ssq)
   ## TODO: Find a clever way of accesing executable.

@@ -97,7 +97,7 @@ DATA_SECTION
   init_matrix toa_ssq(1,nr_toa_ssq,1,nc_toa_ssq)
   // Indicator for supplementary information.
   int any_suppars
-  !! if (fit_angs + fit_dists + fit_toas > 0){
+  !! if (fit_angs + fit_dists + fit_ss + fit_toas > 0){
   !!   any_suppars = 1;
   !! } else {
   !!   any_suppars = 0;
@@ -135,6 +135,7 @@ PARAMETER_SECTION
   number capt_prob
   matrix log_capt_probs(1,n_traps,1,n_mask)
   matrix log_evade_probs(1,n_traps,1,n_mask)
+  matrix expected_ss(1,n_traps,1,n_mask)
   vector capt_hist(1,n_traps)
   vector total_contrib(1,n_mask)
 
@@ -149,6 +150,7 @@ PROCEDURE_SECTION
     for (int j = 1; j <= n_traps; j++){
       dist = dists(j, i);
       capt_prob = detfn(dist, detpars, cutoff);
+      //if (i == 1 && j == 1) cout << dist << " " << detpars << " " << cutoff << " " << capt_prob << endl; exit(1001);
       // Compare to calculating these outside loop.
       log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
       log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
@@ -156,11 +158,21 @@ PROCEDURE_SECTION
     }
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
+  expected_ss = detpars(1) - detpars(2)*dists;
   // Contribution due to capture history.
   for (int i = 1; i <= n; i++){
+    log_capt_probs = 0;
     capt_hist = row(capt_bin, i);
     // Contribution from capture locations.
-    total_contrib = capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs;
+    if (fit_ss){
+      dvar_matrix log_ss_density(1, n_traps, 1, n_mask);
+      for (int j = 1; j <= n_traps; j++){
+        log_ss_density(j)(1, n_mask) = -log(detpars(3)) - log(sqrt(2*M_PI)) + (square(capt_ss(i, j) - row(expected_ss, j))/(-2*square(detpars(3))));
+      }
+      total_contrib = capt_hist*log_ss_density + (1 - capt_hist)*log_evade_probs;
+    } else {
+      total_contrib = capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs;
+    }
     // Contribution from supplementary information.
     if (any_suppars){
       dvar_vector supp_contrib(1, n_mask);
@@ -178,11 +190,6 @@ PROCEDURE_SECTION
 	    beta = suppars(alpha_ind)/row(dists, j);
 	    supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - (beta*capt_dist(i, j));
 	  }
-	  if (fit_ss){
-	    dvar_vector expected_ss(1, n_mask);
-	    expected_ss = linkfn(row(dists, j), detpars);
-            supp_contrib += 0.5*log(2*M_PI) - log(detpars(3)) - square(capt_ss(i, j) - expected_ss)/(2*square(detpars(3))) - row(log_capt_probs, j);
-          }
         }
       }
       // Constant part of von Mises density.

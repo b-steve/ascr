@@ -127,12 +127,20 @@ autossb0 <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = N
   out
 }
 
+autob0.ss2 <- function(capt, traps){
+  143
+}
+
 ## Assumes signal strength received is almost equal to signal strength
 ## produced. Given a small negative value to get away from the
 ## paramter bound.
 autossb1 <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
                      cutoff = NULL, method = NULL, detfn = NULL, cpi = NULL){
   0.1
+}
+
+autob1.ss2 <- function(capt, traps){
+  1
 }
 
 ## Assumes signal strength received is equal to signal strength
@@ -150,6 +158,10 @@ autosigmass <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv 
   lambda <- dnorm(alpha)/(1 - pnorm(alpha))
   delta <- lambda*(lambda - alpha)
   sqrt(sigma^2*(1 - delta))
+}
+
+autosigma.ss2 <- function(capt, traps){
+  5.7
 }
 
 autoalpha <- function(capthist, bincapt = NULL, traps = NULL, mask = NULL, sv = NULL,
