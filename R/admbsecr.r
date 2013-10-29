@@ -531,7 +531,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
 #'
 #'
 admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-                      fix = NULL, scalefactors = NULL, trace = FALSE){
+                      fix = NULL, scalefactors = NULL, trace = FALSE, clean = TRUE){
   capt.bin <- capt$bincapt
   if (is.null(capt.bin)){
     stop("The binary capture history must be provided as a component of 'capt'.")
@@ -713,7 +713,9 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   out <- read.admbsecr("secr")
   all.files <- list.files()
   new.files <- all.files[!all.files %in% curr.files]
-  file.remove(new.files)
+  if (clean){
+    file.remove(new.files)
+  }
   setwd(curr.dir)
   out
 }
