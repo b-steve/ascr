@@ -52,6 +52,8 @@ DATA_SECTION
   !! }
   init_matrix capt_dist(1,nr_dist,1,nc_dist)
   init_int fit_ss
+  init_number cutoff
+  init_int linkfn_id
   int nr_ss
   int nc_ss
   !! if (fit_ss == 1){
@@ -138,6 +140,7 @@ PARAMETER_SECTION
 
 PROCEDURE_SECTION
   detfn_pointer detfn = get_detfn(detfn_id);
+  linkfn_pointer linkfn = get_linkfn(linkfn_id);
   f = 0.0;
   // Calculating mask detection probabilities.
   sum_probs = 0;
@@ -145,7 +148,7 @@ PROCEDURE_SECTION
     undet_prob = 1;
     for (int j = 1; j <= n_traps; j++){
       dist = dists(j, i);
-      capt_prob = detfn(dist, detpars);
+      capt_prob = detfn(dist, detpars, cutoff);
       // Compare to calculating these outside loop.
       log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
       log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
@@ -175,6 +178,11 @@ PROCEDURE_SECTION
 	    beta = suppars(alpha_ind)/row(dists, j);
 	    supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - (beta*capt_dist(i, j));
 	  }
+	  if (fit_ss){
+	    dvar_vector expected_ss(1, n_mask);
+	    expected_ss = linkfn(row(dists, j), detpars);
+            supp_contrib += 0.5*log(2*M_PI) - log(detpars(3)) - square(capt_ss(i, j) - expected_ss)/(2*square(detpars(3))) - row(log_capt_probs, j);
+          }
         }
       }
       // Constant part of von Mises density.
