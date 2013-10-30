@@ -7,8 +7,12 @@ dvariable bessi0 (dvariable x);
 
 dvariable log_dnorm (double x, const prevariable& mu, const prevariable& sigma)
 {
-  const double pi = 3.141592653589793238463;
-  return -0.5*log(2*pi) - log(sigma) - square(x - mu)/(2*square(sigma));
+  return -0.5*log(2*M_PI) - log(sigma) - square(x - mu)/(2*square(sigma));
+}
+
+dvar_vector log_dnorm (double x, const dvar_vector& mu, const prevariable& sigma)
+{
+  return -0.5*log(2*M_PI) - log(sigma) - square(x - mu)/(2*square(sigma));
 }
 
 dvariable log_dpois (double x, const prevariable& mu)
