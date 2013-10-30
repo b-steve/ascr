@@ -3,6 +3,19 @@
 // Helper prototypes:
 dvariable bessi0 (dvariable x);
 
+// Gamma distribution functions:
+
+dvariable log_dgamma (double x, const prevariable& alpha, const prevariable& beta)
+{
+  return alpha*log(beta) + (alpha - 1)*log(x) - (beta*x);
+}
+
+dvar_vector log_dgamma (double x, const prevariable& alpha, const dvar_vector& beta)
+{
+  return alpha*log(beta) + (alpha - 1)*log(x) - (beta*x);
+}
+
+
 // Normal distribution functions:
 
 dvariable log_dnorm (double x, const prevariable& mu, const prevariable& sigma)
@@ -14,6 +27,8 @@ dvar_vector log_dnorm (double x, const dvar_vector& mu, const prevariable& sigma
 {
   return -0.5*log(2*M_PI) - log(sigma) - square(x - mu)/(2*square(sigma));
 }
+
+// Poisson distribution functions:
 
 dvariable log_dpois (double x, const prevariable& mu)
 {
