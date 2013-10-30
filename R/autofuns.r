@@ -106,6 +106,10 @@ autokappa <- function(capthist = NULL, bincapt = NULL, traps = NULL, mask = NULL
   10
 }
 
+autokappa2 <- function(capt, traps){
+  10
+}
+
 ## Assumes signal strength received is equal to signal strength
 ## produced. Mean of received signal strengths is then converted to a
 ## mean for a truncated normal.
