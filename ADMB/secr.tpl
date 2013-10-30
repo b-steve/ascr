@@ -206,7 +206,7 @@ PROCEDURE_SECTION
 	    // Try saving alpha separately.
 	    dvar_vector beta(1, n_mask);
 	    beta = suppars(alpha_ind)/row(dists, j);
-	    supp_contrib += log_dgamma(capt_dist(i, j), suppars(alpha_ind), beta);
+            supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - beta*capt_dist(i, j);
 	  }
         }
       }
