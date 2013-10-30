@@ -588,7 +588,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                          th = c("shape", "scale"),
                          lth = c("shape.1", "shape.2", "scale"),
                          ss = c("b0.ss", "b1.ss", "sigma.ss"),
-                         logss = c("b0.ss", "b1.ss", "sigma.ss"))
+                         log.ss = c("b0.ss", "b1.ss", "sigma.ss"))
   par.names <- c("D", detpar.names, suppar.names)
   n.detpars <- length(detpar.names)
   n.suppars <- length(suppar.names)

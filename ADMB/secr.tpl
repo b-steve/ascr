@@ -141,20 +141,36 @@ PARAMETER_SECTION
   number capt_prob
   matrix log_capt_probs(1,n_traps,1,n_mask)
   matrix log_evade_probs(1,n_traps,1,n_mask)
-  matrix expected_ss(1,nr_expected_ss,1,nr_expected_ss)
+  matrix expected_ss(1,nr_expected_ss,1,nc_expected_ss)
+  number ss_resid
   vector capt_hist(1,n_traps)
   vector total_contrib(1,n_mask)
 
 PROCEDURE_SECTION
   detfn_pointer detfn = get_detfn(detfn_id);
   f = 0.0;
+  // Calculating expected signal strengths.
+  if (fit_ss){
+    if (linkfn_id == 1){
+      expected_ss = detpars(1) - detpars(2)*dists;
+    } else if (linkfn_id == 2){
+      expected_ss = mfexp(detpars(1) - detpars(2)*dists);
+    } else {
+      cerr << "linkfn_id not recognised." << endl;
+    }
+  }
   // Calculating mask detection probabilities.
   sum_probs = 0;
   for (int i = 1; i <= n_mask; i++){
     undet_prob = 1;
     for (int j = 1; j <= n_traps; j++){
       dist = dists(j, i);
-      capt_prob = detfn(dist, detpars, cutoff);
+      if (fit_ss){
+        ss_resid = cutoff - expected_ss(j, i);
+      } else {
+        ss_resid = 0;
+      }
+      capt_prob = detfn(dist, detpars, ss_resid);
       // Compare to calculating these outside loop.
       log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
       log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
@@ -162,19 +178,14 @@ PROCEDURE_SECTION
     }
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
-  // Use expected ss in capt_prob above to save recalculation.
-  if (fit_ss){
-    expected_ss = detpars(1) - detpars(2)*dists;
-  }
   // Contribution due to capture history.
   for (int i = 1; i <= n; i++){
-    log_capt_probs = 0;
     capt_hist = row(capt_bin, i);
     // Contribution from capture locations.
     if (fit_ss){
       dvar_matrix log_ss_density(1, n_traps, 1, n_mask);
       for (int j = 1; j <= n_traps; j++){
-        log_ss_density(j)(1, n_mask) = -log(detpars(3)) - log(sqrt(2*M_PI)) + (square(capt_ss(i, j) - row(expected_ss, j))/(-2*square(detpars(3))));
+        log_ss_density(j)(1, n_mask) = log_dnorm(capt_ss(i, j), row(expected_ss, j), detpars(3));
       }
       total_contrib = capt_hist*log_ss_density + (1 - capt_hist)*log_evade_probs;
     } else {
