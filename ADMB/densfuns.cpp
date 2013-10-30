@@ -7,12 +7,12 @@ dvariable bessi0 (dvariable x);
 
 dvariable log_dgamma (double x, const prevariable& alpha, const prevariable& beta)
 {
-  return alpha*log(beta) + (alpha - 1)*log(x) - (beta*x);
+  return alpha*log(beta) + (alpha - 1)*log(x) - (beta*x) - gammln(alpha);
 }
 
 dvar_vector log_dgamma (double x, const prevariable& alpha, const dvar_vector& beta)
 {
-  return alpha*log(beta) + (alpha - 1)*log(x) - (beta*x);
+  return alpha*log(beta) + (alpha - 1)*log(x) - (beta*x) - gammln(alpha);
 }
 
 
