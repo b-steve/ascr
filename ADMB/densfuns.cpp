@@ -35,11 +35,17 @@ dvariable log_dpois (double x, const prevariable& mu)
   return log_density_poisson(x, mu);
 }
 
-// dvariable log_dvm (double x, dvector mu, const dvariable& kappa)
-// {
-//   const double pi = 3.14159265359;
-//   return kappa*cos(x - mu) - log(2*pi*bessi0(kappa));
-// }
+// Von-mises distribution functions:
+
+dvariable log_dvm (double x, double mu, const prevariable& kappa)
+{
+  return kappa*cos(x - mu) - log(2*M_PI*bessi0(kappa));
+}
+
+dvar_vector log_dvm (double x, dvector mu, const prevariable& kappa)
+{
+  return kappa*cos(x - mu) - log(2*M_PI*bessi0(kappa));
+}
 
 //Helpers:
 dvariable bessi0 (dvariable x)
