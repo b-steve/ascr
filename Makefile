@@ -21,5 +21,8 @@ check:
 install:
 	R CMD INSTALL .
 
+clean:
+	rm -rfv ..Rcheck/
+	rm -rfv src/*.o src/*.so src/*.rds
 
 
