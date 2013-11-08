@@ -1,6 +1,5 @@
 #include <Rcpp.h>
 using namespace Rcpp;
-using namespace std;
 
 //' Calculating distances between two sets of points
 //'
@@ -50,5 +49,33 @@ NumericMatrix bearings(const NumericMatrix& a, const NumericMatrix& b){
       out(i, j) = bearing;
     }
   }
+  return out;
+}
+
+// [[Rcpp::export]]
+NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists){
+  int n = capt.nrow();
+  int n_traps = capt.ncol();
+  int n_mask = dists.ncol();
+  NumericMatrix out(n, n_mask);
+  int n_dets;
+  int index;
+  for (int i = 0; i < n; i++){
+    for (int j = 0; j < n_mask; j++){
+      n_dets = 0;
+      for (int k = 0; k < n_traps; k++){
+	if (capt(i, k) > 0) n_dets++;
+      }
+      NumericVector delts(n_dets);
+      index = 0;
+      for (int k = 0; k < n_traps; k++){
+	if (capt(i, k) > 0){
+	  delts(index) = capt(i, k) - dists(k, j)/330;
+	  index++;
+	}
+	out(i, j) = sum(pow(delts - mean(delts), 2));
+      }
+    }
+  }  
   return out;
 }

@@ -527,6 +527,9 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
 #' names, and each components is a scalefactor for the associated
 #' parameter. The default behaviour is to automatically select
 #' scalefactors based on parameter start values.
+#' @param ss.link A character string, either \code{"indentity"} or
+#' \code{"log"}, which specifies the link function for the signal
+#' strength detection function.
 #' @param cutoff The signal strength threshold, above which sounds are
 #' identified as detections.
 #' @param trace logical, if \code{TRUE} parameter values at each step
@@ -553,6 +556,8 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   n.traps <- nrow(traps)
   n.mask <- nrow(mask)
   A <- attr(mask, "area")
+  ## Removing attributes from mask.
+  mask <- as.matrix(mask)
   ## TODO: Sort out how to determine supplementary parameter names.
   supp.types <- c("ang", "dist", "ss", "toa", "mrds")
   fit.types <- supp.types %in% names(capt)
@@ -690,7 +695,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     angs <- 0
   }
   if (fit.toas){
-    toa.ssq <- t(apply(capt$toa, 1, toa.ssq, dists = dists, speed = 330))
+    toa.ssq <- make_toa_ssq(capt$toa, dists)
   } else {
     toa.ssq <- 0
   }
