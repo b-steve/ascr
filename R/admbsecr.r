@@ -1,6 +1,5 @@
 ## Package imports for roxygenise to pass to NAMESPACE.
 #' @import CircStats Rcpp R2admb secr
-#' @export stdEr
 #' @useDynLib admbsecr
 NULL
 

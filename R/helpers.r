@@ -404,3 +404,20 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
   class(L) <- "admb"
   L
 }
+
+#' Extract parameter standard errors.
+#'
+#' Extracts standard errors from an admbsecr fit.
+#'
+#' @param fit a fitted model from \code{admbsecr()}.
+#' @param type a character string, either \code{"fixed"}, or
+#' \code{"all"}. If \code{"fixed"} only model parameter standard errors
+#' are shown, otherwise a standard error (calculated using the delta
+#' method) is also provided for the effective sampling area.
+#' @export
+stdEr <- function(fit, type = "fixed"){
+  out <- fit$se
+  if (type == "fixed"){
+    out <- out[names(out) != "esa"]
+  }
+}
