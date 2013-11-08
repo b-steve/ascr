@@ -1,19 +1,19 @@
 \name{distances}
 \alias{distances}
-\title{Calculating distances between mask points and traps for SECR models}
+\title{Calculating distances between two sets of points}
 \usage{
-  distances(traps, mask)
+  distances(a, b)
 }
 \arguments{
-  \item{traps}{matrix containing trap coordinates.}
+  \item{a}{matrix containing a set of coordinates.}
 
-  \item{mask}{matrix containing mask point coordinates.}
+  \item{b}{matrix containing another set of coordinates.}
 }
 \value{
-  A matrix.
+  A matrix with pairwise distances between the two sets of
+  points.
 }
 \description{
-  Calculates pairwise distances between traps and mask
-  points.
+  Calculates pairwise distances between two sets of points.
 }
 

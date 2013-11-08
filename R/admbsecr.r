@@ -1,6 +1,7 @@
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import CircStats R2admb secr
+#' @import CircStats Rcpp R2admb secr
 #' @export stdEr
+#' @useDynLib admbsecr
 NULL
 
 #' Fitting SECR models in ADMB
@@ -416,7 +417,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     data <- list(n = n, ntraps = k, nmask = nm, A = A, toacapt = capt,
                  toassq = t(ssqtoa), dist = dist, capt = bincapt, trace = trace)
   } else if (method == "ang"){
-    angs <- angles(traps, mask)
+    angs <- bearings(traps, mask)
     data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt,
                  ang = angs, dist = dist, capt = bincapt, trace = trace)
   } else if (method == "ss"){
@@ -433,7 +434,7 @@ admbsecr <- function(capt, traps = NULL, mask, sv = "auto", bounds = NULL, fix =
     data <- list(n = n, ntraps = k, nmask = nm, A = A, distcapt = capt, dist = dist,
                  capt = bincapt, trace = trace)
   } else if (method == "angdist"){
-    angs <- angles(traps, mask)
+    angs <- bearings(traps, mask)
     data <- list(n = n, ntraps = k, nmask = nm, A = A, angcapt = capt[, , 1],
                  distcapt = capt[, , 2], ang = angs, dist = dist, capt = bincapt,
                  trace = trace)
@@ -684,7 +685,7 @@ admbsecr2 <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   ###
   dists <- distances(traps, mask)
   if (fit.angs){
-    angs <- angles(traps, mask)
+    angs <- bearings(traps, mask)
   } else {
     angs <- 0
   }

@@ -4,7 +4,8 @@
 \usage{
   admbsecr2(capt, traps, mask, detfn = "hn", sv = NULL,
     bounds = NULL, fix = NULL, scalefactors = NULL,
-    trace = FALSE)
+    ss.link = "identity", cutoff = NULL, trace = FALSE,
+    clean = TRUE)
 }
 \arguments{
   \item{capt}{A list with named components, containing the
@@ -42,9 +43,15 @@
   automatically select scalefactors based on parameter
   start values.}
 
+  \item{cutoff}{The signal strength threshold, above which
+  sounds are identified as detections.}
+
   \item{trace}{logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
   the R session.}
+
+  \item{clean}{logical, if \code{TRUE} ADMB output files
+  are removed.}
 }
 \description{
   Fits an SECR model, with our without supplementary
