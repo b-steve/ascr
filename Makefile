@@ -24,5 +24,7 @@ install:
 clean:
 	rm -rfv ..Rcheck/
 	rm -rfv src/*.o src/*.so src/*.rds
+	rm -rfv src-i386/ src-x64
+
 
 
