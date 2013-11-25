@@ -18,7 +18,7 @@ install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
 This requires the newest version of R.
 
-* For the development version (i.e., this repository):
+* For the development version (i.e., this repository; stability not guaranteed):
 ```
 library(devtools)
 install_github("admbsecr", "b-steve")
