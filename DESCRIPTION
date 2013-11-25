@@ -23,9 +23,5 @@ URL: https://github.com/b-steve/admbsecr
 Collate:
     'admbsecr.r'
     'autofuns.r'
-    'contours.r'
     'helpers.r'
-    'simcapt.r'
-    'tplmake.r'
-    'secorrect.r'
     'RcppExports.R'
