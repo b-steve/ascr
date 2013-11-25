@@ -1,3 +1,17 @@
+admbsecr 0.2.1
+--------------
+
+* First stage of admbsecr rewrite. Most notably, any combination of
+  supplementary information is now possible, and AD Model Builder does
+  not have to be installed by the user. The admbsecr() function now
+  has new syntax; in particular, the capture history object is now a
+  list, with a component for each type of supplementary information to
+  be fitted.
+
+* Much of the old admbsecr functionality is gone; e.g., plotting
+  contours and detection functions. This will be re-added in version
+  1.0.1.
+
 admbsecr 0.1.5
 --------------
 
