@@ -40,6 +40,7 @@ NULL
 #' @param trace logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
 #' @param clean logical, if \code{TRUE} ADMB output files are removed.
+#' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       fix = NULL, scalefactors = NULL, ss.link = "identity",
