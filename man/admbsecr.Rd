@@ -2,260 +2,66 @@
 \alias{admbsecr}
 \title{Fitting SECR models in ADMB}
 \usage{
-  admbsecr(capt, traps = NULL, mask, sv = "auto",
-    bounds = NULL, fix = NULL, ssqtoa = NULL,
-    cutoff = NULL, cpi = NULL, sound.speed = 330,
-    admbwd = NULL, method = "simple", detfn = "hn",
-    memory = NULL, profpars = NULL, scalefactors = NULL,
-    clean = TRUE, verbose = FALSE, trace = FALSE,
-    autogen = TRUE)
+  admbsecr(capt, traps, mask, detfn = "hn", sv = NULL,
+    bounds = NULL, fix = NULL, scalefactors = NULL,
+    ss.link = "identity", cutoff = NULL, trace = FALSE,
+    clean = TRUE)
 }
 \arguments{
-  \item{capt}{an array of dimension \code{(n, S, K)}, where
-  \code{n} is the number of detected animals, \code{S} is
-  number of individual sampling sessions, and \code{K} is
-  the number of deployed traps. The object returned by
-  \code{make.capthist()} is suitable if \code{method} is
-  \code{"simple"}. Otherwise, the \code{1} values in this
-  array must be changed to the value of the recorded
-  supplementary information, which will depend on
-  \code{method} (see 'Details'). When \code{method} is
-  \code{"sstoa"}, \code{"mrds"}, or \code{"ssmrds"} this
-  array must be of dimension \code{(n, S, K, 2)}. With
-  joint supplementary information (\code{"sstoa"} or
-  \code{"angdist"}), \code{capt[, , , 1]} and \code{capt[,
-  , , 2]} each provide the different types of supplementary
-  information, the order of which is alphabetical (also
-  given by the order indicated in the method name, for
-  example for method \code{"sstoa"}, \code{capt[, , , 1]}
-  and \code{capt[, , , 2]} provide the signal strength and
-  time of arrival information, respectively). With
-  \code{"mrds"} and \code{"ssmrds"}, \code{capt[, , , 1]}
-  provides either binary capture history array or signal
-  strength capture history information (respectively) and
-  \code{capt[, , , 2]} provides the distances between all
-  traps (regardless of capture) and detected animals.}
+  \item{capt}{A list with named components, containing the
+  capture history and supplementary information.}
 
-  \item{traps}{a matrix containing the coordinates of trap
-  locations. The object returned by
-  \code{\link[secr]{read.traps}} is suitable, and is
-  required for automatic generation of start values.}
+  \item{traps}{A matrix with two columns. The rows provide
+  Cartesian coordinates for trap locations.}
 
-  \item{mask}{a mask object. The object returned by
-  \code{\link[secr]{make.mask}} is suitable.}
+  \item{mask}{A matrix with two columns. The rows provide
+  Cartesian coordinates for the mask point locations.}
 
-  \item{sv}{either \code{"auto"}, or a named vector. If
-  \code{auto}, starting values for all parameters are
-  automatically generated. If a vector, the elements are
-  the starting values and the names indicate which
-  parameter these correspond to. Starting values for all
-  parameters need not be provided; they are automatically
-  generated for any parameters that do not have a starting
-  value explicitly provided. See 'Details' for list of
-  parameters used by each method.}
+  \item{detfn}{A character string specifying the detection
+  function to be used. Options are "hn" (halfnormal), "hr"
+  (hazard rate), "th" (threshold), "lth" (log-link
+  threshold), "ss" (signal strength), or "logss" (log-link
+  signal strength). If either of the latter two are used,
+  signal strength information must be provided in
+  \code{capt}.}
 
-  \item{bounds}{a list with optional components
-  corresponding to parameters which are to have their
-  default bounds overridden. Each component should be a
-  vector of length two specifying the bounds, and the name
-  of the component should be the name of the parameter to
-  which these bounds apply. To remove default bounds from a
-  parameter the component should be \code{NULL} rather than
-  a vector of length two. Bounds for all parameters need
-  not be provided; if there is no component corresponding
-  to a parameter it keeps its default bounds. See 'Details'
-  for list of parameters used by each method.}
+  \item{sv}{A named list. Component names are parameter
+  names, and each component is a start value for the
+  associated parameter.}
 
-  \item{fix}{a list with optional components corresponding
-  to parameters which are to be fixed rather than
-  estimated. Each component should be a vector of length
-  one, specifying the fixed value of the parameter, and the
-  name of the component should be the name of the paramter
-  to which this value applies.}
+  \item{bounds}{A named list. Component names are parameter
+  names, and each components is a vector of length two,
+  specifying the bounds for the associated parameter.}
 
-  \item{ssqtoa}{an optional matrix. If calculated before
-  call to \code{admbsecr}, providing this will prevent
-  recalculation.}
+  \item{fix}{A named list. Component names are parameter
+  names to be fixed, and each component is the fixed value
+  for the associated parameter.}
 
-  \item{cutoff}{the signal strength threshold of detection.
-  Required if \code{method} is \code{"ss"} or
-  \code{"sstoa"}.}
+  \item{scalefactors}{A named list. Component names are
+  parameter names, and each components is a scalefactor for
+  the associated parameter. The default behaviour is to
+  automatically select scalefactors based on parameter
+  start values.}
 
-  \item{cpi}{numeric vector, used for acoustic surveys
-  only. Contains number of calls emitted independently
-  monitored individuals over the course of the survey.}
+  \item{ss.link}{A character string, either
+  \code{"indentity"} or \code{"log"}, which specifies the
+  link function for the signal strength detection
+  function.}
 
-  \item{sound.speed}{the speed of sound in metres per
-  second. Used for TOA analysis.}
-
-  \item{admbwd}{file path to the ADMB working directory.
-  Only required if \code{autogen} is \code{TRUE}, in which
-  case it points to the directory in which the \code{.tpl}
-  file is located.}
-
-  \item{method}{either \code{"simple"}, \code{"toa"},
-  \code{"ang"}, \code{"ss"}, or \code{"sstoa"}. See
-  'Details'.}
-
-  \item{detfn}{the detection function to be used. Either
-  half normal (\code{"hn"}), hazard rate (\code{"hr"}),
-  threshold (\code{"th"}) or log-link threshold
-  (\code{"logth"}. If method is \code{"ss"}, this argument
-  gives the link function for the expected received signal
-  strengths (either \code{"identity"}, the default, or
-  \code{"log"}).}
-
-  \item{memory}{value of \code{arrmblsize} in ADMB.
-  Increase this if ADMB reports a memory error.}
-
-  \item{profpars}{character vector of names of parameters
-  over which profile likelihood should occur. UNTESTED.}
-
-  \item{scalefactors}{named vector of scale factors for
-  model parameters. ADMB works best when parameters are of
-  similar magnitudes. Setting a scale factor, \code{s}, for
-  a parameter, \code{p}, results in \code{admbsecr} dealing
-  with \code{s*p} rather than \code{p}, and should
-  therefore be used when parameters are of different
-  magnitudes. All parameter estimates and standard errors
-  still refer to \code{p}.}
-
-  \item{clean}{logical, if \code{TRUE} ADMB files are
-  cleaned after fitting of the model.}
-
-  \item{verbose}{logical, if \code{TRUE} ADMB details,
-  along with error messages, are printed to the R session.}
+  \item{cutoff}{The signal strength threshold, above which
+  sounds are identified as detections.}
 
   \item{trace}{logical, if \code{TRUE} parameter values at
-  each step of the fitting algorithm are printed to the R
-  session.}
+  each step of the optimisation algorithm are printed to
+  the R session.}
 
-  \item{autogen}{logical, if \code{TRUE}, the appropriate
-  \code{.tpl} file is written to \code{admbwd} (or the
-  current working directory if \code{admbwd} is
-  \code{NULL}). If \code{FALSE}, the \code{.tpl} file
-  should already be located in \code{admbwd} (or the
-  current working directory if \code{admb} is \code{NULL}).
-  Usually only set to \code{FALSE} for development
-  purposes.}
-}
-\value{
-  An object of class 'admb'.
-
-  The following functions can be used to extract model
-  components: \code{\link[base]{summary}},
-  \code{\link[R2admb:AIC.admb]{AIC}},
-  \code{\link[R2admb:AIC.admb]{logLik}},
-  \code{\link[R2admb:AIC.admb]{deviance}},
-  \code{\link[R2admb:AIC.admb]{vcov}},
-  \code{\link[R2admb:AIC.admb]{coef}},
-  \code{\link[R2admb:AIC.admb]{stdEr}}, and
-  \code{\link[R2admb:AIC.admb]{confint}}.
-
-  The latter takes arguments \code{level} and
-  \code{method}, which specify the confidence level and
-  calculation method respectively. The default method gives
-  quadratic (Wald) intervals based on approximate standard
-  errors; \code{"profile"} gives profile likelihood
-  intervals (UNTESTED), and can be used if the
-  \code{admbsecr()} parameter \code{profpars} is non-null
-  and provides names of model parameters that are to be
-  profiled.
+  \item{clean}{logical, if \code{TRUE} ADMB output files
+  are removed.}
 }
 \description{
   Fits an SECR model, with our without supplementary
   information relevant to animal location. Parameter
-  estimation is done by maximum likelihood in ADMB.
-}
-\details{
-  ADMB is called to fit an SECR model through use of the
-  R2admb package. Different methods are used depending on
-  the additional information on animal location that is
-  collected. Different detection functions are used
-  depending on the relationship between detection
-  probability and distance from detector.
-
-  Note that the method \code{"ss"} is a special case in
-  that it incorporates its own detection function, and thus
-  the half normal, hazard rate (etc) options cannot be
-  specified. Instead, either \code{"identity"} (the
-  default) or \code{"log"} can be provided for the argument
-  \code{detfn}, which give the link function for the
-  estimated received signal strengths.
-
-  The parameter D, density of animals (in individuals per
-  hectare) is always estimated. The other parameters in the
-  model depend on the method and the detection function
-  used.
-
-  Possible methods, along with their additional parameters,
-  are as follows:
-
-  \itemize{ \item \code{"simple"}: Normal SECR with no
-  additional information. No additional parameters.  \item
-  \code{"toa"}: SECR with precise time of arrival (TOA)
-  recorded: \itemize{ \item sigmatoa: Error term associated
-  with the normal distribution used to model TOA.  } \item
-  \code{"ang"}: SECR with estimates of angle to animal
-  recorded: \itemize{ \item kappa: Error term from a
-  Von-Mises distribution, used to model estimated angles.
-  } \item \code{"ss"}: SECR with received signal strengths
-  at traps recorded: \itemize{ \item ssb0: Signal strength
-  at source.
-
-  \item ssb1: Decrease in signal strength per unit distance
-  due to sound propagation.
-
-  \item sigmass: Error term associated with the normal
-  distribution used to model signal strength.  } \item
-  \code{"sstoa"}: SECR with precise TOA and received signal
-  strengths at traps recorded: \itemize{ \item sigmatoa: As
-  above.
-
-  \item ssb0: As above.
-
-  \item ssb1: As above.
-
-  \item sigmass: As above.  } \item \code{"dist"}: SECR
-  with estimated distances between animals and traps at
-  which detections occurred: \itemize{ \item alpha: Shape
-  parameter associated with the gamma distribution used to
-  model estimated distances.  } \item \code{"angdist"}:
-  SECR with estimates of angle and distance to animal
-  recorded: \itemize{ \item kappa: As above.
-
-  \item alpha: As above.  } \item \code{"mrds"}:
-  Mark-recapture distance sampling. Equivalent to SECR, but
-  with known animal locations. No additional parameters.
-  \item \code{"ssmrds"}: Mark-recapture distance sampling
-  with signal strength information: \itemize{ \item ssb0:
-  As above.
-
-  \item ssb1: As above.
-
-  \item sigmass: As above.  } } Possible detection
-  functions, along with their parameters, are as follows:
-
-  \itemize{ \item \code{"hn"}: Half-normal detection
-  function: \itemize{ \item g0: Probability of detection at
-  distance 0.
-
-  \item sigma: Scale parameter.  } \item \code{"hr"}:
-  Hazard rate detection function: \itemize{ \item g0
-
-  \item sigma
-
-  \item z } \item \code{"th"}: Threshold detection
-  function: \itemize{ \item shape
-
-  \item scale } \item \code{"logth"}: Log-link threshold
-  detection function: \itemize{ \item shape1
-
-  \item shape2
-
-  \item scale } }
-}
-\author{
-  Ben Stevenson
+  estimation is done by maximum likelihood through and ADMB
+  executible.
 }
 
