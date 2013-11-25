@@ -12,37 +12,24 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 
 To install:
 
-1. Download and install [AD Model Builder](http://admb-project.org/). Note that a future version of admbsecr will not require an ADMB install.
-
-2. Install the admbsecr R library.
-
-* For the [development version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
+* For the [stable version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
 ```
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
 This requires the newest version of R.
 
-* For the very latest version (i.e., this repository, requires Rtools to be installed):
+* For the development version (i.e., this repository):
 ```
 library(devtools)
 install_github("admbsecr", "b-steve")
 ```
-Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
+For this option Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
 
-* The admbsecr currently uses the devolopment version of the R2admb package. There may be issues using the version on CRAN. To install:
-```
-install_github("R2admb", "bbolker", subdir = "R2admb")
-```
+* Note that this R package does not require an ADMB installation.
 
 ## Troubleshooting
 
-* Ensure the command `admb` is recognised at the terminal command line. If not, you probably need to add ADMB to your system path.
-
-* Ensure that the ADMB simple example works from the terminal command line. ADMB installation instructions should cover how to do this.
-
-* Windows users may need to add the environment variable `R_SHELL` with a value that points to `cmd.exe`, which is found in the System32 folder.
-
-* An error while calling `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
+* An error attempting to install the R-forge version using `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
 
 * This R library is very much in development, so things are likely to go wrong. Please feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
 
