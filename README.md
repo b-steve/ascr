@@ -12,6 +12,11 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 
 To install:
 
+* Package dependencies will not install automatically as admbsecr is not on CRAN. To do this, run:
+```
+install.packages(c("CircStats", "R2admb", "secr", "Rcpp"))
+```
+
 * For the [stable version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
 ```
 install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
@@ -23,7 +28,7 @@ This requires the newest version of R.
 library(devtools)
 install_github("admbsecr", "b-steve")
 ```
-For this option Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
+For this option Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/) installed.
 
 * Note that this R package does not require an ADMB installation.
 
