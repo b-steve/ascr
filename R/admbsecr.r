@@ -243,7 +243,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   } else {
     stop("OS not supported yet.")
   }
-  exe.dir <- paste(system.file(package = "admbsecr"), "bin", os.type, sep = "/")
+  exe.dir <- paste(system.file(package = "admbsecr"), "ADMB", "bin", os.type, sep = "/")
   curr.dir <- getwd()
   setwd(exe.dir)
   curr.files <- list.files()
