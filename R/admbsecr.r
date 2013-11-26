@@ -234,14 +234,22 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     toa_ssq = toa.ssq)
   ## TODO: Find a clever way of accesing executable.
   ##exe.dir <- paste(installed.packages()["admbsecr", ]["LibPath"], "ADMB", sep = "/")
-  exe.dir <- "~/admbsecr/ADMB"
+  if (.Platform$OS == "windows"){
+    os.type <- "windows"
+    cmd <- "secr -ind secr.dat -ainp secr.pin"
+  } else if (.Platform$OS == "unix"){
+    os.type <- "linux"
+    cmd <- "./secr -ind secr.dat -ainp secr.pin"
+  } else {
+    stop("OS not supported yet.")
+  }
+  exe.dir <- paste(system.file(package = "admbsecr"), "bin", os.type, sep = "/")
   curr.dir <- getwd()
   setwd(exe.dir)
   curr.files <- list.files()
   write_pin("secr", sv)
   write_dat("secr", data.list)
-  ##run_admb("secr", verbose = trace)
-  system("./secr -ind secr.dat -ainp secr.pin", ignore.stdout = !trace)
+  system(cmd, ignore.stdout = !trace)
   out <- read.admbsecr("secr")
   all.files <- list.files()
   new.files <- all.files[!all.files %in% curr.files]
