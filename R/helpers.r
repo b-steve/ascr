@@ -103,4 +103,5 @@ stdEr <- function(fit, type = "fixed"){
   if (type == "fixed"){
     out <- out[names(out) != "esa"]
   }
+  out
 }
