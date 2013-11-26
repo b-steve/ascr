@@ -13,7 +13,7 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 To install:
 
 * Package dependencies will not install automatically as admbsecr is not on CRAN. To install these, run:
-```r
+```
 install.packages(c("CircStats", "Rcpp", "R2admb", "secr"))
 ```
 
