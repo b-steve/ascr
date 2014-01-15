@@ -43,8 +43,8 @@ NULL
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-                      fix = NULL, scalefactors = NULL, ss.link = "identity",
-                      cutoff = NULL, trace = FALSE, clean = TRUE){
+                     fix = NULL, scalefactors = NULL, ss.link = "identity",
+                     cutoff = NULL, trace = FALSE, clean = TRUE){
   capt.bin <- capt$bincapt
   if (is.null(capt.bin)){
     stop("The binary capture history must be provided as a component of 'capt'.")
@@ -68,11 +68,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   supp.types <- c("ang", "dist", "ss", "toa", "mrds")
   fit.types <- supp.types %in% names(capt)
   names(fit.types) <- supp.types
+  ## Logical indicators for additional information types.
   fit.angs <- fit.types["ang"]
   fit.dists <- fit.types["dist"]
   fit.ss <- fit.types["ss"]
   fit.toas <- fit.types["toa"]
   fit.mrds <- fit.types["mrds"]
+  ## Capture histories for additional information types (if they exist)
   capt.ang <- if (fit.angs) capt$ang else 0
   capt.dist <- if (fit.dists) capt$dist else 0
   capt.ss <- if (fit.ss) capt$ss else 0
@@ -90,9 +92,17 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       stop("ss.link must be either \"identity\" or \"log\"")
     }
   } else {
+    ## Not sure what a linkfn.id of 3 means? Probably throws an error in ADMB.
     linkfn.id <- 3
   }
   detfns <- c("hn", "hr", "th", "lth", "ss", "log.ss")
+  ## Sets detection function ID number for use in ADMB:
+  ## 1 = Half normal
+  ## 2 = Hazard rate
+  ## 3 = Threshold
+  ## 4 = Log-link threshold
+  ## 5 = Identity-link signal strength
+  ## 6 = Log-link signal strength.
   detfn.id <- which(detfn == detfns)
   detpar.names <- switch(detfn,
                          hn = c("g0", "sigma"),
@@ -105,7 +115,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   n.detpars <- length(detpar.names)
   n.suppars <- length(suppar.names)
   npars <- length(par.names)
-  ## Sorting out start values.
+  ## Sorting out start values. Start values are set to those provided,
+  ## or else are determined automatically from functions in
+  ## autofuns.r.
   sv.old <- sv
   sv <- vector("list", length = npars)
   names(sv) <- par.names
@@ -117,9 +129,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     sv[auto.names[i]] <- eval(call(sv.funs[i], capt, traps))
   }
   ## Sorting out phases.
+  ## TODO: Add phases parameter so that these can be controlled by user.
   phases <- vector("list", length = npars)
   for (i in par.names){
     if (any(i == names(fix))){
+      ## Phase of -1 in ADMB fixes parameter at starting value.
       phases[[i]] <- -1
     } else {
       phases[[i]] <- 0
@@ -133,6 +147,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     suppars.phase <- -1
   }
   ## Sorting out bounds.
+  ## Below bounds are the defaults.
   default.bounds <- list(D = c(0, 1e8),
                          D.a = c(0, 1e8),
                          mu.C = c(0, 1e8),
@@ -172,8 +187,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     suppars.ub <- 0
   }
   ## Sorting out scalefactors.
+  ## TODO: Sort these out in a better way.
   if (is.null(scalefactors)){
     sv.vec <- c(sv, recursive = TRUE)
+    ## Currently, by default, the scalefactors are the inverse
+    ## fraction of each starting value to the largest starting
+    ## value. Not sure how sensible this is.
     sf <- max(sv.vec)/sv.vec
   } else {
     sf <- numeric(npars)
@@ -189,11 +208,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   } else {
     suppars.sf <- 1
   }
+  ## Setting small number so that numerical under/overflow in ADMB
+  ## does not affect estimation.
   dbl.min <- 1e-150
   ## Some stuff being set as defaults for testing.
   n.freqs <- 1
   call.freqs <- 1
-  ###
+  ## Calculating distances and angles.
+  ## TODO: Try calculating these in the PROCEDURE_SECTION instead.
   dists <- distances(traps, mask)
   if (fit.angs){
     angs <- bearings(traps, mask)
@@ -208,7 +230,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   if (is.null(cutoff)){
     cutoff <- 0
   }
-  ## kludge to fix no. parameters for no supplementary information.
+  ## Kludge to fix number of parameters for no supplementary
+  ## information.
   if (n.suppars == 0){
     n.suppars <- max(c(n.suppars, 1))
     sv$dummy <- 0
@@ -232,8 +255,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     capt.toa, fit_mrds = as.numeric(fit.mrds),
                     mrds_dist = mrds.dist, dists = dists, angs = angs,
                     toa_ssq = toa.ssq)
-  ## TODO: Find a clever way of accesing executable.
-  ##exe.dir <- paste(installed.packages()["admbsecr", ]["LibPath"], "ADMB", sep = "/")
+  ## Idea of running executable as below taken from glmmADMB.
+  ## Working out correct command to run from command line.
   if (.Platform$OS == "windows"){
     os.type <- "windows"
     cmd <- "secr -ind secr.dat -ainp secr.pin"
@@ -243,19 +266,26 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   } else {
     stop("OS not supported yet.")
   }
+  ## Finding executable folder (possible permission problems?).
   exe.dir <- paste(system.file(package = "admbsecr"), "ADMB", "bin", os.type, sep = "/")
   curr.dir <- getwd()
+  ## Moving to executable location.
   setwd(exe.dir)
   curr.files <- list.files()
+  ## Creating .pin and .dat files.
   write_pin("secr", sv)
   write_dat("secr", data.list)
+  ## Running ADMB executable.
   system(cmd, ignore.stdout = !trace)
+  ## Reading in model results.
   out <- read.admbsecr("secr")
+  ## Cleaning up files.
   all.files <- list.files()
   new.files <- all.files[!all.files %in% curr.files]
   if (clean){
     file.remove(new.files)
   }
+  ## Moving back to original working directory.
   setwd(curr.dir)
   out
 }
