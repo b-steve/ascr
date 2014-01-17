@@ -17,9 +17,9 @@ NULL
 #' coordinates for the mask point locations.
 #' @param detfn A character string specifying the detection function
 #' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
-#' (threshold), "lth" (log-link threshold), "ss" (signal strength), or
-#' "logss" (log-link signal strength). If either of the latter two are
-#' used, signal strength information must be provided in \code{capt}.
+#' (threshold), "lth" (log-link threshold), or "ss" (signal
+#' strength). If the latter is used, signal strength information must
+#' be provided in \code{capt}.
 #' @param sv A named list. Component names are parameter names, and
 #' each component is a start value for the associated parameter.
 #' @param bounds A named list. Component names are parameter names,
@@ -29,14 +29,16 @@ NULL
 #' fixed, and each component is the fixed value for the associated
 #' parameter.
 #' @param scalefactors A named list. Component names are parameter
-#' names, and each components is a scalefactor for the associated
+#' names, and each component is a scalefactor for the associated
 #' parameter. The default behaviour is to automatically select
 #' scalefactors based on parameter start values.
 #' @param ss.link A character string, either \code{"indentity"} or
 #' \code{"log"}, which specifies the link function for the signal
-#' strength detection function.
+#' strength detection function. Only required when \code{detfn} is
+#' \code{"ss"}.
 #' @param cutoff The signal strength threshold, above which sounds are
-#' identified as detections.
+#' identified as detections. Only required when \code{detfn} is
+#' \code{"ss"}.
 #' @param trace logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
 #' @param clean logical, if \code{TRUE} ADMB output files are removed.
@@ -236,6 +238,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.suppars <- max(c(n.suppars, 1))
     sv$dummy <- 0
   }
+  ## Stuff for the .dat file.
   data.list <- list(D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf
                     = D.sf, n_detpars = n.detpars, detpars_lb =
                     detpars.lb, detpars_ub = detpars.ub, detpars_phase

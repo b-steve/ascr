@@ -20,9 +20,8 @@
   \item{detfn}{A character string specifying the detection
   function to be used. Options are "hn" (halfnormal), "hr"
   (hazard rate), "th" (threshold), "lth" (log-link
-  threshold), "ss" (signal strength), or "logss" (log-link
-  signal strength). If either of the latter two are used,
-  signal strength information must be provided in
+  threshold), or "ss" (signal strength). If the latter is
+  used, signal strength information must be provided in
   \code{capt}.}
 
   \item{sv}{A named list. Component names are parameter
@@ -38,18 +37,19 @@
   for the associated parameter.}
 
   \item{scalefactors}{A named list. Component names are
-  parameter names, and each components is a scalefactor for
+  parameter names, and each component is a scalefactor for
   the associated parameter. The default behaviour is to
   automatically select scalefactors based on parameter
   start values.}
 
   \item{ss.link}{A character string, either
   \code{"indentity"} or \code{"log"}, which specifies the
-  link function for the signal strength detection
-  function.}
+  link function for the signal strength detection function.
+  Only required when \code{detfn} is \code{"ss"}.}
 
   \item{cutoff}{The signal strength threshold, above which
-  sounds are identified as detections.}
+  sounds are identified as detections. Only required when
+  \code{detfn} is \code{"ss"}.}
 
   \item{trace}{logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
