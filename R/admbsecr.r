@@ -133,6 +133,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   ## Sorting out phases.
   ## TODO: Add phases parameter so that these can be controlled by user.
   phases <- vector("list", length = npars)
+  names(phases) <- par.names
   for (i in par.names){
     if (any(i == names(fix))){
       ## Phase of -1 in ADMB fixes parameter at starting value.
@@ -288,8 +289,20 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   if (clean){
     file.remove(new.files)
   }
+  ## Warning for non-convergence.
+  if (out$maxgrad < -0.1){
+      warning("Failed convergence -- maximum gradient component is large.")
+  }
   ## Moving back to original working directory.
   setwd(curr.dir)
+  ## Adding extra components to list.
+  out$infotypes <- names(fit.types)[fit.types]
+  out$detpars <- detpar.names
+  out$suppars <- suppar.names
+  out$sv <- sv
+  out$sf <- sf
+  out$phases <- phases
+  class(out) <- c("admbsecr", "admb")
   out
 }
 
