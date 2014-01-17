@@ -95,16 +95,52 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' Extracts standard errors from an admbsecr fit.
 #'
 #' @param fit a fitted model from \code{admbsecr()}.
-#' @param type a character string, either \code{"fixed"}, or
-#' \code{"all"}. If \code{"fixed"} only model parameter standard
-#' errors are shown, otherwise a standard error (calculated using the
-#' delta method) is also provided for the effective sampling area.
 #' @export
-stdEr <- function(fit, type = "fixed"){
-    out <- fit$se
-    if (type == "fixed"){
-        out <- out[names(out) != "esa"]
+stdEr <- function(fit){
+    fit$se
+}
+
+## Return fixed or estimated parameter values from a model fit.
+getpar <- function(fit, pars){
+    allpar.names <- c("D", fit$detpars, fit$suppars)
+    ## Error checking.
+    legal.names <- pars %in% allpar.names
+    if (!all(legal.names)){
+        illegal.pars <- pars[!legal.names]
+        if (sum(!legal.names) == 1){
+            msg <- paste(illegal.pars, "is not a parameter in the model provided.")
+        } else if (sum(!legal.names) == 2){
+            msg <- paste(paste(illegal.pars, collapse = " and "),
+                         "are not parameters in the model provided.")
+        } else if (sum(!legal.names) > 2){
+            n.illegal <- length(illegal.pars)
+            msg <- paste(paste(illegal.pars[-n.illegal], collapse = ", "),
+                         ", and", illegal.pars[n.illegal],
+                         "are not parameters in the model provided.")
+        }
+        stop(msg)
     }
+    out <- numeric(length(pars))
+    names(out) <- pars
+
+    det.index <- which(fit$detpars %in% pars)
+    supp.index <- which(fit$suppars %in% pars)
+    ## Logical vector indicating parameters that weren't estimated.
+    fixed.pars <- fit$phases[pars] == -1
+    ## Putting in fixed parameter values.
+    if (sum(fixed.pars) > 0){
+        out[fixed.pars] <- fit$sv[[pars[fixed.pars]]]
+    }
+    ## Working out parameter groups for parameters in 'pars'.
+    det.index <- which(pars %in% fit$detpars)
+    supp.index <- which(pars %in% fit$suppars)
+    admb.pars <- pars
+    admb.pars[det.index] <- paste("detpars[", which(fit$detpars %in% pars), "]",
+                                  sep = "")
+    admb.pars[supp.index] <- paste("suppars[", which(fit$suppars %in% pars), "]",
+                                  sep = "")
+    ## Putting in estimated parameter values.
+    out[!fixed.pars] <- coef(fit)[admb.pars[!fixed.pars]]
     out
 }
 
@@ -125,8 +161,8 @@ stdEr <- function(fit, type = "fixed"){
 #' coordiates for trap locations.
 #' @param mask A matrix with two columns. The rows provide Cartesian
 #' coordinates for the mask point locations.
-#' @param info A character vector indicating the type(s) of additional
-#' information to be simulated. Elements can be a subset of
+#' @param infotypes A character vector indicating the type(s) of
+#' additional information to be simulated. Elements can be a subset of
 #' \code{"ang"}, \code{"dist"}, \code{"ss"}, \code{"toa"}, and
 #' \code{"mrds"} (NOTE: \code{"mrds"} not yet implemented).
 #' @param detfn A character string specifying the detection function
@@ -149,10 +185,59 @@ stdEr <- function(fit, type = "fixed"){
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{info} includes \code{"toa"}.
 #' @export
-sim.capt <- function(fit, traps = NULL, mask = NULL, info = character(0),
-                     detfn = "hn", pars = NULL, ss.link = "identity",
+sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
+                     infotypes = character(0), detfn = "hn",
+                     pars = NULL, ss.link = "identity",
                      cutoff = NULL, sound.speed = 330){
+    ## Grabbing values from fit if required.
     ## Specifies the area in which animal locations can be generated.
     core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
+    ## Simulating population.
+    popn <- sim.popn(D = getpar(fit, "D"), core = core, buffer = 0)
     
 }
+
+calc.detfn <- function(d, detfn, pars){
+    switch()
+}
+
+calc.hn <- function(d, pars){
+    if (!identical(sort(names(pars)), c("g0", "sigma"))){
+        stop("Components of object 'pars' should have names 'g0' and 'sigma'.")
+    }
+    g0 <- pars$g0
+    sigma <- pars$sigma
+    g0*exp(-(d^2/(2*sigma^2)))
+}
+
+calc.hr <- function(d, pars){
+    if (!identical(sort(names(pars)), c("g0", "sigma", "z"))){
+        stop("Components of object 'pars' should have names 'g0', 'sigma', and 'z'.")
+    }
+    g0 <- pars$g0
+    sigma <- pars$sigma
+    z <- pars$z
+    g0*(1 - exp(-((d/sigma)^-z)))
+}
+
+calc.th <- function(d, pars){
+    if (!identical(sort(names(pars)), c("scale", "shape"))){
+        stop("Components of object 'pars' should have names 'scale' and 'shape'.")
+    }
+    scale <- pars$scale
+    shape <- pars$shape
+    0.5 - 0.5*erf(d/scale - shape)
+}
+
+calc.logth <- function(d, pars){
+    if (!identical(sort(names(pars)), c("scale", "shape1", "shape2"))){
+        stop("Components of object 'pars' should have names 'scale' and 'shape1', and 'shape2'.")
+    }
+    scale <- pars$scale
+    shape1 <- pars$shape1
+    shape2 <- pars$shape2
+    0.5 - 0.5*erf(shape1 - exp(shape2 + scale*d))
+}
+
+## Error function
+erf <- function(x) 2*pnorm(x*sqrt(2)) - 1
