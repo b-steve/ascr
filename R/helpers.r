@@ -190,30 +190,118 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      pars = NULL, ss.link = "identity",
                      cutoff = NULL, sound.speed = 330){
     ## Grabbing values from fit if required.
+    if (!is.null(fit)){
+        ## Grab the objects in here.
+    }
+    ## Grabbing detection function.
+    calc.detfn <- get.detfn(detfn)
+    ## Setting up logical indicators for additional information types.
+    supp.types <- c("ang", "dist", "ss", "toa", "mrds")
+    sim.types <- supp.types %in% infotypes
+    names(sim.types) <- supp.types
+    sim.angs <- sim.types["ang"]
+    sim.dists <- sim.types["dist"]
+    sim.toas <- sim.types["toa"]
+    sim.mrds <- sim.types["mrds"]
+    sim.ss <- ifelse(detfn == "ss", TRUE, FALSE)
+    ## Working out required parameters.
+    suppar.names <- c("kappa", "alpha", "sigma.toa")[sim.types[c("ang", "dist", "toa")]]
+    if (sim.ss){
+        if (ss.link == "identity"){
+            detfn <- "ss"
+        } else if (ss.link == "log"){
+            detfn <- "log.ss"
+        } else {
+            stop("ss.link must be either \"identity\" or \"log\"")
+        }
+    }
+    detpar.names <- switch(detfn,
+                           hn = c("g0", "sigma"),
+                           hr = c("g0", "sigma", "z"),
+                           th = c("shape", "scale"),
+                           lth = c("shape.1", "shape.2", "scale"),
+                           ss = c("b0.ss", "b1.ss", "sigma.ss"),
+                           log.ss = c("b0.ss", "b1.ss", "sigma.ss"))
+    par.names <- c("D", detpar.names, suppar.names)
+    if (!identical(sort(par.names), sort(names(pars)))){
+        msg <- paste("The following must be named components of the list 'pars': ",
+                     paste(par.names, collapse = ", "), ".", sep = "")
+        stop(msg)
+    }
     ## Specifies the area in which animal locations can be generated.
     core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
     ## Simulating population.
-    popn <- sim.popn(D = getpar(fit, "D"), core = core, buffer = 0)
-    
+    popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
+    n.popn <- nrow(popn)
+    if (n.popn == 0) stop("No animals in population.")
+    ## Calculating distances.
+    dists <- distances(popn, traps)
+    n.traps <- nrow(traps)
+    ## Calculating detection probabilities and simulating captures.
+    if (!sim.ss){
+        det.probs <- calc.detfn(dists, pars)
+        full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
+                           nrow = n.popn, ncol = n.traps)
+        captures <- which(apply(full.bin.capt, 1, sum) > 0)
+        bin.capt <- full.bin.capt[captures, ]
+        out <- list(bincapt = bin.capt)
+    } else {
+        if (ss.link == "identity"){
+            inv.ss.link <- identity
+        } else if (ss.link == "log"){
+            inv.ss.link <- exp
+        } else {
+            stop("Argument 'ss.link' must be \"identity\" or \"log\".")
+        }
+        pars$cutoff <- cutoff
+        ss.mean <- inv.ss.link(pars$b0.ss - pars$b1.ss*dists)
+        ss.error <- matrix(rnorm(n.popn*n.traps, mean = 0,
+                                 sd = pars$sigma.ss),
+                           nrow = n.popn, ncol = n.traps)
+        full.ss.capt <- ss.mean + ss.error
+        captures <- which(apply(full.ss.capt, 1,
+                                function(x, cutoff) any(x > cutoff),
+                                cutoff = cutoff))
+        full.bin.capt <- ifelse(full.ss.capt > cutoff, 1, 0)
+        ss.capt <- full.ss.capt[captures, ]
+        bin.capt <- ifelse(ss.capt > cutoff, 1, 0)
+        ss.capt[ss.capt < cutoff] <- 0
+        out <- list(bincapt = bin.capt, ss = ss.capt)
+    }
+    test <- TRUE
+    if (test){
+        capt.dists <- dists[full.bin.capt == 1]
+        evade.dists <- dists[full.bin.capt == 0]
+        all.dists <- c(capt.dists, evade.dists)
+        capt.dummy <- c(rep(1, length(capt.dists)),
+                        rep(0, length(evade.dists)))
+        ##breaks <- quantile(all.dists, probs = seq(0, 1, 1/50))
+        breaks <- seq(0, max(all.dists), length.out = 100)
+        mids <- breaks[-length(breaks)] + 0.5*diff(breaks)
+        breaks[1] <- 0
+        split.dummy <- split(capt.dummy,
+                             f = cut(all.dists, breaks = breaks))
+        props <- sapply(split.dummy, mean)
+        plot(mids, props, type = "l", xlim = c(0, max(all.dists)),
+             ylim = c(0, 1))
+        xx <- seq(0, max(all.dists), length.out = 100)
+        lines(xx, calc.detfn(xx, pars), col = "blue")
+    }
+    out
 }
 
-calc.detfn <- function(d, detfn, pars){
-    switch()
+get.detfn <- function(detfn){
+    switch(detfn, hn = calc.hn, hr = calc.hr, th = calc.th,
+           lth = calc.lth, ss = calc.ss, log.ss = calc.log.ss)
 }
 
 calc.hn <- function(d, pars){
-    if (!identical(sort(names(pars)), c("g0", "sigma"))){
-        stop("Components of object 'pars' should have names 'g0' and 'sigma'.")
-    }
     g0 <- pars$g0
     sigma <- pars$sigma
     g0*exp(-(d^2/(2*sigma^2)))
 }
 
 calc.hr <- function(d, pars){
-    if (!identical(sort(names(pars)), c("g0", "sigma", "z"))){
-        stop("Components of object 'pars' should have names 'g0', 'sigma', and 'z'.")
-    }
     g0 <- pars$g0
     sigma <- pars$sigma
     z <- pars$z
@@ -221,23 +309,35 @@ calc.hr <- function(d, pars){
 }
 
 calc.th <- function(d, pars){
-    if (!identical(sort(names(pars)), c("scale", "shape"))){
-        stop("Components of object 'pars' should have names 'scale' and 'shape'.")
-    }
     scale <- pars$scale
     shape <- pars$shape
     0.5 - 0.5*erf(d/scale - shape)
 }
 
-calc.logth <- function(d, pars){
-    if (!identical(sort(names(pars)), c("scale", "shape1", "shape2"))){
-        stop("Components of object 'pars' should have names 'scale' and 'shape1', and 'shape2'.")
-    }
+calc.lth <- function(d, pars){
     scale <- pars$scale
-    shape1 <- pars$shape1
-    shape2 <- pars$shape2
-    0.5 - 0.5*erf(shape1 - exp(shape2 + scale*d))
+    shape.1 <- pars$shape.1
+    shape.2 <- pars$shape.2
+    0.5 - 0.5*erf(shape.1 - exp(shape.2 + scale*d))
+}
+
+calc.ss <- function(d, pars){
+    b0.ss <- pars$b0.ss
+    b1.ss <- pars$b1.ss
+    sigma.ss <- pars$sigma.ss
+    cutoff <- pars$cutoff
+    1 - pnorm(cutoff, mean = b0.ss - b1.ss*d, sd = sigma.ss)
+}
+
+calc.log.ss <- function(d, pars){
+    b0.ss <- pars$b0.ss
+    b1.ss <- pars$b1.ss
+    sigma.ss <- pars$b1.ss
+    cutoff <- pars$cutoff
+    1 - pnorm(cutoff, mean = exp(b0.ss - b1.ss*d), sd = sigma.ss)
 }
 
 ## Error function
-erf <- function(x) 2*pnorm(x*sqrt(2)) - 1
+erf <- function(x){
+    2*pnorm(x*sqrt(2)) - 1
+}
