@@ -83,6 +83,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   capt.toa <- if (fit.toas) capt$toa else 0
   mrds.dist <- if (fit.mrds) capt$mrds else 0
   suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("ang", "dist", "toa")]]
+  ## TODO: Sort out situation where user provides SS info but also
+  ## provides a non-SS detection function.
   if (fit.ss){
     if (ss.link == "identity"){
       detfn <- "ss"
