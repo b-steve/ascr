@@ -2,12 +2,12 @@
 \alias{stdEr}
 \title{Extract parameter standard errors.}
 \usage{
-stdEr(fit)
+  stdEr(fit)
 }
 \arguments{
   \item{fit}{a fitted model from \code{admbsecr()}.}
 }
 \description{
-Extracts standard errors from an admbsecr fit.
+  Extracts standard errors from an admbsecr fit.
 }
 
