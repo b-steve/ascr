@@ -184,11 +184,14 @@ getpar <- function(fit, pars){
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{info} includes \code{"toa"}.
+#' @param test.detfn Logical value, if \code{TRUE}, tests detection
+#' function to aid debugging.
 #' @export
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
                      pars = NULL, ss.link = "identity",
-                     cutoff = NULL, sound.speed = 330){
+                     cutoff = NULL, sound.speed = 330,
+                     test.detfn = FALSE){
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
         ## Grab the objects in here.
@@ -268,14 +271,13 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         ss.capt[ss.capt < cutoff] <- 0
         out <- list(bincapt = bin.capt, ss = ss.capt)
     }
-    test <- TRUE
-    if (test){
+    ## Plot to test correct detection simulation.
+    if (test.detfn){
         capt.dists <- dists[full.bin.capt == 1]
         evade.dists <- dists[full.bin.capt == 0]
         all.dists <- c(capt.dists, evade.dists)
         capt.dummy <- c(rep(1, length(capt.dists)),
                         rep(0, length(evade.dists)))
-        ##breaks <- quantile(all.dists, probs = seq(0, 1, 1/50))
         breaks <- seq(0, max(all.dists), length.out = 100)
         mids <- breaks[-length(breaks)] + 0.5*diff(breaks)
         breaks[1] <- 0
@@ -286,6 +288,40 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
              ylim = c(0, 1))
         xx <- seq(0, max(all.dists), length.out = 100)
         lines(xx, calc.detfn(xx, pars), col = "blue")
+    }
+    ## Total number of detections.
+    n.dets <- sum(bin.capt)
+    ## Locations of captured individuals.
+    capt.popn <- popn[captures, ]
+    ## Capture distances.
+    capt.dists <- dists[captures, ]
+    ## Simulating additional information.
+    if (sim.angs){
+        bearings <- t(bearings(traps, capt.popn))
+        ang.capt <- matrix(0, nrow = nrow(bin.capt),
+                           ncol = ncol(bin.capt))
+        ang.capt[bin.capt == 1] <- (bearings[bin.capt == 1] +
+                     rvm(n.dets, mean = 0, k = pars$kappa)) %% (2*pi)
+        out$ang <- ang.capt
+    }
+    if (sim.dists){
+        dist.capt <- matrix(0, nrow = nrow(bin.capt),
+                            ncol = ncol(bin.capt))
+        betas <- pars$alpha/capt.dists[bin.capt == 1]
+        dist.capt[bin.capt == 1] <- rgamma(n.dets, shape = pars$alpha,
+                      rate = betas)
+        out$dist <- dist.capt
+    }
+    if (sim.toas){
+        ## Time taken for sound to travel from source to detector.
+        toa.capt <- capt.dists/sound.speed*bin.capt
+        ## Adding in TOA error.
+        toa.capt[bin.capt == 1] <-
+            toa.capt[bin.capt == 1] + rnorm(n.dets, sd = pars$sigma.toa)
+        out$toa <- toa.capt
+    }
+    if (sim.mrds){
+        out$mrds <- capt.dists
     }
     out
 }
