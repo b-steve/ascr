@@ -4,7 +4,8 @@
 \usage{
   sim.capt(fit = NULL, traps = NULL, mask = NULL,
     infotypes = character(0), detfn = "hn", pars = NULL,
-    ss.link = "identity", cutoff = NULL, sound.speed = 330)
+    ss.link = "identity", cutoff = NULL, sound.speed = 330,
+    test.detfn = FALSE)
 }
 \arguments{
   \item{fit}{A fitted \code{admbsecr} model object which
@@ -49,6 +50,9 @@
   \item{sound.speed}{The speed of sound in metres per
   second, defaults to 330 (the speed of sound in air). Only
   used when \code{info} includes \code{"toa"}.}
+
+  \item{test.detfn}{Logical value, if \code{TRUE}, tests
+  detection function to aid debugging.}
 }
 \description{
   Simulates SECR capture histories and associated
