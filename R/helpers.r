@@ -409,7 +409,6 @@ erf <- function(x){
 #' edge of the generated mask.
 #' @param ... Arguments to be passed to \code{link[secr]{make.mask}}.
 #' @export
-#'
 create.mask <- function(traps, buffer, ...){
     traps <- convert.traps(traps)
     mask <- make.mask(traps, buffer = buffer, type = "trapbuffer", ...)
@@ -443,6 +442,7 @@ convert.traps <- function(traps){
 #' is returned. Otherwise a data frame is returned, which is suitable
 #' for the \code{captures} argument to the
 #' \code{\link[secr]{make.capthist}} function.
+#' @export
 convert.capt <- function(capt, traps, capthist = TRUE){
     n <- nrow(capt$bincapt)
     n.dets <- sum(capt$bincapt)
