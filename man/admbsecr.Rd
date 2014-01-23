@@ -4,18 +4,18 @@
 \usage{
   admbsecr(capt, traps, mask, detfn = "hn", sv = NULL,
     bounds = NULL, fix = NULL, scalefactors = NULL,
-    ss.link = "identity", cutoff = NULL, trace = FALSE,
-    clean = TRUE)
+    ss.link = "identity", cutoff = NULL,
+    sound.speed = NULL, trace = FALSE, clean = TRUE)
 }
 \arguments{
   \item{capt}{A list with named components, containing the
   capture history and supplementary information.}
 
-  \item{traps}{A matrix with two columns. The rows provide
-  Cartesian coordinates for trap locations.}
+  \item{traps}{A matrix with two columns. Each row provides
+  Cartesian coordinates for the location of a trap.}
 
-  \item{mask}{A matrix with two columns. The rows provide
-  Cartesian coordinates for the mask point locations.}
+  \item{mask}{A matrix with two columns. Each row provides
+  Cartesian coordinates for the location of a mask point.}
 
   \item{detfn}{A character string specifying the detection
   function to be used. Options are "hn" (halfnormal), "hr"
@@ -51,11 +51,11 @@
   sounds are identified as detections. Only required when
   \code{detfn} is \code{"ss"}.}
 
-  \item{trace}{logical, if \code{TRUE} parameter values at
+  \item{trace}{Logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
   the R session.}
 
-  \item{clean}{logical, if \code{TRUE} ADMB output files
+  \item{clean}{Logical, if \code{TRUE} ADMB output files
   are removed.}
 }
 \description{

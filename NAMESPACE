@@ -1,5 +1,8 @@
 export(admbsecr)
 export(bearings)
+export(convert.capt)
+export(convert.traps)
+export(create.mask)
 export(distances)
 export(make.acoustic.captures)
 export(sim.capt)
