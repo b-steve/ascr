@@ -46,19 +46,23 @@ NULL
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, scalefactors = NULL, ss.link = "identity",
-                     cutoff = NULL, trace = FALSE, clean = TRUE){
+                     cutoff = NULL, sound.speed  = NULL, trace = FALSE,
+                     clean = TRUE){
   capt.bin <- capt$bincapt
   if (is.null(capt.bin)){
     stop("The binary capture history must be provided as a component of 'capt'.")
   }
   if (!is.list(sv) & !is.null(sv)){
-    stop("The 'sv' argument must be 'NULL' or a list")
+    stop("The 'sv' argument must be 'NULL' or a list.")
   }
   if (!is.list(bounds) & !is.null(bounds)){
-    stop("The 'bounds' argument must be 'NULL' or a list")
+    stop("The 'bounds' argument must be 'NULL' or a list.")
   }
   if (!is.list(fix) & !is.null(fix)){
-    stop("The 'fix' argument must be 'NULL' or a list")
+    stop("The 'fix' argument must be 'NULL' or a list.")
+  }
+  if (!is.null(sound.speed)){
+      stop("The 'sound.speed' argument is not yet implemented.")
   }
   n <- nrow(capt.bin)
   n.traps <- nrow(traps)
@@ -298,6 +302,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   ## Moving back to original working directory.
   setwd(curr.dir)
   ## Adding extra components to list.
+  out$traps <- traps
+  out$mask <- mask
+  if (detfn == "log.ss") detfn <- "ss"
+  out$detfn <- detfn
+  out$ss.link <- ss.link
+  out$cutoff <- cutoff
+  out$sound.speed <- sound.speed
   out$infotypes <- names(fit.types)[fit.types]
   out$detpars <- detpar.names
   out$suppars <- suppar.names
