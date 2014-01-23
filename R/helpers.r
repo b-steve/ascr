@@ -101,8 +101,13 @@ stdEr <- function(fit){
 }
 
 ## Return fixed or estimated parameter values from a model fit.
-getpar <- function(fit, pars){
+getpar <- function(fit, pars, as.list = FALSE){
     allpar.names <- c("D", fit$detpars, fit$suppars)
+    if (length(pars) == 1){
+        if (pars == "all"){
+            pars <- allpar.names
+        }
+    }
     ## Error checking.
     legal.names <- pars %in% allpar.names
     if (!all(legal.names)){
@@ -122,7 +127,6 @@ getpar <- function(fit, pars){
     }
     out <- numeric(length(pars))
     names(out) <- pars
-
     det.index <- which(fit$detpars %in% pars)
     supp.index <- which(fit$suppars %in% pars)
     ## Logical vector indicating parameters that weren't estimated.
@@ -141,6 +145,15 @@ getpar <- function(fit, pars){
                                   sep = "")
     ## Putting in estimated parameter values.
     out[!fixed.pars] <- coef(fit)[admb.pars[!fixed.pars]]
+    if (as.list){
+        out.vec <- out
+        out <- vector("list", length = length(out.vec))
+        names(out) <- names(out.vec)
+        names(out.vec) <- NULL
+        for (i in 1:length(out.vec)){
+            out[[i]] <- out.vec[i]
+        }
+    }
     out
 }
 
@@ -194,7 +207,14 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      test.detfn = FALSE){
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
-        ## Grab the objects in here.
+        traps <- fit$traps
+        mask <- fit$mask
+        infotypes <- fit$infotypes
+        detfn <- fit$detfn
+        pars <- getpar(fit, "all", as.list = TRUE)
+        ss.link <- fit$ss.link
+        cutoff <- fit$cutoff
+        sound.speed <- fit$sound.speed
     }
     ## Grabbing detection function.
     calc.detfn <- get.detfn(detfn)
