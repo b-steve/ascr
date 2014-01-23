@@ -11,10 +11,10 @@ NULL
 #'
 #' @param capt A list with named components, containing the capture
 #' history and supplementary information.
-#' @param traps A matrix with two columns. The rows provide Cartesian
-#' coordinates for trap locations.
-#' @param mask A matrix with two columns. The rows provide Cartesian
-#' coordinates for the mask point locations.
+#' @param traps A matrix with two columns. Each row provides Cartesian
+#' coordinates for the location of a trap.
+#' @param mask A matrix with two columns. Each row provides Cartesian
+#' coordinates for the location of a mask point.
 #' @param detfn A character string specifying the detection function
 #' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
 #' (threshold), "lth" (log-link threshold), or "ss" (signal
@@ -39,9 +39,9 @@ NULL
 #' @param cutoff The signal strength threshold, above which sounds are
 #' identified as detections. Only required when \code{detfn} is
 #' \code{"ss"}.
-#' @param trace logical, if \code{TRUE} parameter values at each step
+#' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
-#' @param clean logical, if \code{TRUE} ADMB output files are removed.
+#' @param clean Logical, if \code{TRUE} ADMB output files are removed.
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
