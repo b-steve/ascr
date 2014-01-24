@@ -412,7 +412,11 @@ erf <- function(x){
 create.mask <- function(traps, buffer, ...){
     traps <- convert.traps(traps)
     mask <- make.mask(traps, buffer = buffer, type = "trapbuffer", ...)
-    as.matrix(mask)
+    A <- attr(mask, "area")
+    mask <- as.matrix(mask)
+    attr(mask, "area") <- A
+    attr(mask, "buffer") <- buffer
+    mask
 }
 
 #' Convert traps object
@@ -428,6 +432,18 @@ convert.traps <- function(traps){
     colnames(traps) <- c("x", "y")
     traps.df <- data.frame(names = 1:n.traps, traps)
     read.traps(data = traps.df, detector = "proximity")
+}
+
+#' Convert mask object
+#'
+#' Converts an \code{admbsecr} mask matrix to a \code{secr} mask
+#' object.
+#'
+#' @param mask A matrix with two columns. Each row provides Cartesian
+#' coordinates for the location of a mask point.
+#' @export
+convert.mask <- function(mask){
+    read.mask(data = as.data.frame(mask))
 }
 
 #' Convert capture history object
