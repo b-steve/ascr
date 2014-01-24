@@ -207,7 +207,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     sf <- numeric(npars)
     names(sf) <- par.names
     for (i in par.names){
-      sf[i] <- ifelse(i %in% names(scalefactors), scalefactors[i], 1)
+      sf[i] <- ifelse(i %in% names(scalefactors), scalefactors[[i]], 1)
     }
   }
   D.sf <- sf[["D"]]
