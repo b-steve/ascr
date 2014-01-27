@@ -1,6 +1,7 @@
 export(admbsecr)
 export(bearings)
 export(convert.capt)
+export(convert.mask)
 export(convert.traps)
 export(create.mask)
 export(distances)

@@ -2,10 +2,9 @@
 \alias{admbsecr}
 \title{Fitting SECR models in ADMB}
 \usage{
-  admbsecr(capt, traps, mask, detfn = "hn", sv = NULL,
-    bounds = NULL, fix = NULL, scalefactors = NULL,
-    ss.link = "identity", cutoff = NULL,
-    sound.speed = NULL, trace = FALSE, clean = TRUE)
+admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
+  fix = NULL, scalefactors = NULL, ss.link = "identity", cutoff = NULL,
+  sound.speed = NULL, trace = FALSE, clean = TRUE)
 }
 \arguments{
   \item{capt}{A list with named components, containing the
@@ -59,9 +58,9 @@
   are removed.}
 }
 \description{
-  Fits an SECR model, with our without supplementary
-  information relevant to animal location. Parameter
-  estimation is done by maximum likelihood through and ADMB
-  executible.
+Fits an SECR model, with our without supplementary
+information relevant to animal location. Parameter
+estimation is done by maximum likelihood through and ADMB
+executible.
 }
 

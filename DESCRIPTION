@@ -20,8 +20,3 @@ Description: This package allows for the fitting of spatially explicit
     to animal location.
 License: GPL
 URL: https://github.com/b-steve/admbsecr
-Collate:
-    'admbsecr.r'
-    'autofuns.r'
-    'helpers.r'
-    'RcppExports.R'
