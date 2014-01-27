@@ -235,7 +235,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         } else if (ss.link == "log"){
             detfn <- "log.ss"
         } else {
-            stop("ss.link must be either \"identity\" or \"log\"")
+            stop("The argument 'ss.link' must be either \"identity\" or \"log\"")
         }
     }
     detpar.names <- switch(detfn,
