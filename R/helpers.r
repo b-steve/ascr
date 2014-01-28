@@ -205,6 +205,16 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      pars = NULL, ss.link = "identity",
                      cutoff = NULL, sound.speed = 330,
                      test.detfn = FALSE){
+    ## Some error checking.
+    if (any(infotypes == "ss")){
+        stop("Signal strengh information is simulated by setting argument 'detfn' to \"ss\".")
+    }
+    if (!missing(cutoff) & detfn != "ss"){
+        warning("The argument 'cutoff' is being ignored, as 'detfn' is not \"ss\".")
+    }
+    if (!missing(ss.link) & detfn != "ss"){
+        warning("The argument 'ss.link' is being ignored, as 'detfn' is not \"ss\".")
+    }
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
         traps <- fit$traps
