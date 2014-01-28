@@ -207,7 +207,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      test.detfn = FALSE){
     ## Some error checking.
     if (any(infotypes == "ss")){
-        stop("Signal strengh information is simulated by setting argument 'detfn' to \"ss\".")
+        stop("Signal strength information is simulated by setting argument 'detfn' to \"ss\".")
     }
     if (!missing(cutoff) & detfn != "ss"){
         warning("The argument 'cutoff' is being ignored, as 'detfn' is not \"ss\".")
