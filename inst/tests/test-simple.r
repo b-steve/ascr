@@ -1,7 +1,6 @@
 context("Testing simple")
 
 test_that("simple simulation and fitting works correctly", {
-    data(simple)
     set.seed(8173)
     test.capt <- sim.capt(traps = simple.traps, mask = simple.mask,
                      pars = list(D = 2500, g0 = 0.75, sigma = 5))    
