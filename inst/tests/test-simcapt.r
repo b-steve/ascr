@@ -1,39 +1,6 @@
 context("Testing simulation errors")
 
-test_that("Test output", {
-    set.seed(8172)
-    traps <- cbind(c(0, 1, 0, 1),
-                   c(0, 0, 1, 1))
-    colnames(traps) <- c("x", "y")
-    mask <- create.mask(traps, buffer = 30)
-    capt <- sim.capt(traps = traps, mask = mask,
-                     pars = list(D = 2000, g0 = 0.75, sigma = 5))
-    capt.test <- list(bincapt = structure(c(1, 0, 0, 0, 0, 0, 0, 0, 0,
-                          1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0,
-                          1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0,
-                          1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1,
-                          1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-                          1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0,
-                          0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0,
-                          1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
-                          1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0,
-                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,
-                          1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
-                          1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0,
-                          1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1,
-                          1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0,
-                          0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1,
-                          1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0,                          
-                          0, 0, 1, 0, 1, 0, 1, 0, 1, 0), .Dim = c(61L,
-                                                             4L)))
-    expect_that(capt, is_a("list"))
-    expect_that(length(capt), equals(1))
-    expect_that(names(capt), equals("bincapt"))
-    expect_that(dim(capt$bincapt), equals(c(61, 4)))
-    expect_that(capt, equals(capt.test))
-})
-
-test_that("Test errors", {
+test_that("errors are thrown correctly", {
     set.seed(8172)
     traps <- cbind(c(0, 1, 0, 1),
                    c(0, 0, 1, 1))
@@ -70,9 +37,3 @@ test_that("Test errors", {
                          pars = list(D = 2000, g0 = 0.75)),
                 throws_error("The following must be named components of the list 'pars': "))
 })
-
-load_all("~/admbsecr")
-testfun <- function(x = 5){
-    print(missing(x))
-    x
-}
