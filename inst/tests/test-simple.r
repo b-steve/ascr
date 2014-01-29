@@ -1,14 +1,6 @@
 context("Testing simple")
 
 test_that("simple simulation and fitting works correctly", {
-    set.seed(8173)
-    test.capt <- sim.capt(traps = simple.traps, mask = simple.mask,
-                     pars = list(D = 2500, g0 = 0.75, sigma = 5))    
-    expect_that(test.capt, is_a("list"))
-    expect_that(length(test.capt), equals(1))
-    expect_that(names(test.capt), equals("bincapt"))
-    expect_that(dim(test.capt$bincapt), equals(dim(simple.capt$bincapt)))
-    expect_that(test.capt, equals(simple.capt))
     ## Fitting model.
     fit <- admbsecr(capt = simple.capt, traps = simple.traps,
                     mask = simple.mask)                

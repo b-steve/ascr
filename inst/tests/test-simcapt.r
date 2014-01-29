@@ -1,6 +1,19 @@
-context("Testing simulation errors")
+context("Testing sim.capt")
 
-test_that("errors are thrown correctly", {
+test_that("simple simulation", {
+    set.seed(8173)
+    test.capt <- sim.capt(traps = simple.traps, mask = simple.mask,
+                          pars = list(D = 2500, g0 = 0.75, sigma = 5))    
+    expect_that(test.capt, is_a("list"))
+    expect_that(length(test.capt), equals(1))
+    expect_that(names(test.capt), equals("bincapt"))
+    expect_that(dim(test.capt$bincapt), equals(dim(simple.capt$bincapt)))
+    expect_that(test.capt, equals(simple.capt))
+})
+
+
+
+test_that("simulation errors", {
     set.seed(8172)
     traps <- cbind(c(0, 1, 0, 1),
                    c(0, 0, 1, 1))
