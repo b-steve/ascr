@@ -50,6 +50,10 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   sounds are identified as detections. Only required when
   \code{detfn} is \code{"ss"}.}
 
+  \item{sound.speed}{The speed of sound in metres per
+  second, defaults to 330 (the speed of sound in air). Only
+  used when \code{info} includes \code{"toa"}.}
+
   \item{trace}{Logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
   the R session.}
