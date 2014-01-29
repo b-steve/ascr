@@ -95,9 +95,17 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' Extracts standard errors from an admbsecr fit.
 #'
 #' @param fit a fitted model from \code{admbsecr()}.
+#' @param type a character string. If \code{"fixed"} then only
+#' standard errors for estimated parameters are presented. If
+#' \code{"all"} then standard errors are also presented for derived
+#' paramters (e.g., the effective survey area).
 #' @export
-stdEr <- function(fit){
-    fit$se
+stdEr <- function(fit, type = "fixed"){
+    out <- fit$se
+    if (type == "fixed"){
+        out <- out[-length(out)]
+    }
+    out
 }
 
 ## Return fixed or estimated parameter values from a model fit.
