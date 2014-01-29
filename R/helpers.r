@@ -1,14 +1,14 @@
 ## Returns capture trap numbers.
 trapvec <- function(capthist){
-  x <- apply(capthist, 3, function(x) sum(x > 0))
-  rep(1:length(x), times = x)
+    x <- apply(capthist, 3, function(x) sum(x > 0))
+    rep(1:length(x), times = x)
 }
 
 ## Returns capture animal ID numbers.
 animalIDvec <- function(capthist){
-  x <- c(apply(capthist, 3, function(x) which(x > 0)), recursive = TRUE)
-  names(x) <- NULL
-  as.character(x)
+    x <- c(apply(capthist, 3, function(x) which(x > 0)), recursive = TRUE)
+    names(x) <- NULL
+    as.character(x)
 }
 
 #' Assigning ID numbers to sounds.
@@ -32,62 +32,62 @@ animalIDvec <- function(capthist){
 #' @author David Borchers, Ben Stevenson
 #' @export
 make.acoustic.captures <- function(mics, clicks, dt){
-  K <- dim(mics)[1]
-  captures <- clicks
-  ct <- rep(-Inf, K)
-  ID <- 1
-  ct[clicks$trap[1]] <- clicks$tim[1]
-  new <- FALSE
-  nclicks <- length(clicks$tim)
-  for (i in 2:nclicks){
-    if (ct[clicks$trap[i]] > -Inf){
-      nd <- length(which(ct > -Inf))
-      captures$ID[(i - nd):(i - 1)] <- ID
-      ct <- rep(-Inf, K)
-      ct[clicks$trap[i]] <- clicks$tim[i]
-      ID <- ID + 1
-      if(i == nclicks) captures$ID[i] <- ID
+    K <- dim(mics)[1]
+    captures <- clicks
+    ct <- rep(-Inf, K)
+    ID <- 1
+    ct[clicks$trap[1]] <- clicks$tim[1]
+    new <- FALSE
+    nclicks <- length(clicks$tim)
+    for (i in 2:nclicks){
+        if (ct[clicks$trap[i]] > -Inf){
+            nd <- length(which(ct > -Inf))
+            captures$ID[(i - nd):(i - 1)] <- ID
+            ct <- rep(-Inf, K)
+            ct[clicks$trap[i]] <- clicks$tim[i]
+            ID <- ID + 1
+            if(i == nclicks) captures$ID[i] <- ID
+        }
+        else {
+            ct[clicks$trap[i]] <- clicks$tim[i]
+            ctset <- which(ct > -Inf)
+            dts <- dt[ctset, clicks$trap[i]]
+            cts <- -(ct[ctset] - clicks$tim[i])
+            if (any((cts - dts) > 0)) new <- TRUE
+            if (new) {
+                nd <- length(which(ct > -Inf)) - 1
+                captures$ID[(i - nd):(i - 1)] <- ID
+                ct <- rep(-Inf, K)
+                ct[clicks$trap[i]] <- clicks$tim[i]
+                ID <- ID + 1
+                new <- FALSE
+                if (i == nclicks) captures$ID[i] <- ID
+            } else if(i == nclicks){
+                nd <- length(which(ct > -Inf))
+                captures$ID[(i - nd + 1):i] <- ID
+            }
+        }
     }
-    else {
-      ct[clicks$trap[i]] <- clicks$tim[i]
-      ctset <- which(ct > -Inf)
-      dts <- dt[ctset, clicks$trap[i]]
-      cts <- -(ct[ctset] - clicks$tim[i])
-      if (any((cts - dts) > 0)) new <- TRUE
-      if (new) {
-        nd <- length(which(ct > -Inf)) - 1
-        captures$ID[(i - nd):(i - 1)] <- ID
-        ct <- rep(-Inf, K)
-        ct[clicks$trap[i]] <- clicks$tim[i]
-        ID <- ID + 1
-        new <- FALSE
-        if (i == nclicks) captures$ID[i] <- ID
-      } else if(i == nclicks){
-        nd <- length(which(ct > -Inf))
-        captures$ID[(i - nd + 1):i] <- ID
-      }
-    }
-  }
-  captures
+    captures
 }
 
 ## Adapted from R2admb.
 read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
-  if (verbose)
-    cat("reading output ...\n")
-  parfn <- paste(fn, "par", sep = ".")
-  if (!file.exists(parfn))
-    stop("couldn't find parameter file ", parfn)
-  L <- c(list(fn = fn), read_pars(fn))
-  if (checkterm) {
-    v <- with(L, vcov[seq(npar), seq(npar)])
-    ev <- try(eigen(solve(v))$value, silent = TRUE)
-    L$eratio <- if (inherits(ev, "try-error"))
-      NA
-    else min(ev)/max(ev)
-  }
-  class(L) <- "admb"
-  L
+    if (verbose)
+        cat("reading output ...\n")
+    parfn <- paste(fn, "par", sep = ".")
+    if (!file.exists(parfn))
+        stop("couldn't find parameter file ", parfn)
+    L <- c(list(fn = fn), read_pars(fn))
+    if (checkterm) {
+        v <- with(L, vcov[seq(npar), seq(npar)])
+        ev <- try(eigen(solve(v))$value, silent = TRUE)
+        L$eratio <- if (inherits(ev, "try-error"))
+            NA
+        else min(ev)/max(ev)
+    }
+    class(L) <- "admb"
+    L
 }
 
 #' Extract parameter standard errors.
@@ -142,7 +142,7 @@ getpar <- function(fit, pars, as.list = FALSE){
     admb.pars[det.index] <- paste("detpars[", which(fit$detpars %in% pars), "]",
                                   sep = "")
     admb.pars[supp.index] <- paste("suppars[", which(fit$suppars %in% pars), "]",
-                                  sep = "")
+                                   sep = "")
     ## Putting in estimated parameter values.
     out[!fixed.pars] <- coef(fit)[admb.pars[!fixed.pars]]
     if (as.list){
@@ -274,7 +274,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     if (!sim.ss){
         det.probs <- calc.detfn(dists, pars)
         full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
-                           nrow = n.popn, ncol = n.traps)
+                                nrow = n.popn, ncol = n.traps)
         captures <- which(apply(full.bin.capt, 1, sum) > 0)
         bin.capt <- full.bin.capt[captures, ]
         out <- list(bincapt = bin.capt)
@@ -480,7 +480,7 @@ convert.capt <- function(capt, traps, capthist = TRUE){
               recursive = TRUE)
     names(trap) <- NULL
     out <- data.frame(session = session, ID = ID, occasion = occasion,
-                           trap = trap)
+                      trap = trap)
     if (capthist){
         traps <- convert.traps(traps)
         out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1)
