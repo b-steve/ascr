@@ -2,7 +2,7 @@
 \alias{convert.capt}
 \title{Convert capture history object}
 \usage{
-convert.capt(capt, traps, capthist = TRUE)
+  convert.capt(capt, traps, capthist = TRUE)
 }
 \arguments{
   \item{capt}{A capture history list.}
@@ -17,7 +17,7 @@ convert.capt(capt, traps, capthist = TRUE)
   \code{\link[secr]{make.capthist}} function.}
 }
 \description{
-Converts an \code{admbsecr} capture history list to a
-\code{secr} capthist object.
+  Converts an \code{admbsecr} capture history list to a
+  \code{secr} capthist object.
 }
 
