@@ -321,6 +321,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$sv <- sv
     out$sf <- sf
     out$phases <- phases
+    ## Putting bounds together.
+    bounds <- cbind(c(D.lb, detpars.lb, suppars.lb),
+                    c(D.ub, detpars.ub, suppars.ub))
+    browser()
+    rownames(bounds) <- c("D", detpar.names,
+                          ifelse(length(suppar.names) > )
     class(out) <- c("admbsecr", "admb")
     out
 }
