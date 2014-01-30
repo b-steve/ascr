@@ -1,5 +1,5 @@
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import CircStats Rcpp R2admb secr
+#' @import CircStats plyr Rcpp R2admb secr
 #' @useDynLib admbsecr
 NULL
 
@@ -324,9 +324,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Putting bounds together.
     bounds <- cbind(c(D.lb, detpars.lb, suppars.lb),
                     c(D.ub, detpars.ub, suppars.ub))
-    browser()
     rownames(bounds) <- c("D", detpar.names,
-                          ifelse(length(suppar.names) > )
+                          ifelse(length(suppar.names) > 0,
+                                 suppar.names, "dummy"))
+    bounds <- bounds[rownames(bounds) != "dummy", ]
+    out$bounds <- alply(bounds, 1, identity, .dims = TRUE)
     class(out) <- c("admbsecr", "admb")
     out
 }
