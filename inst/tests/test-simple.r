@@ -4,7 +4,7 @@ test_that("simple fitting", {
     ## Fitting model.
     simple.capt <- example.capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example.traps,
-                    mask = example.mask)                
+                    mask = example.mask)
     ## Checking parameter values.
     pars.test <- c(2358.737165, 1.000000000, 5.262653889)
     n.pars <- length(pars.test)
@@ -51,7 +51,7 @@ test_that("fixing parameters", {
     active.phases <- c(fit$phases[phase.pars != "g0"],
                        recursive = TRUE)
     expect_that(all(active.phases > -1), is_true())
-    
+
 })
 
 test_that("start values", {
@@ -59,7 +59,7 @@ test_that("start values", {
     ## Fit original model.
     fit.start <- admbsecr(capt = simple.capt, traps = example.traps,
                           mask = example.mask)
-    ## Provide a single start value.{
+    ## Provide a single start value.
     fit <- admbsecr(capt = simple.capt, traps = example.traps,
                     mask = example.mask, sv = list(D = 2145))
     ## Check that estimates are the same.
@@ -73,5 +73,11 @@ test_that("start values", {
 test_that("parameter bounds", {
     simple.capt <- example.capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example.traps,
-                    mask = example.mask, sv = list(D = 2145))
+                    mask = example.mask, bounds = list(D = c(0, 5000)))
+    ## Check that bounds object is a list.
+    expect_that(is.list(fit$bounds), is_true())
+    ## Check that bounds for D set appropriately.
+    expect_that(fit$bounds$D, equals(c(0, 5000)))
+    ## Check that bounds for g0 still set to defaults.
+    expect_that(fit$bounds$g0, equals(c(0, 1)))
 })

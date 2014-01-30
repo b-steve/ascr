@@ -1,20 +1,20 @@
-context("Testing toa")
+context("Testing dist")
 
-test_that("toa fitting", {
+test_that("dist fitting", {
     ## Fitting model.
-    toa.capt <- example.capt[c("bincapt", "toa")]
-    fit <- admbsecr(capt = toa.capt, traps = example.traps,
+    dist.capt <- example.capt[c("bincapt", "dist")]
+    fit <- admbsecr(capt = dist.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1))
     ## Checking parameter values.
-    pars.test <- c(2238.943787, 5.434543258, 0.00184227498)
+    pars.test <- c(2477.446007, 5.104500978, 4.053234339)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(285.68, 0.30612, 0.00018903)
+    ses.test <- c(260.88, 0.18057, 0.45189)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
     expect_that(fit$detpars, equals(c("g0", "sigma")))
     ## Checking supplementary parameters.
-    expect_that(fit$suppars, equals("sigma.toa"))
+    expect_that(fit$suppars, equals("alpha"))
 })
