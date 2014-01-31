@@ -52,17 +52,36 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      cutoff = NULL, sound.speed  = NULL, trace = FALSE,
                      clean = TRUE){
     capt.bin <- capt$bincapt
+    ## Checking for bincapt.
     if (is.null(capt.bin)){
         stop("The binary capture history must be provided as a component of 'capt'.")
     }
-    if (ncol(capt$bincapt) != nrow(traps)){
-        stop("There must be a trap location for each column in 'capt$bincapt'.")
+    ## Checking for correct number of trap locations.
+    if (ncol(capt.bin) != nrow(traps)){
+        stop("There must be a trap location for each column in the components of 'capt'.")
     }
+    ## Checking that each component of 'capt' is a matrix.
+    if (any(!laply(capt, is.matrix))){
+        stop("At least one component of 'capt' is not a matrix.")
+    }
+    ## Checking for agreement in matrix dimensions.
+    if (length(capt) > 1){
+        all.dims <- laply(capt, dim)
+        if (any(aaply(all.dims, 2, function(x) diff(range(x))) != 0)){
+            stop("Components of 'capt' object have different dimensions.")
+        }
+    }
+    ## Various checks for other arguments.
     if (!is.list(sv) & !is.null(sv)){
         stop("The 'sv' argument must be 'NULL' or a list.")
     }
     if (!is.list(bounds) & !is.null(bounds)){
         stop("The 'bounds' argument must be 'NULL' or a list.")
+    }
+    if (is.list(bounds)){
+        if (any(laply(bounds, length) != 2)){
+            stop("Each component of 'bounds' must be a vector of length 2.")
+        }
     }
     if (!is.list(fix) & !is.null(fix)){
         stop("The 'fix' argument must be 'NULL' or a list.")
@@ -96,6 +115,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## TODO: Sort out situation where user provides SS info but also
     ## provides a non-SS detection function.
     if (fit.ss){
+        ## Warning for failure to provide 'cutoff'.
+        if (missing(cutoff)){
+            warning("Argument 'cutoff' is missing; set to 0.")
+        }
+        if (!missing(detfn) & detfn != "ss"){
+            warning("Argument 'detfn' is being ignored as signal strength information is provided in 'capt'. A signal strength detection function has been fitted instead.")
+        }
         if (ss.link == "identity"){
             detfn <- "ss"
             linkfn.id <- 1

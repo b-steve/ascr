@@ -1,4 +1,4 @@
-context("Testing sim.capt")
+context("Testing sim.capt()")
 
 test_that("simulation produces correct output", {
     set.seed(8173)
