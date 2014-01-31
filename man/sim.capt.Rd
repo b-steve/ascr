@@ -2,10 +2,10 @@
 \alias{sim.capt}
 \title{Simulating SECR data}
 \usage{
-  sim.capt(fit = NULL, traps = NULL, mask = NULL,
-    infotypes = character(0), detfn = "hn", pars = NULL,
-    ss.link = "identity", cutoff = NULL, sound.speed = 330,
-    test.detfn = FALSE)
+sim.capt(fit = NULL, traps = NULL, mask = NULL,
+  infotypes = character(0), detfn = "hn", pars = NULL,
+  ss.link = "identity", cutoff = NULL, sound.speed = 330,
+  test.detfn = FALSE)
 }
 \arguments{
   \item{fit}{A fitted \code{admbsecr} model object which
@@ -55,13 +55,13 @@
   detection function to aid debugging.}
 }
 \description{
-  Simulates SECR capture histories and associated
-  additional information in the correct format for use with
-  \code{\link[admbsecr]{admbsecr}}.
+Simulates SECR capture histories and associated additional
+information in the correct format for use with
+\code{\link[admbsecr]{admbsecr}}.
 }
 \details{
-  If \code{fit} is provided then no other arguments are
-  required. Otherwise, at least \code{traps}, \code{mask},
-  and \code{pars} are needed.
+If \code{fit} is provided then no other arguments are
+required. Otherwise, at least \code{traps}, \code{mask},
+and \code{pars} are needed.
 }
 

@@ -2,7 +2,7 @@
 \alias{create.mask}
 \title{Create mask object}
 \usage{
-  create.mask(traps, buffer, ...)
+create.mask(traps, buffer, ...)
 }
 \arguments{
   \item{traps}{A matrix with two columns. Each row provides
@@ -15,7 +15,7 @@
   \code{link[secr]{make.mask}}.}
 }
 \description{
-  Creates a mask object to use with the function
-  \code{\link[admbsecr]{admbsecr}}.
+Creates a mask object to use with the function
+\code{\link[admbsecr]{admbsecr}}.
 }
 
