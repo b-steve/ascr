@@ -5,7 +5,7 @@ get.detfn <- function(detfn){
 }
 
 calc.hn <- function(d, pars){
-    if (any(sort(pars) != c("g0", "sigma"))){
+    if (!identical(sort(names(pars)), c("g0", "sigma"))){
         stop("Argument 'pars' must have named components 'g0' and 'sigma'.")
     }
     g0 <- pars$g0
@@ -14,7 +14,7 @@ calc.hn <- function(d, pars){
 }
 
 calc.hr <- function(d, pars){
-    if (any(sort(pars) != c("g0", "sigma", "z"))){
+    if (!identical(sort(names(pars)), c("g0", "sigma", "z"))){
         stop("Argument 'pars' must have named components 'g0', 'sigma', and 'z'.")
     }
     g0 <- pars$g0
@@ -24,7 +24,7 @@ calc.hr <- function(d, pars){
 }
 
 calc.th <- function(d, pars){
-    if (any(sort(pars) != c("scale", "shape"))){
+    if (!identical(sort(names(pars)), c("scale", "shape"))){
         stop("Argument 'pars' must have named components 'scale' and 'shape'.")
     }
     scale <- pars$scale
@@ -33,17 +33,17 @@ calc.th <- function(d, pars){
 }
 
 calc.lth <- function(d, pars){
-    if (any(sort(pars) != c("scale", "shape.1", "shape.2"))){
+    if (!identical(sort(names(pars)), c("scale", "shape.1", "shape.2"))){
         stop("Argument 'pars' must have named components 'scale', 'shape.1', and 'shape.2'.")
     }
     scale <- pars$scale
     shape.1 <- pars$shape.1
     shape.2 <- pars$shape.2
-    0.5 - 0.5*erf(shape.1 - exp(shape.2 + scale*d))
+    0.5 - 0.5*erf(shape.1 - exp(shape.2 - scale*d))
 }
 
 calc.ss <- function(d, pars){
-    if (any(sort(pars) != c("b0.ss", "b1.ss", "cutoff", "sigma.ss"))){
+    if (!identical(sort(names(pars)), c("b0.ss", "b1.ss", "cutoff", "sigma.ss"))){
         stop("Argument 'pars' must have named components 'b0.ss', 'b1.ss', 'sigma.ss', and 'cutoff'.")
     }
     b0.ss <- pars$b0.ss
@@ -54,7 +54,7 @@ calc.ss <- function(d, pars){
 }
 
 calc.log.ss <- function(d, pars){
-    if (any(sort(pars) != c("b0.ss", "b1.ss", "cutoff", "sigma.ss"))){
+    if (!identical(sort(names(pars)), c("b0.ss", "b1.ss", "cutoff", "sigma.ss"))){
         stop("Argument 'pars' must have named components 'b0.ss', 'b1.ss', 'sigma.ss', and 'cutoff'.")
     }
     b0.ss <- pars$b0.ss
