@@ -112,3 +112,43 @@ test_that("toa fitting", {
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
 })
+
+test_that("joint ss/toa fitting", {
+    joint.capt <- example.capt[c("bincapt", "ss", "toa")]
+    fit <- admbsecr(capt = joint.capt, traps = example.traps,
+                    mask = example.mask,
+                    sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
+                    cutoff = 60)
+    ## Checking parameter values.
+    pars.test <- c(2518.778360, 91.11204602, 4.312022549,
+                   10.85171521, 0.001954810264)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking standard errors.
+    ses.test <- c(266.32, 1.5753, 0.24763, 0.56685, 0.00020871)
+    relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking detection parameters.
+    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "sigma.ss")))
+    ## Checking supplementary parameters.
+    expect_that(fit$suppars, equals("sigma.toa"))
+})
+
+test_that("joint ang/dist fitting", {
+    joint.capt <- example.capt[c("bincapt", "ang", "dist")]
+    fit <- admbsecr(capt = joint.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1))
+    ## Checking parameter values.
+    pars.test <- c(2476.527851, 5.105681597, 70.35386170, 3.941970659)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking standard errors.
+    ses.test <- c(249.77, 0.15269, 9.4000, 0.34958)
+    relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking detection parameters.
+    expect_that(fit$detpars, equals(c("g0", "sigma")))
+    ## Checking supplementary parameters.
+    expect_that(fit$suppars, equals(c("kappa", "alpha")))
+})
+      
