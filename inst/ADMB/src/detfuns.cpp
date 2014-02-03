@@ -26,7 +26,7 @@ dvariable detfn_th (double x, const dvar_vector &detpars, dvariable ss_resid)
 // Order of detpars: shape1, shape2, scale.
 dvariable detfn_logth (double x, const dvar_vector &detpars, dvariable ss_resid)
 {
-  return 0.5 - 0.5*(2*cumd_norm((detpars(1) - mfexp(detpars(2) + detpars(3)*x))*pow(2,0.5)) - 1);
+  return 0.5 - 0.5*(2*cumd_norm((detpars(1) - mfexp(detpars(2) - detpars(3)*x))*pow(2,0.5)) - 1);
 }
 
 // Signal strength.
