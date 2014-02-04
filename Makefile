@@ -1,9 +1,15 @@
 ALL:
+	#make compile
 	make prepare
 	make rcpp
 	make roxygen
 	make check
 	make install
+
+compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr.tpl
+	cd inst/ADMB/src; admb -f secr.tpl
+	cd inst/ADMB/src; rm -rfv secr.cpp secr.htp secr.obj
+	cd inst/ADMB/bin/linux; rm -rfv secr; mv ../../src/secr .
 
 prepare:
 	rm -rfv man
@@ -13,7 +19,7 @@ rcpp:
 	R --slave -e "library(Rcpp); compileAttributes()"
 
 roxygen:
-	R --slave -e "library(roxygen2); roxygenise('~/admbsecr/')"
+	R --slave -e "library(roxygen2); roxygenise('/scratch/admbsecr/')"
 
 check:
 	R CMD check .
