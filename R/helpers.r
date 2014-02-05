@@ -141,7 +141,7 @@ getpar <- function(fit, pars, as.list = FALSE){
     fixed.pars <- fit$phases[pars] == -1
     ## Putting in fixed parameter values.
     if (sum(fixed.pars) > 0){
-        out[fixed.pars] <- fit$sv[[pars[fixed.pars]]]
+        out[fixed.pars] <- c(fit$sv[pars[fixed.pars]], recursive = TRUE)
     }
     ## Working out parameter groups for parameters in 'pars'.
     det.index <- which(pars %in% fit$detpars)
