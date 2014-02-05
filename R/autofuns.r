@@ -42,6 +42,10 @@ autog0 <- function(args){
     0.95
 }
 
+autoz <- function(args){
+    autosigma(args)
+}
+
 autosigma.toa <- function(args){
     0.0025
 }
@@ -68,9 +72,9 @@ autoalpha <- function(args){
 
 
 autoshape <- function(args){
-    5
+    autosigma(args)/args$sv[["scale"]]
 }
 
 autoscale <- function(args){
-    10
+    sqrt(autosigma(args))
 }
