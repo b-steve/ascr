@@ -5,9 +5,10 @@
 stdEr(fit, type = "fixed")
 }
 \arguments{
-  \item{fit}{a fitted model from \code{admbsecr()}.}
+  \item{fit}{A fitted model from
+  \link[admbsecr]{admbsecr}.}
 
-  \item{type}{a character string. If \code{"fixed"} then
+  \item{type}{A character string. If \code{"fixed"} then
   only standard errors for estimated parameters are
   presented. If \code{"all"} then standard errors are also
   presented for derived paramters (e.g., the effective
