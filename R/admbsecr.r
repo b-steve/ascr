@@ -164,9 +164,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     sv[names(sv.old)] <- sv.old
     sv[names(fix)] <- fix
     auto.names <- par.names[sapply(sv, is.null)]
-    sv.funs <- paste("auto", auto.names, "2", sep = "")
-    for (i in seq(1, length(auto.names), length.out = length(auto.names))){
-        sv[auto.names[i]] <- eval(call(sv.funs[i], capt, traps))
+    sv.funs <- paste("auto", auto.names, sep = "")
+    ## Done in reverse so that D is calculated last (requires detfn parameters).
+    ## D not moved to front as it should appear as the first parameter in any output.
+    for (i in rev(seq(1, length(auto.names), length.out = length(auto.names)))){
+        sv[auto.names[i]] <- eval(call(sv.funs[i],
+                                       list(capt = capt, detfn = detfn,
+                                            detpar.names = detpar.names,
+                                            mask = mask, traps = traps,
+                                            sv = sv)))
     }
     ## Sorting out phases.
     ## TODO: Add phases parameter so that these can be controlled by user.

@@ -170,3 +170,16 @@ erf <- function(x){
     2*pnorm(x*sqrt(2)) - 1
 }
 
+## Capture probability density surface from a model fit.
+p.dot <- function(fit = NULL, points = fit$mask, traps = NULL, detfn = NULL,
+                  pars = NULL){
+    if (!is.null(fit)){
+        traps <- fit$traps
+        detfn <- fit$detfn
+        pars <- getpar(fit, fit$detpars, as.list = TRUE)
+    }
+    dists <- distances(traps, points)
+    calc.detfn <- get.detfn(detfn)
+    probs <- calc.detfn(dists, pars)
+    aaply(probs, 2, function(x) 1 - prod(1 - x))
+}
