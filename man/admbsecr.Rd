@@ -4,7 +4,7 @@
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, scalefactors = NULL, ss.link = "identity", cutoff = NULL,
-  sound.speed = NULL, trace = FALSE, clean = TRUE)
+  sound.speed = NULL, trace = FALSE, clean = TRUE, exe.type = "old")
 }
 \arguments{
   \item{capt}{A list with named components, containing the
@@ -60,6 +60,9 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 
   \item{clean}{Logical, if \code{TRUE} ADMB output files
   are removed.}
+
+  \item{exe.type}{Character string, either "old" or "new",
+  depending on which executable is to be used.}
 }
 \description{
 Fits an SECR model, with our without supplementary
