@@ -45,12 +45,14 @@ NULL
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
 #' @param clean Logical, if \code{TRUE} ADMB output files are removed.
+#' @param exe.type Character string, either "old" or "new", depending
+#' on which executable is to be used.
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, scalefactors = NULL, ss.link = "identity",
                      cutoff = NULL, sound.speed  = NULL, trace = FALSE,
-                     clean = TRUE){
+                     clean = TRUE, exe.type = "old"){
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
     if (is.null(capt.bin)){
@@ -305,12 +307,22 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       toa_ssq = toa.ssq)
     ## Idea of running executable as below taken from glmmADMB.
     ## Working out correct command to run from command line.
+    if (exe.type == "old"){
+        exe.name <- "./secr_old"
+        out.name <- "secr_old"
+    } else if (exe.type == "new"){
+        exe.name <- "./secr"
+        out.name <- "secr"
+    } else if (exe.type == "diff"){
+        exe.name <- "./secr_diff"
+        out.name <- "secr_diff"
+    }
     if (.Platform$OS == "windows"){
         os.type <- "windows"
         cmd <- "secr -ind secr.dat -ainp secr.pin"
     } else if (.Platform$OS == "unix"){
         os.type <- "linux"
-        cmd <- "./secr -ind secr.dat -ainp secr.pin"
+        cmd <- paste(exe.name, "-ind secr.dat -ainp secr.pin")
     } else {
         stop("OS not supported yet.")
     }
@@ -326,12 +338,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Running ADMB executable.
     system(cmd, ignore.stdout = !trace)
     ## Reading in model results.
-    out <- read.admbsecr("secr")
+    out <- read.admbsecr(out.name)
     ## Cleaning up files.
     all.files <- list.files()
     new.files <- all.files[!all.files %in% curr.files]
     if (clean){
         file.remove(new.files)
+    } else {
+        cat("ADMB files found in:", "\n", getwd(), "\n")
     }
     ## Warning for non-convergence.
     if (out$maxgrad < -0.1){
