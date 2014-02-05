@@ -63,3 +63,25 @@ calc.log.ss <- function(d, pars){
     cutoff <- pars$cutoff
     1 - pnorm(cutoff, mean = exp(b0.ss - b1.ss*d), sd = sigma.ss)
 }
+
+plot.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
+                       xlab = "Distance (m)", ylab = "Detection probability",
+                       ...){
+    if (is.null(xlim)){
+        xlim <- c(0, attr(fit$mask, "buffer"))
+    }
+    calc.detfn <- get.detfn(fit$detfn)
+    pars <- getpar(fit, fit$detpars, as.list = TRUE)
+    dists <- seq(xlim[1], xlim[2], length.out = 1000)
+    probs <- calc.detfn(dists, pars)
+    plot.new()
+    old.par <- par(xaxs = "i")
+    plot.window(xlim = xlim, ylim = ylim)
+    axis(1)
+    axis(2)
+    box()
+    abline(h = c(0, 1), col = "lightgrey")
+    lines(dists, probs, ...)
+    title(main = main, xlab = xlab, ylab = ylab)
+    par(old.par)
+}
