@@ -104,7 +104,7 @@ test_that("toa fitting", {
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(285.68, 0.30612, 0.00018903)
+    ses.test <- c(285.68, 0.30612, 0.00019909)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -125,7 +125,7 @@ test_that("joint ss/toa fitting", {
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(266.32, 1.5753, 0.24763, 0.56685, 0.00020871)
+    ses.test <- c(266.32, 1.5753, 0.24763, 0.56685, 0.00021257)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
