@@ -45,7 +45,7 @@ NULL
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
 #' @param clean Logical, if \code{TRUE} ADMB output files are removed.
-#' @param exe.type Character string, either "old", "new", or "diff",
+#' @param exe.type Character string, either "old" or "new",
 #' depending on which executable is to be used (for development
 #' purpouses only; please ignore).
 #' @export
@@ -53,7 +53,7 @@ NULL
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, scalefactors = NULL, ss.link = "identity",
                      cutoff = NULL, sound.speed  = NULL, trace = FALSE,
-                     clean = TRUE, exe.type = "diff"){
+                     clean = TRUE, exe.type = "old"){
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
     if (is.null(capt.bin)){
@@ -308,15 +308,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       toa_ssq = toa.ssq)
     ## Idea of running executable as below taken from glmmADMB.
     ## Working out correct command to run from command line.
-    if (exe.type == "old"){
-        exe.name <- "./secr_old"
-        out.name <- "secr_old"
-    } else if (exe.type == "new"){
+    if (exe.type == "new"){
+        exe.name <- "./secr_new"
+        out.name <- "secr_new"
+    } else if (exe.type == "old"){
         exe.name <- "./secr"
         out.name <- "secr"
-    } else if (exe.type == "diff"){
-        exe.name <- "./secr_diff"
-        out.name <- "secr_diff"
+    } else {
+        stop("Argument 'exe.type' must be \"old\" or \"new\".")
     }
     if (.Platform$OS == "windows"){
         os.type <- "windows"
