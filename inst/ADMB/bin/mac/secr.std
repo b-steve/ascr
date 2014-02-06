@@ -1,0 +1,5 @@
+ index   name        value      std.dev
+     1   D           2.3587e+03 3.4589e+02
+     2   detpars[1]  1.0000e+00 1.8137e-05
+     3   detpars[2]  5.2627e+00 3.8032e-01
+     4   esa         5.3842e-02 6.2860e-03
