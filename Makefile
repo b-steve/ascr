@@ -9,7 +9,7 @@ ALL:
 compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr.tpl
 	cd inst/ADMB/src; admb -O secr.tpl
 	cd inst/ADMB/src; rm -rfv secr.cpp secr.htp secr.o secr.obj
-	cd inst/ADMB/bin/linux; rm -rfv secr_diff; mv ../../src/secr ./secr_diff
+	cd inst/ADMB/bin/linux; rm -rfv secr; mv ../../src/secr ./secr
 
 prepare:
 	rm -rfv man
