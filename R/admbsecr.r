@@ -321,10 +321,16 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         os.type <- "windows"
         cmd <- "secr -ind secr.dat -ainp secr.pin"
     } else if (.Platform$OS == "unix"){
-        os.type <- "linux"
+        if (Sys.info()["sysname"] == "Linux"){
+            os.type <- "linux"
+        } else if (Sys.info()["sysname"] == "Darwin"){
+            os.type <- "mac"
+        } else {
+            stop("Unknown OS type.")
+        }
         cmd <- paste(exe.name, "-ind secr.dat -ainp secr.pin")
     } else {
-        stop("OS not supported yet.")
+        stop("Unknown OS type.")
     }
     ## Finding executable folder (possible permission problems?).
     exe.dir <- paste(system.file(package = "admbsecr"), "ADMB", "bin", os.type, sep = "/")
