@@ -45,14 +45,15 @@ NULL
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
 #' @param clean Logical, if \code{TRUE} ADMB output files are removed.
-#' @param exe.type Character string, either "old" or "new", depending
-#' on which executable is to be used.
+#' @param exe.type Character string, either "old", "new", or "diff",
+#' depending on which executable is to be used (for development
+#' purpouses only; please ignore).
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, scalefactors = NULL, ss.link = "identity",
                      cutoff = NULL, sound.speed  = NULL, trace = FALSE,
-                     clean = TRUE, exe.type = "old"){
+                     clean = TRUE, exe.type = "diff"){
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
     if (is.null(capt.bin)){
