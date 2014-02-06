@@ -175,7 +175,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                        list(capt = capt, detfn = detfn,
                                             detpar.names = detpar.names,
                                             mask = mask, traps = traps,
-                                            sv = sv)))
+                                            sv = sv, cutoff = cutoff)))
     }
     ## Sorting out phases.
     ## TODO: Add phases parameter so that these can be controlled by user.

@@ -33,6 +33,10 @@ autoD <- function(args){
     sv <- args$sv
     detpar.names <- args$detpar.names
     pars <- sv[detpar.names]
+    cutoff <- args$cutoff
+    if (!is.null(cutoff)){
+        pars$cutoff <- cutoff
+    }
     esa <- a*sum(p.dot(points = mask, traps = traps, detfn = detfn, pars = pars))
     ## HT-like estimator for D is n/esa.
     nrow(args$capt$bincapt)/esa
