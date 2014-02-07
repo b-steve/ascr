@@ -1,5 +1,14 @@
+## Shortcut to get detection probability
+calc.detfn <- function(d, detfn, pars){
+    g <- get.detfn(detfn)
+    g(d, pars)
+}
+
 ## Returns a detection function.
 get.detfn <- function(detfn){
+    if (!(detfn %in% c("hn", "hr", "th", "lth", "ss", "log.ss"))){
+        stop("Argument 'detfn' must be \"hn\", \"hr\", \"th\", \"lth\", \"ss\", or \"log.ss\"")
+    }
     switch(detfn, hn = calc.hn, hr = calc.hr, th = calc.th,
            lth = calc.lth, ss = calc.ss, log.ss = calc.log.ss)
 }
@@ -86,10 +95,9 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
     if (is.null(xlim)){
         xlim <- c(0, attr(fit$mask, "buffer"))
     }
-    calc.detfn <- get.detfn(fit$detfn)
     pars <- getpar(fit, fit$detpars, as.list = TRUE)
     dists <- seq(xlim[1], xlim[2], length.out = 1000)
-    probs <- calc.detfn(dists, pars)
+    probs <- calc.detfn(dists, fit$detfn, pars)
     if (!add){
         plot.new()
         old.par <- par(xaxs = "i")
