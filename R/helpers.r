@@ -179,7 +179,6 @@ p.dot <- function(fit = NULL, points = fit$mask, traps = NULL, detfn = NULL,
         pars <- getpar(fit, fit$detpars, as.list = TRUE)
     }
     dists <- distances(traps, points)
-    calc.detfn <- get.detfn(detfn)
-    probs <- calc.detfn(dists, pars)
+    probs <- calc.detfn(dists, detfn, pars)
     aaply(probs, 2, function(x) 1 - prod(1 - x))
 }
