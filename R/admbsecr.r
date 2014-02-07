@@ -360,6 +360,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Moving back to original working directory.
     setwd(curr.dir)
     ## Adding extra components to list.
+    out$capt <- capt
     out$traps <- traps
     out$mask <- mask
     if (detfn == "log.ss") detfn <- "ss"
