@@ -11,6 +11,7 @@ Depends:
     Rcpp (>= 0.10.6)
 Imports:
     CircStats,
+    matrixStats,
     plyr,
     R2admb,
     secr

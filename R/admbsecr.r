@@ -1,5 +1,5 @@
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import CircStats plyr Rcpp R2admb secr
+#' @import CircStats matrixStats plyr Rcpp R2admb secr
 #' @useDynLib admbsecr
 NULL
 
@@ -368,6 +368,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$ss.link <- ss.link
     out$cutoff <- cutoff
     out$sound.speed <- sound.speed
+    out$fit.types <- fit.types
     out$infotypes <- names(fit.types)[fit.types]
     out$detpars <- detpar.names
     out$suppars <- suppar.names
