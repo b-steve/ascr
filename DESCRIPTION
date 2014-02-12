@@ -23,3 +23,12 @@ Description: This package allows for the fitting of spatially explicit
 License: GPL
 URL: https://github.com/b-steve/admbsecr
 LazyData: true
+Collate:
+    'admbsecr.r'
+    'autofuns.r'
+    'convert.r'
+    'detfns.r'
+    'helpers.r'
+    'locations.r'
+    'RcppExports.R'
+    'simcapt.r'

@@ -2,9 +2,11 @@
 \alias{admbsecr}
 \title{Fitting SECR models in ADMB}
 \usage{
-admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, scalefactors = NULL, ss.link = "identity", cutoff = NULL,
-  sound.speed = NULL, trace = FALSE, clean = TRUE, exe.type = "old")
+  admbsecr(capt, traps, mask, detfn = "hn", sv = NULL,
+    bounds = NULL, fix = NULL, scalefactors = NULL,
+    ss.link = "identity", cutoff = NULL,
+    sound.speed = NULL, trace = FALSE, clean = TRUE,
+    exe.type = "old")
 }
 \arguments{
   \item{capt}{A list with named components, containing the
@@ -14,7 +16,9 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   Cartesian coordinates for the location of a trap.}
 
   \item{mask}{A matrix with two columns. Each row provides
-  Cartesian coordinates for the location of a mask point.}
+  Cartesian coordinates for the location of a mask point.
+  The function \link[admbsecr]{create.mask} will return a
+  suitable object.}
 
   \item{detfn}{A character string specifying the detection
   function to be used. Options are "hn" (halfnormal), "hr"
@@ -66,9 +70,9 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   development purpouses only; please ignore).}
 }
 \description{
-Fits an SECR model, with our without supplementary
-information relevant to animal location. Parameter
-estimation is done by maximum likelihood through and ADMB
-executible.
+  Fits an SECR model, with our without supplementary
+  information relevant to animal location. Parameter
+  estimation is done by maximum likelihood through and ADMB
+  executible.
 }
 

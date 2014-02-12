@@ -2,7 +2,7 @@
 \alias{distances}
 \title{Calculating distances between two sets of points}
 \usage{
-distances(a, b)
+  distances(a, b)
 }
 \arguments{
   \item{a}{matrix containing a set of coordinates.}
@@ -10,10 +10,10 @@ distances(a, b)
   \item{b}{matrix containing another set of coordinates.}
 }
 \value{
-A matrix with pairwise distances between the two sets of
-points.
+  A matrix with pairwise distances between the two sets of
+  points.
 }
 \description{
-Calculates pairwise distances between two sets of points.
+  Calculates pairwise distances between two sets of points.
 }
 
