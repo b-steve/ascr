@@ -9,10 +9,11 @@
 #' @param infotypes A character vector indicating the type(s) of
 #' information to be used when plotting the estimated density of
 #' location.  Elements can be a subset of \code{"capt"}, \code{"ang"},
-#' \code{"dist"}, \code{"toa"}, and \code{"combined"}, where
-#' \code{"combined"} combines all information types together. When
-#' signal strength information is used in the model fit, then
-#' selecting \code{"capt"} here will use this information.
+#' \code{"dist"}, \code{"toa"}, \code{"combined"}, and \code{"all"},
+#' where \code{"combined"} combines all information types together,
+#' and \code{"all"} plots all possible contour types. When signal
+#' strength information is used in the model fit, then selecting
+#' \code{"capt"} here will use this information.
 #' @param xlim A numeric vector of length 2, giving the x coordinate range.
 #' @param ylim A numeric vector of length 2, giving the y coordinate range.
 #' @param
@@ -21,7 +22,8 @@ locations <- function(fit, id, infotypes = "combined",
                       ylim = range(mask[, 2]),
                       cols = list(combined = "black", capt = "purple",
                           ang = "green", dist = "red", toa = "blue"),
-                      plot.arrows = TRUE, plot.circles = TRUE,
+                      plot.arrows = any(c("ang", "all") %in% infotypes),
+                      plot.circles = any(c("dist", "all") %in% infotypes),
                       mask = fit$mask, add = FALSE){
     ## Setting up plotting area.
     if (!add){
@@ -32,6 +34,9 @@ locations <- function(fit, id, infotypes = "combined",
         axis(2)
     }
     ## Working out which contours to plot.
+    if (infotypes == "all"){
+        infotypes <- c(fit$infotypes, "combined")
+    }
     plot.types <- c("combined", "capt", "ang", "dist", "toa") %in% infotypes
     names(plot.types) <- c("combined", "capt", "ang", "dist", "toa")
     ## Setting all to TRUE if combined is used.
@@ -154,12 +159,15 @@ dist.density <- function(fit, id, mask, dists){
 
 ## Plots arrows on traps where a detection was made, showing estimated bearing.
 show.arrows <- function(fit, id){
+    xlim <- par("usr")[c(1, 2)]
+    ylim <- par("usr")[c(3, 4)]
+    arrow.length <- 0.15*min(c(diff(range(xlim)), diff(range(ylim))))
+    print(arrow.length)
     capt <- fit$capt$bincapt[id, ]
     ang.capt <- fit$capt$ang[id, capt == 1]
     trappos <- fit$traps[which(capt == 1), , drop = FALSE]
-    arrowlength <- 3
-    sinb <- sin(ang.capt)*arrowlength
-    cosb <- cos(ang.capt)*arrowlength
+    sinb <- sin(ang.capt)*arrow.length
+    cosb <- cos(ang.capt)*arrow.length
     arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
            length = 0.1)
 }
