@@ -16,7 +16,26 @@
 #' \code{"capt"} here will use this information.
 #' @param xlim A numeric vector of length 2, giving the x coordinate range.
 #' @param ylim A numeric vector of length 2, giving the y coordinate range.
-#' @param
+#' @param cols A list with named components corresponding to each
+#' contour type (i.e., a subset of \code{"capt"}, \code{"ang"},
+#' \code{"dist"}, \code{"toa"}, and \code{"combined"}). Each component
+#' provides the colour the associated contour type (e.g., using a
+#' character string such as \code{"red"}, or a call to the function
+#' \link[grDevices]{rgb}).
+#' @param plot.arrows Logical, if \code{TRUE} arrows indicating the
+#' estimated bearing to the individual are plotted from detectors at
+#' which detections were made.
+#' @param plot.circles Logical, if \code{TRUE} circles indicating the
+#' estimated distance to the individual are plotted around detectors
+#' at which detections were made.
+#' @param mask A matrix with two columns. Each row provides Cartesian
+#' coordinates for the location of a mask point. The function
+#' \link[admbsecr]{create.mask} will return a suitable object. The
+#' mask used to fit the model \code{fit} will be used by default; this
+#' argument is usually used when estimated location contours need to
+#' be plotted to a higher resolution than this.
+#' @param add Logical, if \code{TRUE} contours will be added to an
+#' existing plot.
 locations <- function(fit, id, infotypes = "combined",
                       xlim = range(mask[, 1]),
                       ylim = range(mask[, 2]),

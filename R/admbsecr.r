@@ -14,7 +14,8 @@ NULL
 #' @param traps A matrix with two columns. Each row provides Cartesian
 #' coordinates for the location of a trap.
 #' @param mask A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a mask point.
+#' coordinates for the location of a mask point. The function
+#' \link[admbsecr]{create.mask} will return a suitable object.
 #' @param detfn A character string specifying the detection function
 #' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
 #' (threshold), "lth" (log-link threshold), or "ss" (signal

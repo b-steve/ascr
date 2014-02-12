@@ -7,7 +7,7 @@
 #' coordinates for the location of a trap.
 #' @param buffer The minimum distance between trap locations and the
 #' edge of the generated mask.
-#' @param ... Arguments to be passed to \code{link[secr]{make.mask}}.
+#' @param ... Arguments to be passed to \link[secr]{make.mask}.
 #' @export
 create.mask <- function(traps, buffer, ...){
     traps <- convert.traps(traps)
