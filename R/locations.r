@@ -21,6 +21,7 @@ locations <- function(fit, id, infotypes = "combined",
                       ylim = range(mask[, 2]),
                       cols = list(combined = "black", capt = "purple",
                           ang = "green", dist = "red", toa = "blue"),
+                      plot.arrows = TRUE, plot.circles = TRUE,
                       mask = fit$mask, add = FALSE){
     ## Setting up plotting area.
     if (!add){
@@ -77,6 +78,9 @@ locations <- function(fit, id, infotypes = "combined",
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.ang
             }
+            if (plot.arrows){
+                show.arrows(fit, i)
+            }
         }
         ## Contour due to estimated distances.
         if (plot.types["dist"] | plot.types["combined"] & fit$fit.types["dist"]){
@@ -86,6 +90,9 @@ locations <- function(fit, id, infotypes = "combined",
             }
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.dist
+            }
+            if (plot.circles){
+                show.circles(fit, i)
             }
         }
         ## Combined contour.
@@ -126,13 +133,6 @@ ang.density <- function(fit, id, mask){
     for (i in 1:sum(capt)){
         mask.dens[i, ] <- dvm(ang.capt[i], mu = mask.bearings[i, ], kappa = kappa)
     }
-    ## Plotting arrows.
-    trappos <- fit$traps[which(capt == 1), , drop = FALSE]
-    arrowlength <- 3
-    sinb <- sin(ang.capt)*arrowlength
-    cosb <- cos(ang.capt)*arrowlength
-    arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
-           length = 0.1)
     ## Returning densities.
     colProds(mask.dens)
 }
@@ -152,4 +152,29 @@ dist.density <- function(fit, id, mask, dists){
     colProds(mask.dens)
 }
 
+## Plots arrows on traps where a detection was made, showing estimated bearing.
+show.arrows <- function(fit, id){
+    capt <- fit$capt$bincapt[id, ]
+    ang.capt <- fit$capt$ang[id, capt == 1]
+    trappos <- fit$traps[which(capt == 1), , drop = FALSE]
+    arrowlength <- 3
+    sinb <- sin(ang.capt)*arrowlength
+    cosb <- cos(ang.capt)*arrowlength
+    arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
+           length = 0.1)
+}
 
+## Plots circles around traps where a detection was made, showing estimated distance.
+show.circles <- function(fit, id){
+    capt <- fit$capt$bincapt[id, ]
+    dist.capt <- fit$capt$dist[id, capt == 1]
+    trappos <- fit$traps[which(capt == 1), , drop = FALSE]
+    for (i in 1:nrow(trappos)){
+        cent <- trappos[i, ]
+        rad <- dist.capt[i]
+        angs <- seq(0, 2*pi, length.out = 100)
+        xs <- cent[1] + sin(angs)*rad
+        ys <- cent[2] + cos(angs)*rad
+        lines(xs, ys)
+    }
+}
