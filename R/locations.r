@@ -69,7 +69,7 @@ locations <- function(fit, id, infotypes = "combined",
             }
         }
         ## Contour due to estimated bearings.
-        if (plot.types["ang"] | plot.types["combined"]){
+        if (plot.types["ang"] | plot.types["combined"] & fit$fit.types["ang"]){
             f.ang <- ang.density(fit, i, mask)
             if (plot.types["ang"]){
                 show.contour(mask, f.x*f.ang, cols$ang)
@@ -79,15 +79,15 @@ locations <- function(fit, id, infotypes = "combined",
             }
         }
         ## Contour due to estimated distances.
-        ## if (plot.types["dist"] | plot.types["combined"]]){
-        ##     f.dist <- dist.density(fit, i, mask)
-        ##     if (plot.types["dist"]){
-        ##         show.contour(mask, f.x*f.dist, cols$dist)
-        ##     }
-        ##     if (plot.types["combined"]){
-        ##         f.combined <- f.combined*f.dist
-        ##     }
-        ## }
+        if (plot.types["dist"] | plot.types["combined"] & fit$fit.types["dist"]){
+            f.dist <- dist.density(fit, i, mask, dists)
+            if (plot.types["dist"]){
+                show.contour(mask, f.x*f.dist, cols$dist)
+            }
+            if (plot.types["combined"]){
+                f.combined <- f.combined*f.dist
+            }
+        }
         ## Combined contour.
         if (plot.types["combined"]){
             show.contour(mask, f.combined, cols$combined)
@@ -139,15 +139,17 @@ ang.density <- function(fit, id, mask){
 
 ## Calculating density due to estimated distances.
 dist.density <- function(fit, id, mask, dists){
-    dists <- dists[capt == 1, ]
     capt <- fit$capt$bincapt[id, ]
+    dists <- dists[capt == 1, ]
     dist.capt <- fit$capt$dist[id, capt == 1]
     alpha <- getpar(fit, "alpha")
-    mask.dens <- matrix(0, nrow = nrow(fit$traps), ncol = nrow(mask))
+    mask.dens <- matrix(0, nrow = sum(capt), ncol = nrow(mask))
     betas <- alpha/dists
     for (i in 1:sum(capt)){
         mask.dens[i, ] <- dgamma(dist.capt[i], shape = alpha, rate = betas[i, ])
     }
+    ## Returning densities.
+    colProds(mask.dens)
 }
 
 
