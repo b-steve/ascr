@@ -81,9 +81,9 @@ locations <- function(fit, id, infotypes = "combined",
         if (plot.types["combined"]){
             f.combined <- f.x
         }
+        capt <- fit$capt$bincapt[i, ]
         ## Contour due to capture history.
         if (plot.types["capt"] | plot.types["combined"]){
-            capt <- fit$capt$bincapt[i, ]
             det.probs <- calc.detfn(dists, detfn, det.pars)
             f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
             if (plot.types["capt"]){
@@ -117,6 +117,17 @@ locations <- function(fit, id, infotypes = "combined",
             }
             if (plot.circles){
                 show.circles(fit, i)
+            }
+        }
+        ## Contour due to measured times of arrival.
+        if (plot.types["toa"] | plot.types["combined"] &
+            fit$fit.types["toa"] & sum(capt) > 1){
+            f.toa <- toa.density(fit, i, mask, dists)
+            if (plot.types["toa"]){
+                show.contour(mask, f.x*f.toa, cols$toa)
+            }
+            if (plot.types["combined"]){
+                f.combined <- f.combined*f.toa
             }
         }
         ## Combined contour.
@@ -177,6 +188,18 @@ dist.density <- function(fit, id, mask, dists){
     }
     ## Returning densities.
     colProds(mask.dens)
+}
+
+toa.density <- function(fit, id, mask, dists){
+    capt <- fit$capt$bincapt[id, ]
+    dists <- dists[capt == 1, ]
+    toa.capt <- fit$capt$toa[id, capt == 1]
+    sigma.toa <- getpar(fit, "sigma.toa")
+    prod.times <- toa.capt - fit$sound.speed*dists
+    toa.ssq <- sum((prod.times - mean(prod.times))^2)
+    (2*pi*sigma.toa^2)^((1 - sum(capt))/2)*
+        exp(toa.ssq/(-2*sigma.toa^2))
+    stop("Not yet implemented properly.")
 }
 
 ## Plots arrows on traps where a detection was made, showing estimated bearing.

@@ -53,7 +53,7 @@ NULL
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, scalefactors = NULL, ss.link = "identity",
-                     cutoff = NULL, sound.speed  = NULL, trace = FALSE,
+                     cutoff = NULL, sound.speed  = 330, trace = FALSE,
                      clean = TRUE, exe.type = "old"){
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
@@ -90,7 +90,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (!is.list(fix) & !is.null(fix)){
         stop("The 'fix' argument must be 'NULL' or a list.")
     }
-    if (!is.null(sound.speed)){
+    if (!missing(sound.speed)){
         stop("The 'sound.speed' argument is not yet implemented.")
     }
     n <- nrow(capt.bin)
