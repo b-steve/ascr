@@ -40,7 +40,7 @@ locations <- function(fit, id, infotypes = "combined",
                       xlim = range(mask[, 1]),
                       ylim = range(mask[, 2]),
                       cols = list(combined = "black", capt = "purple",
-                          ang = "green", dist = "red", toa = "blue"),
+                          ang = "green", dist = "brown", toa = "blue"),
                       plot.arrows = any(c("ang", "all") %in% infotypes),
                       plot.circles = any(c("dist", "all") %in% infotypes),
                       mask = fit$mask, add = FALSE){
@@ -124,7 +124,10 @@ locations <- function(fit, id, infotypes = "combined",
             show.contour(mask, f.combined, cols$combined)
         }
     }
-    text(fit$traps, col = "red", labels = 1:nrow(fit$traps))
+    points(fit$traps, col = "red", pch = 4, lwd = 2)
+    if (length(id) == 1){
+        points(fit$traps[capt == 1, ], col = "red", cex = 2, lwd = 2)
+    }
 }
 
 ## Helper to get stuff in the right form for contour().
@@ -180,15 +183,14 @@ dist.density <- function(fit, id, mask, dists){
 show.arrows <- function(fit, id){
     xlim <- par("usr")[c(1, 2)]
     ylim <- par("usr")[c(3, 4)]
-    arrow.length <- 0.15*min(c(diff(range(xlim)), diff(range(ylim))))
-    print(arrow.length)
+    arrow.length <- 0.05*min(c(diff(range(xlim)), diff(range(ylim))))
     capt <- fit$capt$bincapt[id, ]
     ang.capt <- fit$capt$ang[id, capt == 1]
     trappos <- fit$traps[which(capt == 1), , drop = FALSE]
     sinb <- sin(ang.capt)*arrow.length
     cosb <- cos(ang.capt)*arrow.length
     arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
-           length = 0.1)
+           length = 0.1, col = "red", lwd = 2)
 }
 
 ## Plots circles around traps where a detection was made, showing estimated distance.
@@ -197,11 +199,15 @@ show.circles <- function(fit, id){
     dist.capt <- fit$capt$dist[id, capt == 1]
     trappos <- fit$traps[which(capt == 1), , drop = FALSE]
     for (i in 1:nrow(trappos)){
-        cent <- trappos[i, ]
-        rad <- dist.capt[i]
-        angs <- seq(0, 2*pi, length.out = 100)
-        xs <- cent[1] + sin(angs)*rad
-        ys <- cent[2] + cos(angs)*rad
-        lines(xs, ys)
+        centre <- trappos[i, ]
+        radius <- dist.capt[i]
+        circles(centre, radius, col = "red", lwd = 2)
     }
+}
+
+circles <- function(centre, radius, ...){
+    angs <- seq(0, 2*pi, length.out = 100)
+    xs <- centre[1] + sin(angs)*radius
+    ys <- centre[2] + cos(angs)*radius
+    lines(xs, ys, ...)
 }
