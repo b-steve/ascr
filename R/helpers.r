@@ -109,7 +109,7 @@ stdEr <- function(fit, type = "fixed"){
 }
 
 ## Return fixed or estimated parameter values from a model fit.
-getpar <- function(fit, pars, as.list = FALSE){
+getpar <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     allpar.names <- c("D", fit$detpars, fit$suppars)
     if (length(pars) == 1){
         if (pars == "all"){
@@ -133,6 +133,10 @@ getpar <- function(fit, pars, as.list = FALSE){
         }
         stop(msg)
     }
+    if (!fit$fit.types["ss"] & cutoff){
+        warning("The cutoff is not being provided as 'fit' does not use signal strength information.")
+        cutoff <- FALSE
+    }
     out <- numeric(length(pars))
     names(out) <- pars
     det.index <- which(fit$detpars %in% pars)
@@ -153,6 +157,11 @@ getpar <- function(fit, pars, as.list = FALSE){
                                    sep = "")
     ## Putting in estimated parameter values.
     out[!fixed.pars] <- coef(fit)[admb.pars[!fixed.pars]]
+    ## Adding the cutoff if necessary.
+    if (cutoff){
+        out <- c(out, fit$cutoff)
+        names(out) <- c(pars, "cutoff")
+    }
     if (as.list){
         out.vec <- out
         out <- vector("list", length = length(out.vec))
@@ -176,7 +185,7 @@ p.dot <- function(fit = NULL, points = fit$mask, traps = NULL, detfn = NULL,
     if (!is.null(fit)){
         traps <- fit$traps
         detfn <- fit$detfn
-        pars <- getpar(fit, fit$detpars, as.list = TRUE)
+        pars <- getpar(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
     }
     dists <- distances(traps, points)
     probs <- calc.detfn(dists, detfn, pars)
