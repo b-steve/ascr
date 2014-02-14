@@ -9,11 +9,13 @@
 #' @param infotypes A character vector indicating the type(s) of
 #' information to be used when plotting the estimated density of
 #' location.  Elements can be a subset of \code{"capt"}, \code{"ang"},
-#' \code{"dist"}, \code{"toa"}, \code{"combined"}, and \code{"all"},
-#' where \code{"combined"} combines all information types together,
-#' and \code{"all"} plots all possible contour types. When signal
-#' strength information is used in the model fit, then selecting
-#' \code{"capt"} here will use this information.
+#' \code{"dist"}, \code{"ss"}, \code{"toa"}, \code{"combined"}, and
+#' \code{"all"}, where \{"capt"} shows estimated location only using
+#' detection locations, \code{"combined"} combines all information
+#' types together, and \code{"all"} plots all possible contour
+#' types. When signal strength information is used in the model fit,
+#' \code{"capt"} and \code{"ss"} are equivalent as the signal strength
+#' information is built into the detection function.
 #' @param xlim A numeric vector of length 2, giving the x coordinate range.
 #' @param ylim A numeric vector of length 2, giving the y coordinate range.
 #' @param cols A list with named components corresponding to each
@@ -21,7 +23,8 @@
 #' \code{"dist"}, \code{"toa"}, and \code{"combined"}). Each component
 #' provides the colour the associated contour type (e.g., using a
 #' character string such as \code{"red"}, or a call to the function
-#' \link[grDevices]{rgb}).
+#' \link[grDevices]{rgb}). By default, if only one contour is to be
+#' plotted, it will be plotted in black.
 #' @param plot.arrows Logical, if \code{TRUE} arrows indicating the
 #' estimated bearing to the individual are plotted from detectors at
 #' which detections were made.
@@ -39,11 +42,12 @@
 locations <- function(fit, id, infotypes = "combined",
                       xlim = range(mask[, 1]),
                       ylim = range(mask[, 2]),
+                      mask = fit$mask,
                       cols = list(combined = "black", capt = "purple",
                           ang = "green", dist = "brown", toa = "blue"),
                       plot.arrows = any(c("ang", "all") %in% infotypes),
                       plot.circles = any(c("dist", "all") %in% infotypes),
-                      mask = fit$mask, add = FALSE){
+                      legend = TRUE, add = FALSE){
     ## Setting up plotting area.
     if (!add){
         plot.new()
@@ -52,9 +56,22 @@ locations <- function(fit, id, infotypes = "combined",
         axis(1)
         axis(2)
     }
+    ## Error if "combined" is used when there is no additional information.
+    if ("combined" %in% infotypes & length(fit$infotypes[fit$infotypes != "ss"]) == 0){
+        stop("No additional information used in model 'fit', so a \"combined\" contour cannot be plotted.")
+    }
     ## Working out which contours to plot.
-    if (infotypes == "all"){
-        infotypes <- c(fit$infotypes, "combined")
+    if ("all" %in% infotypes){
+        infotypes <- c(fit$infotypes, "capt", "combined")
+    }
+    ## If "ss" is an infotype, set to "capt".
+    infotypes[infotypes == "ss"] <- "capt"
+    infotypes <- unique(infotypes)
+    ## Setting colour to "black" if there is only one contour to be plotted.
+    if (missing(cols)){
+        if (length(infotypes) == 1){
+            cols[infotypes] <- "black"
+        }
     }
     plot.types <- c("combined", "capt", "ang", "dist", "toa") %in% infotypes
     names(plot.types) <- c("combined", "capt", "ang", "dist", "toa")
@@ -67,9 +84,7 @@ locations <- function(fit, id, infotypes = "combined",
             plot.types[i] <- FALSE
         }
     }
-    n.mask <- nrow(mask)
     detfn <- fit$detfn
-    det.pars <- getpar(fit, fit$detpars, as.list = TRUE)
     dists <- distances(fit$traps, mask)
     ## Calculating density due to animal locations.
     p.det <- p.dot(fit = fit, points = mask)
@@ -83,9 +98,14 @@ locations <- function(fit, id, infotypes = "combined",
         }
         capt <- fit$capt$bincapt[i, ]
         ## Contour due to capture history.
-        if (plot.types["capt"] | plot.types["combined"]){
-            det.probs <- calc.detfn(dists, detfn, det.pars)
-            f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
+        if (plot.types["capt"] | plot.types["ss"] | plot.types["combined"]){
+            if (fit$fit.types["ss"]){
+                f.capt <- ss.density(fit, i, mask, dists)
+            } else {
+                det.pars <- getpar(fit, fit$detpars, as.list = TRUE)
+                det.probs <- calc.detfn(dists, detfn, det.pars)
+                f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
+            }
             if (plot.types["capt"]){
                 show.contour(mask, f.x*f.capt, cols$capt)
             }
@@ -135,9 +155,16 @@ locations <- function(fit, id, infotypes = "combined",
             show.contour(mask, f.combined, cols$combined)
         }
     }
+    ## Plotting traps, and circles around them.
     points(fit$traps, col = "red", pch = 4, lwd = 2)
     if (length(id) == 1){
-        points(fit$traps[capt == 1, ], col = "red", cex = 2, lwd = 2)
+        points(fit$traps[capt == 1, , drop = FALSE], col = "red", cex = 2, lwd = 2)
+    }
+    ## Making legend.
+    if (legend){
+        legend.labels <- infotypes
+        legend.cols <- c(cols[infotypes], recursive = TRUE)
+        legend("topright", legend = infotypes, lty = 1, col = legend.cols, bg = "white")
     }
 }
 
@@ -190,16 +217,33 @@ dist.density <- function(fit, id, mask, dists){
     colProds(mask.dens)
 }
 
+ss.density <- function(fit, id, mask, dists){
+    capt <- fit$capt$bincapt[id, ]
+    ss.capt <- fit$capt$ss[id, ]
+    det.pars <- getpar(fit, fit$detpars, cutoff = TRUE, as.list = TRUE)
+    mask.dens <- matrix(0, nrow = nrow(fit$traps), ncol = nrow(mask))
+    for (i in 1:nrow(fit$traps)){
+        if (capt[i] == 0){
+            mask.dens[i, ] <- 1 - calc.detfn(dists[i, ], fit$detfn, det.pars)
+        } else if (capt[i] == 1){
+            mu.ss <- det.pars[["b0.ss"]] - det.pars[["b1.ss"]]*dists[i, ]
+            mask.dens[i, ] <- dnorm(ss.capt[i], mu.ss, det.pars[["sigma.ss"]])
+        } else {
+            stop("The binary capture history must only contain 0s and 1s.")
+        }
+    }
+    colProds(mask.dens)
+}
+
 toa.density <- function(fit, id, mask, dists){
     capt <- fit$capt$bincapt[id, ]
     dists <- dists[capt == 1, ]
     toa.capt <- fit$capt$toa[id, capt == 1]
     sigma.toa <- getpar(fit, "sigma.toa")
-    prod.times <- toa.capt - fit$sound.speed*dists
-    toa.ssq <- sum((prod.times - mean(prod.times))^2)
-    (2*pi*sigma.toa^2)^((1 - sum(capt))/2)*
+    prod.times <- toa.capt - dists/fit$sound.speed
+    toa.ssq <- aaply(prod.times, 2, function(x) sum((x - mean(x))^2))
+    out <- (2*pi*sigma.toa^2)^((1 - sum(capt))/2)*
         exp(toa.ssq/(-2*sigma.toa^2))
-    stop("Not yet implemented properly.")
 }
 
 ## Plots arrows on traps where a detection was made, showing estimated bearing.
