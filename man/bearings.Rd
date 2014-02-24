@@ -2,7 +2,7 @@
 \alias{bearings}
 \title{Calculating bearings between two sets of points}
 \usage{
-  bearings(a, b)
+bearings(a, b)
 }
 \arguments{
   \item{a}{matrix containing a set of coordinates.}
@@ -10,10 +10,10 @@
   \item{b}{matrix containing another set of coordinates.}
 }
 \value{
-  A matrix with bearings of the points in matrix b from the
-  points in matrix a.
+A matrix with bearings of the points in matrix b from the
+points in matrix a.
 }
 \description{
-  Calculates the bearing from one set of points to another.
+Calculates the bearing from one set of points to another.
 }
 

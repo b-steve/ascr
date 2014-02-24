@@ -2,7 +2,7 @@
 \alias{stdEr}
 \title{Extract parameter standard errors.}
 \usage{
-  stdEr(fit, type = "fixed")
+stdEr(fit, type = "fixed")
 }
 \arguments{
   \item{fit}{A fitted model from
@@ -15,6 +15,6 @@
   survey area).}
 }
 \description{
-  Extracts standard errors from an admbsecr fit.
+Extracts standard errors from an admbsecr fit.
 }
 
