@@ -10,14 +10,20 @@
 #' information to be used when plotting the estimated density of
 #' location.  Elements can be a subset of \code{"capt"}, \code{"ang"},
 #' \code{"dist"}, \code{"ss"}, \code{"toa"}, \code{"combined"}, and
-#' \code{"all"}, where \{"capt"} shows estimated location only using
-#' detection locations, \code{"combined"} combines all information
-#' types together, and \code{"all"} plots all possible contour
-#' types. When signal strength information is used in the model fit,
-#' \code{"capt"} and \code{"ss"} are equivalent as the signal strength
-#' information is built into the detection function.
+#' \code{"all"}, where \code{"capt"} shows estimated location only
+#' using detection locations, \code{"combined"} combines all
+#' information types together, and \code{"all"} plots all possible
+#' contour types. When signal strength information is used in the
+#' model fit, \code{"capt"} and \code{"ss"} are equivalent as the
+#' signal strength information is built into the detection function.
 #' @param xlim A numeric vector of length 2, giving the x coordinate range.
 #' @param ylim A numeric vector of length 2, giving the y coordinate range.
+#' @param mask A matrix with two columns. Each row provides Cartesian
+#' coordinates for the location of a mask point. The function
+#' \link[admbsecr]{create.mask} will return a suitable object. The
+#' mask used to fit the model \code{fit} will be used by default; this
+#' argument is usually used when estimated location contours need to
+#' be plotted to a higher resolution than this.
 #' @param cols A list with named components corresponding to each
 #' contour type (i.e., a subset of \code{"capt"}, \code{"ang"},
 #' \code{"dist"}, \code{"toa"}, and \code{"combined"}). Each component
@@ -31,12 +37,8 @@
 #' @param plot.circles Logical, if \code{TRUE} circles indicating the
 #' estimated distance to the individual are plotted around detectors
 #' at which detections were made.
-#' @param mask A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a mask point. The function
-#' \link[admbsecr]{create.mask} will return a suitable object. The
-#' mask used to fit the model \code{fit} will be used by default; this
-#' argument is usually used when estimated location contours need to
-#' be plotted to a higher resolution than this.
+#' @param legend Logical, if \code{TRUE}, a legend will be added to
+#' the plot.
 #' @param add Logical, if \code{TRUE} contours will be added to an
 #' existing plot.
 locations <- function(fit, id, infotypes = "combined",
