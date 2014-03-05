@@ -2,12 +2,12 @@
 \alias{locations}
 \title{Plotting estimated locations}
 \usage{
-locations(fit, id, infotypes = "combined", xlim = range(mask[, 1]),
-  ylim = range(mask[, 2]), mask = fit$mask, cols = list(combined =
-  "black", capt = "purple", ang = "green", dist = "brown", toa = "blue"),
-  plot.arrows = any(c("ang", "all") \%in\% infotypes),
-  plot.circles = any(c("dist", "all") \%in\% infotypes), legend = TRUE,
-  add = FALSE)
+locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
+  ylim = range(mask[, 2]), mask = fit$mask, levels = NULL, nlevels = 10,
+  density = FALSE, cols = list(combined = "black", capt = "purple", ang =
+  "green", dist = "brown", toa = "blue"), show.labels = TRUE,
+  plot.arrows = "ang" \%in\% fit$infotypes, plot.circles = "dist" \%in\%
+  fit$infotypes, legend = TRUE, add = FALSE)
 }
 \arguments{
   \item{fit}{A fitted model from
@@ -29,7 +29,10 @@ locations(fit, id, infotypes = "combined", xlim = range(mask[, 1]),
   types. When signal strength information is used in the
   model fit, \code{"capt"} and \code{"ss"} are equivalent
   as the signal strength information is built into the
-  detection function.}
+  detection function. By default, only the most informative
+  contour is plotted, i.e., \"capt\" if the model was
+  fitted with no additional information, and \"combined\"
+  otherwise.}
 
   \item{xlim}{A numeric vector of length 2, giving the x
   coordinate range.}
@@ -45,6 +48,21 @@ locations(fit, id, infotypes = "combined", xlim = range(mask[, 1]),
   usually used when estimated location contours need to be
   plotted to a higher resolution than this.}
 
+  \item{levels}{A numeric vector giving the values to be
+  associated with the plotted contours.}
+
+  \item{nlevels}{The number of contour levels desired.
+  Ignored if \code{levels} is provided.}
+
+  \item{density}{Logical, if \code{TRUE}, the labels on
+  contours (and the levels specified by \code{levels})
+  refer to the density of the estimated distribution of the
+  individual's location. If \code{FALSE}, the labels on
+  contours (and the levels specified by \code{levels})
+  refer to the probability of the individual being located
+  within the associated contour under the estimated
+  distribution of the individual's location.}
+
   \item{cols}{A list with named components corresponding to
   each contour type (i.e., a subset of \code{"capt"},
   \code{"ang"}, \code{"dist"}, \code{"toa"}, and
@@ -54,19 +72,26 @@ locations(fit, id, infotypes = "combined", xlim = range(mask[, 1]),
   \link[grDevices]{rgb}). By default, if only one contour
   is to be plotted, it will be plotted in black.}
 
-  \item{plot.arrows}{Logical, if \code{TRUE} arrows
+  \item{show.labels}{Logical, if \code{TRUE}, contours are
+  labelled with the appropriate probability density (if
+  \code{density} is \code{TRUE}), or the corresponding
+  probability of the individual being within the associated
+  contour, under the estimated density (if \code{density}
+  is \code{FALSE}).}
+
+  \item{plot.arrows}{Logical, if \code{TRUE}, arrows
   indicating the estimated bearing to the individual are
   plotted from detectors at which detections were made.}
 
-  \item{plot.circles}{Logical, if \code{TRUE} circles
+  \item{plot.circles}{Logical, if \code{TRUE}, circles
   indicating the estimated distance to the individual are
   plotted around detectors at which detections were made.}
 
   \item{legend}{Logical, if \code{TRUE}, a legend will be
   added to the plot.}
 
-  \item{add}{Logical, if \code{TRUE} contours will be added
-  to an existing plot.}
+  \item{add}{Logical, if \code{TRUE}, contours will be
+  added to an existing plot.}
 }
 \description{
 Plots estimated densities of animal locations, which are
