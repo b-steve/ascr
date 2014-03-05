@@ -121,7 +121,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (fit.ss){
         ## Warning for failure to provide 'cutoff'.
         if (missing(cutoff)){
-            warning("Argument 'cutoff' is missing; set to 0.")
+            stop("Argument 'cutoff' is missing.")
         }
         if (!missing(detfn) & detfn != "ss"){
             warning("Argument 'detfn' is being ignored as signal strength information is provided in 'capt'. A signal strength detection function has been fitted instead.")
