@@ -72,7 +72,7 @@ test_that("ss-related parameters set up correctly", {
     expect_that(admbsecr(capt = test.capt, traps = example.traps,
                          mask = example.mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10)),
-                gives_warning("Argument 'cutoff' is missing; set to 0."))
+                throws_error("Argument 'cutoff' is missing."))
     
 })
 

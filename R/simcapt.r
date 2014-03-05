@@ -67,8 +67,6 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         cutoff <- fit$cutoff
         sound.speed <- fit$sound.speed
     }
-    ## Grabbing detection function.
-    calc.detfn <- get.detfn(detfn)
     ## Setting up logical indicators for additional information types.
     supp.types <- c("ang", "dist", "ss", "toa", "mrds")
     sim.types <- supp.types %in% infotypes
@@ -102,6 +100,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      paste(par.names, collapse = ", "), ".", sep = "")
         stop(msg)
     }
+    ## Grabbing detection function parameters.
+    detpars <- pars[detpar.names]
     ## Specifies the area in which animal locations can be generated.
     core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
     ## Simulating population.
@@ -113,7 +113,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     n.traps <- nrow(traps)
     ## Calculating detection probabilities and simulating captures.
     if (!sim.ss){
-        det.probs <- calc.detfn(dists, pars)
+        det.probs <- calc.detfn(dists, detfn, detpars)
         full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
                                 nrow = n.popn, ncol = n.traps)
         captures <- which(apply(full.bin.capt, 1, sum) > 0)
@@ -158,7 +158,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         plot(mids, props, type = "l", xlim = c(0, max(all.dists)),
              ylim = c(0, 1))
         xx <- seq(0, max(all.dists), length.out = 100)
-        lines(xx, calc.detfn(xx, pars), col = "blue")
+        lines(xx, calc.detfn(xx, detfn, detpars), col = "blue")
     }
     ## Total number of detections.
     n.dets <- sum(bin.capt)
