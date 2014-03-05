@@ -20,8 +20,6 @@ DATA_SECTION
   init_int n_traps
   init_int n_mask
   init_number A
-  init_number n_freqs
-  init_vector call_freqs(1,n_freqs)
   init_matrix capt_bin(1,n,1,n_traps)
   init_int fit_angs
   int nr_ang

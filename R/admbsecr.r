@@ -40,6 +40,8 @@ NULL
 #' @param cutoff The signal strength threshold, above which sounds are
 #' identified as detections. Only required when \code{detfn} is
 #' \code{"ss"}.
+#' @param call.freqs A vector of call frequencies collected
+#' independently to an acoustic survey.
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{info} includes \code{"toa"}.
@@ -53,8 +55,8 @@ NULL
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, scalefactors = NULL, ss.link = "identity",
-                     cutoff = NULL, sound.speed  = 330, trace = FALSE,
-                     clean = TRUE, exe.type = "old"){
+                     cutoff = NULL, call.freqs = NULL, sound.speed  = 330,
+                     trace = FALSE, clean = TRUE, exe.type = "old"){
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
     if (is.null(capt.bin)){
@@ -116,8 +118,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     capt.toa <- if (fit.toas) capt$toa else 0
     mrds.dist <- if (fit.mrds) capt$mrds else 0
     suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("ang", "dist", "toa")]]
-    ## TODO: Sort out situation where user provides SS info but also
-    ## provides a non-SS detection function.
     if (fit.ss){
         ## Warning for failure to provide 'cutoff'.
         if (missing(cutoff)){
@@ -262,9 +262,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Setting small number so that numerical under/overflow in ADMB
     ## does not affect estimation.
     dbl.min <- 1e-150
-    ## Some stuff being set as defaults for testing.
-    n.freqs <- 1
-    call.freqs <- 1
     ## Calculating distances and angles.
     ## TODO: Try calculating these in the PROCEDURE_SECTION instead.
     dists <- distances(traps, mask)
@@ -297,8 +294,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       suppars.phase, suppars_sf = suppars.sf, detfn_id =
                       detfn.id, trace = as.numeric(trace), DBL_MIN =
                       dbl.min, n = n, n_traps = n.traps, n_mask =
-                      n.mask, A = A, n_freqs = n.freqs, call_freqs =
-                      call.freqs, capt_bin = capt.bin, fit_angs =
+                      n.mask, A = A, capt_bin = capt.bin, fit_angs =
                       as.numeric(fit.angs), capt_ang = capt.ang,
                       fit_dists = as.numeric(fit.dists), capt_dist =
                       capt.dist, fit_ss = as.numeric(fit.ss), cutoff =
@@ -385,6 +381,27 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     bounds <- bounds[rownames(bounds) != "dummy", ]
     out$bounds <- alply(bounds, 1, identity, .dims = TRUE)
     class(out) <- c("admbsecr", "admb")
+    ## Putting in call frequency information.
+    if (!is.null(call.freqs)){
+        mu.freqs <- mean(call.freqs)
+        Da <- getpar(out, "D")/mu.freqs
+        names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
+        coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
+        names(coefs.updated) <- names.vec
+        out[["coefficients"]] <- coefs.updated
+        ## Removing ses, cor, vcov matrices.
+        ses.updated <- rep(NA, length(names.vec))
+        names(ses.updated) <- names.vec
+        out[["se"]] <- ses.updated
+        cor.updated <- matrix(NA, nrow = length(names.vec),
+                              ncol = length(names.vec))
+        dimnames(cor.updated) <- list(names.vec, names.vec)
+        out[["cor"]] <- cor.updated
+        vcov.updated <- matrix(NA, nrow = length(names.vec),
+                               ncol = length(names.vec))
+        dimnames(vcov.updated) <- list(names.vec, names.vec)
+        out[["vcov"]] <- vcov.updated
+    }
     out
 }
 
