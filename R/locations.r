@@ -27,6 +27,17 @@
 #' mask used to fit the model \code{fit} will be used by default; this
 #' argument is usually used when estimated location contours need to
 #' be plotted to a higher resolution than this.
+#' @param levels A numeric vector giving the values to be associated
+#' with the plotted contours.
+#' @param nlevels The number of contour levels desired. Ignored if
+#' \code{levels} is provided.
+#' @param density Logical, if \code{TRUE}, the labels on contours (and
+#' the levels specified by \code{levels}) refer to the density of the
+#' estimated distribution of the individual's location. If
+#' \code{FALSE}, the labels on contours (and the levels specified by
+#' \code{levels}) refer to the probability of the individual being
+#' located within the associated contour under the estimated
+#' distribution of the individual's location.
 #' @param cols A list with named components corresponding to each
 #' contour type (i.e., a subset of \code{"capt"}, \code{"ang"},
 #' \code{"dist"}, \code{"toa"}, and \code{"combined"}). Each component
@@ -34,22 +45,27 @@
 #' character string such as \code{"red"}, or a call to the function
 #' \link[grDevices]{rgb}). By default, if only one contour is to be
 #' plotted, it will be plotted in black.
-#' @param plot.arrows Logical, if \code{TRUE} arrows indicating the
+#' @param show.labels Logical, if \code{TRUE}, contours are labelled
+#' with the appropriate probability density (if \code{density} is
+#' \code{TRUE}), or the corresponding probability of the individual
+#' being within the associated contour, under the estimated density
+#' (if \code{density} is \code{FALSE}).
+#' @param plot.arrows Logical, if \code{TRUE}, arrows indicating the
 #' estimated bearing to the individual are plotted from detectors at
 #' which detections were made.
-#' @param plot.circles Logical, if \code{TRUE} circles indicating the
+#' @param plot.circles Logical, if \code{TRUE}, circles indicating the
 #' estimated distance to the individual are plotted around detectors
 #' at which detections were made.
 #' @param legend Logical, if \code{TRUE}, a legend will be added to
 #' the plot.
-#' @param add Logical, if \code{TRUE} contours will be added to an
+#' @param add Logical, if \code{TRUE}, contours will be added to an
 #' existing plot.
-locations <- function(fit, id, infotypes = NULL,
-                      xlim = range(mask[, 1]),
-                      ylim = range(mask[, 2]),
-                      mask = fit$mask,
+locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
+                      ylim = range(mask[, 2]), mask = fit$mask,
+                      levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
                           ang = "green", dist = "brown", toa = "blue"),
+                      show.labels = TRUE,
                       plot.arrows = "ang" %in% fit$infotypes,
                       plot.circles = "dist" %in% fit$infotypes,
                       legend = TRUE, add = FALSE){
@@ -60,6 +76,10 @@ locations <- function(fit, id, infotypes = NULL,
         box()
         axis(1)
         axis(2)
+    }
+    ## Ignoring 'nlevels' if 'levels' is provided.
+    if (!is.null(levels)){
+        nlevels <- length(levels)
     }
     ## Logical value for whether or not any additional information was
     ## used in model fit.
@@ -123,7 +143,9 @@ locations <- function(fit, id, infotypes = NULL,
                 f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
             }
             if (plot.types["capt"]){
-                show.contour(mask, f.x*f.capt, cols$capt)
+                show.contour(mask = mask, dens = f.x*f.capt, levels = levels,
+                             nlevels = nlevels, prob = !density, col = cols$capt,
+                             show.labels = show.labels)
             }
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.capt
@@ -133,7 +155,9 @@ locations <- function(fit, id, infotypes = NULL,
         if (plot.types["ang"] | plot.types["combined"] & fit$fit.types["ang"]){
             f.ang <- ang.density(fit, i, mask)
             if (plot.types["ang"]){
-                show.contour(mask, f.x*f.ang, cols$ang)
+                show.contour(mask = mask, dens = f.x*f.ang, levels = levels,
+                             nlevels = nlevels, prob = !density, col = cols$ang,
+                             show.labels = show.labels)
             }
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.ang
@@ -146,7 +170,9 @@ locations <- function(fit, id, infotypes = NULL,
         if (plot.types["dist"] | plot.types["combined"] & fit$fit.types["dist"]){
             f.dist <- dist.density(fit, i, mask, dists)
             if (plot.types["dist"]){
-                show.contour(mask, f.x*f.dist, cols$dist)
+                show.contour(mask = mask, dens = f.x*f.dist, levels = levels,
+                             nlevels = nlevels, prob = !density, col = cols$dist,
+                             show.labels = show.labels)
             }
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.dist
@@ -160,7 +186,9 @@ locations <- function(fit, id, infotypes = NULL,
             fit$fit.types["toa"] & sum(capt) > 1){
             f.toa <- toa.density(fit, i, mask, dists)
             if (plot.types["toa"]){
-                show.contour(mask, f.x*f.toa, cols$toa)
+                show.contour(mask = mask, dens = f.x*f.toa, levels = levels,
+                             nlevels = nlevels, prob = !density, col = cols$toa,
+                             show.labels = show.labels)
             }
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.toa
@@ -168,7 +196,9 @@ locations <- function(fit, id, infotypes = NULL,
         }
         ## Combined contour.
         if (plot.types["combined"]){
-            show.contour(mask, f.combined, cols$combined)
+            show.contour(mask = mask, dens = f.combined, levels = levels,
+                         nlevels = nlevels, prob = !density, col = cols$combined,
+                         show.labels = show.labels)
         }
     }
     ## Plotting traps, and circles around them.
@@ -185,7 +215,7 @@ locations <- function(fit, id, infotypes = NULL,
 }
 
 ## Helper to get stuff in the right form for contour().
-show.contour <- function(mask, dens, col = "black"){
+show.contour <- function(mask, dens, nlevels, levels, prob, col = "black", show.labels){
     ## Divide densities by normalising constant before plotting.
     a <- attr(mask, "a")*10000
     ## Not conversion of area to square metres.
@@ -201,7 +231,32 @@ show.contour <- function(mask, dens, col = "black"){
         index.y <- which(y == unique.y)
         z[index.x, index.y] <- dens[i]
     }
-    contour(unique.x, unique.y, z, add = TRUE, col = col)
+    ## Sorting out levels.
+    if (is.null(levels)){
+        levels <- pretty(range(z, finite = TRUE), nlevels)
+    } else {
+        if (prob){
+            z.sort <- sort(z, decreasing = TRUE)
+            probs.sort <- cumsum(z.sort)/sum(z.sort)
+            prob.levels <- levels
+            levels <- numeric(nlevels)
+            for (i in 1:nlevels){
+                levels[i] <- z.sort[which(abs(probs.sort - prob.levels[i]) ==
+                                          min(abs(probs.sort - prob.levels[i])))[1]]
+            }
+        }
+    }
+    if (prob){
+        labels <- character(nlevels)
+        for (i in 1:nlevels){
+            labels[i] <- format(round(sum(z[z > levels[i]], na.rm = TRUE)/
+                                      sum(z, na.rm = TRUE), 2), nsmall = 2)
+        }
+    } else {
+        labels <- NULL
+    }
+    contour(x = unique.x, y = unique.y, z = z, levels = levels,
+            labels = labels, col = col, drawlabels = show.labels, add = TRUE)
 }
 
 ## Calculating density due to estimated bearings.
