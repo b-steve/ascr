@@ -15,7 +15,10 @@
 #' information types together, and \code{"all"} plots all possible
 #' contour types. When signal strength information is used in the
 #' model fit, \code{"capt"} and \code{"ss"} are equivalent as the
-#' signal strength information is built into the detection function.
+#' signal strength information is built into the detection
+#' function. By default, only the most informative contour is plotted,
+#' i.e., \"capt\" if the model was fitted with no additional
+#' information, and \"combined\" otherwise.
 #' @param xlim A numeric vector of length 2, giving the x coordinate range.
 #' @param ylim A numeric vector of length 2, giving the y coordinate range.
 #' @param mask A matrix with two columns. Each row provides Cartesian
@@ -41,14 +44,14 @@
 #' the plot.
 #' @param add Logical, if \code{TRUE} contours will be added to an
 #' existing plot.
-locations <- function(fit, id, infotypes = "combined",
+locations <- function(fit, id, infotypes = NULL,
                       xlim = range(mask[, 1]),
                       ylim = range(mask[, 2]),
                       mask = fit$mask,
                       cols = list(combined = "black", capt = "purple",
                           ang = "green", dist = "brown", toa = "blue"),
-                      plot.arrows = any(c("ang", "all") %in% infotypes),
-                      plot.circles = any(c("dist", "all") %in% infotypes),
+                      plot.arrows = "ang" %in% fit$infotypes,
+                      plot.circles = "dist" %in% fit$infotypes,
                       legend = TRUE, add = FALSE){
     ## Setting up plotting area.
     if (!add){
@@ -58,13 +61,24 @@ locations <- function(fit, id, infotypes = "combined",
         axis(1)
         axis(2)
     }
+    ## Logical value for whether or not any additional information was
+    ## used in model fit.
+    any.infotypes <- length(fit$infotypes[fit$infotypes != "ss"]) > 0
+    ## Setting default infotypes.
+    if (is.null(infotypes)){
+        if (any.infotypes){
+            infotypes <- "combined"
+        } else {
+            infotypes <- "capt"
+        }
+    }
     ## Error if "combined" is used when there is no additional information.
-    if ("combined" %in% infotypes & length(fit$infotypes[fit$infotypes != "ss"]) == 0){
-        stop("No additional information used in model 'fit', so a \"combined\" contour cannot be plotted.")
+    if ("combined" %in% infotypes & !any.infotypes){
+        stop("No additional information used in model 'fit', so a \"combined\" contour cannot be plotted.") 
     }
     ## Working out which contours to plot.
     if ("all" %in% infotypes){
-        infotypes <- c(fit$infotypes, "capt", "combined")
+        infotypes <- c(fit$infotypes, "capt", "combined"[any.infotypes])
     }
     ## If "ss" is an infotype, set to "capt".
     infotypes[infotypes == "ss"] <- "capt"
@@ -100,7 +114,7 @@ locations <- function(fit, id, infotypes = "combined",
         }
         capt <- fit$capt$bincapt[i, ]
         ## Contour due to capture history.
-        if (plot.types["capt"] | plot.types["ss"] | plot.types["combined"]){
+        if (plot.types["capt"] | plot.types["combined"]){
             if (fit$fit.types["ss"]){
                 f.capt <- ss.density(fit, i, mask, dists)
             } else {
