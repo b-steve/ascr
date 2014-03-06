@@ -61,7 +61,7 @@
 #' @param add Logical, if \code{TRUE}, contours will be added to an
 #' existing plot.
 locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
-                      ylim = range(mask[, 2]), mask = fit$mask,
+                      ylim = range(mask[, 2]), mask = get.mask(fit),
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
                           ang = "green", dist = "brown", toa = "blue"),
@@ -120,8 +120,9 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             plot.types[i] <- FALSE
         }
     }
-    detfn <- fit$detfn
-    dists <- distances(fit$traps, mask)
+    traps <- get.traps(fit)
+    detfn <- fit$args$detfn
+    dists <- distances(traps, mask)
     ## Calculating density due to animal locations.
     p.det <- p.dot(fit = fit, points = mask)
     ## Divide by normalising constant; not conversion to square metres.
@@ -138,7 +139,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             if (fit$fit.types["ss"]){
                 f.capt <- ss.density(fit, i, mask, dists)
             } else {
-                det.pars <- getpar(fit, fit$detpars, as.list = TRUE)
+                det.pars <- get.par(fit, fit$detpars, as.list = TRUE)
                 det.probs <- calc.detfn(dists, detfn, det.pars)
                 f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
             }
@@ -202,9 +203,9 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
         }
     }
     ## Plotting traps, and circles around them.
-    points(fit$traps, col = "red", pch = 4, lwd = 2)
+    points(traps, col = "red", pch = 4, lwd = 2)
     if (length(id) == 1){
-        points(fit$traps[capt == 1, , drop = FALSE], col = "red", cex = 2, lwd = 2)
+        points(traps[capt == 1, , drop = FALSE], col = "red", cex = 2, lwd = 2)
     }
     ## Making legend.
     if (legend){
@@ -263,8 +264,8 @@ show.contour <- function(mask, dens, nlevels, levels, prob, col = "black", show.
 ang.density <- function(fit, id, mask){
     capt <- fit$capt$bincapt[id, ]
     ang.capt <- fit$capt$ang[id, capt == 1]
-    kappa <- getpar(fit, "kappa")
-    mask.bearings <- bearings(fit$traps[capt == 1, , drop = FALSE], mask)
+    kappa <- get.par(fit, "kappa")
+    mask.bearings <- bearings(get.traps(fit)[capt == 1, , drop = FALSE], mask)
     mask.dens <- matrix(0, nrow = sum(capt), ncol = nrow(mask))
     for (i in 1:sum(capt)){
         mask.dens[i, ] <- dvm(ang.capt[i], mu = mask.bearings[i, ], kappa = kappa)
@@ -278,7 +279,7 @@ dist.density <- function(fit, id, mask, dists){
     capt <- fit$capt$bincapt[id, ]
     dists <- dists[capt == 1, ]
     dist.capt <- fit$capt$dist[id, capt == 1]
-    alpha <- getpar(fit, "alpha")
+    alpha <- get.par(fit, "alpha")
     mask.dens <- matrix(0, nrow = sum(capt), ncol = nrow(mask))
     betas <- alpha/dists
     for (i in 1:sum(capt)){
@@ -291,11 +292,12 @@ dist.density <- function(fit, id, mask, dists){
 ss.density <- function(fit, id, mask, dists){
     capt <- fit$capt$bincapt[id, ]
     ss.capt <- fit$capt$ss[id, ]
-    det.pars <- getpar(fit, fit$detpars, cutoff = TRUE, as.list = TRUE)
-    mask.dens <- matrix(0, nrow = nrow(fit$traps), ncol = nrow(mask))
-    for (i in 1:nrow(fit$traps)){
+    det.pars <- get.par(fit, fit$detpars, cutoff = TRUE, as.list = TRUE)
+    n.traps <- nrow(get.traps(fit))
+    mask.dens <- matrix(0, nrow = n.traps, ncol = nrow(mask))
+    for (i in 1:n.traps){
         if (capt[i] == 0){
-            mask.dens[i, ] <- 1 - calc.detfn(dists[i, ], fit$detfn, det.pars)
+            mask.dens[i, ] <- 1 - calc.detfn(dists[i, ], get.detfn(fit), det.pars)
         } else if (capt[i] == 1){
             mu.ss <- det.pars[["b0.ss"]] - det.pars[["b1.ss"]]*dists[i, ]
             mask.dens[i, ] <- dnorm(ss.capt[i], mu.ss, det.pars[["sigma.ss"]])
@@ -310,7 +312,7 @@ toa.density <- function(fit, id, mask, dists){
     capt <- fit$capt$bincapt[id, ]
     dists <- dists[capt == 1, ]
     toa.capt <- fit$capt$toa[id, capt == 1]
-    sigma.toa <- getpar(fit, "sigma.toa")
+    sigma.toa <- get.par(fit, "sigma.toa")
     prod.times <- toa.capt - dists/fit$sound.speed
     toa.ssq <- aaply(prod.times, 2, function(x) sum((x - mean(x))^2))
     out <- (2*pi*sigma.toa^2)^((1 - sum(capt))/2)*
@@ -324,7 +326,7 @@ show.arrows <- function(fit, id){
     arrow.length <- 0.05*min(c(diff(range(xlim)), diff(range(ylim))))
     capt <- fit$capt$bincapt[id, ]
     ang.capt <- fit$capt$ang[id, capt == 1]
-    trappos <- fit$traps[which(capt == 1), , drop = FALSE]
+    trappos <- get.traps(fit)[which(capt == 1), , drop = FALSE]
     sinb <- sin(ang.capt)*arrow.length
     cosb <- cos(ang.capt)*arrow.length
     arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
@@ -335,7 +337,7 @@ show.arrows <- function(fit, id){
 show.circles <- function(fit, id){
     capt <- fit$capt$bincapt[id, ]
     dist.capt <- fit$capt$dist[id, capt == 1]
-    trappos <- fit$traps[which(capt == 1), , drop = FALSE]
+    trappos <- get.traps(fit)[which(capt == 1), , drop = FALSE]
     for (i in 1:nrow(trappos)){
         centre <- trappos[i, ]
         radius <- dist.capt[i]

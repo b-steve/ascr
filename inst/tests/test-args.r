@@ -5,7 +5,7 @@ test_that("fixing parameters", {
     fit <- admbsecr(capt = simple.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 0.9))
     ## Checking that g0 is not estimated.
-    expect_that(getpar(fit, "g0"), is_equivalent_to(0.9))
+    expect_that(get.par(fit, "g0"), is_equivalent_to(0.9))
     ## Checkint that phase is set to -1.
     expect_that(fit$phases$g0, is_equivalent_to(-1))
     ## Checking that all parameters have a phase.
