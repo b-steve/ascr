@@ -4,8 +4,8 @@
 \usage{
 sim.capt(fit = NULL, traps = NULL, mask = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL,
-  ss.link = "identity", cutoff = NULL, sound.speed = 330,
-  test.detfn = FALSE)
+  ss.link = "identity", cutoff = NULL, call.freqs = NULL,
+  freq.dist = "edf", sound.speed = 330, test.detfn = FALSE)
 }
 \arguments{
   \item{fit}{A fitted \code{admbsecr} model object which
@@ -46,6 +46,17 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
   \item{cutoff}{The signal strength threshold, above which
   sounds are identified as detections. Only required when
   \code{detfn} is \code{"ss"}.}
+
+  \item{call.freqs}{A vector of call frequencies collected
+  independently to an acoustic survey.}
+
+  \item{freq.dist}{A character string, either \code{"edf"}
+  or \code{"norm"}, which specifies how the distribution
+  function of the call frequencies should be estimated. If
+  \code{"edf"}, then the distribution of call frequencies
+  is estimated using the empirical distribution function.
+  If \code{"norm"}, then a normal distribution is fitted to
+  the call frequencies using the sample mean and variance.}
 
   \item{sound.speed}{The speed of sound in metres per
   second, defaults to 330 (the speed of sound in air). Only

@@ -3,9 +3,9 @@
 \title{Plotting estimated locations}
 \usage{
 locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
-  ylim = range(mask[, 2]), mask = fit$mask, levels = NULL, nlevels = 10,
-  density = FALSE, cols = list(combined = "black", capt = "purple", ang =
-  "green", dist = "brown", toa = "blue"), show.labels = TRUE,
+  ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
+  nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
+  "purple", ang = "green", dist = "brown", toa = "blue"), show.labels = TRUE,
   plot.arrows = "ang" \%in\% fit$infotypes, plot.circles = "dist" \%in\%
   fit$infotypes, legend = TRUE, add = FALSE)
 }

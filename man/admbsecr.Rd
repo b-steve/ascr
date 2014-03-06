@@ -3,8 +3,9 @@
 \title{Fitting SECR models in ADMB}
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, scalefactors = NULL, ss.link = "identity", cutoff = NULL,
-  sound.speed = 330, trace = FALSE, clean = TRUE, exe.type = "old")
+  fix = NULL, sf = NULL, ss.link = "identity", cutoff = NULL,
+  call.freqs = NULL, sound.speed = 330, trace = FALSE, clean = TRUE,
+  exe.type = "old")
 }
 \arguments{
   \item{capt}{A list with named components, containing the
@@ -37,9 +38,9 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   names to be fixed, and each component is the fixed value
   for the associated parameter.}
 
-  \item{scalefactors}{A named list. Component names are
-  parameter names, and each component is a scalefactor for
-  the associated parameter. The default behaviour is to
+  \item{sf}{A named list. Component names are parameter
+  names, and each component is a scalefactor for the
+  associated parameter. The default behaviour is to
   automatically select scalefactors based on parameter
   start values.}
 
@@ -52,9 +53,13 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   sounds are identified as detections. Only required when
   \code{detfn} is \code{"ss"}.}
 
+  \item{call.freqs}{A vector of call frequencies collected
+  independently to an acoustic survey.}
+
   \item{sound.speed}{The speed of sound in metres per
   second, defaults to 330 (the speed of sound in air). Only
-  used when \code{info} includes \code{"toa"}.}
+  used when \code{info} includes \code{"toa"}. NOT YET
+  IMPLEMENTED.}
 
   \item{trace}{Logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
