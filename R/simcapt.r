@@ -35,6 +35,15 @@
 #' @param cutoff The signal strength threshold, above which sounds are
 #' identified as detections. Only required when \code{detfn} is
 #' \code{"ss"}.
+#' @param call.freqs A vector of call frequencies collected
+#' independently to an acoustic survey.
+#' @param freq.dist A character string, either \code{"edf"} or
+#' \code{"norm"}, which specifies how the distribution function of the
+#' call frequencies should be estimated. If \code{"edf"}, then the
+#' distribution of call frequencies is estimated using the empirical
+#' distribution function. If \code{"norm"}, then a normal distribution
+#' is fitted to the call frequencies using the sample mean and
+#' variance.
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{info} includes \code{"toa"}.
@@ -44,8 +53,8 @@
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
                      pars = NULL, ss.link = "identity",
-                     cutoff = NULL, sound.speed = 330,
-                     test.detfn = FALSE){
+                     cutoff = NULL, call.freqs = NULL, freq.dist = "edf",
+                     sound.speed = 330, test.detfn = FALSE){
     ## Some error checking.
     if (any(infotypes == "ss")){
         stop("Signal strength information is simulated by setting argument 'detfn' to \"ss\".")
@@ -58,14 +67,15 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     }
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
-        traps <- fit$traps
-        mask <- fit$mask
+        traps <- get.traps(fit)
+        mask <- get.mask(fit)
         infotypes <- fit$infotypes
-        detfn <- fit$detfn
-        pars <- getpar(fit, "all", as.list = TRUE)
-        ss.link <- fit$ss.link
-        cutoff <- fit$cutoff
-        sound.speed <- fit$sound.speed
+        detfn <- fit$args$detfn
+        pars <- get.par(fit, "all", as.list = TRUE)
+        ss.link <- fit$args$ss.link
+        cutoff <- fit$args$cutoff
+        call.freqs <- fit$args$call.freqs
+        sound.speed <- fit$args$sound.speed
     }
     ## Setting up logical indicators for additional information types.
     supp.types <- c("ang", "dist", "ss", "toa", "mrds")
@@ -105,7 +115,29 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     ## Specifies the area in which animal locations can be generated.
     core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
     ## Simulating population.
-    popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
+    if (is.null(call.freqs)){
+        popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
+    } else {
+        D <- pars$D/mean(call.freqs)
+        popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
+        n.a <- nrow(popn)
+        if (freq.dist == "edf"){
+            if (length(call.freqs) == 1){
+                freqs <- rep(call.freqs, n.a)
+            } else {
+                freqs <- sample(call.freqs, size = n.a, replace = TRUE)
+            }
+        } else if (freq.dist == "norm"){
+            if (diff(range(call.freqs)) == 0){
+                freqs <- rep(unique(call.freqs), n.a)
+            } else {
+                freqs <- round(rnorm(n.a, mean(call.freqs), sd(call.freqs)))
+            }
+        } else {
+            stop("The argument 'freq.dist' must be either \"edf\" or \"norm\"")
+        }
+        popn <- popn[rep(1:n.a, times = freqs), ]
+    }
     n.popn <- nrow(popn)
     if (n.popn == 0) stop("No animals in population.")
     ## Calculating distances.

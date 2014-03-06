@@ -93,11 +93,11 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
                        xlab = "Distance (m)", ylab = "Detection probability",
                        add = FALSE, ...){
     if (is.null(xlim)){
-        xlim <- c(0, attr(fit$mask, "buffer"))
+        xlim <- c(0, attr(get.mask(fit), "buffer"))
     }
-    pars <- getpar(fit, fit$detpars, as.list = TRUE)
+    pars <- get.par(fit, fit$detpars, as.list = TRUE)
     dists <- seq(xlim[1], xlim[2], length.out = 1000)
-    probs <- calc.detfn(dists, fit$detfn, pars)
+    probs <- calc.detfn(dists, fit$args$detfn, pars)
     if (!add){
         plot.new()
         old.par <- par(xaxs = "i")

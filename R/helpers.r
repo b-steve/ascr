@@ -109,7 +109,7 @@ stdEr <- function(fit, type = "fixed"){
 }
 
 ## Return fixed or estimated parameter values from a model fit.
-getpar <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
+get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     allpar.names <- c("D", fit$detpars, fit$suppars)
     if (length(pars) == 1){
         if (pars == "all"){
@@ -174,18 +174,38 @@ getpar <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     out
 }
 
+#' Extracting mask point locations.
+#'
+#' Extracts the mask used in an admbsecr fit.
+#'
+#' @param A fitted model from \link[admbsecr]{admbsecr}.
+#' @export
+get.mask <- function(fit){
+    fit$args$mask
+}
+
+#' Extracting trap locations.
+#'
+#' Extracts the trap locations used in an admbsecr fit.
+#'
+#' @param A fitted model from \link[admbsecr]{admbsecr}.
+#' @export
+get.traps <- function(fit){
+    fit$args$traps
+}
+
 ## Error function.
 erf <- function(x){
     2*pnorm(x*sqrt(2)) - 1
 }
 
 ## Capture probability density surface from a model fit.
-p.dot <- function(fit = NULL, points = fit$mask, traps = NULL, detfn = NULL,
+p.dot <- function(fit = NULL, points = get.mask(fit), traps = NULL, detfn = NULL,
                   pars = NULL){
     if (!is.null(fit)){
-        traps <- fit$traps
-        detfn <- fit$detfn
-        pars <- getpar(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
+        traps <- get.traps(fit)
+        detfn <- fit$args$detfn
+        pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
     }
     dists <- distances(traps, points)
     probs <- calc.detfn(dists, detfn, pars)

@@ -29,7 +29,7 @@ NULL
 #' @param fix A named list. Component names are parameter names to be
 #' fixed, and each component is the fixed value for the associated
 #' parameter.
-#' @param scalefactors A named list. Component names are parameter
+#' @param sf A named list. Component names are parameter
 #' names, and each component is a scalefactor for the associated
 #' parameter. The default behaviour is to automatically select
 #' scalefactors based on parameter start values.
@@ -44,7 +44,7 @@ NULL
 #' independently to an acoustic survey.
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
-#' \code{info} includes \code{"toa"}.
+#' \code{info} includes \code{"toa"}. NOT YET IMPLEMENTED.
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R session.
 #' @param clean Logical, if \code{TRUE} ADMB output files are removed.
@@ -54,9 +54,10 @@ NULL
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-                     fix = NULL, scalefactors = NULL, ss.link = "identity",
+                     fix = NULL, sf = NULL, ss.link = "identity",
                      cutoff = NULL, call.freqs = NULL, sound.speed  = 330,
                      trace = FALSE, clean = TRUE, exe.type = "old"){
+    arg.names <- names(as.list(environment()))
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
     if (is.null(capt.bin)){
@@ -92,9 +93,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (!is.list(fix) & !is.null(fix)){
         stop("The 'fix' argument must be 'NULL' or a list.")
     }
-    if (!missing(sound.speed)){
-        stop("The 'sound.speed' argument is not yet implemented.")
-    }
+    ##if (!missing(sound.speed)){
+    ##    stop("The 'sound.speed' argument is not yet implemented.")
+    ##}
     n <- nrow(capt.bin)
     n.traps <- nrow(traps)
     n.mask <- nrow(mask)
@@ -239,7 +240,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out scalefactors.
     ## TODO: Sort these out in a better way.
-    if (is.null(scalefactors)){
+    if (is.null(sf)){
         sv.vec <- c(sv, recursive = TRUE)
         ## Currently, by default, the scalefactors are the inverse
         ## fraction of each starting value to the largest starting
@@ -249,7 +250,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sf <- numeric(npars)
         names(sf) <- par.names
         for (i in par.names){
-            sf[i] <- ifelse(i %in% names(scalefactors), scalefactors[[i]], 1)
+            sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
         }
     }
     D.sf <- sf[["D"]]
@@ -357,34 +358,35 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Moving back to original working directory.
     setwd(curr.dir)
     ## Adding extra components to list.
-    out$capt <- capt
-    out$traps <- traps
-    out$mask <- mask
     if (detfn == "log.ss") detfn <- "ss"
-    out$detfn <- detfn
-    out$ss.link <- ss.link
-    out$cutoff <- cutoff
-    out$sound.speed <- sound.speed
-    out$fit.types <- fit.types
-    out$infotypes <- names(fit.types)[fit.types]
-    out$detpars <- detpar.names
-    out$suppars <- suppar.names
-    out$sv <- sv
-    out$sf <- sf
-    out$phases <- phases
-    ## Putting bounds together.
     bounds <- cbind(c(D.lb, detpars.lb, suppars.lb),
                     c(D.ub, detpars.ub, suppars.ub))
     rownames(bounds) <- c("D", detpar.names,
                           "dummy"[length(suppar.names) == 0],
                           suppar.names[length(suppar.names) > 0])
     bounds <- bounds[rownames(bounds) != "dummy", ]
-    out$bounds <- alply(bounds, 1, identity, .dims = TRUE)
+    bounds <- alply(bounds, 1, identity, .dims = TRUE)
+    ## Putting in updated argument names.
+    args <- vector(mode = "list", length = length(arg.names))
+    names(args) <- arg.names
+    for (i in arg.names){
+        if (!is.null(get(i))){
+            args[[i]] <- get(i)
+        }
+    }
+    out$args <- args
+    out$fit.types <- fit.types
+    out$infotypes <- names(fit.types)[fit.types]
+    out$detpars <- detpar.names
+    out$suppars <- suppar.names
+    out$phases <- phases
+    ## Putting bounds together.
     class(out) <- c("admbsecr", "admb")
     ## Putting in call frequency information.
     if (!is.null(call.freqs)){
+        fit.freqs <- TRUE
         mu.freqs <- mean(call.freqs)
-        Da <- getpar(out, "D")/mu.freqs
+        Da <- get.par(out, "D")/mu.freqs
         names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
         coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
         names(coefs.updated) <- names.vec
@@ -401,7 +403,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                ncol = length(names.vec))
         dimnames(vcov.updated) <- list(names.vec, names.vec)
         out[["vcov"]] <- vcov.updated
+        cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+    } else {
+        fit.freqs <- FALSE
     }
+    out$fit.freqs <- fit.freqs
     out
 }
 
