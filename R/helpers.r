@@ -178,7 +178,7 @@ get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
 #'
 #' Extracts the mask used in an admbsecr fit.
 #'
-#' @param A fitted model from \link[admbsecr]{admbsecr}.
+#' @param fit A fitted model from \link[admbsecr]{admbsecr}.
 #' @export
 get.mask <- function(fit){
     fit$args$mask
@@ -188,7 +188,7 @@ get.mask <- function(fit){
 #'
 #' Extracts the trap locations used in an admbsecr fit.
 #'
-#' @param A fitted model from \link[admbsecr]{admbsecr}.
+#' @param fit A fitted model from \link[admbsecr]{admbsecr}.
 #' @export
 get.traps <- function(fit){
     fit$args$traps
