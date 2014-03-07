@@ -3,6 +3,7 @@ ALL:
 	make prepare
 	make rcpp
 	make roxygen
+	make build
 	make check
 	make install
 
@@ -21,8 +22,12 @@ rcpp:
 roxygen:
 	R --slave -e "library(roxygen2); roxygenise('/scratch/admbsecr/')"
 
+build:
+	R CMD build .
+	mv admbsecr_0.2.1.tar.gz .Rbuildignore/
+
 check:
-	R CMD check .
+	R CMD check .Rbuildignore/admbsecr_0.2.1.tar.gz
 
 install:
 	R CMD INSTALL .
@@ -31,6 +36,7 @@ clean:
 	rm -rfv ..Rcheck/
 	rm -rfv src/*.o src/*.so src/*.rds
 	rm -rfv src-i386/ src-x64
+	rm -rfv admbsecr.Rcheck
 
 
 
