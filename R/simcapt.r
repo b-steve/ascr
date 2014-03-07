@@ -71,7 +71,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         mask <- get.mask(fit)
         infotypes <- fit$infotypes
         detfn <- fit$args$detfn
-        pars <- get.par(fit, "all", as.list = TRUE)
+        pars <- get.par(fit, "fitted", as.list = TRUE)
         ss.link <- fit$args$ss.link
         cutoff <- fit$args$cutoff
         call.freqs <- fit$args$call.freqs

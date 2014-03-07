@@ -114,6 +114,8 @@ get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     if (length(pars) == 1){
         if (pars == "all"){
             pars <- allpar.names
+        } else if (pars == "fitted"){
+            pars <- allpar.names[allpar.names != "esa"]
         }
     }
     ## Error checking.
@@ -147,7 +149,7 @@ get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     fixed.pars <- phases[pars] == -1
     ## Putting in fixed parameter values.
     if (sum(fixed.pars) > 0){
-        out[fixed.pars] <- c(fit$sv[pars[fixed.pars]], recursive = TRUE)
+        out[fixed.pars] <- c(fit$args$sv[pars[fixed.pars]], recursive = TRUE)
     }
     ## Working out parameter groups for parameters in 'pars'.
     det.index <- which(pars %in% fit$detpars)
