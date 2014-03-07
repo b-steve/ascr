@@ -5,14 +5,14 @@
 create.mask(traps, buffer, ...)
 }
 \arguments{
-  \item{traps}{A matrix with two columns. Each row provides
-  Cartesian coordinates for the location of a trap.}
-
   \item{buffer}{The minimum distance between trap locations
   and the edge of the generated mask.}
 
   \item{...}{Arguments to be passed to
   \link[secr]{make.mask}.}
+
+  \item{traps}{A matrix with two columns. Each row provides
+  Cartesian coordinates for the location of a trap.}
 }
 \description{
 Creates a mask object to use with the function

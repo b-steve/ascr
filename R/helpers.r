@@ -94,11 +94,11 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #'
 #' Extracts standard errors from an admbsecr fit.
 #'
-#' @param fit A fitted model from \link[admbsecr]{admbsecr}.
 #' @param type A character string. If \code{"fixed"} then only
 #' standard errors for estimated parameters are presented. If
 #' \code{"all"} then standard errors are also presented for derived
 #' paramters (e.g., the effective survey area).
+#' @inheritParams locations
 #' @export
 stdEr <- function(fit, type = "fixed"){
     out <- fit$se
@@ -178,7 +178,7 @@ get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
 #'
 #' Extracts the mask used in an admbsecr fit.
 #'
-#' @param fit A fitted model from \link[admbsecr]{admbsecr}.
+#' @inheritParams locations
 #' @export
 get.mask <- function(fit){
     fit$args$mask
@@ -188,7 +188,7 @@ get.mask <- function(fit){
 #'
 #' Extracts the trap locations used in an admbsecr fit.
 #'
-#' @param fit A fitted model from \link[admbsecr]{admbsecr}.
+#' @inheritParams locations
 #' @export
 get.traps <- function(fit){
     fit$args$traps

@@ -11,10 +11,6 @@
 #' @param fit A fitted \code{admbsecr} model object which provides the
 #' additional information types, detection function, and parameter
 #' values from which to generate capture histories.
-#' @param traps A matrix with two columns. The rows provide Cartesian
-#' coordiates for trap locations.
-#' @param mask A matrix with two columns. The rows provide Cartesian
-#' coordinates for the mask point locations.
 #' @param infotypes A character vector indicating the type(s) of
 #' additional information to be simulated. Elements can be a subset of
 #' \code{"ang"}, \code{"dist"}, \code{"ss"}, \code{"toa"}, and
@@ -28,15 +24,6 @@
 #' an acoustic survey) must always be provided, along with values for
 #' parameters associated with the chosen detection function and
 #' additional information type(s).
-#' @param ss.link A character string, either \code{"indentity"} or
-#' \code{"log"}, which specifies the link function for the signal
-#' strength detection function. Only required when \code{detfn} is
-#' \code{"ss"}.
-#' @param cutoff The signal strength threshold, above which sounds are
-#' identified as detections. Only required when \code{detfn} is
-#' \code{"ss"}.
-#' @param call.freqs A vector of call frequencies collected
-#' independently to an acoustic survey.
 #' @param freq.dist A character string, either \code{"edf"} or
 #' \code{"norm"}, which specifies how the distribution function of the
 #' call frequencies should be estimated. If \code{"edf"}, then the
@@ -44,11 +31,9 @@
 #' distribution function. If \code{"norm"}, then a normal distribution
 #' is fitted to the call frequencies using the sample mean and
 #' variance.
-#' @param sound.speed The speed of sound in metres per second,
-#' defaults to 330 (the speed of sound in air). Only used when
-#' \code{info} includes \code{"toa"}.
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
 #' function to aid debugging.
+#' @inheritParams admbsecr
 #' @export
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",

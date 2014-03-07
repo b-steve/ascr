@@ -1,3 +1,6 @@
+S3method(coef,admbsecr)
+S3method(vcov,admbsecr)
+S3method(vcov,admbsecr.boot)
 export(admbsecr)
 export(bearings)
 export(boot.admbsecr)

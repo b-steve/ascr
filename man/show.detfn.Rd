@@ -6,9 +6,6 @@ show.detfn(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
   xlab = "Distance (m)", ylab = "Detection probability", add = FALSE, ...)
 }
 \arguments{
-  \item{fit}{A fitted model from
-  \link[admbsecr]{admbsecr}.}
-
   \item{xlim}{A vector with two elements, giving the x-axis
   limits. If \code{NULL}, this is set to the buffer of the
   mask.}
@@ -16,17 +13,25 @@ show.detfn(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
   \item{ylim}{A vector with two elements, giving the y-axis
   limits.}
 
-  \item{main}{The main title.}
-
-  \item{xlab}{The x-axis label.}
-
-  \item{ylab}{The y-axis label.}
-
   \item{add}{Logical, if \code{TRUE}, the estimated
   detection function is added to an existing plot.}
 
   \item{...}{Further arguments to be passed to
   \link[graphics]{lines}.}
+
+  \item{main}{The main title (on top) using font and size
+  (character expansion) \code{par("font.main")} and color
+  \code{par("col.main")}.}
+
+  \item{xlab}{X axis label using font and character
+  expansion \code{par("font.lab")} and color
+  \code{par("col.lab")}.}
+
+  \item{ylab}{Y axis label, same font attributes as
+  \code{xlab}.}
+
+  \item{fit}{A fitted model from
+  \link[admbsecr]{admbsecr}.}
 }
 \description{
 Plots an estimated detection function from a model fit

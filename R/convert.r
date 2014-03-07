@@ -3,8 +3,7 @@
 #' Creates a mask object to use with the function
 #' \code{\link[admbsecr]{admbsecr}}.
 #'
-#' @param traps A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a trap.
+#' @inheritParams admbsecr
 #' @param buffer The minimum distance between trap locations and the
 #' edge of the generated mask.
 #' @param ... Arguments to be passed to \link[secr]{make.mask}.
@@ -24,8 +23,7 @@ create.mask <- function(traps, buffer, ...){
 #' Converts an \code{admbsecr} traps matrix to a \code{secr} traps
 #' object.
 #'
-#' @param traps A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a trap.
+#' @inheritParams admbsecr
 #' @export
 convert.traps <- function(traps){
     n.traps <- nrow(traps)
@@ -39,8 +37,7 @@ convert.traps <- function(traps){
 #' Converts an \code{admbsecr} mask matrix to a \code{secr} mask
 #' object.
 #'
-#' @param mask A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a mask point.
+#' @inheritParams admbsecr
 #' @export
 convert.mask <- function(mask){
     read.mask(data = as.data.frame(mask))
@@ -51,13 +48,11 @@ convert.mask <- function(mask){
 #' Converts an \code{admbsecr} capture history list to a \code{secr}
 #' capthist object.
 #'
-#' @param capt A capture history list.
-#' @param traps A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a trap.
 #' @param capthist Logical, if \code{TRUE}, a \code{capthist} object
 #' is returned. Otherwise a data frame is returned, which is suitable
 #' for the \code{captures} argument to the
 #' \code{\link[secr]{make.capthist}} function.
+#' @inheritParams admbsecr
 #' @export
 convert.capt <- function(capt, traps, capthist = TRUE){
     n <- nrow(capt$bincapt)
