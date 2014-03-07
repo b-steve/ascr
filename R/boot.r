@@ -55,5 +55,25 @@ boot.admbsecr <- function(fit, N, prog = TRUE){
     if (prog){
         close(pb)
     }
-    res
+    ## Calculating bootstrapped standard errors, correlations and
+    ## covariances.
+    se <- apply(res, 2, sd)
+    names(se) <- names(fit$se)
+    cor <- diag(n.pars)
+    dimnames(cor) <- dimnames(fit$cor)
+    vcov <- diag(se^2)
+    dimnames(vcov) <- dimnames(fit$vcov)
+    for (i in 1:(n.pars - 1)){
+        for (j in (i + 1):n.pars){
+            cor[i, j] <- cor[j, i] <- cor(res[, i], res[, j])
+            vcov[i, j] <- vcov[j, i] <- cor[i, j]*se[i]*se[j]
+        }
+    }
+    out <- fit
+    out$boot.se <- se
+    out$boot.cor <- cor
+    out$boot.vcov <- vcov
+    out$boot <- res
+    class(out) <- c("admbsecr.boot", class(fit))
+    out
 }
