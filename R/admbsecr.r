@@ -360,7 +360,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Putting in correct parameter names.
     for (i in seq(1, n.detpars, length.out = n.detpars)){
         replace <- names(out$coefficients) == paste("detpars[", i, "]", sep = "")
-        names(out$coefficients)[replace] <- detpar.names[i]
+        names(out$coefficients)[replace] <- rownames(out$vcov)[replace] <-
+            colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                colnames(out$cor)[replace] <- detpar.names[i]
     }
     for (i in seq(1, n.suppars, length.out = n.suppars)){
         replace <- names(out$coefficients) == paste("suppars[", i, "]", sep = "")
@@ -368,6 +370,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
+    ## Putting bounds together.
     bounds <- cbind(c(D.lb, detpars.lb, suppars.lb),
                     c(D.ub, detpars.ub, suppars.ub))
     rownames(bounds) <- c("D", detpar.names,
@@ -389,8 +392,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$detpars <- detpar.names
     out$suppars <- suppar.names
     out$phases <- phases
-    ## Putting bounds together.
-    class(out) <- c("admbsecr", "admb")
     ## Putting in call frequency information.
     if (!is.null(call.freqs)){
         fit.freqs <- TRUE
@@ -417,6 +418,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         fit.freqs <- FALSE
     }
     out$fit.freqs <- fit.freqs
+    class(out) <- c("admbsecr", "admb")
     out
 }
 
