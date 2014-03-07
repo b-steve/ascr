@@ -19,6 +19,9 @@ show.detfn(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
   \item{...}{Further arguments to be passed to
   \link[graphics]{lines}.}
 
+  \item{fit}{A fitted model from
+  \link[admbsecr]{admbsecr}.}
+
   \item{main}{The main title (on top) using font and size
   (character expansion) \code{par("font.main")} and color
   \code{par("col.main")}.}
@@ -29,9 +32,6 @@ show.detfn(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
 
   \item{ylab}{Y axis label, same font attributes as
   \code{xlab}.}
-
-  \item{fit}{A fitted model from
-  \link[admbsecr]{admbsecr}.}
 }
 \description{
 Plots an estimated detection function from a model fit

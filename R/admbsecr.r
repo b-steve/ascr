@@ -1,5 +1,8 @@
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import CircStats matrixStats plyr Rcpp R2admb secr
+#' @import plyr Rcpp R2admb
+#' @importFrom CircStats dvm rvm
+#' @importFrom matrixStats colProds
+#' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @useDynLib admbsecr
 NULL
 
