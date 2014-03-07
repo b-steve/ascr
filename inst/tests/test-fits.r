@@ -18,6 +18,15 @@ test_that("simple fitting -- half normal", {
     expect_that(fit$detpars, equals(c("g0", "sigma")))
     ## Checking supplementary parameters.
     expect_that(length(fit$suppars), equals(0))
+    ## Checking get.par().
+    expect_that(get.par(fit, "D"), equals(fit$coefficients["D"]))
+    expect_that(get.par(fit, c("D", "sigma")),
+                equals(fit$coefficients[c("D", "sigma")]))
+    expect_that(get.par(fit, "esa"), equals(fit$coefficients["esa"]))
+    expect_that(get.par(fit, c("D", "esa")),
+                equals(fit$coefficients[c("D", "esa")]))
+    expect_that(get.par(fit, "all"), equals(fit$coefficients))
+    expect_that(get.par(fit, "fitted"), equals(fit$coefficients[1:3]))
     ## Checking estimate equivalence with secr.fit.
     library(secr)
     mask.secr <- convert.mask(example.mask)
@@ -107,6 +116,14 @@ test_that("dist fitting", {
     expect_that(fit$detpars, equals(c("g0", "sigma")))
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("alpha"))
+    ## Testing get.par() with fixed values.
+    expect_that(get.par(fit, "D"), equals(fit$coefficients["D"]))
+    expect_that(get.par(fit, "g0"),
+                is_equivalent_to(fit$args$sv[["g0"]]))
+    expect_that(get.par(fit, c("g0", "sigma")),
+                        is_equivalent_to(c(1, fit$coefficients["sigma"])))
+    expect_that(get.par(fit, c("sigma", "g0")),
+                is_equivalent_to(c(fit$coefficients["sigma"], 1)))
 })
 
 test_that("ss fitting", {
@@ -128,6 +145,9 @@ test_that("ss fitting", {
     expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "sigma.ss")))
     ## Checking supplementary parameters.
     expect_that(length(fit$suppars), equals(0))
+    ## Checking get.par() with SS stuff.
+    expect_that(get.par(fit, "all"), equals(fit$coefficients))
+    expect_that(get.par(fit, "b0.ss"), equals(fit$coefficients["b0.ss"]))
 })
 
 test_that("toa fitting", {
@@ -147,6 +167,10 @@ test_that("toa fitting", {
     expect_that(fit$detpars, equals(c("g0", "sigma")))
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
+    ## Checking get.par() with supplementary info parameters.
+    expect_that(get.par(fit, "sigma.toa"), equals(fit$coefficients["sigma.toa"]))
+    expect_that(get.par(fit, c("esa", "sigma.toa")),
+                equals(fit$coefficients[c("esa", "sigma.toa")]))
 })
 
 test_that("joint ss/toa fitting", {
