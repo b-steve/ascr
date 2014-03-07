@@ -110,7 +110,7 @@ stdEr <- function(fit, type = "fixed"){
 
 ## Return fixed or estimated parameter values from a model fit.
 get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
-    allpar.names <- c("D", fit$detpars, fit$suppars)
+    allpar.names <- c("D", fit$detpars, fit$suppars, "esa")
     if (length(pars) == 1){
         if (pars == "all"){
             pars <- allpar.names
@@ -142,7 +142,9 @@ get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     det.index <- which(fit$detpars %in% pars)
     supp.index <- which(fit$suppars %in% pars)
     ## Logical vector indicating parameters that weren't estimated.
-    fixed.pars <- fit$phases[pars] == -1
+    phases <- fit$phases
+    phases$esa <- 0
+    fixed.pars <- phases[pars] == -1
     ## Putting in fixed parameter values.
     if (sum(fixed.pars) > 0){
         out[fixed.pars] <- c(fit$sv[pars[fixed.pars]], recursive = TRUE)
@@ -151,12 +153,8 @@ get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     det.index <- which(pars %in% fit$detpars)
     supp.index <- which(pars %in% fit$suppars)
     admb.pars <- pars
-    admb.pars[det.index] <- paste("detpars[", which(fit$detpars %in% pars), "]",
-                                  sep = "")
-    admb.pars[supp.index] <- paste("suppars[", which(fit$suppars %in% pars), "]",
-                                   sep = "")
     ## Putting in estimated parameter values.
-    out[!fixed.pars] <- coef(fit)[admb.pars[!fixed.pars]]
+    out[!fixed.pars] <- fit$coefficients[admb.pars[!fixed.pars]]
     ## Adding the cutoff if necessary.
     if (cutoff){
         out <- c(out, fit$cutoff)

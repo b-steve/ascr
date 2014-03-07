@@ -357,6 +357,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Moving back to original working directory.
     setwd(curr.dir)
+    ## Putting in correct parameter names.
+    for (i in seq(1, n.detpars, length.out = n.detpars)){
+        replace <- names(out$coefficients) == paste("detpars[", i, "]", sep = "")
+        names(out$coefficients)[replace] <- detpar.names[i]
+    }
+    for (i in seq(1, n.suppars, length.out = n.suppars)){
+        replace <- names(out$coefficients) == paste("suppars[", i, "]", sep = "")
+        names(out$coefficients)[replace] <- suppar.names[i]
+    }
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
     bounds <- cbind(c(D.lb, detpars.lb, suppars.lb),
