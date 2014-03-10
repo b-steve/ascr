@@ -15,9 +15,9 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
 
   \item{infotypes}{A character vector indicating the
   type(s) of additional information to be simulated.
-  Elements can be a subset of \code{"ang"}, \code{"dist"},
-  \code{"ss"}, \code{"toa"}, and \code{"mrds"} (NOTE:
-  \code{"mrds"} not yet implemented).}
+  Elements can be a subset of \code{"bearing"},
+  \code{"dist"}, \code{"ss"}, \code{"toa"}, and
+  \code{"mrds"} (NOTE: \code{"mrds"} not yet implemented).}
 
   \item{detfn}{A character string specifying the detection
   function to be used. Options are "hn" (halfnormal), "hr"

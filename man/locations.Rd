@@ -5,9 +5,9 @@
 locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
   nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
-  "purple", ang = "green", dist = "brown", toa = "blue"), show.labels = TRUE,
-  plot.arrows = "ang" \%in\% fit$infotypes, plot.circles = "dist" \%in\%
-  fit$infotypes, legend = TRUE, add = FALSE)
+  "purple", bearing = "green", dist = "brown", toa = "blue"),
+  show.labels = TRUE, plot.arrows = "bearing" \%in\% fit$infotypes,
+  plot.circles = "dist" \%in\% fit$infotypes, legend = TRUE, add = FALSE)
 }
 \arguments{
   \item{fit}{A fitted model from
@@ -20,7 +20,7 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   \item{infotypes}{A character vector indicating the
   type(s) of information to be used when plotting the
   estimated density of location.  Elements can be a subset
-  of \code{"capt"}, \code{"ang"}, \code{"dist"},
+  of \code{"capt"}, \code{"bearing"}, \code{"dist"},
   \code{"ss"}, \code{"toa"}, \code{"combined"}, and
   \code{"all"}, where \code{"capt"} shows estimated
   location only using detection locations,
@@ -65,7 +65,7 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
 
   \item{cols}{A list with named components corresponding to
   each contour type (i.e., a subset of \code{"capt"},
-  \code{"ang"}, \code{"dist"}, \code{"toa"}, and
+  \code{"bearing"}, \code{"dist"}, \code{"toa"}, and
   \code{"combined"}). Each component provides the colour
   the associated contour type (e.g., using a character
   string such as \code{"red"}, or a call to the function
