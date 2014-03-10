@@ -4,6 +4,7 @@
 #' @importFrom matrixStats colProds
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @useDynLib admbsecr
+#' @export stdEr
 NULL
 
 #' Fitting SECR models in ADMB
@@ -363,14 +364,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Putting in correct parameter names.
     for (i in seq(1, n.detpars, length.out = n.detpars)){
         replace <- names(out$coefficients) == paste("detpars[", i, "]", sep = "")
-        names(out$coefficients)[replace] <- names(out$se) <-
+        names(out$coefficients)[replace] <- names(out$se)[replace] <-
             rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
                 rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
                     detpar.names[i]
     }
     for (i in seq(1, n.suppars, length.out = n.suppars)){
         replace <- names(out$coefficients) == paste("suppars[", i, "]", sep = "")
-        names(out$coefficients)[replace] <- names(out$se) <-
+        names(out$coefficients)[replace] <- names(out$se)[replace] <-
             rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
                 rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
                     suppar.names[i]        

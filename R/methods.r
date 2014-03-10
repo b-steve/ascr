@@ -1,7 +1,7 @@
 #' Extract admbsecr model coefficients
 #'
-#' Extracts estimated and derived coefficients from a model fitted
-#' using \link[admbsecr]{admbsecr}.
+#' Extracts estimated and derived parameters from a model fitted using
+#' \link[admbsecr]{admbsecr}.
 #'
 #' @param object A fitted model from \link[admbsecr]{admbsecr}.
 #' @param pars A character string; either \code{"all"},
@@ -73,6 +73,29 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
         out <- object$boot.vcov[keep.pars, keep.pars]
     } else if (pars == "derived"){
         out <- object$boot.vcov["esa", "esa"]
+    } else {
+        stop("Argument 'pars' must be either \"all\", \"fitted\", or \"derived\".")
+    }
+    out
+}
+
+#' Extract standard errors from an admbsecr model fit
+#'
+#' Extracts standard errors of estimated and derived parameters from a
+#' model fitted using \link[admbsecr]{admbsecr}.
+#'
+#' @inheritParams coef.admbsecr
+#'
+#' @method stdEr admbsecr
+#' @S3method stdEr admbsecr
+#' @export
+stdEr.admbsecr <- function(object, pars = "fitted", ...){
+    if (pars == "all"){
+        out <- object$se
+    } else if (pars == "fitted"){
+        out <- object$se[names(object$se) != "esa"]
+    } else if (pars == "derived"){
+        out <- object$se["esa"]
     } else {
         stop("Argument 'pars' must be either \"all\", \"fitted\", or \"derived\".")
     }
