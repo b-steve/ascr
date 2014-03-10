@@ -13,7 +13,7 @@
 #' values from which to generate capture histories.
 #' @param infotypes A character vector indicating the type(s) of
 #' additional information to be simulated. Elements can be a subset of
-#' \code{"ang"}, \code{"dist"}, \code{"ss"}, \code{"toa"}, and
+#' \code{"bearing"}, \code{"dist"}, \code{"ss"}, \code{"toa"}, and
 #' \code{"mrds"} (NOTE: \code{"mrds"} not yet implemented).
 #' @param detfn A character string specifying the detection function
 #' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
@@ -63,16 +63,16 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         sound.speed <- fit$args$sound.speed
     }
     ## Setting up logical indicators for additional information types.
-    supp.types <- c("ang", "dist", "ss", "toa", "mrds")
+    supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
     sim.types <- supp.types %in% infotypes
     names(sim.types) <- supp.types
-    sim.angs <- sim.types["ang"]
+    sim.bearings <- sim.types["bearing"]
     sim.dists <- sim.types["dist"]
     sim.toas <- sim.types["toa"]
     sim.mrds <- sim.types["mrds"]
     sim.ss <- ifelse(detfn == "ss", TRUE, FALSE)
     ## Working out required parameters.
-    suppar.names <- c("kappa", "alpha", "sigma.toa")[sim.types[c("ang", "dist", "toa")]]
+    suppar.names <- c("kappa", "alpha", "sigma.toa")[sim.types[c("bearing", "dist", "toa")]]
     if (sim.ss){
         if (ss.link == "identity"){
             detfn <- "ss"
@@ -184,13 +184,13 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     ## Capture distances.
     capt.dists <- dists[captures, ]
     ## Simulating additional information.
-    if (sim.angs){
+    if (sim.bearings){
         bearings <- t(bearings(traps, capt.popn))
-        ang.capt <- matrix(0, nrow = nrow(bin.capt),
+        bearing.capt <- matrix(0, nrow = nrow(bin.capt),
                            ncol = ncol(bin.capt))
-        ang.capt[bin.capt == 1] <- (bearings[bin.capt == 1] +
+        bearing.capt[bin.capt == 1] <- (bearings[bin.capt == 1] +
                      rvm(n.dets, mean = 0, k = pars$kappa)) %% (2*pi)
-        out$ang <- ang.capt
+        out$bearing <- bearing.capt
     }
     if (sim.dists){
         dist.capt <- matrix(0, nrow = nrow(bin.capt),

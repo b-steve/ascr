@@ -3,7 +3,7 @@ context("Testing sim.capt()")
 test_that("simulation produces correct output", {
     set.seed(8173)
     test.capt <- sim.capt(traps = example.traps, mask = example.mask,
-                             infotypes = c("ang", "dist", "toa"),
+                             infotypes = c("bearing", "dist", "toa"),
                              detfn = "ss",
                              pars = list(D = 2500, b0.ss = 90, b1.ss = 4,
                                  sigma.ss = 10, kappa = 70, alpha = 4,
@@ -11,7 +11,7 @@ test_that("simulation produces correct output", {
     ## Is a list.
     expect_that(test.capt, is_a("list"))
     ## Correct components.
-    expect_that(names(test.capt), equals(c("bincapt", "ss", "ang",
+    expect_that(names(test.capt), equals(c("bincapt", "ss", "bearing",
                                            "dist", "toa")))
     ## Checking dimensions.
     dims <- sapply(test.capt, dim)

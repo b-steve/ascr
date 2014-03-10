@@ -8,7 +8,7 @@
 #' indicating which individuals' locations are to be plotted.
 #' @param infotypes A character vector indicating the type(s) of
 #' information to be used when plotting the estimated density of
-#' location.  Elements can be a subset of \code{"capt"}, \code{"ang"},
+#' location.  Elements can be a subset of \code{"capt"}, \code{"bearing"},
 #' \code{"dist"}, \code{"ss"}, \code{"toa"}, \code{"combined"}, and
 #' \code{"all"}, where \code{"capt"} shows estimated location only
 #' using detection locations, \code{"combined"} combines all
@@ -39,7 +39,7 @@
 #' located within the associated contour under the estimated
 #' distribution of the individual's location.
 #' @param cols A list with named components corresponding to each
-#' contour type (i.e., a subset of \code{"capt"}, \code{"ang"},
+#' contour type (i.e., a subset of \code{"capt"}, \code{"bearing"},
 #' \code{"dist"}, \code{"toa"}, and \code{"combined"}). Each component
 #' provides the colour the associated contour type (e.g., using a
 #' character string such as \code{"red"}, or a call to the function
@@ -64,9 +64,9 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                       ylim = range(mask[, 2]), mask = get.mask(fit),
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
-                          ang = "green", dist = "brown", toa = "blue"),
+                          bearing = "green", dist = "brown", toa = "blue"),
                       show.labels = TRUE,
-                      plot.arrows = "ang" %in% fit$infotypes,
+                      plot.arrows = "bearing" %in% fit$infotypes,
                       plot.circles = "dist" %in% fit$infotypes,
                       legend = TRUE, add = FALSE){
     ## Setting up plotting area.
@@ -109,11 +109,11 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             cols[infotypes] <- "black"
         }
     }
-    plot.types <- c("combined", "capt", "ang", "dist", "toa") %in% infotypes
-    names(plot.types) <- c("combined", "capt", "ang", "dist", "toa")
+    plot.types <- c("combined", "capt", "bearing", "dist", "toa") %in% infotypes
+    names(plot.types) <- c("combined", "capt", "bearing", "dist", "toa")
     ## Setting all to TRUE if combined is used.
     ## Some error catching.
-    for (i in c("ang", "dist", "toa")){
+    for (i in c("bearing", "dist", "toa")){
         if (plot.types[i] & !fit$fit.types[i]){
             msg <- paste("Contours for information type '", i, "' cannot be plotted as this information was not used in the model 'fit'", sep = "")
             warning(msg)
@@ -153,15 +153,15 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             }
         }
         ## Contour due to estimated bearings.
-        if (plot.types["ang"] | plot.types["combined"] & fit$fit.types["ang"]){
-            f.ang <- ang.density(fit, i, mask)
-            if (plot.types["ang"]){
-                show.contour(mask = mask, dens = f.x*f.ang, levels = levels,
-                             nlevels = nlevels, prob = !density, col = cols$ang,
+        if (plot.types["bearing"] | plot.types["combined"] & fit$fit.types["bearing"]){
+            f.bearing <- bearing.density(fit, i, mask)
+            if (plot.types["bearing"]){
+                show.contour(mask = mask, dens = f.x*f.bearing, levels = levels,
+                             nlevels = nlevels, prob = !density, col = cols$bearing,
                              show.labels = show.labels)
             }
             if (plot.types["combined"]){
-                f.combined <- f.combined*f.ang
+                f.combined <- f.combined*f.bearing
             }
             if (plot.arrows){
                 show.arrows(fit, i)
@@ -261,14 +261,14 @@ show.contour <- function(mask, dens, nlevels, levels, prob, col = "black", show.
 }
 
 ## Calculating density due to estimated bearings.
-ang.density <- function(fit, id, mask){
+bearing.density <- function(fit, id, mask){
     capt <- fit$capt$bincapt[id, ]
-    ang.capt <- fit$capt$ang[id, capt == 1]
+    bearing.capt <- fit$capt$bearing[id, capt == 1]
     kappa <- get.par(fit, "kappa")
     mask.bearings <- bearings(get.traps(fit)[capt == 1, , drop = FALSE], mask)
     mask.dens <- matrix(0, nrow = sum(capt), ncol = nrow(mask))
     for (i in 1:sum(capt)){
-        mask.dens[i, ] <- dvm(ang.capt[i], mu = mask.bearings[i, ], kappa = kappa)
+        mask.dens[i, ] <- dvm(bearing.capt[i], mu = mask.bearings[i, ], kappa = kappa)
     }
     ## Returning densities.
     colProds(mask.dens)
@@ -325,10 +325,10 @@ show.arrows <- function(fit, id){
     ylim <- par("usr")[c(3, 4)]
     arrow.length <- 0.05*min(c(diff(range(xlim)), diff(range(ylim))))
     capt <- fit$capt$bincapt[id, ]
-    ang.capt <- fit$capt$ang[id, capt == 1]
+    bearing.capt <- fit$capt$bearing[id, capt == 1]
     trappos <- get.traps(fit)[which(capt == 1), , drop = FALSE]
-    sinb <- sin(ang.capt)*arrow.length
-    cosb <- cos(ang.capt)*arrow.length
+    sinb <- sin(bearing.capt)*arrow.length
+    cosb <- cos(bearing.capt)*arrow.length
     arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
            length = 0.1, col = "red", lwd = 2)
 }
@@ -346,8 +346,8 @@ show.circles <- function(fit, id){
 }
 
 circles <- function(centre, radius, ...){
-    angs <- seq(0, 2*pi, length.out = 100)
-    xs <- centre[1] + sin(angs)*radius
-    ys <- centre[2] + cos(angs)*radius
+    bearings <- seq(0, 2*pi, length.out = 100)
+    xs <- centre[1] + sin(bearings)*radius
+    ys <- centre[2] + cos(bearings)*radius
     lines(xs, ys, ...)
 }

@@ -107,22 +107,22 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Removing attributes from mask.
     mask <- as.matrix(mask)
     ## TODO: Sort out how to determine supplementary parameter names.
-    supp.types <- c("ang", "dist", "ss", "toa", "mrds")
+    supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
     fit.types <- supp.types %in% names(capt)
     names(fit.types) <- supp.types
     ## Logical indicators for additional information types.
-    fit.angs <- fit.types["ang"]
+    fit.bearings <- fit.types["bearing"]
     fit.dists <- fit.types["dist"]
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
     ## Capture histories for additional information types (if they exist)
-    capt.ang <- if (fit.angs) capt$ang else 0
+    capt.bearing <- if (fit.bearings) capt$bearing else 0
     capt.dist <- if (fit.dists) capt$dist else 0
     capt.ss <- if (fit.ss) capt$ss else 0
     capt.toa <- if (fit.toas) capt$toa else 0
     mrds.dist <- if (fit.mrds) capt$mrds else 0
-    suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("ang", "dist", "toa")]]
+    suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("bearing", "dist", "toa")]]
     if (fit.ss){
         ## Warning for failure to provide 'cutoff'.
         if (missing(cutoff)){
@@ -270,10 +270,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Calculating distances and angles.
     ## TODO: Try calculating these in the PROCEDURE_SECTION instead.
     dists <- distances(traps, mask)
-    if (fit.angs){
-        angs <- bearings(traps, mask)
+    if (fit.bearings){
+        bearings <- bearings(traps, mask)
     } else {
-        angs <- 0
+        bearings <- 0
     }
     if (fit.toas){
         toa.ssq <- make_toa_ssq(capt$toa, dists)
@@ -300,13 +300,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       detfn.id, trace = as.numeric(trace), DBL_MIN =
                       dbl.min, n = n, n_traps = n.traps, n_mask =
                       n.mask, A = A, capt_bin = capt.bin, fit_angs =
-                      as.numeric(fit.angs), capt_ang = capt.ang,
+                      as.numeric(fit.bearings), capt_ang = capt.bearing,
                       fit_dists = as.numeric(fit.dists), capt_dist =
                       capt.dist, fit_ss = as.numeric(fit.ss), cutoff =
                       cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss,
                       fit_toas = as.numeric(fit.toas), capt_toa =
                       capt.toa, fit_mrds = as.numeric(fit.mrds),
-                      mrds_dist = mrds.dist, dists = dists, angs = angs,
+                      mrds_dist = mrds.dist, dists = dists, angs = bearings,
                       toa_ssq = toa.ssq)
     ## Idea of running executable as below taken from glmmADMB.
     ## Working out correct command to run from command line.

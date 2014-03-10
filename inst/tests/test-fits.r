@@ -82,8 +82,8 @@ test_that("simple fitting -- hazard rate", {
 
 test_that("bearing fitting", {
     ## Fitting model.
-    ang.capt <- example.capt[c("bincapt", "ang")]
-    fit <- admbsecr(capt = ang.capt, traps = example.traps,
+    bearing.capt <- example.capt[c("bincapt", "bearing")]
+    fit <- admbsecr(capt = bearing.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1))
     ## Checking parameter values.
     pars.test <- c(2394.109251, 5.214332270, 67.65495606)
@@ -194,8 +194,8 @@ test_that("joint ss/toa fitting", {
     expect_that(fit$suppars, equals("sigma.toa"))
 })
 
-test_that("joint ang/dist fitting", {
-    joint.capt <- example.capt[c("bincapt", "ang", "dist")]
+test_that("joint bearing/dist fitting", {
+    joint.capt <- example.capt[c("bincapt", "bearing", "dist")]
     fit <- admbsecr(capt = joint.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1))
     ## Checking parameter values.

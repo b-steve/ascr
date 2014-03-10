@@ -9,7 +9,7 @@ test_that("error for missing bincapt", {
 
 test_that("error for non-matrix in capt object", {
     test.capt <- example.capt["bincapt"]
-    test.capt$ang <- 1:10
+    test.capt$bearing <- 1:10
     expect_that(admbsecr(capt = test.capt, traps = example.traps,
                          mask = example.mask),
                 throws_error("At least one component of 'capt' is not a matrix."))
@@ -17,14 +17,14 @@ test_that("error for non-matrix in capt object", {
 
 test_that("error for mismatch in number of individuals or traps", {
     ## Testing error checking for equality in number of rows.
-    test.capt <- example.capt[c("bincapt", "ang", "dist")]
-    test.capt$ang <- test.capt$ang[-1, ]
+    test.capt <- example.capt[c("bincapt", "bearing", "dist")]
+    test.capt$bearing <- test.capt$bearing[-1, ]
     expect_that(admbsecr(capt = test.capt, traps = example.traps,
                          mask = example.mask),
                 throws_error("Components of 'capt' object have different dimensions."))
     ## Testing error checking for equality in number of columns.
-    test.capt <- example.capt[c("bincapt", "ang", "dist")]
-    test.capt$ang <- test.capt$bincapt[, -1]
+    test.capt <- example.capt[c("bincapt", "bearing", "dist")]
+    test.capt$bearing <- test.capt$bincapt[, -1]
     expect_that(admbsecr(capt = test.capt, traps = example.traps,
                          mask = example.mask),
                 throws_error("Components of 'capt' object have different dimensions."))
