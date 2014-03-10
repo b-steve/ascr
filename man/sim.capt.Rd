@@ -44,7 +44,8 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
   detection function to aid debugging.}
 
   \item{traps}{A matrix with two columns. Each row provides
-  Cartesian coordinates for the location of a trap.}
+  Cartesian coordinates for the location of a trap (or
+  detector).}
 
   \item{mask}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a mask point.
@@ -65,8 +66,8 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
 
   \item{sound.speed}{The speed of sound in metres per
   second, defaults to 330 (the speed of sound in air). Only
-  used when \code{info} includes \code{"toa"}. NOT YET
-  IMPLEMENTED.}
+  used when \code{"toa"} is a component name of
+  \code{capt}. \strong{Not yet implemented}.}
 }
 \description{
 Simulates SECR capture histories and associated additional

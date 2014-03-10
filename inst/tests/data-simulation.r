@@ -13,6 +13,7 @@ simple.hr.fit <- admbsecr(capt = simple.capt, traps = example.traps,
                           mask = example.mask, detfn = "hr")
 bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
                            mask = example.mask, fix = list(g0 = 1))
-save(example.traps, example.mask, example.capt, simple.hn.fit,
-     simple.hr.fit, bearing.hn.fit,
-     file = "/scratch/admbsecr/data/simdata.RData")
+##save(example.traps, example.mask, example.capt,
+##     file = "/scratch/admbsecr/data/example_data.RData")
+##save(simple.hn.fit, simple.hr.fit, bearing.hn.fit,
+##     file = "/scratch/admbsecr/data/example_fits.RData")

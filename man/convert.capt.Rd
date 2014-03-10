@@ -12,10 +12,12 @@ convert.capt(capt, traps, capthist = TRUE)
   \code{\link[secr]{make.capthist}} function.}
 
   \item{capt}{A list with named components, containing the
-  capture history and supplementary information.}
+  capture history and supplementary information. See
+  further details below.}
 
   \item{traps}{A matrix with two columns. Each row provides
-  Cartesian coordinates for the location of a trap.}
+  Cartesian coordinates for the location of a trap (or
+  detector).}
 }
 \description{
 Converts an \code{admbsecr} capture history list to a

@@ -12,7 +12,8 @@ create.mask(traps, buffer, ...)
   \link[secr]{make.mask}.}
 
   \item{traps}{A matrix with two columns. Each row provides
-  Cartesian coordinates for the location of a trap.}
+  Cartesian coordinates for the location of a trap (or
+  detector).}
 }
 \description{
 Creates a mask object to use with the function

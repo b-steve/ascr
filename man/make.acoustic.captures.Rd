@@ -32,6 +32,6 @@ together than the time it would take for sound to travel
 between these microphones.
 }
 \author{
-David Borchers, Ben Stevenson
+David Borchers
 }
 

@@ -1,0 +1,18 @@
+\docType{data}
+\name{simple.hn.fit}
+\alias{simple.hn.fit}
+\title{An example model object}
+\format{A list of class \code{"admbsecr"}.}
+\usage{
+simple.hn.fit
+}
+\description{
+This is the model object that results when the
+\link[admbsecr]{admbsecr} function is run with
+\link[admbsecr]{example.capt}\code{["bincapt"]},
+\link[admbsecr]{example.traps}, and
+\link[admbsecr]{example.mask} set as the arguments
+\code{capt}, \code{traps}, and \code{mask}, respectively.
+}
+\keyword{datasets}
+

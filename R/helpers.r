@@ -29,7 +29,7 @@ animalIDvec <- function(capthist){
 #' between each pair of traps.
 #' @return A data frame. Specifically, the \code{clicks} dataframe,
 #' now with a new variable, \code{ID}.
-#' @author David Borchers, Ben Stevenson
+#' @author David Borchers
 #' @export
 make.acoustic.captures <- function(mics, clicks, dt){
     K <- dim(mics)[1]

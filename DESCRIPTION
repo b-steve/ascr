@@ -8,18 +8,18 @@ Author: Ben Stevenson <bcs5@st-andrews.ac.uk>,
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Depends:
     R (>= 2.15.1),
-    Rcpp (>= 0.10.6)
+    Rcpp (>= 0.10.6),
+    R2admb
 Imports:
     CircStats,
     matrixStats,
     plyr,
-    R2admb,
     secr
 LinkingTo: Rcpp
 Description: This package allows for the fitting of spatially explicit
-    mark-recapture (SECR). In particular, it is focussed on a class of
-    SECR model which makes use of supplementary information pertaining
-    to animal location.
+    capture-recapture (SECR) models. In particular, it is focussed on
+    a class of SECR model which makes use of supplementary information
+    pertaining to animal location.
 License: GPL
 URL: https://github.com/b-steve/admbsecr
 LazyData: true

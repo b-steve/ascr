@@ -6,7 +6,8 @@ convert.traps(traps)
 }
 \arguments{
   \item{traps}{A matrix with two columns. Each row provides
-  Cartesian coordinates for the location of a trap.}
+  Cartesian coordinates for the location of a trap (or
+  detector).}
 }
 \description{
 Converts an \code{admbsecr} traps matrix to a \code{secr}
