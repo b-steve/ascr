@@ -7,6 +7,12 @@ ALL:
 	make check
 	make install
 
+docs:
+	make compile
+	make prepare
+	make rcpp
+	make roxygen
+
 compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr.tpl
 	cd inst/ADMB/src; admb -O secr.tpl
 	cd inst/ADMB/src; rm -rfv secr.cpp secr.htp secr.o secr.obj
@@ -32,11 +38,13 @@ check:
 install:
 	R CMD INSTALL .
 
+pdf:
+	R CMD Rd2pdf --pdf .
+	rm ..pdf
+
 clean:
 	rm -rfv ..Rcheck/
 	rm -rfv src/*.o src/*.so src/*.rds
 	rm -rfv src-i386/ src-x64
 	rm -rfv admbsecr.Rcheck
-
-
 
