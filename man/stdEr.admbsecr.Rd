@@ -1,8 +1,8 @@
-\name{coef.admbsecr}
-\alias{coef.admbsecr}
-\title{Extract admbsecr model coefficients}
+\name{stdEr.admbsecr}
+\alias{stdEr.admbsecr}
+\title{Extract standard errors from an admbsecr model fit}
 \usage{
-\method{coef}{admbsecr}(object, pars = "fitted", ...)
+\method{stdEr}{admbsecr}(object, pars = "fitted", ...)
 }
 \arguments{
   \item{object}{A fitted model from
@@ -21,7 +21,8 @@
   compatibility).}
 }
 \description{
-Extracts estimated and derived parameters from a model
-fitted using \link[admbsecr]{admbsecr}.
+Extracts standard errors of estimated and derived
+parameters from a model fitted using
+\link[admbsecr]{admbsecr}.
 }
 
