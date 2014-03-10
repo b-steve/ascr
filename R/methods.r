@@ -19,7 +19,7 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
     if (pars == "all"){
         out <- object$coefficients
     } else if (pars == "fitted"){
-        out <- object$coefficients[object$coefficients != "esa"]
+        out <- object$coefficients[names(object$coefficients) != "esa"]
     } else if (pars == "derived"){
         out <- object$coefficients["esa"]
     } else {
