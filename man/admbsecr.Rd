@@ -18,8 +18,8 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 
   \item{mask}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a mask point.
-  The function \link[admbsecr]{create.mask} will return a
-  suitable object.}
+  The function \link{create.mask} will return a suitable
+  object.}
 
   \item{detfn}{A character string specifying the detection
   function to be used. Options are "hn" (halfnormal), "hr"
@@ -66,7 +66,7 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 
   \item{trace}{Logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
-  the R session.}
+  the R console.}
 
   \item{clean}{Logical, if \code{TRUE} ADMB output files
   are removed.}
@@ -90,13 +90,22 @@ Model Builder (ADMB) executable.
 }
 \details{
 ADMB uses a quasi-Newton method to find maximum likelihood
-estimates of the model parameters. Standard errors are
+estimates for the model parameters. Standard errors are
 calculated by taking the inverse of the negative of the
 Hessian.
 
 Alternatively, \link{boot.admbsecr} can be used to carry
 out a parametric bootstrap procedure, from which parameter
 uncertainty can also be inferred.
+
+If the data are from an acoustic survey where individuals
+call more than once (i.e., the argument \code{call.freqs}
+contains values that are not 1), then standard errors
+calculated from the inverse of the negative Hessian are not
+correct. They are therefore not provided in this case. The
+method used by the function \link{boot.admbsecr} is
+currently the only way to calculate these reliably (see
+Stevenson et al., in prep., for details).
 }
 \section{The \code{capt} argument}{
   The \code{capt} argument is a list with named components.
@@ -200,8 +209,8 @@ uncertainty can also be inferred.
 }
 
 \section{Convergence}{
-  The best approach to fixing convergence issues is by
-  re-running the \code{admbsecr} function with the argument
+  The best approach to fixing convergence issues is to
+  re-run the \code{admbsecr} function with the argument
   \code{trace} set to \code{TRUE}. Parameter values will be
   printed out for each step of the optimisation algorithm.
   Look for a large jump in a parameter to a value far from
@@ -225,5 +234,24 @@ bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
 Borchers, D. L. (2012) A non-technical overview of
 spatially explicit capture-recapture models. \emph{Journal
 of Ornithology}, \strong{152}: 435--444.
+
+Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey, G.
+J., Swift, R. J., and Gillespie, D. M. (in prep.) An
+acoustic spatially explicit capture-recapture method for
+estimating vocalizing amphibian density.
+}
+\seealso{
+\link{coef.admbsecr}, \link{stdEr.admbsecr}, and
+\link{vcov.admbsecr} to extract estimated parameters,
+standard errors, and the variance-covariance matrix,
+respectively.
+
+\link{boot.admbsecr} to calculate standard errors using a
+parametric bootstrap.
+
+\link{show.detfn} to plot the estimated detection function.
+
+\link{locations} to plot estimated locations of particular
+individuals or calls.
 }
 

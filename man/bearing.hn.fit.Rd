@@ -8,11 +8,11 @@ bearing.hn.fit
 }
 \description{
 This is the model object that results when the
-\link[admbsecr]{admbsecr} function is run with
-\link[admbsecr]{example.capt}\code{[c("bincapt",
-"bearing"]}, \link[admbsecr]{example.traps}, and
-\link[admbsecr]{example.mask} set as the arguments
-\code{capt}, \code{traps}, and \code{mask}, respectively.
+\link{admbsecr} function is run with
+\link{example.capt}\code{[c("bincapt", "bearing"]},
+\link{example.traps}, and \link{example.mask} set as the
+arguments \code{capt}, \code{traps}, and \code{mask},
+respectively.
 }
 \keyword{datasets}
 

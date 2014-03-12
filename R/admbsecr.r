@@ -5,12 +5,20 @@
 #' maximum likelihood through an AD Model Builder (ADMB) executable.
 #'
 #' ADMB uses a quasi-Newton method to find maximum likelihood
-#' estimates of the model parameters. Standard errors are calculated
+#' estimates for the model parameters. Standard errors are calculated
 #' by taking the inverse of the negative of the Hessian.
 #'
 #' Alternatively, \link{boot.admbsecr} can be used to carry out a
 #' parametric bootstrap procedure, from which parameter uncertainty
 #' can also be inferred.
+#'
+#' If the data are from an acoustic survey where individuals call more
+#' than once (i.e., the argument \code{call.freqs} contains values
+#' that are not 1), then standard errors calculated from the inverse
+#' of the negative Hessian are not correct. They are therefore not
+#' provided in this case. The method used by the function
+#' \link{boot.admbsecr} is currently the only way to calculate these
+#' reliably (see Stevenson et al., in prep., for details).
 #'
 #' @section The \code{capt} argument:
 #' The \code{capt} argument is a list with named components. Each
@@ -49,7 +57,6 @@
 #'         \emph{known} (not estimated) distance between the individual
 #'         and the detector at the time of the detection.
 #' }
-#'
 #'
 #' @section Fitted parameters:
 #'
@@ -119,7 +126,7 @@
 #'
 #' @section Convergence:
 #'
-#' The best approach to fixing convergence issues is by re-running the
+#' The best approach to fixing convergence issues is to re-run the
 #' \code{admbsecr} function with the argument \code{trace} set to
 #' \code{TRUE}. Parameter values will be printed out for each step of
 #' the optimisation algorithm. Look for a large jump in a parameter to
@@ -130,6 +137,11 @@
 #' @references Borchers, D. L. (2012) A non-technical overview of
 #' spatially explicit capture-recapture models. \emph{Journal of
 #' Ornithology}, \strong{152}: 435--444.
+#'
+#' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
+#' G. J., Swift, R. J., and Gillespie, D. M. (in prep.) An acoustic
+#' spatially explicit capture-recapture method for estimating
+#' vocalizing amphibian density.
 #'
 #' @return A list of class \code{"admbsecr"}. Components contain
 #' information such as estimated parameters and standard errors. The
@@ -142,7 +154,7 @@
 #' coordinates for the location of a trap (or detector).
 #' @param mask A matrix with two columns. Each row provides Cartesian
 #' coordinates for the location of a mask point. The function
-#' \link[admbsecr]{create.mask} will return a suitable object.
+#' \link{create.mask} will return a suitable object.
 #' @param detfn A character string specifying the detection function
 #' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
 #' (threshold), "lth" (log-link threshold), or "ss" (signal
@@ -175,12 +187,22 @@
 #' \code{"toa"} is a component name of \code{capt}. \strong{Not yet
 #' implemented}.
 #' @param trace Logical, if \code{TRUE} parameter values at each step
-#' of the optimisation algorithm are printed to the R session.
+#' of the optimisation algorithm are printed to the R console.
 #' @param clean Logical, if \code{TRUE} ADMB output files are removed.
 #' @param exe.type Character string, either \code{"old"} or
 #' \code{"new"}, depending on which executable is to be used (for
 #' development purposes only; please ignore).
 #'
+#' @seealso \link{coef.admbsecr}, \link{stdEr.admbsecr}, and
+#' \link{vcov.admbsecr} to extract estimated parameters, standard
+#' errors, and the variance-covariance matrix, respectively.
+#' @seealso \link{boot.admbsecr} to calculate standard errors using a
+#' parametric bootstrap.
+#' @seealso \link{show.detfn} to plot the estimated detection
+#' function.
+#' @seealso \link{locations} to plot estimated locations of particular
+#' individuals or calls.
+#' 
 #' @examples
 #' \dontrun{
 #' simple.capt <- example.capt["bincapt"]
@@ -583,11 +605,11 @@ NULL
 #' An example capture history object
 #'
 #' A list containing various additional information types. These data
-#' were simulated using \link[admbsecr]{sim.capt} using the trap
-#' locations in \link[admbsecr]{example.traps}.
+#' were simulated using \link{sim.capt} using the trap locations in
+#' \link{example.traps}.
 #' @name example.capt
 #' @format A list, which is the correct format for use as the
-#' \code{capt} argument to the function \link[admbsecr]{admbsecr}.
+#' \code{capt} argument to the function \link{admbsecr}.
 #' @usage example.capt
 #' @docType data
 #' @keywords datasets
@@ -596,9 +618,8 @@ NULL
 #' An example mask object
 #'
 #' A matrix containing mask point locations. These mask point
-#' locations are suitable for analysis of the data
-#' \link[admbsecr]{example.capt} using the function
-#' \link[admbsecr]{admbsecr}.
+#' locations are suitable for analysis of the data \link{example.capt}
+#' using the function \link{admbsecr}.
 #' @name example.mask
 #' @format A matrix with two columns. Each row gives the Cartesian
 #' coordinates of a mask point.
@@ -611,9 +632,8 @@ NULL
 #' An example traps object
 #'
 #' A matrix containing the trap locations used for the simulation of
-#' the data \link[admbsecr]{example.capt}. This object is suitable for
-#' use as the \code{traps} argument to the function
-#' \link[admbsecr]{admbsecr}.
+#' the data \link{example.capt}. This object is suitable for use as
+#' the \code{traps} argument to the function \link{admbsecr}.
 #' 
 #' @name example.traps
 #' @format A matrix with two columns. Each row gives the Cartesian
@@ -625,12 +645,10 @@ NULL
 
 #' An example model object
 #'
-#' This is the model object that results when the
-#' \link[admbsecr]{admbsecr} function is run with
-#' \link[admbsecr]{example.capt}\code{["bincapt"]},
-#' \link[admbsecr]{example.traps}, and \link[admbsecr]{example.mask}
-#' set as the arguments \code{capt}, \code{traps}, and \code{mask},
-#' respectively.
+#' This is the model object that results when the \link{admbsecr}
+#' function is run with \link{example.capt}\code{["bincapt"]},
+#' \link{example.traps}, and \link{example.mask} set as the
+#' arguments \code{capt}, \code{traps}, and \code{mask}, respectively.
 #'
 #' @name simple.hn.fit
 #' @format A list of class \code{"admbsecr"}.
@@ -642,9 +660,9 @@ NULL
 #' An example model object
 #'
 #' This is the model object that results when the
-#' \link[admbsecr]{admbsecr} function is run with
-#' \link[admbsecr]{example.capt}\code{["bincapt"]},
-#' \link[admbsecr]{example.traps}, \link[admbsecr]{example.mask}, and
+#' \link{admbsecr} function is run with
+#' \link{example.capt}\code{["bincapt"]},
+#' \link{example.traps}, \link{example.mask}, and
 #' \code{"hr"} set as the arguments \code{capt}, \code{traps},
 #' \code{mask}, and \code{detfn}, respectively.
 #'
@@ -658,9 +676,9 @@ NULL
 #' An example model object
 #'
 #' This is the model object that results when the
-#' \link[admbsecr]{admbsecr} function is run with
-#' \link[admbsecr]{example.capt}\code{[c("bincapt", "bearing"]},
-#' \link[admbsecr]{example.traps}, and \link[admbsecr]{example.mask}
+#' \link{admbsecr} function is run with
+#' \link{example.capt}\code{[c("bincapt", "bearing"]},
+#' \link{example.traps}, and \link{example.mask}
 #' set as the arguments \code{capt}, \code{traps}, and \code{mask},
 #' respectively.
 #'

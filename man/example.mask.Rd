@@ -10,8 +10,7 @@ example.mask
 \description{
 A matrix containing mask point locations. These mask point
 locations are suitable for analysis of the data
-\link[admbsecr]{example.capt} using the function
-\link[admbsecr]{admbsecr}.
+\link{example.capt} using the function \link{admbsecr}.
 }
 \keyword{datasets}
 

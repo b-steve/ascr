@@ -81,8 +81,8 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
 
 #' Extract standard errors from an admbsecr model fit
 #'
-#' Extracts standard errors of estimated and derived parameters from a
-#' model fitted using \link[admbsecr]{admbsecr}.
+#' Extracts standard errors for estimated and derived parameters from
+#' a model fitted using \link[admbsecr]{admbsecr}.
 #'
 #' @inheritParams coef.admbsecr
 #'
@@ -96,6 +96,31 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
         out <- object$se[names(object$se) != "esa"]
     } else if (pars == "derived"){
         out <- object$se["esa"]
+    } else {
+        stop("Argument 'pars' must be either \"all\", \"fitted\", or \"derived\".")
+    }
+    out
+}
+
+#' Extract standard errors from a bootstrapped admbsecr model object
+#'
+#' Extracts standard errors for parameters in a model fitted using
+#' \link[admbsecr]{admbsecr}, with a bootstrap procedure carried out
+#' using \link[admbsecr]{boot.admbsecr}.
+#'
+#' @inheritParams coef.admbsecr
+#'
+#' @method vcov admbsecr.boot
+#' @S3method vcov admbsecr.boot
+stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
+    if (pars == "all"){
+        out <- object$boot.se
+    } else if (pars == "fitted"){
+        par.names <- names(object$coefficients)
+        keep.pars <- par.names[par.names != "esa"]
+        out <- object$boot.se[keep.pars, keep.pars]
+    } else if (pars == "derived"){
+        out <- object$boot.se["esa", "esa"]
     } else {
         stop("Argument 'pars' must be either \"all\", \"fitted\", or \"derived\".")
     }

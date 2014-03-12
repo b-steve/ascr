@@ -49,8 +49,8 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
 
   \item{mask}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a mask point.
-  The function \link[admbsecr]{create.mask} will return a
-  suitable object.}
+  The function \link{create.mask} will return a suitable
+  object.}
 
   \item{ss.link}{A character string, either
   \code{"indentity"} or \code{"log"}, which specifies the

@@ -1,8 +1,8 @@
-\name{stdEr.admbsecr}
-\alias{stdEr.admbsecr}
-\title{Extract standard errors from an admbsecr model fit}
+\name{stdEr.admbsecr.boot}
+\alias{stdEr.admbsecr.boot}
+\title{Extract standard errors from a bootstrapped admbsecr model object}
 \usage{
-\method{stdEr}{admbsecr}(object, pars = "fitted", ...)
+\method{vcov}{admbsecr.boot}(object, pars = "fitted", ...)
 }
 \arguments{
   \item{object}{A fitted model from
@@ -21,8 +21,8 @@
   compatibility).}
 }
 \description{
-Extracts standard errors for estimated and derived
-parameters from a model fitted using
-\link[admbsecr]{admbsecr}.
+Extracts standard errors for parameters in a model fitted
+using \link[admbsecr]{admbsecr}, with a bootstrap procedure
+carried out using \link[admbsecr]{boot.admbsecr}.
 }
 
