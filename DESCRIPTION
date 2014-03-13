@@ -15,6 +15,8 @@ Imports:
     matrixStats,
     plyr,
     secr
+Suggests:
+    testthat
 LinkingTo: Rcpp
 Description: This package allows for the fitting of spatially explicit
     capture-recapture (SECR) models. In particular, it is focussed on
