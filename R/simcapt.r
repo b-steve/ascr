@@ -1,12 +1,14 @@
 #' Simulating SECR data
 #'
 #' Simulates SECR capture histories and associated additional
-#' information in the correct format for use with
-#' \code{\link[admbsecr]{admbsecr}}.
-#'
-#' If \code{fit} is provided then no other arguments are
-#' required. Otherwise, at least \code{traps}, \code{mask}, and
+#' information in the correct format for use with the function
+#' \link{admbsecr}. If \code{fit} is provided then no other arguments
+#' are required. Otherwise, at least \code{traps}, \code{mask}, and
 #' \code{pars} are needed.
+#'
+#' See documentation for the function \link{admbsecr} for information
+#' on the parameters corresponding to the different detection
+#' functions, and to different types of additional information.
 #'
 #' @param fit A fitted \code{admbsecr} model object which provides the
 #' additional information types, detection function, and parameter
@@ -34,6 +36,23 @@
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
 #' function to aid debugging.
 #' @inheritParams admbsecr
+#'
+#' @return A list with named components, each corresponding to a data
+#' type listed in \code{infotypes}. Each component is a matrix where
+#' each row corresponds to each detected individual, and each column
+#' corresponds to a trap (or detector). The elements in the matrix
+#' indicate detection, and provide simulated values of the additional
+#' information requested. This object can be used as the \code{capt}
+#' argument for the function \link{admbsecr}.
+#' 
+#' @examples
+#' ## Simulating based on model fits.
+#' simple.capt <- sim.capt(simple.hn.fit)
+#' bearing.capt <- sim.capt(bearing.hn.fit)
+#' ## Simulating from provided parameter values.
+#' new.capt <- sim.capt(traps = example.traps, mask = example.mask, infotypes = c("bearing", "dist"), detfn = "hr",
+#'                      pars = list(D = 2500, g0 = 0.9, sigma = 3, z = 2, kappa = 50, alpha = 10))
+#' 
 #' @export
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",

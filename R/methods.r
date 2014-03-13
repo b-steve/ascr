@@ -110,8 +110,8 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
 #'
 #' @inheritParams coef.admbsecr
 #'
-#' @method vcov admbsecr.boot
-#' @S3method vcov admbsecr.boot
+#' @method stdEr admbsecr.boot
+#' @S3method stdEr admbsecr.boot
 stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     if (pars == "all"){
         out <- object$boot.se

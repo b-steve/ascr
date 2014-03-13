@@ -69,14 +69,35 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
   used when \code{"toa"} is a component name of
   \code{capt}. \strong{Not yet implemented}.}
 }
+\value{
+A list with named components, each corresponding to a data
+type listed in \code{infotypes}. Each component is a matrix
+where each row corresponds to each detected individual, and
+each column corresponds to a trap (or detector). The
+elements in the matrix indicate detection, and provide
+simulated values of the additional information requested.
+This object can be used as the \code{capt} argument for the
+function \link{admbsecr}.
+}
 \description{
 Simulates SECR capture histories and associated additional
-information in the correct format for use with
-\code{\link[admbsecr]{admbsecr}}.
+information in the correct format for use with the function
+\link{admbsecr}. If \code{fit} is provided then no other
+arguments are required. Otherwise, at least \code{traps},
+\code{mask}, and \code{pars} are needed.
 }
 \details{
-If \code{fit} is provided then no other arguments are
-required. Otherwise, at least \code{traps}, \code{mask},
-and \code{pars} are needed.
+See documentation for the function \link{admbsecr} for
+parameters corresponding to the different detection
+functions, and to different types of additional
+information.
+}
+\examples{
+## Simulating based on model fits.
+simple.capt <- sim.capt(simple.hn.fit)
+bearing.capt <- sim.capt(bearing.hn.fit)
+## Simulating from provided parameter values.
+new.capt <- sim.capt(traps = example.traps, mask = example.mask, infotypes = c("bearing", "dist"), detfn = "hr",
+                     pars = list(D = 2500, g0 = 0.9, sigma = 3, z = 2, kappa = 50, alpha = 10))
 }
 
