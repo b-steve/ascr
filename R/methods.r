@@ -116,11 +116,9 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     if (pars == "all"){
         out <- object$boot.se
     } else if (pars == "fitted"){
-        par.names <- names(object$coefficients)
-        keep.pars <- par.names[par.names != "esa"]
-        out <- object$boot.se[keep.pars, keep.pars]
+        out <- object$boot.se[names(object$se) != "esa"]
     } else if (pars == "derived"){
-        out <- object$boot.se["esa", "esa"]
+        out <- object$boot.se["esa"]
     } else {
         stop("Argument 'pars' must be either \"all\", \"fitted\", or \"derived\".")
     }

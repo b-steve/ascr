@@ -28,6 +28,13 @@
 #' @param fit A fitted \code{admbsecr} model object.
 #' @param N The number of bootstrap resamples.
 #' @param prog Logical, if \code{TRUE}, a progress bar is shown.
+#'
+#' @examples
+#' \dontrun{
+#' ## In practice, N should be >> 100, but this leads to long computation time.
+#' boot.fit <- boot.admbsecr(fit = simple.hn.fit, N = 100)
+#' }
+#' 
 #' @export
 boot.admbsecr <- function(fit, N, prog = TRUE){
     args <- fit$args
