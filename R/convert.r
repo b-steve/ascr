@@ -3,11 +3,13 @@
 #' Creates a mask object to use with the function
 #' \code{\link{admbsecr}}.
 #'
-#' @inheritParams admbsecr
 #' @param buffer The minimum distance between trap locations and the
 #' edge of the generated mask.
 #' @param ... Arguments to be passed to \link{make.mask}.
+#' @inheritParams admbsecr
 #'
+#' @return An object of class \code{mask}.
+#' 
 #' @seealso \link{convert.mask} to convert a mask compatible with the
 #' \link{secr} package.
 #' 
@@ -28,6 +30,11 @@ create.mask <- function(traps, buffer, ...){
 #' object.
 #'
 #' @inheritParams admbsecr
+#'
+#' @return An object of class \code{traps} comprising a data frame of
+#' x- and y-coordinates, the detector type ('single', 'multi',
+#' 'proximity', 'count', 'polygon' etc.), and possibly other
+#' attributes.
 #' 
 #' @export
 convert.traps <- function(traps){
@@ -43,6 +50,9 @@ convert.traps <- function(traps){
 #' object.
 #'
 #' @inheritParams admbsecr
+#'
+#' @return An object of class \code{mask}.
+#' 
 #' @export
 convert.mask <- function(mask){
     read.mask(data = as.data.frame(mask))
