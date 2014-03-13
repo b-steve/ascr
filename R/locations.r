@@ -63,7 +63,7 @@
 #'
 #' @examples
 #' locations(simple.hn.fit, 1)
-#' locations(simple.hn.fit, 1, levels = c(0.50, 0.90, 0.95)
+#' locations(simple.hn.fit, 1, levels = c(0.50, 0.90, 0.95))
 #' 
 #' @export
 locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
