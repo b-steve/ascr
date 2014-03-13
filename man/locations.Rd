@@ -10,12 +10,11 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   plot.circles = "dist" \%in\% fit$infotypes, legend = TRUE, add = FALSE)
 }
 \arguments{
-  \item{fit}{A fitted model from
-  \link[admbsecr]{admbsecr}.}
+  \item{fit}{A fitted model from \link{admbsecr}.}
 
   \item{id}{A numeric vector with row numbers from
-  \code{fit$capt}, indicating which individuals' locations
-  are to be plotted.}
+  \code{fit$args$capt}, indicating which individuals'
+  locations are to be plotted.}
 
   \item{infotypes}{A character vector indicating the
   type(s) of information to be used when plotting the
@@ -96,5 +95,9 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
 \description{
 Plots estimated densities of animal locations, which are
 latent variables in SECR models.
+}
+\examples{
+locations(simple.hn.fit, 1)
+locations(simple.hn.fit, 1, levels = c(0.50, 0.90, 0.95))
 }
 

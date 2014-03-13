@@ -8,8 +8,7 @@ create.mask(traps, buffer, ...)
   \item{buffer}{The minimum distance between trap locations
   and the edge of the generated mask.}
 
-  \item{...}{Arguments to be passed to
-  \link[secr]{make.mask}.}
+  \item{...}{Arguments to be passed to \link{make.mask}.}
 
   \item{traps}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a trap (or
@@ -17,6 +16,10 @@ create.mask(traps, buffer, ...)
 }
 \description{
 Creates a mask object to use with the function
-\code{\link[admbsecr]{admbsecr}}.
+\code{\link{admbsecr}}.
+}
+\seealso{
+\link{convert.mask} to convert a mask compatible with the
+\link{secr} package.
 }
 

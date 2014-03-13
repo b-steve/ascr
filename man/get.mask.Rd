@@ -5,8 +5,7 @@
 get.mask(fit)
 }
 \arguments{
-  \item{fit}{A fitted model from
-  \link[admbsecr]{admbsecr}.}
+  \item{fit}{A fitted model from \link{admbsecr}.}
 }
 \description{
 Extracts the mask used in an admbsecr fit.

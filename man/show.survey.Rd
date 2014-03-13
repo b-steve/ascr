@@ -1,0 +1,20 @@
+\name{show.survey}
+\alias{show.survey}
+\title{Plotting mask and trap layout}
+\usage{
+show.survey(fit, ...)
+}
+\arguments{
+  \item{...}{Further arguments to be passed to
+  \link{plot}.}
+
+  \item{fit}{A fitted model from \link{admbsecr}.}
+}
+\description{
+Plots the mask points and trap locations used in a model
+fitted with the function \link{admbsecr}.
+}
+\examples{
+show.survey(simple.hn.fit)
+}
+

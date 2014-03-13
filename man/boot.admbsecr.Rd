@@ -44,4 +44,10 @@ call frequencies. Using a parametric bootstrap is currently
 the only way parameter uncertainty can be estimated for
 such models.
 }
+\examples{
+\dontrun{
+## In practice, N should be >> 100, but this leads to long computation time.
+boot.fit <- boot.admbsecr(fit = simple.hn.fit, N = 100)
+}
+}
 
