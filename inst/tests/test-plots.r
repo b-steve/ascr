@@ -16,5 +16,12 @@ test_that("location plotting", {
 })
 
 test_that("detection function plotting", {
-    ## To go here.
+    expect_that(show.detfn(simple.hn.fit), is_null())
+    expect_that(show.detfn(simple.hr.fit, add = TRUE), is_null())
+    expect_that(show.detfn(bearing.hn.fit, main = "A title"), is_null())
+})
+
+test_that("survey plotting", {
+    expect_that(show.survey(simple.hn.fit), is_null())
+    expect_that(show.survey(bearing.hn.fit), is_null())
 })
