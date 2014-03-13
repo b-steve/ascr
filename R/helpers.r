@@ -30,6 +30,7 @@ animalIDvec <- function(capthist){
 #' @return A data frame. Specifically, the \code{clicks} dataframe,
 #' now with a new variable, \code{ID}.
 #' @author David Borchers
+#' 
 #' @export
 make.acoustic.captures <- function(mics, clicks, dt){
     K <- dim(mics)[1]
@@ -192,4 +193,21 @@ p.dot <- function(fit = NULL, points = get.mask(fit), traps = NULL, detfn = NULL
     dists <- distances(traps, points)
     probs <- calc.detfn(dists, detfn, pars)
     aaply(probs, 2, function(x) 1 - prod(1 - x))
+}
+
+#' Plotting mask and trap layout
+#'
+#' Plots the mask points and trap locations used in a model fitted
+#' with the function \link{admbsecr}.
+#'
+#' @param ... Further arguments to be passed to \link{plot}.
+#' @inheritParams locations
+#'
+#' @examples
+#' show.survey(simple.hn.fit)
+#'
+#' @export
+show.survey <- function(fit, ...){
+    plot(fit$args$mask, pch = ".", cex = 3, asp = 1, ...)
+    points(fit$args$traps, pch = 16, col = "red")
 }
