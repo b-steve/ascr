@@ -12,6 +12,7 @@ Depends:
     R2admb
 Imports:
     CircStats,
+    lattice,
     matrixStats,
     plyr,
     secr

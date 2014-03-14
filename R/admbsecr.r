@@ -595,6 +595,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 ## Package imports for roxygenise to pass to NAMESPACE.
 #' @import plyr Rcpp R2admb
 #' @importFrom CircStats dvm rvm
+#' @importFrom lattice wireframe
 #' @importFrom matrixStats colProds
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @useDynLib admbsecr
