@@ -81,6 +81,12 @@ convert.capt <- function(capt, traps, capthist = TRUE){
     names(trap) <- NULL
     out <- data.frame(session = session, ID = ID, occasion = occasion,
                       trap = trap)
+    if (!is.null(capt$ss)){
+        out <- data.frame(out, ss = t(capt$ss)[t(capt$bincapt) == 1])
+    }
+    for (i in names(capt)[!(names(capt) %in% c("bincapt", "ss"))]){
+        out[, i] <- t(capt[[i]])[t(capt$bincapt) == 1]
+    }
     if (capthist){
         traps <- convert.traps(traps)
         out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1)
