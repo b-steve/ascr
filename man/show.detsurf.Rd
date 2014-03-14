@@ -1,0 +1,18 @@
+\name{show.detsurf}
+\alias{show.detsurf}
+\title{Plotting the detection probability surface}
+\usage{
+show.detsurf(fit)
+}
+\arguments{
+  \item{fit}{A fitted model from \link{admbsecr}.}
+}
+\description{
+Plots the detection probability surface, based on trap
+locations and the estimated detection function from a model
+fitted using \link{admbsecr}.
+}
+\examples{
+show.detsurf(simple.hn.fit)
+}
+
