@@ -1,7 +1,7 @@
 #' Extract admbsecr model coefficients
 #'
 #' Extracts estimated and derived parameters from a model fitted using
-#' \link[admbsecr]{admbsecr}.
+#' \link{admbsecr}.
 #'
 #' @param object A fitted model from \link[admbsecr]{admbsecr}.
 #' @param pars A character string; either \code{"all"},
@@ -12,9 +12,15 @@
 #' effective survey area) which are functions of fitted parameters are
 #' returned.
 #' @param ... Other parameters (for S3 generic compatibility).
+#'
+#' @examples
+#' coef(simple.hn.fit)
+#' coef(simple.hn.fit, pars = "all")
+#' coef(simple.hn.fit, pars = "derived")
 #' 
 #' @method coef admbsecr
 #' @S3method coef admbsecr
+#' @export
 coef.admbsecr <- function(object, pars = "fitted", ...){
     if (pars == "all"){
         out <- object$coefficients
@@ -36,8 +42,14 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
 #'
 #' @inheritParams coef.admbsecr
 #'
+#' @examples
+#' vcov(simple.hn.fit)
+#' vcov(simple.hn.fit, pars = "all")
+#' vcov(simple.hn.fit, pars = "derived")
+#' 
 #' @method vcov admbsecr
 #' @S3method vcov admbsecr
+#' @export
 vcov.admbsecr <- function(object, pars = "fitted", ...){
     if (pars == "all"){
         out <- object$vcov
@@ -85,6 +97,11 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
 #' a model fitted using \link[admbsecr]{admbsecr}.
 #'
 #' @inheritParams coef.admbsecr
+#'
+#' @examples
+#' stdEr(simple.hn.fit)
+#' stdEr(simple.hn.fit, pars = "all")
+#' stdEr(simple.hn.fit, pars = "derived")
 #'
 #' @method stdEr admbsecr
 #' @S3method stdEr admbsecr

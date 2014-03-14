@@ -21,6 +21,9 @@ An object of class \code{mask}.
 Creates a mask object to use with the function
 \code{\link{admbsecr}}.
 }
+\examples{
+mask <- create.mask(traps = example.traps, buffer = 20)
+}
 \seealso{
 \link{convert.mask} to convert a mask compatible with the
 \link{secr} package.

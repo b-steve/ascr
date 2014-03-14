@@ -16,4 +16,7 @@ points.
 \description{
 Calculates pairwise distances between two sets of points.
 }
+\examples{
+dists <- distances(example.traps, example.mask)
+}
 

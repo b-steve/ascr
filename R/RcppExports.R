@@ -7,7 +7,12 @@
 #'
 #' @param a matrix containing a set of coordinates.
 #' @param b matrix containing another set of coordinates.
+#'
 #' @return A matrix with pairwise distances between the two sets of points.
+#'
+#' @examples
+#' dists <- distances(example.traps, example.mask)
+#'
 #' @export
 distances <- function(a, b) {
     .Call('admbsecr_distances', PACKAGE = 'admbsecr', a, b)
@@ -19,7 +24,12 @@ distances <- function(a, b) {
 #'
 #' @param a matrix containing a set of coordinates.
 #' @param b matrix containing another set of coordinates.
+#'
 #' @return A matrix with bearings of the points in matrix b from the points in matrix a.
+#'
+#' @examples
+#' bears <- bearings(example.traps, example.mask) 
+#'
 #' @export
 bearings <- function(a, b) {
     .Call('admbsecr_bearings', PACKAGE = 'admbsecr', a, b)

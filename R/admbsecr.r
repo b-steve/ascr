@@ -633,7 +633,7 @@ NULL
 #'
 #' A matrix containing the trap locations used for the simulation of
 #' the data \link{example.capt}. This object is suitable for use as
-#' the \code{traps} argument to the function \link{admbsecr}.
+#' the \code{traps} argument of the function \link{admbsecr}.
 #' 
 #' @name example.traps
 #' @format A matrix with two columns. Each row gives the Cartesian

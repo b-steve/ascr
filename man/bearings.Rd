@@ -16,4 +16,7 @@ points in matrix a.
 \description{
 Calculates the bearing from one set of points to another.
 }
+\examples{
+bears <- bearings(example.traps, example.mask)
+}
 

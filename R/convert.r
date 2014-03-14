@@ -12,6 +12,9 @@
 #' 
 #' @seealso \link{convert.mask} to convert a mask compatible with the
 #' \link{secr} package.
+#'
+#' @examples
+#' mask <- create.mask(traps = example.traps, buffer = 20)
 #' 
 #' @export
 create.mask <- function(traps, buffer, ...){
@@ -29,12 +32,18 @@ create.mask <- function(traps, buffer, ...){
 #' Converts an \code{admbsecr} traps matrix to a \code{secr} traps
 #' object.
 #'
+#' The returned object is suitable for use as the \code{traps}
+#' argument of the function \link{make.capthist}.
+#'
 #' @inheritParams admbsecr
 #'
 #' @return An object of class \code{traps} comprising a data frame of
 #' x- and y-coordinates, the detector type ('single', 'multi',
 #' 'proximity', 'count', 'polygon' etc.), and possibly other
 #' attributes.
+#'
+#' @examples
+#' traps <- convert.traps(traps = example.traps)
 #' 
 #' @export
 convert.traps <- function(traps){
@@ -49,9 +58,15 @@ convert.traps <- function(traps){
 #' Converts an \code{admbsecr} mask matrix to a \code{secr} mask
 #' object.
 #'
+#' The returned object is suitable for use as the \code{mask}
+#' argument of the function \link{secr.fit}.
+#'
 #' @inheritParams admbsecr
 #'
 #' @return An object of class \code{mask}.
+#'
+#' @examples
+#' mask <- convert.mask(mask = example.mask)
 #' 
 #' @export
 convert.mask <- function(mask){
@@ -63,11 +78,20 @@ convert.mask <- function(mask){
 #' Converts an \code{admbsecr} capture history list to a \code{secr}
 #' capthist object.
 #'
+#' The returned object is suitable for use as the \code{capthist}
+#' argument of the function \link{secr.fit}.
+#'
 #' @param capthist Logical, if \code{TRUE}, a \code{capthist} object
 #' is returned. Otherwise a data frame is returned, which is suitable
-#' for the \code{captures} argument to the
-#' \code{\link[secr]{make.capthist}} function.
+#' for the \code{captures} argument to the \link{make.capthist}
+#' function.
 #' @inheritParams admbsecr
+#'
+#' @return An object of class \link{capthist}.
+#'
+#' @examples
+#' capt <- convert.capt(capt = example.capt, traps = example.traps)
+#' 
 #' @export
 convert.capt <- function(capt, traps, capthist = TRUE){
     n <- nrow(capt$bincapt)

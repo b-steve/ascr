@@ -17,4 +17,11 @@ An object of class \code{mask}.
 Converts an \code{admbsecr} mask matrix to a \code{secr}
 mask object.
 }
+\details{
+The returned object is suitable for use as the \code{mask}
+argument of the function \link{secr.fit}.
+}
+\examples{
+mask <- convert.mask(mask = example.mask)
+}
 

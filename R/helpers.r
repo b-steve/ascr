@@ -21,7 +21,7 @@ animalIDvec <- function(capthist){
 #' time it would take for sound to travel between these microphones.
 #'
 #' @param mics a matrix containing the coordinates of trap locations.
-#' @param clicks a data frame containing (at least): (i) \code{$tim$},
+#' @param clicks a data frame containing (at least): (i) \code{$tim},
 #' the precise time of arrival of the received sound, and (ii)
 #' \code{$trap} the trap at which the sound was recorded.
 #' @param dt a \code{K} by \code{K} matrix (where \code{K} is the
@@ -30,8 +30,6 @@ animalIDvec <- function(capthist){
 #' @return A data frame. Specifically, the \code{clicks} dataframe,
 #' now with a new variable, \code{ID}.
 #' @author David Borchers
-#' 
-#' @export
 make.acoustic.captures <- function(mics, clicks, dt){
     K <- dim(mics)[1]
     captures <- clicks
@@ -91,7 +89,41 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
     L
 }
 
-## Return fixed or estimated parameter values from a model fit.
+#' Extract estimated or fixed parameter values from an \code{admbsecr} model fit
+#'
+#' Extracts, estimated, derived, and fitted parameters from a model
+#' fitted using \link{admbsecr}.
+#'
+#' This is a similar function to \link{coef.admbsecr}, however the
+#' latter does not allow for extraction of parameters that have been
+#' fixed using \code{admbsecr}'s \code{fix} argument.
+#'
+#' @param pars A character vector containing names of parameter values
+#' to be extracted. Alternatively, the character string \code{"all"}
+#' will extract all parameters, fixed or otherwise. See the 'Details'
+#' section for the \link{admbsecr} function's documentation for
+#' information on the parameters that are fitted.
+#' @param cutoff Logical, if \code{TRUE}, the cutoff value for an
+#' acoustic fit is included.
+#' @param as.list Logical, if \code{TRUE}, each parameter value is
+#' returned as the component of a list, where component names give the
+#' parameter names. In this case, the returned object is suitable as
+#' the argument of a variety of functions (e.g., \code{sv} or
+#' \code{fix} for the \link{admbsecr} function, or \code{pars} for the
+#' \link{sim.capt} function). If \code{FALSE}, parameter values are
+#' returned as part of a named vector.
+#' @inheritParams locations
+#'
+#' @return See above information about the argument \code{as.list}. If
+#' \code{as.list} is \code{TRUE}, then a list is returned. If
+#' \code{as.list} is \code{FALSE}, then a named character vector is
+#' returned.
+#'
+#' @examples
+#' get.par(fit = simple.hn.fit, pars = "all")
+#' get.par(fit = bearing.hn.fit, pars = c("D", "kappa", "esa"), as.list = TRUE)
+#'
+#' @export
 get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
     allpar.names <- c("D", fit$detpars, fit$suppars, "esa")
     if (length(pars) == 1){
@@ -162,6 +194,9 @@ get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
 #' Extracts the mask used in an admbsecr fit.
 #'
 #' @inheritParams locations
+#'
+#' @return A mask object.
+#'
 #' @export
 get.mask <- function(fit){
     fit$args$mask
@@ -172,6 +207,9 @@ get.mask <- function(fit){
 #' Extracts the trap locations used in an admbsecr fit.
 #'
 #' @inheritParams locations
+#'
+#' @return A traps object.
+#'
 #' @export
 get.traps <- function(fit){
     fit$args$traps

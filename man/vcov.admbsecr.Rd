@@ -25,4 +25,9 @@ object}
 Extracts the variance-covariance matrix for parameters in a
 model fitted using \link[admbsecr]{admbsecr}.
 }
+\examples{
+vcov(simple.hn.fit)
+vcov(simple.hn.fit, pars = "all")
+vcov(simple.hn.fit, pars = "derived")
+}
 

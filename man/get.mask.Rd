@@ -7,6 +7,9 @@ get.mask(fit)
 \arguments{
   \item{fit}{A fitted model from \link{admbsecr}.}
 }
+\value{
+A mask object.
+}
 \description{
 Extracts the mask used in an admbsecr fit.
 }

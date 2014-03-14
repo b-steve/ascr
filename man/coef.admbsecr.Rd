@@ -22,6 +22,11 @@
 }
 \description{
 Extracts estimated and derived parameters from a model
-fitted using \link[admbsecr]{admbsecr}.
+fitted using \link{admbsecr}.
+}
+\examples{
+coef(simple.hn.fit)
+coef(simple.hn.fit, pars = "all")
+coef(simple.hn.fit, pars = "derived")
 }
 

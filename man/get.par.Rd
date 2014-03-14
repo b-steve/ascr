@@ -1,0 +1,49 @@
+\name{get.par}
+\alias{get.par}
+\title{Extract estimated or fixed parameter values from an \code{admbsecr} model fit}
+\usage{
+get.par(fit, pars, cutoff = FALSE, as.list = FALSE)
+}
+\arguments{
+  \item{pars}{A character vector containing names of
+  parameter values to be extracted. Alternatively, the
+  character string \code{"all"} will extract all
+  parameters, fixed or otherwise. See the 'Details' section
+  for the \link{admbsecr} function's documentation for
+  information on the parameters that are fitted.}
+
+  \item{cutoff}{Logical, if \code{TRUE}, the cutoff value
+  for an acoustic fit is included.}
+
+  \item{as.list}{Logical, if \code{TRUE}, each parameter
+  value is returned as the component of a list, where
+  component names give the parameter names. In this case,
+  the returned object is suitable as the argument of a
+  variety of functions (e.g., \code{sv} or \code{fix} for
+  the \link{admbsecr} function, or \code{pars} for the
+  \link{sim.capt} function). If \code{FALSE}, parameter
+  values are returned as part of a named vector.}
+
+  \item{fit}{A fitted model from \link{admbsecr}.}
+}
+\value{
+See above information about the argument \code{as.list}. If
+\code{as.list} is \code{TRUE}, then a list is returned. If
+\code{as.list} is \code{FALSE}, then a named character
+vector is returned.
+}
+\description{
+Extracts, estimated, derived, and fitted parameters from a
+model fitted using \link{admbsecr}.
+}
+\details{
+This is a similar function to \link{coef.admbsecr}, however
+the latter does not allow for extraction of parameters that
+have been fixed using \code{admbsecr}'s \code{fix}
+argument.
+}
+\examples{
+get.par(fit = simple.hn.fit, pars = "all")
+get.par(fit = bearing.hn.fit, pars = c("D", "kappa", "esa"), as.list = TRUE)
+}
+

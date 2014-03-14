@@ -64,6 +64,10 @@
 #' @examples
 #' locations(simple.hn.fit, 1)
 #' locations(simple.hn.fit, 1, levels = c(0.50, 0.90, 0.95))
+#' \dontrun{
+#' fine.mask <- create.mask(example.traps, 20, spacing = 0.2)
+#' locations(bearing.hn.fit, 1, infotypes = "all", mask = fine.mask)
+#' }
 #' 
 #' @export
 locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),

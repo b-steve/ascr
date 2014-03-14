@@ -10,7 +10,7 @@ example.traps
 \description{
 A matrix containing the trap locations used for the
 simulation of the data \link{example.capt}. This object is
-suitable for use as the \code{traps} argument to the
+suitable for use as the \code{traps} argument of the
 function \link{admbsecr}.
 }
 \keyword{datasets}
