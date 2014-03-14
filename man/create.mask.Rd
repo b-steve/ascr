@@ -14,6 +14,9 @@ create.mask(traps, buffer, ...)
   Cartesian coordinates for the location of a trap (or
   detector).}
 }
+\value{
+An object of class \code{mask}.
+}
 \description{
 Creates a mask object to use with the function
 \code{\link{admbsecr}}.

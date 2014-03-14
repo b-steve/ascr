@@ -10,6 +10,9 @@ convert.mask(mask)
   The function \link{create.mask} will return a suitable
   object.}
 }
+\value{
+An object of class \code{mask}.
+}
 \description{
 Converts an \code{admbsecr} mask matrix to a \code{secr}
 mask object.

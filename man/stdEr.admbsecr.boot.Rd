@@ -2,7 +2,7 @@
 \alias{stdEr.admbsecr.boot}
 \title{Extract standard errors from a bootstrapped admbsecr model object}
 \usage{
-\method{vcov}{admbsecr.boot}(object, pars = "fitted", ...)
+\method{stdEr}{admbsecr.boot}(object, pars = "fitted", ...)
 }
 \arguments{
   \item{object}{A fitted model from

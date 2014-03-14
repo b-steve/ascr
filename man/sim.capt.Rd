@@ -88,9 +88,9 @@ arguments are required. Otherwise, at least \code{traps},
 }
 \details{
 See documentation for the function \link{admbsecr} for
-parameters corresponding to the different detection
-functions, and to different types of additional
-information.
+information on the parameters corresponding to the
+different detection functions, and to different types of
+additional information.
 }
 \examples{
 ## Simulating based on model fits.

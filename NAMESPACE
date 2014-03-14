@@ -1,5 +1,6 @@
 S3method(coef,admbsecr)
 S3method(stdEr,admbsecr)
+S3method(stdEr,admbsecr.boot)
 S3method(vcov,admbsecr)
 S3method(vcov,admbsecr.boot)
 export(admbsecr)
