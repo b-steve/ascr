@@ -133,7 +133,7 @@
 #' a value far from what is feasible. This can be fixed by using the
 #' \code{bounds} argument to restrict the parameter space over which
 #' ADMB searches to maximise the likelihood.
-#' 
+#'
 #' @references Borchers, D. L. (2012) A non-technical overview of
 #' spatially explicit capture-recapture models. \emph{Journal of
 #' Ornithology}, \strong{152}: 435--444.
@@ -147,7 +147,7 @@
 #' information such as estimated parameters and standard errors. The
 #' best way to access such information, however, is through the
 #' variety of helper functions provided by the admbsecr package.
-#' 
+#'
 #' @param capt A list with named components, containing the capture
 #' history and supplementary information. See further details below.
 #' @param traps A matrix with two columns. Each row provides Cartesian
@@ -202,7 +202,7 @@
 #' function.
 #' @seealso \link{locations} to plot estimated locations of particular
 #' individuals or calls.
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' simple.capt <- example.capt["bincapt"]
@@ -214,7 +214,7 @@
 #' bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
 #'                            mask = example.mask, fix = list(g0 = 1))
 #' }
-#' 
+#'
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
@@ -477,8 +477,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         stop("Argument 'exe.type' must be \"old\" or \"new\".")
     }
+    prefix.name <- exe.name
     if (.Platform$OS == "windows"){
         os.type <- "windows"
+        exe.name <- paste(prefix.name, ".exe", sep = "")
     } else if (.Platform$OS == "unix"){
         if (Sys.info()["sysname"] == "Linux"){
             os.type <- "linux"
@@ -502,14 +504,18 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Creating .pin and .dat files.
     write_pin("secr", sv)
     write_dat("secr", data.list)
-    ## Creating symbolic link to executable.
-    cmd <- paste("ln -s", exe.loc, exe.name)
-    system(cmd)
+    ## Creating link to executable.
+    if (os.type == "windows"){
+        file.copy(exe.loc, exe.name)
+    } else {
+        file.symlink(exe.loc, exe.name)
+    }
     ## Running ADMB executable.
-    cmd <- paste("./"[os.type != "windows"], "secr -ind secr.dat -ainp secr.pin", sep = "")
+    cmd <- paste("./"[os.type != "windows"], exe.name,
+                 " -ind secr.dat -ainp secr.pin", sep = "")
     system(cmd, ignore.stdout = !trace)
     ## Reading in model results.
-    out <- read.admbsecr(exe.name)
+    out <- read.admbsecr(prefix.name)
     setwd(curr.dir)
     ## Cleaning up files.
     if (clean){
@@ -536,7 +542,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         names(out$coefficients)[replace] <- names(out$se)[replace] <-
             rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
                 rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                    suppar.names[i]        
+                    suppar.names[i]
     }
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
@@ -637,7 +643,7 @@ NULL
 #' A matrix containing the trap locations used for the simulation of
 #' the data \link{example.capt}. This object is suitable for use as
 #' the \code{traps} argument of the function \link{admbsecr}.
-#' 
+#'
 #' @name example.traps
 #' @format A matrix with two columns. Each row gives the Cartesian
 #' coordinates of a trap.
