@@ -17,6 +17,7 @@ Imports:
     plyr,
     secr
 Suggests:
+    parallel,
     testthat
 LinkingTo: Rcpp
 Description: This package allows for the fitting of spatially explicit
