@@ -44,4 +44,5 @@ show.detsurf <- function(fit){
     wireframe(z, zlim = c(0, 1),
               zlab = list("Detection probability", rot = 95),
               xlab = "x", ylab = "y")
+    invisible(TRUE)
 }
