@@ -124,7 +124,7 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' get.par(fit = bearing.hn.fit, pars = c("D", "kappa", "esa"), as.list = TRUE)
 #'
 #' @export
-get.par <- function(fit, pars, cutoff = FALSE, as.list = FALSE){
+get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     allpar.names <- c("D", fit$detpars, fit$suppars, "esa")
     if (length(pars) == 1){
         if (pars == "all"){
