@@ -2,7 +2,7 @@
 \alias{get.par}
 \title{Extract estimated or fixed parameter values from an \code{admbsecr} model fit}
 \usage{
-get.par(fit, pars, cutoff = FALSE, as.list = FALSE)
+get.par(fit, pars = "all", cutoff = FALSE, as.list = FALSE)
 }
 \arguments{
   \item{pars}{A character vector containing names of
