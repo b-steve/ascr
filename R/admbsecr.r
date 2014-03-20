@@ -471,17 +471,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Idea of running executable as below taken from glmmADMB.
     ## Working out correct command to run from command line.
     if (exe.type == "new"){
-        exe.name <- "./secr_new"
-        out.name <- "secr_new"
+        exe.name <- "secr_new"
     } else if (exe.type == "old"){
-        exe.name <- "./secr"
-        out.name <- "secr"
+        exe.name <- "secr"
     } else {
         stop("Argument 'exe.type' must be \"old\" or \"new\".")
     }
     if (.Platform$OS == "windows"){
         os.type <- "windows"
-        cmd <- "secr -ind secr.dat -ainp secr.pin"
     } else if (.Platform$OS == "unix"){
         if (Sys.info()["sysname"] == "Linux"){
             os.type <- "linux"
@@ -490,30 +487,35 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else {
             stop("Unknown OS type.")
         }
-        cmd <- paste(exe.name, "-ind secr.dat -ainp secr.pin")
     } else {
         stop("Unknown OS type.")
     }
     ## Finding executable folder (possible permission problems?).
     exe.dir <- paste(system.file(package = "admbsecr"), "ADMB", "bin", os.type, sep = "/")
+    exe.loc <- paste(exe.dir, exe.name, sep = "/")
+    ## Creating command to run using system().
     curr.dir <- getwd()
-    ## Moving to executable location.
-    setwd(exe.dir)
-    curr.files <- list.files()
+    ## Creating temporary directory.
+    temp.dir <- tempfile("admbsecr", curr.dir)
+    dir.create(temp.dir)
+    setwd(temp.dir)
     ## Creating .pin and .dat files.
     write_pin("secr", sv)
     write_dat("secr", data.list)
+    ## Creating symbolic link to executable.
+    cmd <- paste("ln -s", exe.loc, exe.name)
+    system(cmd)
     ## Running ADMB executable.
+    cmd <- paste("./"[os.type != "windows"], "secr -ind secr.dat -ainp secr.pin", sep = "")
     system(cmd, ignore.stdout = !trace)
     ## Reading in model results.
-    out <- read.admbsecr(out.name)
+    out <- read.admbsecr(exe.name)
+    setwd(curr.dir)
     ## Cleaning up files.
-    all.files <- list.files()
-    new.files <- all.files[!all.files %in% curr.files]
     if (clean){
-        file.remove(new.files)
+        unlink(temp.dir, recursive = TRUE)
     } else {
-        cat("ADMB files found in:", "\n", getwd(), "\n")
+        cat("ADMB files found in:", "\n", temp.dir, "\n")
     }
     ## Warning for non-convergence.
     if (out$maxgrad < -0.1){
