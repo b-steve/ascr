@@ -513,7 +513,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Running ADMB executable.
     cmd <- paste("./"[os.type != "windows"], exe.name,
                  " -ind secr.dat -ainp secr.pin", sep = "")
-    system(cmd, ignore.stdout = !trace)
+    system(cmd, ignore.stdout = !trace, show.output.on.console = !trace)
     ## Reading in model results.
     out <- read.admbsecr(prefix.name)
     setwd(curr.dir)
