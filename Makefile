@@ -26,7 +26,7 @@ rcpp:
 	R --slave -e "library(Rcpp); compileAttributes()"
 
 roxygen:
-	R --slave -e "library(roxygen2); roxygenise('/scratch/admbsecr/')"
+	R --slave -e "library(roxygen2); roxygenise('.')"
 
 build:
 	R CMD build .
@@ -45,6 +45,6 @@ pdf:
 clean:
 	rm -rfv ..Rcheck/
 	rm -rfv src/*.o src/*.so src/*.rds
-	rm -rfv src-i386/ src-x64
+	rm -rfv src-i386/ src-x64/
 	rm -rfv admbsecr.Rcheck
 
