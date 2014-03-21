@@ -1,3 +1,39 @@
+admbsecr 1.0.1
+--------------
+
+* Completed rewrite of admbsecr. The admbsecr() function can be used
+  without installing AD Model Builder on to the local machine.
+
+* The package is restored to its previous functionality, with a few
+  changes:
+
+    * The contours() function has been renamed to locations().
+    
+    * All previous references to "angles" has now been changed to
+      "bearings".
+
+* There are also some additional features:
+
+    * The boot.admbsecr() function can be used to carry out a
+      parametric bootstrap, and is set up for parallel
+      processing. This replaces the function se.correct().
+
+    * The function create.mask() has been added, to create a mask
+      object suitable for use as the 'mask' argument to admbsecr().
+
+    * Functions convert.capt(), convert.mask(), and convert.traps()
+      convert capture history, traps, and mask objects to objects that
+      are compatible with the secr package.
+
+    * Functions show.detsurf() and show.survey() plot the estimated
+      detection probability surface, and the survey layout,
+      respectively.
+
+* All documentation has been written in full, with examples.
+
+* Testing using the testthat package has been implemented for all
+  exported functions.
+
 admbsecr 0.2.1
 --------------
 
