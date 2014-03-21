@@ -14,9 +14,8 @@ docs:
 	make roxygen
 
 compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr.tpl
-	cd inst/ADMB/src; admb -O secr.tpl
-	cd inst/ADMB/src; rm -rfv secr.cpp secr.htp secr.o secr.obj
-	cd inst/ADMB/bin/linux; rm -rfv secr; mv ../../src/secr ./secr
+	if [ $(shell hostname) == "heton" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/linux; rm -rfv secr; mv ../../src/secr ./secr; fi
+	if [ $(shell hostname) == "albatross.mcs.st-and.ac.uk" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/mac; rm -rfv secr; mv ../../src/secr ./secr; fi
 
 prepare:
 	rm -rfv man
@@ -30,7 +29,7 @@ roxygen:
 
 build:
 	R CMD build .
-	mv admbsecr_0.2.1.tar.gz .Rbuildignore/
+	mv admbsecr_1.0.1.tar.gz .Rbuildignore/
 
 check:
 	R CMD check .Rbuildignore/admbsecr_0.2.1.tar.gz
