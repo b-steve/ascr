@@ -27,6 +27,45 @@ create.mask <- function(traps, buffer, ...){
     mask
 }
 
+#' Creating capture history object.
+#' Creates a capture history object to use with the function \code{\link{admbsecr}}.
+#'
+#' @param captures A data frame.
+#' @param n.traps The total number of traps.
+#' @export
+create.capt <- function(captures, n.traps = NULL){
+    ids <- captures[, 2]
+    traps <- captures[, 4]
+    if (is.null(n.traps)){
+        n.traps <- max(traps)
+    } else if (any(traps > n.traps)){
+        stop("Trap ID in argument 'captures' exceeds 'n.traps'.")
+    }
+    all.types <- c("bearing", "dist", "ss", "toa", "mrds")
+    info.types <- all.types[all.types %in% colnames(captures)]
+    out <- vector(mode = "list", length = length(info.types) + 1)
+    names(out) <- c("bincapt", info.types)
+    n <- length(unique(ids))
+    for (i in 1:length(out)){
+        out[[i]] <- matrix(0, nrow = n, ncol = n.traps)
+    }
+    for (i in 1:n){
+        id <- unique(ids)[i]
+        trig <- traps[ids == id]
+        if (length(trig) == length(unique(trig))){
+            msg <- paste("Ignoring that individual", id, "was detected by some traps more than once.")
+            warning(msg)
+        }
+        out[["bincapt"]][i, trig] <- 1
+        for (j in info.types){
+            for (k in trig){
+                out[[j]][i, k] <- captures[, j][ids == id & traps == k][1]
+            }
+        }
+    }
+    out
+}
+
 #' Convert traps object
 #'
 #' Converts an \code{admbsecr} traps matrix to a \code{secr} traps
