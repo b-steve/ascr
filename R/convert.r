@@ -9,13 +9,13 @@
 #' @inheritParams admbsecr
 #'
 #' @return An object of class \code{mask}.
-#' 
+#'
 #' @seealso \link{convert.mask} to convert a mask compatible with the
 #' \link{secr} package.
 #'
 #' @examples
 #' mask <- create.mask(traps = example.traps, buffer = 20)
-#' 
+#'
 #' @export
 create.mask <- function(traps, buffer, ...){
     traps <- convert.traps(traps)
@@ -52,14 +52,14 @@ create.capt <- function(captures, n.traps = NULL){
     for (i in 1:n){
         id <- unique(ids)[i]
         trig <- traps[ids == id]
-        if (length(trig) == length(unique(trig))){
+        if (length(trig) != length(unique(trig))){
             msg <- paste("Ignoring that individual", id, "was detected by some traps more than once.")
             warning(msg)
         }
         out[["bincapt"]][i, trig] <- 1
         for (j in info.types){
             for (k in trig){
-                out[[j]][i, k] <- captures[, j][ids == id & traps == k][1]
+                out[[j]][i, k] <- captures[ids == id & traps == k, j][1]
             }
         }
     }
@@ -83,7 +83,7 @@ create.capt <- function(captures, n.traps = NULL){
 #'
 #' @examples
 #' traps <- convert.traps(traps = example.traps)
-#' 
+#'
 #' @export
 convert.traps <- function(traps){
     n.traps <- nrow(traps)
@@ -106,7 +106,7 @@ convert.traps <- function(traps){
 #'
 #' @examples
 #' mask <- convert.mask(mask = example.mask)
-#' 
+#'
 #' @export
 convert.mask <- function(mask){
     read.mask(data = as.data.frame(mask))
@@ -130,7 +130,7 @@ convert.mask <- function(mask){
 #'
 #' @examples
 #' capt <- convert.capt(capt = example.capt, traps = example.traps)
-#' 
+#'
 #' @export
 convert.capt <- function(capt, traps, capthist = TRUE){
     n <- nrow(capt$bincapt)
