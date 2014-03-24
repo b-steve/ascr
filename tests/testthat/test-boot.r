@@ -2,7 +2,7 @@ context("Testing bootstrapping")
 
 test_that("simple model bootstrapping", {
     set.seed(8871)
-    boot.fit <- boot.admbsecr(simple.hn.fit, N = 5, n.cores = 3)
+    boot.fit <- boot.admbsecr(simple.hn.fit, N = 5)
     means.test <- c(2165.6640677, 5.7049935, 0.0616552)
     boot.means <- apply(boot.fit$boot, 2, mean)
     relative.error <- max(abs((boot.means - means.test)/means.test))
