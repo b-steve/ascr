@@ -9,7 +9,7 @@ make.acoustic.captures(mics, clicks, dt)
   locations.}
 
   \item{clicks}{a data frame containing (at least): (i)
-  \code{$tim}, the precise time of arrival of the received
+  \code{$toa}, the precise time of arrival of the received
   sound, and (ii) \code{$trap} the trap at which the sound
   was recorded.}
 
