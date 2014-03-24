@@ -21,7 +21,7 @@ animalIDvec <- function(capthist){
 #' time it would take for sound to travel between these microphones.
 #'
 #' @param mics a matrix containing the coordinates of trap locations.
-#' @param clicks a data frame containing (at least): (i) \code{$tim},
+#' @param clicks a data frame containing (at least): (i) \code{$toa},
 #' the precise time of arrival of the received sound, and (ii)
 #' \code{$trap} the trap at which the sound was recorded.
 #' @param dt a \code{K} by \code{K} matrix (where \code{K} is the
@@ -35,29 +35,29 @@ make.acoustic.captures <- function(mics, clicks, dt){
     captures <- clicks
     ct <- rep(-Inf, K)
     ID <- 1
-    ct[clicks$trap[1]] <- clicks$tim[1]
+    ct[clicks$trap[1]] <- clicks$toa[1]
     new <- FALSE
-    nclicks <- length(clicks$tim)
+    nclicks <- length(clicks$toa)
     for (i in 2:nclicks){
         if (ct[clicks$trap[i]] > -Inf){
             nd <- length(which(ct > -Inf))
             captures$ID[(i - nd):(i - 1)] <- ID
             ct <- rep(-Inf, K)
-            ct[clicks$trap[i]] <- clicks$tim[i]
+            ct[clicks$trap[i]] <- clicks$toa[i]
             ID <- ID + 1
             if(i == nclicks) captures$ID[i] <- ID
         }
         else {
-            ct[clicks$trap[i]] <- clicks$tim[i]
+            ct[clicks$trap[i]] <- clicks$toa[i]
             ctset <- which(ct > -Inf)
             dts <- dt[ctset, clicks$trap[i]]
-            cts <- -(ct[ctset] - clicks$tim[i])
+            cts <- -(ct[ctset] - clicks$toa[i])
             if (any((cts - dts) > 0)) new <- TRUE
             if (new) {
                 nd <- length(which(ct > -Inf)) - 1
                 captures$ID[(i - nd):(i - 1)] <- ID
                 ct <- rep(-Inf, K)
-                ct[clicks$trap[i]] <- clicks$tim[i]
+                ct[clicks$trap[i]] <- clicks$toa[i]
                 ID <- ID + 1
                 new <- FALSE
                 if (i == nclicks) captures$ID[i] <- ID
