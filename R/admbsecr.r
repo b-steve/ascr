@@ -324,6 +324,25 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
     npars <- length(par.names)
+    ## Sets link function ID number for use in ADMB:
+    ## 1 = identity
+    ## 2 = log
+    ## 3 = logit
+    links <- list(D = 2,
+                  g0 = 3,
+                  sigma = 2,
+                  shape = 1,
+                  shape.1 = 2,
+                  shape.2 = 1,
+                  scale = 2,
+                  b0.ss = 2,
+                  b1.ss = 2,
+                  sigma.ss = 2,
+                  z = 2,
+                  sigma.toa = 2,
+                  kappa = 2,
+                  alpha = 2)[par.names]
+    link.list <- list(identity, log.link, logit.link)
     ## Sorting out start values. Start values are set to those provided,
     ## or else are determined automatically from functions in
     ## autofuns.r.
@@ -342,6 +361,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                             detpar.names = detpar.names,
                                             mask = mask, traps = traps,
                                             sv = sv, cutoff = cutoff)))
+    }
+    ## Converting start values to link scale.
+    for (i in names(sv)){
+        sv[[i]] <- link.list[[links[[i]]]](sv[[i]])
     }
     ## Sorting out phases.
     ## TODO: Add phases parameter so that these can be controlled by user.
@@ -364,29 +387,30 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
-    default.bounds <- list(D = c(0, 1e8),
-                           D.a = c(0, 1e8),
-                           mu.C = c(0, 1e8),
-                           sigma.C = c(0, 1e5),
+    default.bounds <- list(D = c(n/(A*n.mask), 1e8),
                            g0 = c(0, 1),
-                           sigma = c(0, 1e5),
+                           sigma = c(0, 1e8),
                            shape = c(-1e8, 1e8),
-                           shape.1 = c(0, 1e5),
+                           shape.1 = c(0, 1e8),
                            shape.2 = c(-1e8, 1e8),
-                           scale = c(0, 1e5),
+                           scale = c(0, 1e8),
                            b0.ss = c(0, 1e8),
-                           b1.ss = c(0, 10),
-                           sigma.ss = c(0, 1e5),
-                           z = c(0, 1e5),
-                           sigma.toa = c(0, 1e5),
+                           b1.ss = c(0, 1e8),
+                           sigma.ss = c(0, 1e8),
+                           z = c(0, 1e8),
+                           sigma.toa = c(0, 1e8),
                            kappa = c(0, 700),
-                           alpha = c(0, 10000))[par.names]
+                           alpha = c(0, 1e8))[par.names]
     bound.changes <- bounds
     bounds <- default.bounds
     for (i in names(default.bounds)){
         if (i %in% names(bound.changes)){
             bounds[[i]] <- bound.changes[[i]]
         }
+    }
+    ## Converting bounds to link scale.
+    for (i in names(bounds)){
+        bounds[[i]] <- link.list[[links[[i]]]](bounds[[i]])
     }
     D.bounds <- bounds[["D"]]
     D.lb <- D.bounds[1]
@@ -424,6 +448,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         suppars.sf <- 1
     }
+    ## Creating link objects to pass to ADMB.
+    detpars.link <- c(links[detpar.names], recursive = TRUE)
+    if (n.suppars > 0){
+        suppars.link <- c(links[suppar.names], recursive = TRUE)
+    } else {
+        suppars.link <- 1
+    }
     ## Setting small number so that numerical under/overflow in ADMB
     ## does not affect estimation.
     dbl.min <- 1e-150
@@ -450,24 +481,20 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sv$dummy <- 0
     }
     ## Stuff for the .dat file.
-    data.list <- list(D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf
-                      = D.sf, n_detpars = n.detpars, detpars_lb =
-                      detpars.lb, detpars_ub = detpars.ub, detpars_phase
-                      = detpars.phase, detpars_sf = detpars.sf,
-                      n_suppars = n.suppars, suppars_lb = suppars.lb,
-                      suppars_ub = suppars.ub, suppars_phase =
-                      suppars.phase, suppars_sf = suppars.sf, detfn_id =
-                      detfn.id, trace = as.numeric(trace), DBL_MIN =
-                      dbl.min, n = n, n_traps = n.traps, n_mask =
-                      n.mask, A = A, capt_bin = capt.bin, fit_angs =
-                      as.numeric(fit.bearings), capt_ang = capt.bearing,
-                      fit_dists = as.numeric(fit.dists), capt_dist =
-                      capt.dist, fit_ss = as.numeric(fit.ss), cutoff =
-                      cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss,
-                      fit_toas = as.numeric(fit.toas), capt_toa =
-                      capt.toa, fit_mrds = as.numeric(fit.mrds),
-                      mrds_dist = mrds.dist, dists = dists, angs = bearings,
-                      toa_ssq = toa.ssq)
+    data.list <- list(D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf, n_detpars =
+                      n.detpars, detpars_lb = detpars.lb, detpars_ub = detpars.ub,
+                      detpars_phase = detpars.phase, detpars_sf = detpars.sf,
+                      detpars_linkfns = detpars.link, n_suppars = n.suppars, suppars_lb =
+                      suppars.lb, suppars_ub = suppars.ub, suppars_phase = suppars.phase,
+                      suppars_sf = suppars.sf, suppars_linkfns = suppars.link, detfn_id =
+                      detfn.id, trace = as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps
+                      = n.traps, n_mask = n.mask, A = A, capt_bin = capt.bin, fit_angs =
+                      as.numeric(fit.bearings), capt_ang = capt.bearing, fit_dists =
+                      as.numeric(fit.dists), capt_dist = capt.dist, fit_ss =
+                      as.numeric(fit.ss), cutoff = cutoff, linkfn_id = linkfn.id, capt_ss =
+                      capt.ss, fit_toas = as.numeric(fit.toas), capt_toa = capt.toa,
+                      fit_mrds = as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists,
+                      angs = bearings, toa_ssq = toa.ssq)
     ## Idea of running executable as below taken from glmmADMB.
     ## Working out correct command to run from command line.
     if (exe.type == "new"){

@@ -233,3 +233,14 @@ p.dot <- function(fit = NULL, points = get.mask(fit), traps = NULL, detfn = NULL
     aaply(probs, 2, function(x) 1 - prod(1 - x))
 }
 
+## Link functions for admbsecr() function.
+log.link <- function(x){
+    x <- pmax(x, .Machine$double.eps)
+    log(x)
+}
+
+logit.link <- function(x){
+    x <- pmax(x, .Machine$double.eps)
+    x <- pmin(x, 1 - .Machine$double.neg.eps)
+    log(x/(1 - x))
+}

@@ -8,11 +8,13 @@ DATA_SECTION
   init_vector detpars_ub(1,n_detpars)
   init_ivector detpars_phase(1,n_detpars)
   init_vector detpars_sf(1,n_detpars)
+  init_ivector detpars_linkfns(1,n_detpars)
   init_int n_suppars
   init_vector suppars_lb(1,n_suppars)
   init_vector suppars_ub(1,n_suppars)
   init_ivector suppars_phase(1,n_suppars)
   init_vector suppars_sf(1,n_suppars)
+  init_ivector suppars_linkfns(1,n_suppars)
   init_number detfn_id
   init_number trace
   init_number DBL_MIN
@@ -124,15 +126,20 @@ DATA_SECTION
   !!   sigma_toa_ind = curr_ind;
   !! }
   number dist
+  int i
+  int j
 
 PARAMETER_SECTION
   objective_function_value f
-  init_bounded_number D(D_lb,D_ub,D_phase)
-  init_bounded_number_vector detpars(1,n_detpars,detpars_lb,detpars_ub,detpars_phase)
-  init_bounded_number_vector suppars(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
-  !! D.set_scalefactor(D_sf);
-  !! detpars.set_scalefactor(detpars_sf);
-  !! suppars.set_scalefactor(suppars_sf);
+  init_bounded_number D_link(D_lb,D_ub,D_phase)
+  init_bounded_number_vector detpars_link(1,n_detpars,detpars_lb,detpars_ub,detpars_phase)
+  init_bounded_number_vector suppars_link(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
+  !! D_link.set_scalefactor(D_sf);
+  !! detpars_link.set_scalefactor(detpars_sf);
+  !! suppars_link.set_scalefactor(suppars_sf);
+  sdreport_number D
+  sdreport_vector detpars(1,n_detpars)
+  sdreport_vector suppars(1,n_suppars)
   sdreport_number esa
   number sum_probs
   number undet_prob
@@ -145,7 +152,19 @@ PARAMETER_SECTION
   vector total_contrib(1,n_mask)
 
 PROCEDURE_SECTION
+  // Grabbing detection function.
   detfn_pointer detfn = get_detfn(detfn_id);
+  // Converting linked parameters to real parameters.
+  D = mfexp(D_link);
+  invlinkfn_pointer invlinkfn;
+  for (i = 1; i <= n_detpars; i++){
+    invlinkfn = get_invlinkfn(detpars_linkfns(i));
+    detpars(i) = invlinkfn(detpars_link(i));
+  }
+  for (i = 1; i <= n_suppars; i++){
+    invlinkfn = get_invlinkfn(suppars_linkfns(i));
+    suppars(i) = invlinkfn(suppars_link(i));
+  }
   f = 0.0;
   // Calculating expected signal strengths.
   if (fit_ss){
@@ -159,9 +178,9 @@ PROCEDURE_SECTION
   }
   // Calculating mask detection probabilities.
   sum_probs = 0;
-  for (int i = 1; i <= n_mask; i++){
+  for (i = 1; i <= n_mask; i++){
     undet_prob = 1;
-    for (int j = 1; j <= n_traps; j++){
+    for (j = 1; j <= n_traps; j++){
       dist = dists(j, i);
       if (fit_ss){
         ss_resid = cutoff - expected_ss(j, i);
@@ -177,12 +196,12 @@ PROCEDURE_SECTION
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
   // Contribution due to capture history.
-  for (int i = 1; i <= n; i++){
+  for (i = 1; i <= n; i++){
     capt_hist = row(capt_bin, i);
     // Contribution from capture locations.
     if (fit_ss){
       dvar_matrix log_ss_density(1, n_traps, 1, n_mask);
-      for (int j = 1; j <= n_traps; j++){
+      for (j = 1; j <= n_traps; j++){
         log_ss_density(j)(1, n_mask) = log_dnorm(capt_ss(i, j), row(expected_ss, j), detpars(3));
       }
       total_contrib = capt_hist*log_ss_density + (1 - capt_hist)*log_evade_probs;
@@ -193,7 +212,7 @@ PROCEDURE_SECTION
     if (any_suppars){
       dvar_vector supp_contrib(1, n_mask);
       supp_contrib = 0;
-      for (int j = 1; j <= n_traps; j++){
+      for (j = 1; j <= n_traps; j++){
       //  Try setting up a ragged array of capture locations for each individual instead.
         if (capt_bin(i, j)){
 	  // Contribution from bearings.
@@ -233,11 +252,11 @@ PROCEDURE_SECTION
   // Printing trace.
   if (trace){
     cout << "D: " << D << ", ";
-    for (int i = 1; i <= n_detpars; i++){
+    for (i = 1; i <= n_detpars; i++){
       cout << "DF Par " << i << ": " << detpars(i) << ", ";
     }
     if (any_suppars){
-      for (int i = 1; i <= n_suppars; i++){
+      for (i = 1; i <= n_suppars; i++){
         cout << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
@@ -247,4 +266,5 @@ PROCEDURE_SECTION
 GLOBALS_SECTION
   #include <densfuns.cpp>
   #include <detfuns.cpp>
+  #include <invlinkfuns.cpp>
 
