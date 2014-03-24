@@ -35,7 +35,7 @@ check:
 	R CMD check .Rbuildignore/admbsecr_1.0.1.tar.gz --no-tests
 
 install:
-	R CMD INSTALL .
+	R CMD INSTALL . --install-tests
 
 pdf:
 	R CMD Rd2pdf --pdf .
