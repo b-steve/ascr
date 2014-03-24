@@ -32,7 +32,7 @@ build:
 	mv admbsecr_1.0.1.tar.gz .Rbuildignore/
 
 check:
-	R CMD check .Rbuildignore/admbsecr_1.0.1.tar.gz
+	R CMD check .Rbuildignore/admbsecr_1.0.1.tar.gz --no-tests
 
 install:
 	R CMD INSTALL .
