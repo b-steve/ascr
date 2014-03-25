@@ -223,8 +223,8 @@ erf <- function(x){
 }
 
 ## Capture probability density surface from a model fit.
-p.dot <- function(fit = NULL, points = get.mask(fit), traps = NULL, detfn = NULL,
-                  pars = NULL){
+p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
+                  detfn = NULL, pars = NULL){
     if (!is.null(fit)){
         traps <- get.traps(fit)
         detfn <- fit$args$detfn
@@ -232,7 +232,15 @@ p.dot <- function(fit = NULL, points = get.mask(fit), traps = NULL, detfn = NULL
     }
     dists <- distances(traps, points)
     probs <- calc.detfn(dists, detfn, pars)
-    aaply(probs, 2, function(x) 1 - prod(1 - x))
+    out <- aaply(probs, 2, function(x) 1 - prod(1 - x))
+    if (esa){
+        A <- attr(points, "area")
+        if (is.null(A)){
+            stop("The argument 'points' must be a mask object if ESA is to be calculated.")
+        }
+        out <- A*sum(out)
+    }
+    out
 }
 
 ## Link functions for admbsecr() function.
@@ -245,4 +253,8 @@ logit.link <- function(x){
     x <- pmax(x, .Machine$double.eps)
     x <- pmin(x, 1 - .Machine$double.neg.eps)
     log(x/(1 - x))
+}
+
+inv.logit <- function(x){
+    exp(x)/(exp(x) + 1)
 }

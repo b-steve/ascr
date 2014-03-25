@@ -60,6 +60,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     args$sv <- get.par(fit, "fitted", as.list = TRUE)
     ## Removing scalefactors.
     args$sf <- NULL
+    ## Setting trace to false.
+    args$trace <- FALSE
     call.freqs <- args$call.freqs
     n.pars <- length(fit$coefficients)
     seeds <- sample(1:1e8, size = N)
@@ -75,7 +77,9 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
             }
         }
         ## Fitting model.
+        sink(tempfile())
         fit.boot <- do.call("admbsecr", args)
+        sink()
         if (fit.boot$maxgrad < -0.01){
             out <- NA
         } else {
@@ -94,7 +98,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
                 N, "\n", sep = "", file = "prog.txt")
         }
         out
-    }  
+    }
     if (n.cores == 1){
         res <- matrix(0, nrow = N, ncol = n.pars)
         colnames(res) <- names(fit$coefficients)

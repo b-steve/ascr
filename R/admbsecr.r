@@ -344,6 +344,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                   kappa = 2,
                   alpha = 2)[par.names]
     link.list <- list(identity, log.link, logit.link)
+    unlink.list <- list(identity, exp, inv.logit)
     ## Sorting out start values. Start values are set to those provided,
     ## or else are determined automatically from functions in
     ## autofuns.r.
@@ -496,6 +497,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       capt.ss, fit_toas = as.numeric(fit.toas), capt_toa = capt.toa,
                       fit_mrds = as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists,
                       angs = bearings, toa_ssq = toa.ssq)
+    ## Determining whether or not standard errors should be calculated.
+    if (!is.null(call.freqs)){
+        fit.freqs <- any(call.freqs != 1)        
+    } else {
+        fit.freqs <- FALSE
+    }
     ## Idea of running executable as below taken from glmmADMB.
     ## Working out correct command to run from command line.
     if (exe.type == "new"){
@@ -540,14 +547,17 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Running ADMB executable.
     cmd <- paste("./"[os.type != "windows"], exe.name,
-                 " -ind secr.dat -ainp secr.pin", sep = "")
+                 " -ind secr.dat -ainp secr.pin",
+                 " -nohess"[fit.freqs], sep = "")
     if (os.type == "windows"){
         system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
     } else {
         system(cmd, ignore.stdout = !trace)
     }
     ## Reading in model results.
+    options(warn = -1)
     out <- read.admbsecr(prefix.name)
+    options(warn = 0)
     setwd(curr.dir)
     ## Cleaning up files.
     if (clean){
@@ -561,18 +571,33 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Moving back to original working directory.
     setwd(curr.dir)
-    ## Putting in correct parameter names.
+    ## Removing fixed coefficients from list.
+    if (fit.freqs){
+        out$coeflist[c(D.phase, detpars.phase, suppars.phase) == -1] <- NULL
+    }
+    ## Creating coefficients vector.
     est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
-    replace <- names(out$coefficients) == "par_ests"
-    names(out$coefficients)[replace] <- names(out$se)[replace] <-
-        rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
-            rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                est.pars
-    replace <- 1:length(est.pars)
-    names(out$coefficients)[replace] <- names(out$se)[replace] <-
-        rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
-            rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                paste(est.pars, "_link", sep = "")
+    n.est.pars <- length(est.pars)
+    out$coefficients <- numeric(2*n.est.pars + 1)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, "esa")
+    for (i in 1:n.est.pars){
+        out$coefficients[i] <- out$coeflist[[i]]
+    }
+    for (i in 1:n.est.pars){
+        out$coefficients[n.est.pars + i] <-
+            unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
+    }
+    ## Putting in correct parameter names.
+    if (!fit.freqs){
+        replace <- substr(names(out$se), 1, 8) == "par_ests"
+        names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+            colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                colnames(out$cor)[replace] <- est.pars
+        replace <- 1:length(est.pars)
+        names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+            colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
+    }
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
     ## Putting in updated argument names.
@@ -589,9 +614,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$detpars <- detpar.names
     out$suppars <- suppar.names
     out$phases <- phases
+    ## Putting in esa estimate.
+    out$coefficients[2*n.est.pars + 1] <- p.dot(out, esa = TRUE)
     ## Putting in call frequency information.
-    if (!is.null(call.freqs)){
-        fit.freqs <- TRUE
+    if (fit.freqs){
         mu.freqs <- mean(call.freqs)
         Da <- get.par(out, "D")/mu.freqs
         names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
