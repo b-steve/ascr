@@ -324,7 +324,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
     any.suppars <- n.suppars > 0
-    npars <- length(par.names)
+    n.pars <- length(par.names)
     ## Sets link function ID number for use in ADMB:
     ## 1 = identity
     ## 2 = log
@@ -347,7 +347,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Sorting out start values. Start values are set to those provided,
     ## or else are determined automatically from functions in
     ## autofuns.r.
-    sv.link <- vector("list", length = npars)
+    sv.link <- vector("list", length = n.pars)
     names(sv.link) <- par.names
     sv.link[names(sv)] <- sv
     sv.link[names(fix)] <- fix
@@ -363,12 +363,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                             sv = sv.link, cutoff = cutoff)))
     }
     ## Converting start values to link scale.
+    sv <- sv.link
     for (i in names(sv.link)){
         sv.link[[i]] <- link.list[[links[[i]]]](sv.link[[i]])
     }
     ## Sorting out phases.
     ## TODO: Add phases parameter so that these can be controlled by user.
-    phases <- vector("list", length = npars)
+    phases <- vector("list", length = n.pars)
     names(phases) <- par.names
     for (i in par.names){
         if (any(i == names(fix))){
@@ -409,17 +410,18 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     ## Converting bounds to link scale.
+    bounds.link <- bounds
     for (i in names(bounds)){
-        bounds[[i]] <- link.list[[links[[i]]]](bounds[[i]])
+        bounds.link[[i]] <- link.list[[links[[i]]]](bounds[[i]])
     }
-    D.bounds <- bounds[["D"]]
+    D.bounds <- bounds.link[["D"]]
     D.lb <- D.bounds[1]
     D.ub <- D.bounds[2]
-    detpar.bounds <- bounds[detpar.names]
+    detpar.bounds <- bounds.link[detpar.names]
     detpars.lb <- sapply(detpar.bounds, function(x) x[1])
     detpars.ub <- sapply(detpar.bounds, function(x) x[2])
     if (any.suppars){
-        suppar.bounds <- bounds[suppar.names]
+        suppar.bounds <- bounds.link[suppar.names]
         suppars.lb <- sapply(suppar.bounds, function(x) x[1])
         suppars.ub <- sapply(suppar.bounds, function(x) x[2])
     } else {
@@ -434,7 +436,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## value. Not sure how sensible this is.
         sf <- max(sv.vec)/sv.vec
     } else {
-        sf <- numeric(npars)
+        sf <- numeric(n.pars)
         names(sf) <- par.names
         for (i in par.names){
             sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
@@ -566,16 +568,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
             rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
                 est.pars
+    replace <- 1:length(est.pars)
+    names(out$coefficients)[replace] <- names(out$se)[replace] <-
+        rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
+            rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
+                paste(est.pars, "_link", sep = "")
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
-    ## Putting bounds together.
-    bounds <- cbind(c(D.lb, detpars.lb, suppars.lb),
-                    c(D.ub, detpars.ub, suppars.ub))
-    rownames(bounds) <- c("D", detpar.names,
-                          "dummy"[length(suppar.names) == 0],
-                          suppar.names[length(suppar.names) > 0])
-    bounds <- bounds[rownames(bounds) != "dummy", ]
-    bounds <- alply(bounds, 1, identity, .dims = TRUE)
     ## Putting in updated argument names.
     args <- vector(mode = "list", length = length(arg.names))
     names(args) <- arg.names
