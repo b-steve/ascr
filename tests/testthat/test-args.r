@@ -16,7 +16,6 @@ test_that("fixing parameters", {
     active.phases <- c(fit$phases[phase.pars != "g0"],
                        recursive = TRUE)
     expect_that(all(active.phases > -1), is_true())
-
 })
 
 test_that("start values", {

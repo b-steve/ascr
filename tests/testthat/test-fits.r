@@ -25,8 +25,8 @@ test_that("simple fitting -- half normal", {
     expect_that(get.par(fit, "esa"), equals(fit$coefficients["esa"]))
     expect_that(get.par(fit, c("D", "esa")),
                 equals(fit$coefficients[c("D", "esa")]))
-    expect_that(get.par(fit, "all"), equals(fit$coefficients))
-    expect_that(get.par(fit, "fitted"), equals(fit$coefficients[1:3]))
+    expect_that(get.par(fit, "all"), equals(coef(fit, c("fitted", "derived"))))
+    expect_that(get.par(fit, "fitted"), equals(coef(fit, "fitted")))
     ## Checking estimate equivalence with secr.fit.
     library(secr)
     mask.secr <- convert.mask(example.mask)
@@ -146,7 +146,7 @@ test_that("ss fitting", {
     ## Checking supplementary parameters.
     expect_that(length(fit$suppars), equals(0))
     ## Checking get.par() with SS stuff.
-    expect_that(get.par(fit, "all"), equals(fit$coefficients))
+    expect_that(get.par(fit, "all"), equals(coef(fit, c("fitted", "derived"))))
     expect_that(get.par(fit, "b0.ss"), equals(fit$coefficients["b0.ss"]))
 })
 
@@ -160,7 +160,7 @@ test_that("toa fitting", {
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(285.68, 0.30612, 0.00019909)
+    ses.test <- c(285.68, 0.30612, 0.00019294)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -185,7 +185,7 @@ test_that("joint ss/toa fitting", {
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(266.32, 1.5753, 0.24763, 0.56685, 0.00021257)
+    ses.test <- c(266.32, 1.5753, 0.24763, 0.56685, 0.00020987)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
