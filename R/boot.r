@@ -57,7 +57,9 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     args <- fit$args
     orig.sv <- args$sv
     ## Set start values to estimated parameters.
-    args$sv <- get.par(fit, "all", as.list = TRUE)
+    args$sv <- get.par(fit, "fitted", as.list = TRUE)
+    ## Removing scalefactors.
+    args$sf <- NULL
     call.freqs <- args$call.freqs
     n.pars <- length(fit$coefficients)
     seeds <- sample(1:1e8, size = N)
