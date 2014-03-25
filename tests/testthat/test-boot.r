@@ -8,7 +8,7 @@ test_that("simple model bootstrapping", {
     relative.error <- max(abs((boot.means - means.test)/means.test))
     expect_that(relative.error < 1e-4, is_true())
     expect_that(coef(boot.fit), is_identical_to(coef(simple.hn.fit)))
-    ses.test <- c(0.1886847, 0.08700770, 387.9411, 0.4969067, 0.008813962)
+    ses.test <- c(387.9411, 0.4969067, 0.008813962, 0.1886847, 0.08700770)
     boot.ses <- stdEr(boot.fit, "all")
     relative.error <- max(abs((boot.ses - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())

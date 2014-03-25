@@ -77,7 +77,7 @@ vcov.admbsecr <- function(object, pars = "fitted", ...){
     if ("linked" %in% pars){
         keep <- c(keep, which.linked)
     }
-    object$vcov[keep, keep]
+    object$vcov[keep, keep, drop = FALSE]
 }
 
 #' Extract the variance-covariance matrix from a bootstrapped admbsecr
@@ -92,18 +92,28 @@ vcov.admbsecr <- function(object, pars = "fitted", ...){
 #' @method vcov admbsecr.boot
 #' @S3method vcov admbsecr.boot
 vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
-    if (pars == "all"){
-        out <- object$boot.vcov
-    } else if (pars == "fitted"){
-        par.names <- names(object$coefficients)
-        keep.pars <- par.names[par.names != "esa"]
-        out <- object$boot.vcov[keep.pars, keep.pars]
-    } else if (pars == "derived"){
-        out <- object$boot.vcov["esa", "esa"]
-    } else {
-        stop("Argument 'pars' must be either \"all\", \"fitted\", or \"derived\".")
+    if ("all" %in% pars){
+        pars <- c("fitted", "derived", "linked")
     }
-    out
+    if (!all(pars %in% c("fitted", "derived", "linked"))){
+        stop("Argument 'pars' must contain a subset of \"fitted\", \"derived\", and \"linked\"")
+    }
+    par.names <- names(object$coefficients)
+    keep <- NULL
+    which.linked <- grep("_link", par.names)
+    which.derived <- which(par.names == "esa")
+    which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
+    keep <- NULL
+    if ("fitted" %in% pars){
+        keep <- c(keep, which.fitted)
+    }
+    if ("derived" %in% pars){
+        keep <- c(keep, which.derived)
+    }
+    if ("linked" %in% pars){
+        keep <- c(keep, which.linked)
+    }
+    object$boot.vcov[keep, keep, drop = FALSE]
 }
 
 #' Extract standard errors from an admbsecr model fit
@@ -150,14 +160,19 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
 #' @method stdEr admbsecr.boot
 #' @S3method stdEr admbsecr.boot
 stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
-    if (pars == "all"){
-        out <- object$boot.se
-    } else if (pars == "fitted"){
-        out <- object$boot.se[names(object$se) != "esa"]
-    } else if (pars == "derived"){
-        out <- object$boot.se["esa"]
-    } else {
-        stop("Argument 'pars' must be either \"all\", \"fitted\", or \"derived\".")
+    if ("all" %in% pars){
+        pars <- c("fitted", "derived", "linked")
     }
-    out
+    if (!all(pars %in% c("fitted", "derived", "linked"))){
+        stop("Argument 'pars' must contain a subset of \"fitted\", \"derived\", and \"linked\"")
+    }
+    par.names <- names(object$coefficients)
+    which.linked <- grep("_link", par.names)
+    linked <- object$boot.se[which.linked]
+    which.derived <- which(par.names == "esa")
+    derived <- object$boot.se[which.derived]
+    fitted <- object$boot.se[-c(which.linked, which.derived)]
+    out <- mget(pars)
+    names(out) <- NULL
+    c(out, recursive = TRUE)
 }
