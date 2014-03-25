@@ -100,9 +100,11 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #'
 #' @param pars A character vector containing names of parameter values
 #' to be extracted. Alternatively, the character string \code{"all"}
-#' will extract all parameters, fixed or otherwise. See the 'Details'
-#' section for the \link{admbsecr} function's documentation for
-#' information on the parameters that are fitted.
+#' will extract all parameters, fixed or otherwise, and the character
+#' string \code{"fitted"} extracts only fitted parameters (i.e., not
+#' the effective survey area). See the 'Details' section for the
+#' \link{admbsecr} function's documentation for information on the
+#' parameters that are fitted.
 #' @param cutoff Logical, if \code{TRUE}, the cutoff value for an
 #' acoustic fit is included.
 #' @param as.list Logical, if \code{TRUE}, each parameter value is
