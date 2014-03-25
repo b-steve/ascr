@@ -427,11 +427,18 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         suppars.ub <- 0
     }
     ## Sorting out scalefactors.
-    ## Set to 1 by default.
-    sf <- numeric(npars)
-    names(sf) <- par.names
-    for (i in par.names){
-        sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
+    if (is.null(sf)){
+        sv.vec <- c(sv.link, recursive = TRUE)
+        ## Currently, by default, the scalefactors are the inverse
+        ## fraction of each starting value to the largest starting
+        ## value. Not sure how sensible this is.
+        sf <- max(sv.vec)/sv.vec
+    } else {
+        sf <- numeric(npars)
+        names(sf) <- par.names
+        for (i in par.names){
+            sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
+        }
     }
     D.sf <- sf[["D"]]
     detpars.sf <- c(sf[detpar.names], recursive = TRUE)
@@ -553,38 +560,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Moving back to original working directory.
     setwd(curr.dir)
     ## Putting in correct parameter names.
-    replace <- names(out$coefficients) == "detpars"
+    est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
+    replace <- names(out$coefficients) == "par_ests"
     names(out$coefficients)[replace] <- names(out$se)[replace] <-
         rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
             rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                detpar.names
-    if (!any.suppars){
-        remove <- which(names(out$coefficients) == "suppars")
-        out$coefficients <- out$coefficients[-remove]
-        out$se <- out$se[-remove]
-        out$vcov <- out$vcov[-remove, -remove]
-        out$cor <- out$cor[-remove, -remove]
-    } else {
-        replace <- names(out$coefficients) == "suppars"
-        names(out$coefficients)[replace] <- names(out$se)[replace] <-
-            rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
-                rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                    suppar.names
-    }
-    for (i in seq(1, n.detpars, length.out = n.detpars)){
-        replace <- names(out$coefficients) == paste("detpars_link[", i, "]", sep = "")
-        names(out$coefficients)[replace] <- names(out$se)[replace] <-
-            rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
-                rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                    paste(detpar.names[i], "_link", sep = "")
-    }
-    for (i in seq(1, n.suppars, length.out = n.suppars)){
-        replace <- names(out$coefficients) == paste("suppars_link[", i, "]", sep = "")
-        names(out$coefficients)[replace] <- names(out$se)[replace] <-
-            rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
-                rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                    paste(suppar.names[i], "_link", sep = "")
-    }
+                est.pars
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
     ## Putting bounds together.

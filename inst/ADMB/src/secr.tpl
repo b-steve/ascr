@@ -15,6 +15,24 @@ DATA_SECTION
   init_ivector suppars_phase(1,n_suppars)
   init_vector suppars_sf(1,n_suppars)
   init_ivector suppars_linkfns(1,n_suppars)
+  // Calculating total number of estimated parameters.
+  int n_ests
+  int i
+  int j
+  !! n_ests = 0;
+  !! if (D_phase > -1){
+  !!   n_ests++;
+  !! }
+  !! for (i = 1; i <= n_detpars; i++){
+  !!   if (detpars_phase(i) > -1){
+  !!     n_ests++;
+  !!   }
+  !! }
+  !! for (i = 1; i <= n_suppars; i++){
+  !!   if (suppars_phase(i) > -1){
+  !!     n_ests++;
+  !!   }
+  !! }
   init_number detfn_id
   init_number trace
   init_number DBL_MIN
@@ -126,8 +144,6 @@ DATA_SECTION
   !!   sigma_toa_ind = curr_ind;
   !! }
   number dist
-  int i
-  int j
 
 PARAMETER_SECTION
   objective_function_value f
@@ -137,10 +153,11 @@ PARAMETER_SECTION
   !! D_link.set_scalefactor(D_sf);
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
-  sdreport_number D
-  sdreport_vector detpars(1,n_detpars)
-  sdreport_vector suppars(1,n_suppars)
+  sdreport_vector par_ests(1,n_ests)
   sdreport_number esa
+  number D
+  vector detpars(1,n_detpars)
+  vector suppars(1,n_suppars)
   number sum_probs
   number undet_prob
   number capt_prob
@@ -154,17 +171,31 @@ PARAMETER_SECTION
 PROCEDURE_SECTION
   // Grabbing detection function.
   detfn_pointer detfn = get_detfn(detfn_id);
-  // Converting linked parameters to real parameters.
+  // Converting linked parameters to real parameters and setting up par_ests vector.
   D = mfexp(D_link);
+  j = 1;
+  if (D_phase > -1){
+    par_ests(j) = D;
+    j++;
+  }
   invlinkfn_pointer invlinkfn;
   for (i = 1; i <= n_detpars; i++){
     invlinkfn = get_invlinkfn(detpars_linkfns(i));
     detpars(i) = invlinkfn(detpars_link(i));
+    if (detpars_phase(i) > -1){
+      par_ests(j) = detpars(i);
+      j++;
+    }
   }
   for (i = 1; i <= n_suppars; i++){
     invlinkfn = get_invlinkfn(suppars_linkfns(i));
     suppars(i) = invlinkfn(suppars_link(i));
+    if (suppars_phase(i) > -1){
+      par_ests(j) = suppars(i);
+      j++;
+    }
   }
+  // Start of likelihood calculation.
   f = 0.0;
   // Calculating expected signal strengths.
   if (fit_ss){
