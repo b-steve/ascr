@@ -3,9 +3,9 @@ context("Testing helper functions")
 test_that("testing get.par", {
     ## All parameters estimated.
     expect_that(get.par(simple.hr.fit, "all"),
-                is_identical_to(coef(simple.hr.fit, "all")))
+                is_identical_to(coef(simple.hr.fit, c("fitted", "derived"))))
     expect_that(get.par(simple.hr.fit, c("D", "esa")),
-                is_identical_to(coef(simple.hr.fit, "all")[c(1, 5)]))
+                is_identical_to(coef(simple.hr.fit, c("fitted", "derived"))[c(1, 5)]))
     ## Fixed parameter.
     expect_that(get.par(simple.hn.fit, "g0"), is_equivalent_to(1))
     expect_that(get.par(simple.hn.fit, c("sigma", "g0")),
