@@ -323,6 +323,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     par.names <- c("D", detpar.names, suppar.names)
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
+    any.suppars <- n.suppars > 0
     npars <- length(par.names)
     ## Sets link function ID number for use in ADMB:
     ## 1 = identity
@@ -346,25 +347,24 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Sorting out start values. Start values are set to those provided,
     ## or else are determined automatically from functions in
     ## autofuns.r.
-    sv.old <- sv
-    sv <- vector("list", length = npars)
-    names(sv) <- par.names
-    sv[names(sv.old)] <- sv.old
-    sv[names(fix)] <- fix
-    auto.names <- par.names[sapply(sv, is.null)]
+    sv.link <- vector("list", length = npars)
+    names(sv.link) <- par.names
+    sv.link[names(sv)] <- sv
+    sv.link[names(fix)] <- fix
+    auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
     ## Done in reverse so that D is calculated last (requires detfn parameters).
     ## D not moved to front as it should appear as the first parameter in any output.
     for (i in rev(seq(1, length(auto.names), length.out = length(auto.names)))){
-        sv[auto.names[i]] <- eval(call(sv.funs[i],
+        sv.link[auto.names[i]] <- eval(call(sv.funs[i],
                                        list(capt = capt, detfn = detfn,
                                             detpar.names = detpar.names,
                                             mask = mask, traps = traps,
-                                            sv = sv, cutoff = cutoff)))
+                                            sv = sv.link, cutoff = cutoff)))
     }
     ## Converting start values to link scale.
-    for (i in names(sv)){
-        sv[[i]] <- link.list[[links[[i]]]](sv[[i]])
+    for (i in names(sv.link)){
+        sv.link[[i]] <- link.list[[links[[i]]]](sv.link[[i]])
     }
     ## Sorting out phases.
     ## TODO: Add phases parameter so that these can be controlled by user.
@@ -380,7 +380,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     D.phase <- phases[["D"]]
     detpars.phase <- c(phases[detpar.names], recursive = TRUE)
-    if (n.suppars > 0){
+    if (any.suppars){
         suppars.phase <- c(phases[suppar.names], recursive = TRUE)
     } else {
         suppars.phase <- -1
@@ -418,7 +418,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     detpar.bounds <- bounds[detpar.names]
     detpars.lb <- sapply(detpar.bounds, function(x) x[1])
     detpars.ub <- sapply(detpar.bounds, function(x) x[2])
-    if (n.suppars > 0){
+    if (any.suppars){
         suppar.bounds <- bounds[suppar.names]
         suppars.lb <- sapply(suppar.bounds, function(x) x[1])
         suppars.ub <- sapply(suppar.bounds, function(x) x[2])
@@ -427,30 +427,22 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         suppars.ub <- 0
     }
     ## Sorting out scalefactors.
-    ## TODO: Sort these out in a better way.
-    if (is.null(sf)){
-        sv.vec <- c(sv, recursive = TRUE)
-        ## Currently, by default, the scalefactors are the inverse
-        ## fraction of each starting value to the largest starting
-        ## value. Not sure how sensible this is.
-        sf <- max(sv.vec)/sv.vec
-    } else {
-        sf <- numeric(npars)
-        names(sf) <- par.names
-        for (i in par.names){
-            sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
-        }
+    ## Set to 1 by default.
+    sf <- numeric(npars)
+    names(sf) <- par.names
+    for (i in par.names){
+        sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
     }
     D.sf <- sf[["D"]]
     detpars.sf <- c(sf[detpar.names], recursive = TRUE)
-    if (n.suppars > 0){
+    if (any.suppars){
         suppars.sf <- c(sf[suppar.names], recursive = TRUE)
     } else {
         suppars.sf <- 1
     }
     ## Creating link objects to pass to ADMB.
     detpars.link <- c(links[detpar.names], recursive = TRUE)
-    if (n.suppars > 0){
+    if (any.suppars){
         suppars.link <- c(links[suppar.names], recursive = TRUE)
     } else {
         suppars.link <- 1
@@ -476,9 +468,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Kludge to fix number of parameters for no supplementary
     ## information.
-    if (n.suppars == 0){
+    if (!any.suppars){
         n.suppars <- max(c(n.suppars, 1))
-        sv$dummy <- 0
+        sv.link$dummy <- 0
     }
     ## Stuff for the .dat file.
     data.list <- list(D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf, n_detpars =
@@ -529,7 +521,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     dir.create(temp.dir)
     setwd(temp.dir)
     ## Creating .pin and .dat files.
-    write_pin("secr", sv)
+    write_pin("secr", sv.link)
     write_dat("secr", data.list)
     ## Creating link to executable.
     if (os.type == "windows"){
@@ -561,19 +553,37 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Moving back to original working directory.
     setwd(curr.dir)
     ## Putting in correct parameter names.
-    for (i in seq(1, n.detpars, length.out = n.detpars)){
-        replace <- names(out$coefficients) == paste("detpars[", i, "]", sep = "")
+    replace <- names(out$coefficients) == "detpars"
+    names(out$coefficients)[replace] <- names(out$se)[replace] <-
+        rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
+            rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
+                detpar.names
+    if (!any.suppars){
+        remove <- which(names(out$coefficients) == "suppars")
+        out$coefficients <- out$coefficients[-remove]
+        out$se <- out$se[-remove]
+        out$vcov <- out$vcov[-remove, -remove]
+        out$cor <- out$cor[-remove, -remove]
+    } else {
+        replace <- names(out$coefficients) == "suppars"
         names(out$coefficients)[replace] <- names(out$se)[replace] <-
             rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
                 rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                    detpar.names[i]
+                    suppar.names
+    }
+    for (i in seq(1, n.detpars, length.out = n.detpars)){
+        replace <- names(out$coefficients) == paste("detpars_link[", i, "]", sep = "")
+        names(out$coefficients)[replace] <- names(out$se)[replace] <-
+            rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
+                rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
+                    paste(detpar.names[i], "_link", sep = "")
     }
     for (i in seq(1, n.suppars, length.out = n.suppars)){
-        replace <- names(out$coefficients) == paste("suppars[", i, "]", sep = "")
+        replace <- names(out$coefficients) == paste("suppars_link[", i, "]", sep = "")
         names(out$coefficients)[replace] <- names(out$se)[replace] <-
             rownames(out$vcov)[replace] <- colnames(out$vcov)[replace] <-
                 rownames(out$cor)[replace] <- colnames(out$cor)[replace] <-
-                    suppar.names[i]
+                    paste(suppar.names[i], "_link", sep = "")
     }
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
