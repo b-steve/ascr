@@ -212,3 +212,9 @@ test_that("joint bearing/dist fitting", {
     expect_that(fit$suppars, equals(c("kappa", "alpha")))
 })
       
+test_that("multiple calls fitting", {
+    simple.capt <- example.capt["bincapt"]
+    fit <- admbsecr(capt = simple.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1),
+                    call.freqs = c(9, 10, 11))
+})
