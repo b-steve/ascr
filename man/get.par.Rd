@@ -8,7 +8,9 @@ get.par(fit, pars = "all", cutoff = FALSE, as.list = FALSE)
   \item{pars}{A character vector containing names of
   parameter values to be extracted. Alternatively, the
   character string \code{"all"} will extract all
-  parameters, fixed or otherwise. See the 'Details' section
+  parameters, fixed or otherwise, and the character string
+  \code{"fitted"} extracts only fitted parameters (i.e.,
+  not the effective survey area). See the 'Details' section
   for the \link{admbsecr} function's documentation for
   information on the parameters that are fitted.}
 
