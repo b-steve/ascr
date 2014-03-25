@@ -8,14 +8,14 @@
   \item{object}{A fitted model from
   \link[admbsecr]{admbsecr}.}
 
-  \item{pars}{A character string; either \code{"all"},
-  \code{"fitted"}, or \code{"derived"}. If \code{"all"},
-  all estimated parameters are returned. If
-  \code{"fitted"}, only those parameters for which the
-  likelihood was maximised over are returned. If
-  \code{"derived"}, only those parameters (e.g., the
-  effective survey area) which are functions of fitted
-  parameters are returned.}
+  \item{pars}{A character containing a subset of
+  \code{"all"}, \code{"derived"}, \code{"fitted"}, and
+  \code{"linked"}; \code{"fitted"} corresponds to the
+  parameters of interest, \code{"derived"} corresponds to
+  quantities that are functions of these parameters (e.g.,
+  the effective survey area), and \code{"linked"}
+  corresponds to the parameters AD Model Builder has
+  maximised the likelihood over.}
 
   \item{...}{Other parameters (for S3 generic
   compatibility).}
