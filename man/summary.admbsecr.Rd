@@ -1,0 +1,17 @@
+\name{summary.admbsecr}
+\alias{summary.admbsecr}
+\title{Summarising admbsecr model fits}
+\usage{
+\method{summary}{admbsecr}(object, ...)
+}
+\arguments{
+  \item{object}{A fitted model from
+  \link[admbsecr]{admbsecr}.}
+
+  \item{...}{Other parameters (for S3 generic
+  compatibility).}
+}
+\description{
+Provides a useful summary of the model fit.
+}
+

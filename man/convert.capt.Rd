@@ -13,7 +13,7 @@ convert.capt(capt, traps, capthist = TRUE)
 
   \item{capt}{A list with named components, containing the
   capture history and supplementary information. See
-  further details below.}
+  'Details' below.}
 
   \item{traps}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a trap (or
