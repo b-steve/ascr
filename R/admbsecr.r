@@ -499,7 +499,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       angs = bearings, toa_ssq = toa.ssq)
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(call.freqs)){
-        fit.freqs <- any(call.freqs != 1)        
+        fit.freqs <- any(call.freqs != 1)
     } else {
         fit.freqs <- FALSE
     }
@@ -636,7 +636,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                ncol = length(names.vec))
         dimnames(vcov.updated) <- list(names.vec, names.vec)
         out[["vcov"]] <- vcov.updated
-        cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+        if (trace){
+            cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+        }
     } else {
         fit.freqs <- FALSE
     }
