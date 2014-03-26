@@ -90,7 +90,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
             new.prog <- curr.prog + 1
             N <- length(seeds)
             n.increments <- round(70*new.prog/N)
-            perc <- 100*new.prog/N
+            perc <- round(100*new.prog/N)
             cat("  |", rep("=", n.increments), rep(" ", 70 - n.increments),
                 "|", rep(" ", 4 - nchar(perc)), perc, "%, ", new.prog, " / ",
                 N, "\n", sep = "", file = "prog.txt")
