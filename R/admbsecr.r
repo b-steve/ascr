@@ -149,7 +149,7 @@
 #' variety of helper functions provided by the admbsecr package.
 #'
 #' @param capt A list with named components, containing the capture
-#' history and supplementary information. See further details below.
+#' history and supplementary information. See 'Details' below.
 #' @param traps A matrix with two columns. Each row provides Cartesian
 #' coordinates for the location of a trap (or detector).
 #' @param mask A matrix with two columns. Each row provides Cartesian
@@ -162,7 +162,7 @@
 #' be provided in \code{capt}.
 #' @param sv A named list. Component names are parameter names, and
 #' each component is a start value for the associated parameter. See
-#' below for further details on the parameters to be fitted.
+#' 'Details' for further information on the parameters to be fitted.
 #' @param bounds A named list. Component names are parameter names,
 #' and each components is a vector of length two, specifying the
 #' bounds for the associated parameter.

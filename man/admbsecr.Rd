@@ -10,7 +10,7 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 \arguments{
   \item{capt}{A list with named components, containing the
   capture history and supplementary information. See
-  further details below.}
+  'Details' below.}
 
   \item{traps}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a trap (or
@@ -30,8 +30,8 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 
   \item{sv}{A named list. Component names are parameter
   names, and each component is a start value for the
-  associated parameter. See below for further details on
-  the parameters to be fitted.}
+  associated parameter. See 'Details' for further
+  information on the parameters to be fitted.}
 
   \item{bounds}{A named list. Component names are parameter
   names, and each components is a vector of length two,
