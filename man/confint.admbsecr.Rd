@@ -3,10 +3,11 @@
 \alias{confint.admbsecr.boot}
 \title{Confidence intervals for admbsecr model parameters}
 \usage{
-\method{confint}{admbsecr}(object, parm = "fitted", level = 0.95, ...)
+\method{confint}{admbsecr}(object, parm = "fitted", level = 0.95,
+  linked = FALSE, ...)
 
 \method{confint}{admbsecr.boot}(object, parm = "fitted", level = 0.95,
-  method = "default", ...)
+  method = "default", linked = FALSE, qqplot = FALSE, ...)
 }
 \arguments{
   \item{parm}{A character vector specifying which
@@ -15,6 +16,15 @@
   \item{method}{A character string specifying the method
   used to calculate the confidence intervals. See 'Details'
   below.}
+
+  \item{linked}{Logical, if \code{TRUE}, intervals for
+  fitted parameters are calculated on their link scales,
+  then transformed back onto their "real" scales.}
+
+  \item{qqplot}{Logical, if \code{TRUE} and \code{method}
+  is \code{"default"} then a normal QQ plot is plotted. The
+  default method is based on a normal approximation; this
+  plot tests its validity.}
 
   \item{object}{A fitted model from
   \link[admbsecr]{admbsecr}.}
@@ -34,12 +44,23 @@ Options for the argument \code{method} are as follows:
 approximation using the calculated standard errors (for
 objects of class \code{admbsecr.boot}, these standard
 errors are calculated from the bootstrap procedure);
-"linked" for intervals that are calculated on the
-parameters' link scales, then transformed back onto their
-"real" scales; \code{"basic"} for the so-called "basic"
-bootstrap method; and \code{"percentile"} for intervals
-calculated using the bootstrap percentile method (the
-latter two are only available for objects of class
-\code{admbsecr.boot}).
+\code{"basic"} for the so-called "basic" bootstrap method;
+and \code{"percentile"} for intervals calculated using the
+bootstrap percentile method (the latter two are only
+available for objects of class \code{admbsecr.boot}; see
+Davison & Hinkley, 1997, for details).
+
+For method \code{"default"} with objects of class
+\code{admbsecr.boot}, the appropriateness of the normal
+approximation can be evaluated by setting \code{qqnorm} to
+\code{TRUE}. If this indicates a poor fit, set
+\code{linked} to \code{TRUE} and evaluate the QQ plot to
+see if this yields an improvement (see Davison & Hinkley,
+1997, pp. 194, for details).
+}
+\references{
+Davison, A. C., and Hinkley, D. V. (1997) \emph{Bootstrap
+methods and their application}. Cambridge: Cambridge
+University Press.
 }
 
