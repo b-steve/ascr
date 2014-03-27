@@ -62,6 +62,10 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     args$sf <- NULL
     ## Setting trace to false.
     args$trace <- FALSE
+    ## Setting start value for g0 away from 1.
+    if ("g0" %in% names(args$sv)){
+        args$sv[["g0"]] <- min(c(0.95, args$sv[["g0"]]))
+    }
     call.freqs <- args$call.freqs
     n.pars <- length(fit$coefficients)
     seeds <- sample(1:1e8, size = N)
