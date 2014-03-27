@@ -258,58 +258,109 @@ print.summary.admbsecr <- function(x, ...){
 #' \code{"default"} for intervals based on a normal approximation
 #' using the calculated standard errors (for objects of class
 #' \code{admbsecr.boot}, these standard errors are calculated from the
-#' bootstrap procedure); "linked" for intervals that are calculated on
-#' the parameters' link scales, then transformed back onto their
-#' "real" scales; and \code{"percentile"} for intervals calculated
-#' using the bootstrap percentile method (for objects of class
-#' \code{admbsecr.boot} only).
+#' bootstrap procedure); \code{"basic"} for the so-called "basic"
+#' bootstrap method; and \code{"percentile"} for intervals calculated
+#' using the bootstrap percentile method (the latter two are only
+#' available for objects of class \code{admbsecr.boot}; see Davison &
+#' Hinkley, 1997, for details).
+#'
+#' For method \code{"default"} with objects of class
+#' \code{admbsecr.boot}, the appropriateness of the normal
+#' approximation can be evaluated by setting \code{qqnorm} to
+#' \code{TRUE}. If this indicates a poor fit, set \code{linked} to
+#' \code{TRUE} and evaluate the QQ plot to see if this yields an
+#' improvement (See Davison & Hinkley, 1997, pp. 194, for details).
+#'
+#' @references Davison, A. C., and Hinkley, D. V. (1997)
+#' \emph{Bootstrap methods and their application}. Cambridge:
+#' Cambridge University Press.
 #'
 #' @param parm A character vector specifying which parameters are to
 #' be given confidence intervals.
 #' @param method A character string specifying the method used to
 #' calculate the confidence intervals. See 'Details' below.
+#' @param linked Logical, if \code{TRUE}, intervals for fitted
+#' parameters are calculated on their link scales, then transformed
+#' back onto their "real" scales.
 #' @inheritParams coef.admbsecr
 #' @inheritParams stats::confint
 #'
 #' @method confint admbsecr
 #' @S3method confint admbsecr
-confint.admbsecr <- function(object, parm = "fitted", level = 0.95, ...){
+confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, ...){
     if (object$fit.freqs){
-        stop("Standard errors not calculated; use boot.admbsecr()")
+        stop("Standard errors not calculated; use boot.admbsecr().")
     }
-    calc.cis(object, parm, level, method = "default", ...)
+    calc.cis(object, parm, level, method = "default", linked, qqplot = FALSE,
+             boot = FALSE, ...)
 }
 
-
-#'
-
-#'
+#' @param qqplot Logical, if \code{TRUE} and \code{method} is
+#' \code{"default"} then a normal QQ plot is plotted. The default
+#' method is based on a normal approximation; this plot tests its
+#' validity.
+#' 
 #' @rdname confint.admbsecr
 #' @method confint admbsecr.boot
 #' @S3method confint admbsecr.boot
-confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method = "default", ...){
-    calc.cis(object, parm, level, method, ...)
+confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method = "default",
+                                  linked = FALSE, qqplot = FALSE, ...){
+    calc.cis(object, parm, level, method, linked, qqplot, boot = TRUE, ...)
 }
 
-calc.cis <- function(object, parm, level, method, ...){
+calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
     if (parm == "all" | parm == "derived" | parm == "fitted"){
         parm <- names(coef(object, pars = parm))
     }
+    if (linked){
+        fitted.names <- names(coef(object, "fitted"))
+        fitted.names <- fitted.names[fitted.names != "mu.freqs"]
+        linked.names <- paste(fitted.names, "_link", sep = "")
+        link.parm <- linked.names[!(linked.names %in% parm)]
+        all.parm <- c(parm, link.parm)
+    } else {
+        all.parm <- parm
+    }
     if (method == "default"){
-        mat <- cbind(coef(object, pars = "all")[parm],
-                     stdEr(object, pars = "all")[parm])
+        mat <- cbind(coef(object, pars = "all")[all.parm],
+                     stdEr(object, pars = "all")[all.parm])
         FUN.default <- function(x, level){
             x[1] + qnorm((1 - level)/2)*c(1, -1)*x[2]
         }
         out <- t(apply(mat, 1, FUN.default, level = level))
-    } else if (method == "percentile"){
-        qs <- t(apply(object$boot[, parm, drop = FALSE], 2, quantile,
+        if (qqplot & boot){
+            opar <- par(ask = TRUE)
+            for (i in parm){
+                if (linked){
+                    if (i %in% fitted.names){
+                        j <- linked.names[fitted.names == i]
+                    }
+                } else {
+                    j <- i
+                }
+                qqnorm(object$boot[, j], main = i)
+                abline(mean(object$boot[, j]), sd(object$boot[, j]))
+            }
+            par(opar)
+        }
+    } else if (method == "basic"){
+        qs <- t(apply(object$boot[, all.parm, drop = FALSE], 2, quantile,
                       probs = c((1 - level)/2, 1 - (1 - level)/2)))
-        mat <- cbind(coef(object, pars = "all")[parm], qs)
-        FUN.percentile <- function(x){
+        mat <- cbind(coef(object, pars = "all")[all.parm], qs)
+        FUN.basic <- function(x){
             2*x[1] - c(x[3], x[2])
         }
-        out <- t(apply(mat, 1, FUN.percentile))
+        out <- t(apply(mat, 1, FUN.basic))
+    } else if (method == "percentile"){
+        out <- t(apply(object$boot[, all.parm, drop = FALSE], 2, quantile,
+                      probs = c((1 - level)/2, 1 - (1 - level)/2)))
+    }
+    if (linked){
+        for (i in fitted.names){
+            linked.name <- paste(i, "_link", sep = "")
+            out[i, ] <- object$par.unlinks[[i]](out[linked.name, ])
+        }
+        out <- out[parm, ]
     }
     percs <- c(100*(1 - level)/2, 100*(1 - (1 - level)/2))
     colnames(out) <- paste(round(percs, 2), "%")

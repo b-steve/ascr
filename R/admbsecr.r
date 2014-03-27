@@ -345,6 +345,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                   alpha = 2)[par.names]
     link.list <- list(identity, log.link, logit.link)
     unlink.list <- list(identity, exp, inv.logit)
+    par.links <- llply(links, function(x, link.list) link.list[[x]], link.list)
+    par.unlinks <- llply(links, function(x, unlink.list) unlink.list[[x]], unlink.list)
     ## Sorting out start values. Start values are set to those provided,
     ## or else are determined automatically from functions in
     ## autofuns.r.
@@ -614,6 +616,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$detpars <- detpar.names
     out$suppars <- suppar.names
     out$phases <- phases
+    out$par.links <- par.links
+    out$par.unlinks <- par.unlinks
     ## Putting in esa estimate.
     out$coefficients[2*n.est.pars + 1] <- p.dot(out, esa = TRUE)
     ## Putting in call frequency information.
@@ -643,6 +647,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         fit.freqs <- FALSE
     }
     out$fit.freqs <- fit.freqs
+    if (out$maxgrad < -0.01){
+        warning("Maximum gradient component is large.")
+    }
     class(out) <- c("admbsecr", "admb")
     out
 }
