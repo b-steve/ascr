@@ -27,6 +27,9 @@ test_that("simple fitting -- half normal", {
                 equals(fit$coefficients[c("D", "esa")]))
     expect_that(get.par(fit, "all"), equals(coef(fit, c("fitted", "derived"))))
     expect_that(get.par(fit, "fitted"), equals(coef(fit, "fitted")))
+    ## Testing some generic functions.
+    expect_that(is.list(summary(fit)), is_true())
+    expect_that(confint(fit), is_a("matrix"))
     ## Checking estimate equivalence with secr.fit.
     library(secr)
     mask.secr <- convert.mask(example.mask)
@@ -178,7 +181,7 @@ test_that("joint ss/toa fitting", {
     fit <- admbsecr(capt = joint.capt, traps = example.traps,
                     mask = example.mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    cutoff = 60)
+                    cutoff = 60, trace = TRUE)
     ## Checking parameter values.
     pars.test <- c(2518.778360, 91.11204602, 4.312022549,
                    10.85171521, 0.001954810264)
@@ -197,7 +200,7 @@ test_that("joint ss/toa fitting", {
 test_that("joint bearing/dist fitting", {
     joint.capt <- example.capt[c("bincapt", "bearing", "dist")]
     fit <- admbsecr(capt = joint.capt, traps = example.traps,
-                    mask = example.mask, fix = list(g0 = 1))
+                    mask = example.mask, fix = list(g0 = 1), clean = FALSE)
     ## Checking parameter values.
     pars.test <- c(2476.527851, 5.105681597, 70.35386170, 3.941970659)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
@@ -216,5 +219,12 @@ test_that("multiple calls fitting", {
     simple.capt <- example.capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1),
-                    call.freqs = c(9, 10, 11))
+                    call.freqs = c(9, 10, 11), clean = FALSE)
+    pars.test <- c(2358.737165, 5.262653889, 10, 0.05384236, 235.87375890)
+    n.pars <- length(pars.test)
+    relative.error <- max(abs((coef(fit, c("fitted", "derived")) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+    expect_that(confint(fit),
+                throws_error("Standard errors not calculated; use boot.admbsecr()"))
+    expect_that(summary(fit), is_a("list"))
 })
