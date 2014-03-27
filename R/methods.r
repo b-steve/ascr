@@ -8,9 +8,9 @@
 #' \code{"derived"}, \code{"fitted"}, and \code{"linked"};
 #' \code{"fitted"} corresponds to the parameters of interest,
 #' \code{"derived"} corresponds to quantities that are functions of
-#' these parameters (e.g., the effective survey area), and
-#' \code{"linked"} corresponds to the parameters AD Model Builder has
-#' maximised the likelihood over.
+#' these parameters (e.g., the effective survey area or animal density
+#' from an acoustic survey), and \code{"linked"} corresponds to the
+#' parameters AD Model Builder has maximised the likelihood over.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @examples
@@ -32,7 +32,7 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
     par.names <- names(object$coefficients)
     which.linked <- grep("_link", par.names)
     linked <- object$coefficients[which.linked]
-    which.derived <- which(par.names == "esa")
+    which.derived <- which(par.names == "esa" | par.names == "Da")
     derived <- object$coefficients[which.derived]
     fitted <- object$coefficients[-c(which.linked, which.derived)]
     out <- mget(pars)
@@ -67,7 +67,7 @@ vcov.admbsecr <- function(object, pars = "fitted", ...){
     par.names <- names(object$coefficients)
     keep <- NULL
     which.linked <- grep("_link", par.names)
-    which.derived <- which(par.names == "esa")
+    which.derived <- which(par.names == "esa" | par.names == "Da")
     which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
     keep <- NULL
     if ("fitted" %in% pars){
@@ -105,7 +105,7 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
     par.names <- names(object$coefficients)
     keep <- NULL
     which.linked <- grep("_link", par.names)
-    which.derived <- which(par.names == "esa")
+    which.derived <- which(par.names == "esa" | par.names == "Da")
     which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
     keep <- NULL
     if ("fitted" %in% pars){
@@ -146,7 +146,7 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
     par.names <- names(object$coefficients)
     which.linked <- grep("_link", par.names)
     linked <- object$se[which.linked]
-    which.derived <- which(par.names == "esa")
+    which.derived <- which(par.names == "esa" | par.names == "Da")
     derived <- object$se[which.derived]
     fitted <- object$se[-c(which.linked, which.derived)]
     out <- mget(pars)
@@ -176,7 +176,7 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     par.names <- names(object$coefficients)
     which.linked <- grep("_link", par.names)
     linked <- object$boot.se[which.linked]
-    which.derived <- which(par.names == "esa")
+    which.derived <- which(par.names == "esa" | par.names == "Da")
     derived <- object$boot.se[which.derived]
     fitted <- object$boot.se[-c(which.linked, which.derived)]
     out <- mget(pars)
@@ -220,12 +220,12 @@ AIC.admbsecr <- function(object, ..., k = 2){
 #' @export
 summary.admbsecr <- function(object, ...){
     coefs <- coef(object, "fitted")
-    esa <- coef(object, "all")["esa"]
+    derived <- coef(object, "derived")
     coefs.se <- stdEr(object, "fitted")
-    esa.se <- stdEr(object, "all")["esa"]
-    out <- list(coefs = coefs, esa = esa, coefs.se = coefs.se,
-                esa.se = esa.se)
-    class(out) <- "summary.admbsecr"
+    derived.se <- stdEr(object, "derived")
+    out <- list(coefs = coefs, derived = derived, coefs.se = coefs.se,
+                derived.se = derived.se)
+    class(out) <- c("summary.admbsecr", class(out))
     out
 }
 #' Printing admbsecr summaries
@@ -237,12 +237,13 @@ summary.admbsecr <- function(object, ...){
 #' @S3method print summary.admbsecr
 print.summary.admbsecr <- function(x, ...){
     n.coefs <- length(x$coefs)
-    mat <- matrix(0, nrow = n.coefs + 2, ncol = 2)
+    n.derived <- length(x$derived)
+    mat <- matrix(0, nrow = n.coefs + n.derived + 1, ncol = 2)
     mat[1:n.coefs, 1] <- c(x$coefs)
     mat[1:n.coefs, 2] <- c(x$coefs.se)
     mat[n.coefs + 1, ] <- NA
-    mat[n.coefs + 2, ] <- c(x$esa, x$esa.se)
-    rownames(mat) <- c(names(x$coefs), "---", "esa")
+    mat[(n.coefs + 2):(n.coefs + n.derived + 1), ] <- c(x$derived, x$derived.se)
+    rownames(mat) <- c(names(x$coefs), "---", names(x$derived))
     colnames(mat) <- c("Estimate", "Std. Error")
     cat("Coefficients:", "\n")
     printCoefmat(mat, na.print = "")
