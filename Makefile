@@ -11,7 +11,7 @@ win:
 	make prepare
 	make rcpp
 	make roxygen
-	make build
+	make buildwin
 	make check
 	make install
 
@@ -37,6 +37,10 @@ roxygen:
 	R --slave -e "library(roxygen2); roxygenise('.')"
 
 build:
+	R CMD build .
+	mv admbsecr_1.0.1.tar.gz .Rbuildignore/
+
+buildwin:
 	rm -rfv .Rbuildignore
 	R CMD build .
 	mkdir .Rbuildignore

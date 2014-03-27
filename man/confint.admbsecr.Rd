@@ -6,7 +6,7 @@
 \method{confint}{admbsecr}(object, parm = "fitted", level = 0.95, ...)
 
 \method{confint}{admbsecr.boot}(object, parm = "fitted", level = 0.95,
-  method = "normal", ...)
+  method = "default", ...)
 }
 \arguments{
   \item{parm}{A character vector specifying which
