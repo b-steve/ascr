@@ -17,9 +17,10 @@
 #' coef(simple.hn.fit)
 #' coef(simple.hn.fit, pars = "all")
 #' coef(simple.hn.fit, pars = "derived")
-#' 
+#'
 #' @method coef admbsecr
 #' @S3method coef admbsecr
+#'
 #' @export
 coef.admbsecr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
@@ -51,9 +52,10 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
 #' vcov(simple.hn.fit)
 #' vcov(simple.hn.fit, pars = "all")
 #' vcov(simple.hn.fit, pars = "derived")
-#' 
+#'
 #' @method vcov admbsecr
 #' @S3method vcov admbsecr
+#'
 #' @export
 vcov.admbsecr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
@@ -91,6 +93,8 @@ vcov.admbsecr <- function(object, pars = "fitted", ...){
 #'
 #' @method vcov admbsecr.boot
 #' @S3method vcov admbsecr.boot
+#'
+#' @export
 vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
@@ -130,6 +134,7 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
 #'
 #' @method stdEr admbsecr
 #' @S3method stdEr admbsecr
+#'
 #' @export
 stdEr.admbsecr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
@@ -159,6 +164,8 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
 #'
 #' @method stdEr admbsecr.boot
 #' @S3method stdEr admbsecr.boot
+#'
+#' @export
 stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
@@ -175,4 +182,135 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     out <- mget(pars)
     names(out) <- NULL
     c(out, recursive = TRUE)
+}
+
+#' Extract AIC from an admbsecr model object
+#'
+#' Extracts the AIC from an admbsecr model object.
+#'
+#' If the model is based on an acoustic survey where there are
+#' multiple calls per individual, then AIC should not be used for
+#' model selection. This function therefore returns NA in this case.
+#'
+#' @inheritParams coef.admbsecr
+#' @inheritParams stats::AIC
+#'
+#' @method AIC admbsecr
+#' @S3method AIC admbsecr
+#'
+#' @export
+AIC.admbsecr <- function(object, ..., k = 2){
+    if (object$fit.freqs){
+        out <- NA
+    } else {
+        out <- deviance(object) + k*length(coef(object))
+    }
+    out
+}
+
+#' Summarising admbsecr model fits
+#'
+#' Provides a useful summary of the model fit.
+#'
+#' @inheritParams coef.admbsecr
+#'
+#' @method summary admbsecr
+#' @S3method summary admbsecr
+#'
+#' @export
+summary.admbsecr <- function(object, ...){
+    coefs <- coef(object, "fitted")
+    esa <- coef(object, "all")["esa"]
+    coefs.se <- stdEr(object, "fitted")
+    esa.se <- stdEr(object, "all")["esa"]
+    out <- list(coefs = coefs, esa = esa, coefs.se = coefs.se,
+                esa.se = esa.se)
+    class(out) <- "summary.admbsecr"
+    out
+}
+#' Printing admbsecr summaries
+#'
+#' @param x An object of class \code{summary.admbsecr}.
+#' @inheritParams coef.admbsecr
+#'
+#' @method print summary.admbsecr
+#' @S3method print summary.admbsecr
+print.summary.admbsecr <- function(x, ...){
+    n.coefs <- length(x$coefs)
+    mat <- matrix(0, nrow = n.coefs + 2, ncol = 2)
+    mat[1:n.coefs, 1] <- c(x$coefs)
+    mat[1:n.coefs, 2] <- c(x$coefs.se)
+    mat[n.coefs + 1, ] <- NA
+    mat[n.coefs + 2, ] <- c(x$esa, x$esa.se)
+    rownames(mat) <- c(names(x$coefs), "---", "esa")
+    colnames(mat) <- c("Estimate", "Std. Error")
+    cat("Coefficients:", "\n")
+    printCoefmat(mat, na.print = "")
+}
+
+#' Confidence intervals for admbsecr model parameters
+#'
+#' Computes confidence intervals for one or more parameters estimated
+#' in an admbsecr model object.
+#'
+#' Options for the argument \code{method} are as follows:
+#' \code{"default"} for intervals based on a normal approximation
+#' using the calculated standard errors (for objects of class
+#' \code{admbsecr.boot}, these standard errors are calculated from the
+#' bootstrap procedure); "linked" for intervals that are calculated on
+#' the parameters' link scales, then transformed back onto their
+#' "real" scales; and \code{"percentile"} for intervals calculated
+#' using the bootstrap percentile method (for objects of class
+#' \code{admbsecr.boot} only).
+#'
+#' @param parm A character vector specifying which parameters are to
+#' be given confidence intervals.
+#' @param method A character string specifying the method used to
+#' calculate the confidence intervals. See 'Details' below.
+#' @inheritParams coef.admbsecr
+#' @inheritParams stats::confint
+#'
+#' @method confint admbsecr
+#' @S3method confint admbsecr
+confint.admbsecr <- function(object, parm = "fitted", level = 0.95, ...){
+    if (object$fit.freqs){
+        stop("Standard errors not calculated; use boot.admbsecr()")
+    }
+    calc.cis(object, parm, level, method = "default", ...)
+}
+
+
+#'
+
+#'
+#' @rdname confint.admbsecr
+#' @method confint admbsecr.boot
+#' @S3method confint admbsecr.boot
+confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method = "default", ...){
+    calc.cis(object, parm, level, method, ...)
+}
+
+calc.cis <- function(object, parm, level, method, ...){
+    if (parm == "all" | parm == "derived" | parm == "fitted"){
+        parm <- names(coef(object, pars = parm))
+    }
+    if (method == "default"){
+        mat <- cbind(coef(object, pars = "all")[parm],
+                     stdEr(object, pars = "all")[parm])
+        FUN.default <- function(x, level){
+            x[1] + qnorm((1 - level)/2)*c(1, -1)*x[2]
+        }
+        out <- t(apply(mat, 1, FUN.default, level = level))
+    } else if (method == "percentile"){
+        qs <- t(apply(object$boot[, parm, drop = FALSE], 2, quantile,
+                      probs = c((1 - level)/2, 1 - (1 - level)/2)))
+        mat <- cbind(coef(object, pars = "all")[parm], qs)
+        FUN.percentile <- function(x){
+            2*x[1] - c(x[3], x[2])
+        }
+        out <- t(apply(mat, 1, FUN.percentile))
+    }
+    percs <- c(100*(1 - level)/2, 100*(1 - (1 - level)/2))
+    colnames(out) <- paste(round(percs, 2), "%")
+    out
 }

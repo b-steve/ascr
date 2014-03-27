@@ -20,7 +20,7 @@
 #' based on maximum likelihood asymptotic theory, the methods
 #' \link{stdEr.admbsecr} and \link{vcov.admbsecr} must be called
 #' directly.
-#' 
+#'
 #' For fits based on acoustic surveys where the argument
 #' \code{call.freqs} is provided to the \code{admbsecr} function, the
 #' simulated data allocates multiple calls to the same location based
@@ -36,7 +36,7 @@
 #' methods \link{stdEr.admbsecr.boot} and \link{vcov.admbsecr.boot}
 #' can be used to return standard errors and the variance-covariance
 #' matrix of estimated parameters based on the bootstrap procedure.
-#' 
+#'
 #' @param fit A fitted \code{admbsecr} model object.
 #' @param N The number of bootstrap resamples.
 #' @param prog Logical, if \code{TRUE}, a progress bar is shown when
@@ -51,7 +51,7 @@
 #' ## In practice, N should be >> 100, but this leads to long computation time for a simple example.
 #' boot.fit <- boot.admbsecr(fit = simple.hn.fit, N = 100)
 #' }
-#' 
+#'
 #' @export
 boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     args <- fit$args
@@ -77,9 +77,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
             }
         }
         ## Fitting model.
-        sink(tempfile())
         fit.boot <- do.call("admbsecr", args)
-        sink()
         if (fit.boot$maxgrad < -0.01){
             out <- NA
         } else {
@@ -92,7 +90,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
             new.prog <- curr.prog + 1
             N <- length(seeds)
             n.increments <- round(70*new.prog/N)
-            perc <- 100*new.prog/N
+            perc <- round(100*new.prog/N)
             cat("  |", rep("=", n.increments), rep(" ", 70 - n.increments),
                 "|", rep(" ", 4 - nchar(perc)), perc, "%, ", new.prog, " / ",
                 N, "\n", sep = "", file = "prog.txt")
