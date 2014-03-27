@@ -36,8 +36,10 @@ objects of class \code{admbsecr.boot}, these standard
 errors are calculated from the bootstrap procedure);
 "linked" for intervals that are calculated on the
 parameters' link scales, then transformed back onto their
-"real" scales; and \code{"percentile"} for intervals
-calculated using the bootstrap percentile method (for
-objects of class \code{admbsecr.boot} only).
+"real" scales; \code{"basic"} for the so-called "basic"
+bootstrap method; and \code{"percentile"} for intervals
+calculated using the bootstrap percentile method (the
+latter two are only available for objects of class
+\code{admbsecr.boot}).
 }
 
