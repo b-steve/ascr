@@ -269,7 +269,7 @@ print.summary.admbsecr <- function(x, ...){
 #' approximation can be evaluated by setting \code{qqnorm} to
 #' \code{TRUE}. If this indicates a poor fit, set \code{linked} to
 #' \code{TRUE} and evaluate the QQ plot to see if this yields an
-#' improvement (See Davison & Hinkley, 1997, pp. 194, for details).
+#' improvement (see Davison & Hinkley, 1997, pp. 194, for details).
 #'
 #' @references Davison, A. C., and Hinkley, D. V. (1997)
 #' \emph{Bootstrap methods and their application}. Cambridge:
@@ -287,6 +287,8 @@ print.summary.admbsecr <- function(x, ...){
 #'
 #' @method confint admbsecr
 #' @S3method confint admbsecr
+#'
+#' @export
 confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, ...){
     if (object$fit.freqs){
         stop("Standard errors not calculated; use boot.admbsecr().")
@@ -303,6 +305,8 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
 #' @rdname confint.admbsecr
 #' @method confint admbsecr.boot
 #' @S3method confint admbsecr.boot
+#'
+#' @export
 confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method = "default",
                                   linked = FALSE, qqplot = FALSE, ...){
     calc.cis(object, parm, level, method, linked, qqplot, boot = TRUE, ...)
