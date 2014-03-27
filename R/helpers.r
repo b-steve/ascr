@@ -176,7 +176,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     out[!fixed.pars] <- fit$coefficients[admb.pars[!fixed.pars]]
     ## Adding the cutoff if necessary.
     if (cutoff){
-        out <- c(out, fit$cutoff)
+        out <- c(out, fit$args$cutoff)
         names(out) <- c(pars, "cutoff")
     }
     if (as.list){
