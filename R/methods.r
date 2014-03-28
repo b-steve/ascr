@@ -317,7 +317,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
         parm <- names(coef(object, pars = parm))
     }
     if (linked){
-        fitted.names <- names(coef(object, "fitted"))
+        fitted.names <- names(coef(object, "fitted")[parm])
         fitted.names <- fitted.names[fitted.names != "mu.freqs"]
         linked.names <- paste(fitted.names, "_link", sep = "")
         link.parm <- linked.names[!(linked.names %in% parm)]
@@ -364,7 +364,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
             linked.name <- paste(i, "_link", sep = "")
             out[i, ] <- object$par.unlinks[[i]](out[linked.name, ])
         }
-        out <- out[parm, ]
+        out <- out[parm, , drop = FALSE]
     }
     percs <- c(100*(1 - level)/2, 100*(1 - (1 - level)/2))
     colnames(out) <- paste(round(percs, 2), "%")
