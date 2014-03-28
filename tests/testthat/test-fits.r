@@ -181,7 +181,7 @@ test_that("joint ss/toa fitting", {
     fit <- admbsecr(capt = joint.capt, traps = example.traps,
                     mask = example.mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    cutoff = 60, trace = TRUE)
+                    cutoff = 60)
     ## Checking parameter values.
     pars.test <- c(2518.778360, 91.11204602, 4.312022549,
                    10.85171521, 0.001954810264)
@@ -200,7 +200,7 @@ test_that("joint ss/toa fitting", {
 test_that("joint bearing/dist fitting", {
     joint.capt <- example.capt[c("bincapt", "bearing", "dist")]
     fit <- admbsecr(capt = joint.capt, traps = example.traps,
-                    mask = example.mask, fix = list(g0 = 1), clean = FALSE)
+                    mask = example.mask, fix = list(g0 = 1))
     ## Checking parameter values.
     pars.test <- c(2476.527851, 5.105681597, 70.35386170, 3.941970659)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
@@ -219,7 +219,7 @@ test_that("multiple calls fitting", {
     simple.capt <- example.capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1),
-                    call.freqs = c(9, 10, 11), clean = FALSE)
+                    call.freqs = c(9, 10, 11))
     pars.test <- c(2358.737165, 5.262653889, 10, 0.05384236, 235.87375890)
     n.pars <- length(pars.test)
     relative.error <- max(abs((coef(fit, c("fitted", "derived")) - pars.test)/pars.test))
