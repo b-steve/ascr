@@ -1,5 +1,10 @@
 ## Shortcut to get detection probability
-calc.detfn <- function(d, detfn, pars){
+calc.detfn <- function(d, detfn, pars, ss.link = NULL){
+    if (!is.null(ss.link)){
+        if (detfn == "ss" & ss.link == "log"){
+            detfn <- "log.ss"
+        }
+    }
     g <- get.detfn(detfn)
     g(d, pars)
 }
@@ -100,9 +105,12 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
     if (is.null(xlim)){
         xlim <- c(0, attr(get.mask(fit), "buffer"))
     }
-    pars <- get.par(fit, fit$detpars, as.list = TRUE)
+    detfn <- fit$args$detfn
+    pars <- get.par(fit, pars = fit$detpars, cutoff = fit$fit.types["ss"],
+                    as.list = TRUE)
     dists <- seq(xlim[1], xlim[2], length.out = 1000)
-    probs <- calc.detfn(dists, fit$args$detfn, pars)
+    probs <- calc.detfn(dists, detfn = detfn, pars = pars,
+                        ss.link = fit$args$ss.link)
     if (!add){
         plot.new()
         old.par <- par(xaxs = "i")

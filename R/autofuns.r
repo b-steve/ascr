@@ -59,15 +59,23 @@ autokappa <- function(args){
 }
 
 autob0.ss <- function(args){
-    143
+    do.call(args$ss.link, list(max(args$capt$ss)))
 }
 
 autob1.ss <- function(args){
-    1
+    buffer <- attr(mask, "buffer")
+    cutoff <- args$cutoff
+    max.ss <- max(args$capt$ss)
+    out <- (max.ss - cutoff)/(buffer/2)
+    if (args$ss.link == "log"){
+        out <- out/max.ss
+    }
+    out
 }
 
 autosigma.ss <- function(args){
-    5.7
+    ss <- c(args$capt$ss)
+    sd(ss[ss >= args$cutoff])
 }
 
 autoalpha <- function(args){

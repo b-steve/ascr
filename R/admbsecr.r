@@ -363,7 +363,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                        list(capt = capt, detfn = detfn,
                                             detpar.names = detpar.names,
                                             mask = mask, traps = traps,
-                                            sv = sv.link, cutoff = cutoff)))
+                                            sv = sv.link, cutoff = cutoff,
+                                            ss.link = ss.link)))
     }
     ## Converting start values to link scale.
     sv <- sv.link
@@ -394,9 +395,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     default.bounds <- list(D = c(n/(A*n.mask), 1e8),
                            g0 = c(0, 1),
                            sigma = c(0, 1e8),
-                           shape = c(-1e8, 1e8),
+                           shape = c(-100, 100),
                            shape.1 = c(0, 1e8),
-                           shape.2 = c(-1e8, 1e8),
+                           shape.2 = c(-100, 100),
                            scale = c(0, 1e8),
                            b0.ss = c(0, 1e8),
                            b1.ss = c(0, 1e8),
@@ -437,7 +438,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Currently, by default, the scalefactors are the inverse
         ## fraction of each starting value to the largest starting
         ## value. Not sure how sensible this is.
+        ##bound.ranges <- laply(bounds.link, function(x) diff(range(x)))
+        ##sf <- max(bound.ranges)/bound.ranges
         sf <- max(sv.vec)/sv.vec
+        names(sf) <- par.names
     } else {
         sf <- numeric(n.pars)
         names(sf) <- par.names
@@ -445,6 +449,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
         }
     }
+    ## Replacing infinite scalefactors.
+    sf[!is.finite(sf)] <- 1
     D.sf <- sf[["D"]]
     detpars.sf <- c(sf[detpar.names], recursive = TRUE)
     if (any.suppars){

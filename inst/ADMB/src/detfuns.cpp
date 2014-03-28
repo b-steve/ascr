@@ -19,7 +19,8 @@ dvariable detfn_hr (double x, const dvar_vector &detpars, dvariable ss_resid)
 // Order of detpars: shape, scale.
 dvariable detfn_th (double x, const dvar_vector &detpars, dvariable ss_resid)
 {
-  return 0.5 - 0.5*(2*cumd_norm((x/detpars(2) - detpars(1))*pow(2,0.5)) - 1);
+  dvariable z = (x/detpars(2) - detpars(1))*pow(2,0.5);
+  return 0.5 - 0.5*(2*cumd_norm(z) - 1);
 }
 
 // Log-link threshold.

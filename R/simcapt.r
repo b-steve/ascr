@@ -149,7 +149,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     n.traps <- nrow(traps)
     ## Calculating detection probabilities and simulating captures.
     if (!sim.ss){
-        det.probs <- calc.detfn(dists, detfn, detpars)
+        det.probs <- calc.detfn(dists, detfn, detpars, ss.link)
         full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
                                 nrow = n.popn, ncol = n.traps)
         captures <- which(apply(full.bin.capt, 1, sum) > 0)

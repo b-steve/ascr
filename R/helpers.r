@@ -224,14 +224,15 @@ erf <- function(x){
 
 ## Capture probability density surface from a model fit.
 p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
-                  detfn = NULL, pars = NULL){
+                  detfn = NULL, ss.link = NULL, pars = NULL){
     if (!is.null(fit)){
         traps <- get.traps(fit)
         detfn <- fit$args$detfn
         pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
+        ss.link <- fit$args$ss.link
     }
     dists <- distances(traps, points)
-    probs <- calc.detfn(dists, detfn, pars)
+    probs <- calc.detfn(dists, detfn, pars, ss.link)
     out <- aaply(probs, 2, function(x) 1 - prod(1 - x))
     if (esa){
         A <- attr(points, "area")
@@ -255,6 +256,20 @@ logit.link <- function(x){
     log(x/(1 - x))
 }
 
+scaled.logit.link <- function(x){
+    (x/10)^3
+}
+
 inv.logit <- function(x){
     exp(x)/(exp(x) + 1)
+}
+
+inv.scaled.logit.link <- function(x){
+    x <- inv.logit(x)
+    2*1e8*x - 1e8
+}
+
+scaled.log.link <- function(x){
+    x <- x + 1e8
+    log(x)
 }

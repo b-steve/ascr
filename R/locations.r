@@ -132,6 +132,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     }
     traps <- get.traps(fit)
     detfn <- fit$args$detfn
+    ss.link <- fit$args$ss.link
     dists <- distances(traps, mask)
     ## Calculating density due to animal locations.
     p.det <- p.dot(fit = fit, points = mask)
@@ -150,7 +151,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                 f.capt <- ss.density(fit, i, mask, dists)
             } else {
                 det.pars <- get.par(fit, fit$detpars, as.list = TRUE)
-                det.probs <- calc.detfn(dists, detfn, det.pars)
+                det.probs <- calc.detfn(dists, detfn, det.pars, ss.link)
                 f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
             }
             if (plot.types["capt"]){
@@ -304,11 +305,13 @@ ss.density <- function(fit, id, mask, dists){
     capt <- fit$args$capt$bincapt[id, ]
     ss.capt <- fit$args$capt$ss[id, ]
     det.pars <- get.par(fit, fit$detpars, cutoff = TRUE, as.list = TRUE)
+    detfn <- fit$args$detfn
+    ss.link <- fit$args$ss.link
     n.traps <- nrow(get.traps(fit))
     mask.dens <- matrix(0, nrow = n.traps, ncol = nrow(mask))
     for (i in 1:n.traps){
         if (capt[i] == 0){
-            mask.dens[i, ] <- 1 - calc.detfn(dists[i, ], get.detfn(fit), det.pars)
+            mask.dens[i, ] <- 1 - calc.detfn(dists[i, ], detfn, det.pars, ss.link)
         } else if (capt[i] == 1){
             mu.ss <- det.pars[["b0.ss"]] - det.pars[["b1.ss"]]*dists[i, ]
             mask.dens[i, ] <- dnorm(ss.capt[i], mu.ss, det.pars[["sigma.ss"]])
