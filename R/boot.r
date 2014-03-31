@@ -81,8 +81,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
             }
         }
         ## Fitting model.
-        fit.boot <- do.call("admbsecr", args)
-        if (fit.boot$maxgrad < -0.01){
+        fit.boot <- try(do.call("admbsecr", args), silent = TRUE)
+        if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot){
             out <- NA
         } else {
             out <- fit.boot$coefficients
