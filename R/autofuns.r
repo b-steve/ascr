@@ -63,7 +63,7 @@ autob0.ss <- function(args){
 }
 
 autob1.ss <- function(args){
-    buffer <- attr(mask, "buffer")
+    buffer <- attr(args$mask, "buffer")
     cutoff <- args$cutoff
     max.ss <- max(args$capt$ss)
     out <- (max.ss - cutoff)/(buffer/2)
