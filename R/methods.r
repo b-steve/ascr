@@ -117,7 +117,7 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
     if ("linked" %in% pars){
         keep <- c(keep, which.linked)
     }
-    object$boot.vcov[keep, keep, drop = FALSE]
+    object$boot$vcov[keep, keep, drop = FALSE]
 }
 
 #' Extract standard errors from an admbsecr model fit
@@ -175,10 +175,10 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     }
     par.names <- names(object$coefficients)
     which.linked <- grep("_link", par.names)
-    linked <- object$boot.se[which.linked]
+    linked <- object$boot$se[which.linked]
     which.derived <- which(par.names == "esa" | par.names == "Da")
-    derived <- object$boot.se[which.derived]
-    fitted <- object$boot.se[-c(which.linked, which.derived)]
+    derived <- object$boot$se[which.derived]
+    fitted <- object$boot$se[-c(which.linked, which.derived)]
     out <- mget(pars)
     names(out) <- NULL
     c(out, recursive = TRUE)
@@ -342,14 +342,14 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
                 } else {
                     j <- i
                 }
-                qqnorm(object$boot[, j], main = i)
-                abline(mean(object$boot[, j], na.rm = TRUE),
-                       sd(object$boot[, j], na.rm = TRUE))
+                qqnorm(object$boot$boots[, j], main = i)
+                abline(mean(object$boot$boots[, j], na.rm = TRUE),
+                       sd(object$boot$boots[, j], na.rm = TRUE))
             }
             par(opar)
         }
     } else if (method == "basic"){
-        qs <- t(apply(object$boot[, all.parm, drop = FALSE], 2, quantile,
+        qs <- t(apply(object$boot$boots[, all.parm, drop = FALSE], 2, quantile,
                       probs = c((1 - level)/2, 1 - (1 - level)/2),
                       na.rm = TRUE))
         mat <- cbind(coef(object, pars = "all")[all.parm], qs)
@@ -358,7 +358,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
         }
         out <- t(apply(mat, 1, FUN.basic))
     } else if (method == "percentile"){
-        out <- t(apply(object$boot[, all.parm, drop = FALSE], 2, quantile,
+        out <- t(apply(object$boot$boots[, all.parm, drop = FALSE], 2, quantile,
                        probs = c((1 - level)/2, 1 - (1 - level)/2),
                        na.rm = TRUE))
     }
