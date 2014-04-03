@@ -185,23 +185,3 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     class(out) <- c("admbsecr.boot", class(fit))
     out
 }
-
-boot.fit.5 <- boot.admbsecr(simple.hn.fit, N = 5, n.cores = 4)
-boot.fit.25 <- boot.admbsecr(simple.hn.fit, N = 25, n.cores = 4)
-boot.fit.50 <- boot.admbsecr(simple.hn.fit, N = 50, n.cores = 4)
-boot.fit.100 <- boot.admbsecr(simple.hn.fit, N = 100, n.cores = 4)
-boot.fit.200 <- boot.admbsecr(simple.hn.fit, N = 200, n.cores = 4)
-boot.fit.500 <- boot.admbsecr(simple.hn.fit, N = 500, n.cores = 4)
-boot.fit.1000 <- boot.admbsecr(simple.hn.fit, N = 1000, n.cores = 4)
-
-bias.mce <- numeric(5)
-se.mce <- numeric(5)
-sizes <- c(5, 25, 50, 100, 200)
-for (i in 1:5){
-    name <- paste("boot", "fit", sizes[i], sep = ".")
-    fit <- get(name)
-    bias.mce[i] <- fit$boot$bias.mce["D"]
-    se.mce[i] <- fit$boot$se.mce["D"]
-}
-plot(sizes, bias.mce, type = "l", ylim = c(0, max(bias.mce)))
-plot(sizes, se.mce, type = "l", ylim = c(0, max(se.mce)))
