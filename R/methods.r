@@ -277,8 +277,6 @@ print.summary.admbsecr <- function(x, ...){
 #'
 #' @param parm A character vector specifying which parameters are to
 #' be given confidence intervals.
-#' @param method A character string specifying the method used to
-#' calculate the confidence intervals. See 'Details' below.
 #' @param linked Logical, if \code{TRUE}, intervals for fitted
 #' parameters are calculated on their link scales, then transformed
 #' back onto their "real" scales.
@@ -297,6 +295,8 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
              boot = FALSE, ...)
 }
 
+#' @param method A character string specifying the method used to
+#' calculate the confidence intervals. See 'Details' below.
 #' @param qqplot Logical, if \code{TRUE} and \code{method} is
 #' \code{"default"} then a normal QQ plot is plotted. The default
 #' method is based on a normal approximation; this plot tests its
@@ -343,13 +343,15 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
                     j <- i
                 }
                 qqnorm(object$boot[, j], main = i)
-                abline(mean(object$boot[, j]), sd(object$boot[, j]))
+                abline(mean(object$boot[, j], na.rm = TRUE),
+                       sd(object$boot[, j], na.rm = TRUE))
             }
             par(opar)
         }
     } else if (method == "basic"){
         qs <- t(apply(object$boot[, all.parm, drop = FALSE], 2, quantile,
-                      probs = c((1 - level)/2, 1 - (1 - level)/2)))
+                      probs = c((1 - level)/2, 1 - (1 - level)/2),
+                      na.rm = TRUE))
         mat <- cbind(coef(object, pars = "all")[all.parm], qs)
         FUN.basic <- function(x){
             2*x[1] - c(x[3], x[2])
@@ -357,7 +359,8 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
         out <- t(apply(mat, 1, FUN.basic))
     } else if (method == "percentile"){
         out <- t(apply(object$boot[, all.parm, drop = FALSE], 2, quantile,
-                      probs = c((1 - level)/2, 1 - (1 - level)/2)))
+                       probs = c((1 - level)/2, 1 - (1 - level)/2),
+                       na.rm = TRUE))
     }
     if (linked){
         for (i in fitted.names){

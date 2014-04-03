@@ -39,10 +39,8 @@
 #'
 #' @param fit A fitted \code{admbsecr} model object.
 #' @param N The number of bootstrap resamples.
-#' @param prog Logical, if \code{TRUE}, a progress bar is shown when
-#' \code{n.cores} is 1. If \code{n.cores} > 1, then progress is
-#' reported in a text file \code{prog.txt} which is created in the
-#' working directory.
+#' @param prog Logical, if \code{TRUE}, a progress bar is shown. Only
+#' available if \code{n.cores} is 1.
 #' @param n.cores A positive integer representing the number of cores
 #' to use for parallel processing.
 #'
@@ -54,6 +52,9 @@
 #'
 #' @export
 boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
+    if (n.cores != 1){
+        prog <- FALSE
+    }
     args <- fit$args
     orig.sv <- args$sv
     ## Set start values to estimated parameters.
@@ -70,7 +71,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     n.pars <- length(fit$coefficients)
     seeds <- sample(1:1e8, size = N)
     ## Function to get fit.boot.
-    FUN <- function(i, fit, args, call.freqs, seeds, prog){
+    FUN <- function(i, fit, args, call.freqs, seeds){
         set.seed(seeds[i])
         ## Simulating capture history.
         args$capt <- sim.capt(fit)
@@ -82,22 +83,17 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
         }
         ## Fitting model.
         fit.boot <- try(do.call("admbsecr", args), silent = TRUE)
+        ## If unconverged, refit model with default start values.
         if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
-            out <- NA
+            args$sv <- NULL
+            fit.boot <- try(do.call("admbsecr", args), silent = TRUE)
+        }
+        ## If still unconverged, give up and report NA.
+        if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
+            n.par <- length(fit$coefficients)
+            out <- rep(NA, n.par)
         } else {
             out <- fit.boot$coefficients
-        }
-        ## Writing progress bar to progress text file.
-        if (prog & file.exists("prog.txt")){
-            curr.prog <- strsplit(readLines("prog.txt"), " /")[[1]][1]
-            curr.prog <- as.numeric(strsplit(curr.prog, ", ")[[1]][2])
-            new.prog <- curr.prog + 1
-            N <- length(seeds)
-            n.increments <- round(70*new.prog/N)
-            perc <- round(100*new.prog/N)
-            cat("  |", rep("=", n.increments), rep(" ", 70 - n.increments),
-                "|", rep(" ", 4 - nchar(perc)), perc, "%, ", new.prog, " / ",
-                N, "\n", sep = "", file = "prog.txt")
         }
         out
     }
@@ -109,7 +105,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
             pb <- txtProgressBar(min = 0, max = N, style = 3)
         }
         for (i in 1:N){
-            res[i, ] <- FUN(i, fit, args, call.freqs, seeds, prog = FALSE)
+            res[i, ] <- FUN(i, fit = fit, args = args, call.freqs = call.freqs,
+                            seeds = seeds)
             ## Updating progress bar.
             if (prog){
                 setTxtProgressBar(pb, i)
@@ -130,11 +127,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
         clusterEvalQ(cluster, {
             library(admbsecr)
         })
-        if (prog){
-            cat("  |", rep(" ", 70), "|   0%, ", 0, " / ", N, "\n", sep = "",
-                file = "prog.txt")
-        }
-        res <- t(parSapplyLB(cluster, 1:N, FUN, fit, args, call.freqs, seeds, prog))
+        res <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit, args = args,
+                           call.freqs = call.freqs, seeds = seeds))
         stopCluster(cluster)
         if (prog){
             unlink("prog.txt")
@@ -142,7 +136,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     }
     ## Calculating bootstrapped standard errors, correlations and
     ## covariances.
-    se <- apply(res, 2, sd)
+    se <- apply(res, 2, sd, na.rm = TRUE)
     names(se) <- names(fit$se)
     cor <- diag(n.pars)
     dimnames(cor) <- dimnames(fit$cor)
@@ -150,7 +144,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     dimnames(vcov) <- dimnames(fit$vcov)
     for (i in 1:(n.pars - 1)){
         for (j in (i + 1):n.pars){
-            cor[i, j] <- cor[j, i] <- cor(res[, i], res[, j])
+            cor[i, j] <- cor[j, i] <- cor(res[, i], res[, j], use = "na.or.complete")
             vcov[i, j] <- vcov[j, i] <- cor[i, j]*se[i]*se[j]
         }
     }
