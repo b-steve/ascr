@@ -43,6 +43,20 @@
 #' available if \code{n.cores} is 1.
 #' @param n.cores A positive integer representing the number of cores
 #' to use for parallel processing.
+#' @param M The number of bootstrap resamples for the secondary
+#' bootstrap used to calculate Monte Carlo error. See 'Details' below.
+#'
+#' Monte Carlo error is calculated using a bootstrap of the estimates
+#' obtained from the initial bootstrap procedure; see Equation (9) in
+#' Koehler, Brown and Haneuse (2009). Note that this secondary
+#' bootstrap does not require the fitting of any further models, and
+#' so the increased processing time due to this procedure is
+#' negligible.
+#'
+#' @references Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009)
+#' On the assessment of Monte Carlo error in sumulation-based
+#' statistical analyses. \emph{The American Statistician},
+#' \strong{63}: 155--162.
 #'
 #' @examples
 #' \dontrun{
@@ -51,7 +65,7 @@
 #' }
 #'
 #' @export
-boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
+boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     if (n.cores != 1){
         prog <- FALSE
     }
@@ -68,7 +82,9 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
         args$sv[["g0"]] <- min(c(0.95, args$sv[["g0"]]))
     }
     call.freqs <- args$call.freqs
-    n.pars <- length(fit$coefficients)
+    coefs <- fit$coefficients
+    par.names <- names(coefs)
+    n.pars <- length(coefs)
     seeds <- sample(1:1e8, size = N)
     ## Function to get fit.boot.
     FUN <- function(i, fit, args, call.freqs, seeds){
@@ -99,7 +115,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     }
     if (n.cores == 1){
         res <- matrix(0, nrow = N, ncol = n.pars)
-        colnames(res) <- names(fit$coefficients)
+        colnames(res) <- par.names
         ## Setting up progress bar.
         if (prog){
             pb <- txtProgressBar(min = 0, max = N, style = 3)
@@ -137,22 +153,55 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1){
     ## Calculating bootstrapped standard errors, correlations and
     ## covariances.
     se <- apply(res, 2, sd, na.rm = TRUE)
-    names(se) <- names(fit$se)
+    names(se) <- par.names
     cor <- diag(n.pars)
-    dimnames(cor) <- dimnames(fit$cor)
+    dimnames(cor) <- list(par.names, par.names)
     vcov <- diag(se^2)
-    dimnames(vcov) <- dimnames(fit$vcov)
+    dimnames(vcov) <- list(par.names, par.names)
     for (i in 1:(n.pars - 1)){
         for (j in (i + 1):n.pars){
             cor[i, j] <- cor[j, i] <- cor(res[, i], res[, j], use = "na.or.complete")
             vcov[i, j] <- vcov[j, i] <- cor[i, j]*se[i]*se[j]
         }
     }
+    bias <- apply(res, 2, mean, na.rm = TRUE) - coefs
+    ## Bootstrap to calculate MCE for bias and standard errors.
+    converged <- which(!is.na(res[, 1]))
+    n.converged <- length(converged)
+    mce.boot <- matrix(sample(converged, size = n.converged*M,
+                              replace = TRUE), nrow = M,
+                       ncol = n.converged)
+    bias.mce <- se.mce <- numeric(n.pars)
+    names(bias.mce) <- names(se.mce) <- par.names
+    for (i in par.names){
+        par.boot <- matrix(res[mce.boot, i], nrow = M, ncol = n.converged)
+        bias.mce[i] <- sd(apply(par.boot, 1, mean) - coefs[i] - bias[i])
+        se.mce[i] <- sd(apply(par.boot, 1, sd))
+    }
     out <- fit
-    out$boot.se <- se
-    out$boot.cor <- cor
-    out$boot.vcov <- vcov
-    out$boot <- res
+    boot <- list(boots = res, se = se, se.mce = se.mce, cor = cor, vcov = vcov,
+                 bias = bias, bias.mce = bias.mce)
+    out$boot <- boot
     class(out) <- c("admbsecr.boot", class(fit))
     out
 }
+
+boot.fit.5 <- boot.admbsecr(simple.hn.fit, N = 5, n.cores = 4)
+boot.fit.25 <- boot.admbsecr(simple.hn.fit, N = 25, n.cores = 4)
+boot.fit.50 <- boot.admbsecr(simple.hn.fit, N = 50, n.cores = 4)
+boot.fit.100 <- boot.admbsecr(simple.hn.fit, N = 100, n.cores = 4)
+boot.fit.200 <- boot.admbsecr(simple.hn.fit, N = 200, n.cores = 4)
+boot.fit.500 <- boot.admbsecr(simple.hn.fit, N = 500, n.cores = 4)
+boot.fit.1000 <- boot.admbsecr(simple.hn.fit, N = 1000, n.cores = 4)
+
+bias.mce <- numeric(5)
+se.mce <- numeric(5)
+sizes <- c(5, 25, 50, 100, 200)
+for (i in 1:5){
+    name <- paste("boot", "fit", sizes[i], sep = ".")
+    fit <- get(name)
+    bias.mce[i] <- fit$boot$bias.mce["D"]
+    se.mce[i] <- fit$boot$se.mce["D"]
+}
+plot(sizes, bias.mce, type = "l", ylim = c(0, max(bias.mce)))
+plot(sizes, se.mce, type = "l", ylim = c(0, max(se.mce)))
