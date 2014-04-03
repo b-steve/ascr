@@ -5,7 +5,7 @@
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, sf = NULL, ss.link = "identity", cutoff = NULL,
   call.freqs = NULL, sound.speed = 330, trace = FALSE, clean = TRUE,
-  exe.type = "old")
+  cbs = NULL, gbs = NULL, exe.type = "old")
 }
 \arguments{
   \item{capt}{A list with named components, containing the
@@ -70,6 +70,14 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 
   \item{clean}{Logical, if \code{TRUE} ADMB output files
   are removed.}
+
+  \item{cbs}{The CMPDIF_BUFFER_SIZE, can increase if
+  \code{cmpdiff.tmp} gets too large (please ignore, unless
+  you are familiar with ADMB and know what you are doing).}
+
+  \item{gbs}{The GRADSTACK_BUFFER_SIZE, can increase if
+  \code{gradfil1.tmp} gets too large (please ignore, unless
+  you are familiar with ADMB and know what you are doing).}
 
   \item{exe.type}{Character string, either \code{"old"} or
   \code{"new"}, depending on which executable is to be used

@@ -189,6 +189,12 @@
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R console.
 #' @param clean Logical, if \code{TRUE} ADMB output files are removed.
+#' @param cbs The CMPDIF_BUFFER_SIZE, can increase if
+#' \code{cmpdiff.tmp} gets too large (please ignore, unless you are
+#' familiar with ADMB and know what you are doing).
+#' @param gbs The GRADSTACK_BUFFER_SIZE, can increase if
+#' \code{gradfil1.tmp} gets too large (please ignore, unless you are
+#' familiar with ADMB and know what you are doing).
 #' @param exe.type Character string, either \code{"old"} or
 #' \code{"new"}, depending on which executable is to be used (for
 #' development purposes only; please ignore).
@@ -220,7 +226,8 @@
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, sf = NULL, ss.link = "identity",
                      cutoff = NULL, call.freqs = NULL, sound.speed  = 330,
-                     trace = FALSE, clean = TRUE, exe.type = "old"){
+                     trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
+                     exe.type = "old"){
     arg.names <- names(as.list(environment()))
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
@@ -517,6 +524,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         exe.name <- "secr_new"
     } else if (exe.type == "old"){
         exe.name <- "secr"
+    } else if (exe.type == "test"){
+        exe.name <- "secr_test"
     } else {
         stop("Argument 'exe.type' must be \"old\" or \"new\".")
     }
@@ -553,10 +562,17 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         file.symlink(exe.loc, exe.name)
     }
+    ## Sorting out -cbs and -gbs.
+    if (!is.null(cbs)){
+        cbs <- paste(" -cbs", format(cbs, scientific = FALSE))
+    }
+    if (!is.null(gbs)){
+        gbs <- paste(" -gbs", format(gbs, scientific = FALSE))
+    }
     ## Running ADMB executable.
     cmd <- paste("./"[os.type != "windows"], exe.name,
                  " -ind secr.dat -ainp secr.pin",
-                 " -nohess"[fit.freqs], sep = "")
+                 " -nohess"[fit.freqs], cbs, gbs, sep = "")
     if (os.type == "windows"){
         system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
     } else {
