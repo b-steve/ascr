@@ -759,3 +759,15 @@ NULL
 #' @docType data
 #' @keywords datasets
 NULL
+
+#' An example model object
+#'
+#' This is a model object that results when the \link{boot.admbsecr}
+#' function is run on the object \link{simple.hn.fit}, with \code{N}
+#' set to 500.
+#' @name boot.simple.hn.fit
+#' @format A list of class \code{"admbsecr.boot"}.
+#' @usage boot.simple.hn.fit
+#' @docType data
+#' @keywords datasets
+NULL
