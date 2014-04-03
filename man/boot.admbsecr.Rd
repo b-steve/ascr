@@ -2,7 +2,7 @@
 \alias{boot.admbsecr}
 \title{Bootstrapping SECR data}
 \usage{
-boot.admbsecr(fit, N, prog = TRUE, n.cores = 1)
+boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000)
 }
 \arguments{
   \item{fit}{A fitted \code{admbsecr} model object.}
@@ -14,6 +14,17 @@ boot.admbsecr(fit, N, prog = TRUE, n.cores = 1)
 
   \item{n.cores}{A positive integer representing the number
   of cores to use for parallel processing.}
+
+  \item{M}{The number of bootstrap resamples for the
+  secondary bootstrap used to calculate Monte Carlo error.
+  See 'Details' below.
+
+  Monte Carlo error is calculated using a bootstrap of the
+  estimates obtained from the initial bootstrap procedure;
+  see Equation (9) in Koehler, Brown and Haneuse (2009).
+  Note that this secondary bootstrap does not require the
+  fitting of any further models, and so the increased
+  processing time due to this procedure is negligible.}
 }
 \value{
 A list of class \code{"admbsecr.boot"}. Components contain
@@ -64,5 +75,11 @@ such models.
 ## In practice, N should be >> 100, but this leads to long computation time for a simple example.
 boot.fit <- boot.admbsecr(fit = simple.hn.fit, N = 100)
 }
+}
+\references{
+Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009) On
+the assessment of Monte Carlo error in sumulation-based
+statistical analyses. \emph{The American Statistician},
+\strong{63}: 155--162.
 }
 

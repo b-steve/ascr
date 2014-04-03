@@ -1,0 +1,15 @@
+\docType{data}
+\name{boot.simple.hn.fit}
+\alias{boot.simple.hn.fit}
+\title{An example model object}
+\format{A list of class \code{"admbsecr.boot"}.}
+\usage{
+boot.simple.hn.fit
+}
+\description{
+This is a model object that results when the
+\link{boot.admbsecr} function is run on the object
+\link{simple.hn.fit}, with \code{N} set to 500.
+}
+\keyword{datasets}
+
