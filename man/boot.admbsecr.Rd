@@ -10,9 +10,7 @@ boot.admbsecr(fit, N, prog = TRUE, n.cores = 1)
   \item{N}{The number of bootstrap resamples.}
 
   \item{prog}{Logical, if \code{TRUE}, a progress bar is
-  shown when \code{n.cores} is 1. If \code{n.cores} > 1,
-  then progress is reported in a text file \code{prog.txt}
-  which is created in the working directory.}
+  shown. Only available if \code{n.cores} is 1.}
 
   \item{n.cores}{A positive integer representing the number
   of cores to use for parallel processing.}

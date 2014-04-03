@@ -13,13 +13,13 @@
   \item{parm}{A character vector specifying which
   parameters are to be given confidence intervals.}
 
-  \item{method}{A character string specifying the method
-  used to calculate the confidence intervals. See 'Details'
-  below.}
-
   \item{linked}{Logical, if \code{TRUE}, intervals for
   fitted parameters are calculated on their link scales,
   then transformed back onto their "real" scales.}
+
+  \item{method}{A character string specifying the method
+  used to calculate the confidence intervals. See 'Details'
+  below.}
 
   \item{qqplot}{Logical, if \code{TRUE} and \code{method}
   is \code{"default"} then a normal QQ plot is plotted. The
