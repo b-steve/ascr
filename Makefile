@@ -3,6 +3,7 @@ ALL:
 	make prepare
 	make rcpp
 	make roxygen
+	make clean
 	make build
 	make check
 	make install
@@ -57,7 +58,7 @@ pdf:
 	rm ..pdf
 
 clean:
-	rm -rfv ..Rcheck/
+	rm -rfv ..Rcheck/ ..pdf
 	rm -rfv src/*.o src/*.so src/*.rds
 	rm -rfv src-i386/ src-x64/ src/admbsecr.dll
 	rm -rfv admbsecr.Rcheck
