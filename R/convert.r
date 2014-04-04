@@ -28,10 +28,12 @@ create.mask <- function(traps, buffer, ...){
 }
 
 #' Creating capture history object.
+#' 
 #' Creates a capture history object to use with the function \code{\link{admbsecr}}.
 #'
 #' @param captures A data frame.
 #' @param n.traps The total number of traps.
+#' 
 #' @export
 create.capt <- function(captures, n.traps = NULL){
     ids <- captures[, 2]

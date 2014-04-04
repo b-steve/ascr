@@ -228,11 +228,7 @@ summary.admbsecr <- function(object, ...){
     class(out) <- c("summary.admbsecr", class(out))
     out
 }
-#' Printing admbsecr summaries
-#'
-#' @param x An object of class \code{summary.admbsecr}.
-#' @inheritParams coef.admbsecr
-#'
+
 #' @method print summary.admbsecr
 #' @S3method print summary.admbsecr
 print.summary.admbsecr <- function(x, ...){

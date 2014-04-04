@@ -8,17 +8,17 @@
 #' indicating which individuals' locations are to be plotted.
 #' @param infotypes A character vector indicating the type(s) of
 #' information to be used when plotting the estimated density of
-#' location.  Elements can be a subset of \code{"capt"}, \code{"bearing"},
-#' \code{"dist"}, \code{"ss"}, \code{"toa"}, \code{"combined"}, and
-#' \code{"all"}, where \code{"capt"} shows estimated location only
-#' using detection locations, \code{"combined"} combines all
-#' information types together, and \code{"all"} plots all possible
-#' contour types. When signal strength information is used in the
-#' model fit, \code{"capt"} and \code{"ss"} are equivalent as the
-#' signal strength information is built into the detection
-#' function. By default, only the most informative contour is plotted,
-#' i.e., \"capt\" if the model was fitted with no additional
-#' information, and \"combined\" otherwise.
+#' location.  Elements can be a subset of \code{"capt"},
+#' \code{"bearing"}, \code{"dist"}, \code{"ss"}, \code{"toa"},
+#' \code{"combined"}, and \code{"all"}, where \code{"capt"} shows
+#' estimated location only using detection locations,
+#' \code{"combined"} combines all information types together, and
+#' \code{"all"} plots all possible contour types. When signal strength
+#' information is used in the model fit, \code{"capt"} and \code{"ss"}
+#' are equivalent as the signal strength information is built into the
+#' detection function. By default, only the most informative contour
+#' is plotted, i.e., \code{"capt"} if the model was fitted with no
+#' additional information, and \code{"combined"} otherwise.
 #' @param xlim A numeric vector of length 2, giving the x coordinate range.
 #' @param ylim A numeric vector of length 2, giving the y coordinate range.
 #' @param mask A matrix with two columns. Each row provides Cartesian
