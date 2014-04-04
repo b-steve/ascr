@@ -4,9 +4,19 @@ admbsecr 1.0.2
 * Some bug fixes to fitting signal strength models with a log-link
   function.
 
-* Implemented methods for the summary() and confint() generic
+* Added methods for the summary() and confint() generic
   functions. The confint() method can calculate a range of different
   intervals, including a number of bootstrap techniques.
+
+* Added the calculation of Monte Carlo error in estimates of biases
+  and standard errors calculated using boot.admbsecr(). The function
+  get.mce() can be used to extract these.
+
+* Added arguments cbs and gbs to admbsecr(). Changing these from the
+  defaults can potentially decrease computation time if ADMB is
+  writing large cmpdiff.tmp and gradfil1.tmp files during
+  optimisation. It is only recommended users familiar with ADMB change
+  these.
 
 admbsecr 1.0.1
 --------------
