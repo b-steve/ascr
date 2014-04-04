@@ -7,7 +7,7 @@
   linked = FALSE, ...)
 
 \method{confint}{admbsecr.boot}(object, parm = "fitted", level = 0.95,
-  method = "default", linked = FALSE, qqplot = FALSE, ...)
+  method = "default", linked = FALSE, qqplot = FALSE, ask = TRUE, ...)
 }
 \arguments{
   \item{parm}{A character vector specifying which
@@ -25,6 +25,9 @@
   is \code{"default"} then a normal QQ plot is plotted. The
   default method is based on a normal approximation; this
   plot tests its validity.}
+
+  \item{ask}{Logical, if \code{TRUE}, hitting return will
+  show the next plot.}
 
   \item{object}{A fitted model from
   \link[admbsecr]{admbsecr}.}
