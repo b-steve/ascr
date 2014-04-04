@@ -36,7 +36,7 @@ For this option Windows users will need a compatible version of [Rtools](http://
 
 * An error attempting to install the R-forge version using `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
 
-* This R library is very much in development, so things are likely to go wrong. Please feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
+* This R package is very much in development, so things are likely to go wrong. Please feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
 
 ## Acknowledgements
 
