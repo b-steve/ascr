@@ -9,8 +9,9 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 }
 \arguments{
   \item{capt}{A list with named components, containing the
-  capture history and supplementary information. See
-  'Details' below.}
+  capture history and supplementary information. The
+  function \link{create.capt} will return a suitable
+  object. See 'Details' below.}
 
   \item{traps}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a trap (or
@@ -112,6 +113,12 @@ Hessian. Alternatively, \link{boot.admbsecr} can be used to
 carry out a parametric bootstrap procedure, from which
 parameter uncertainty can also be inferred.
 
+The class of model fitted by this function (and, indeed,
+around which this package is based) was first proposed by
+Borchers et al. (in press); this reference is a good
+starting point for practitioners looking to implement these
+methods.
+
 If the data are from an acoustic survey where individuals
 call more than once (i.e., the argument \code{call.freqs}
 contains values that are not 1), then standard errors
@@ -184,12 +191,20 @@ Stevenson et al., in prep., for details).
   \item \eqn{g(d) = g_0\ (1 - exp(-(d/\sigma)^{-z}))}{g(d)
   = g0 * ( 1 - exp( -(d/sigma)^{-z} ) )} }
 
+  For \code{detfn = "lth"}: \itemize{ \item Estimated
+  parameters are \code{shape.1}
+  \ifelse{latex}{(\eqn{\kappa})}{}, \code{shape.2}
+  \ifelse{latex}{(\eqn{\nu})}{}, and \code{scale}
+  \ifelse{latex}{(\eqn{\tau})}{}.  \item \eqn{g(d) = 0.5 -
+  0.5\ erf(\kappa - exp(\nu - \tau d))}{g(d) = 0.5 - 0.5 *
+  erf( shape.1 - exp( shape.2 - scale * d ) )} }
+
   For \code{detfn = "th"}: \itemize{ \item Estimated
   parameters are \code{shape}
   \ifelse{latex}{(\eqn{\kappa})}{} and \code{scale}
   \ifelse{latex}{(\eqn{\tau})}{}.  \item \eqn{g(d) = 0.5 -
-  0.5\ erf(d/\kappa - \tau)}{g(d) = 0.5 - 0.5 * erf(
-  d/shape - scale )} }
+  0.5\ erf(d/\tau - \kappa)}{g(d) = 0.5 - 0.5 * erf(
+  d/scale - shape )} }
 
   For \code{detfn = "ss"}: \itemize{ \item The signal
   strength detection function is special in that it
@@ -288,6 +303,12 @@ bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
 Borchers, D. L. (2012) A non-technical overview of
 spatially explicit capture-recapture models. \emph{Journal
 of Ornithology}, \strong{152}: 435--444.
+
+Borchers, D. L., Stevenson, B. C., Kidney, D., Thomas, L.,
+and Marques, T. A. (in press) A unifying model for
+capture-recapture and distance sampling surveys of wildlife
+populations. \emph{Journal of the American Statistical
+Association}.
 
 Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey, G.
 J., Swift, R. J., and Gillespie, D. M. (in prep.) An

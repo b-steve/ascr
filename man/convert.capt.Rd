@@ -12,8 +12,9 @@ convert.capt(capt, traps, capthist = TRUE)
   function.}
 
   \item{capt}{A list with named components, containing the
-  capture history and supplementary information. See
-  'Details' below.}
+  capture history and supplementary information. The
+  function \link{create.capt} will return a suitable
+  object. See 'Details' below.}
 
   \item{traps}{A matrix with two columns. Each row provides
   Cartesian coordinates for the location of a trap (or
