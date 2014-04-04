@@ -1,6 +1,6 @@
 \name{get.mask}
 \alias{get.mask}
-\title{Extracting mask point locations.}
+\title{Extracting mask point locations}
 \usage{
 get.mask(fit)
 }

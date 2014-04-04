@@ -1,6 +1,6 @@
 \name{get.traps}
 \alias{get.traps}
-\title{Extracting trap locations.}
+\title{Extracting trap locations}
 \usage{
 get.traps(fit)
 }

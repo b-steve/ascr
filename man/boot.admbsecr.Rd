@@ -17,14 +17,7 @@ boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000)
 
   \item{M}{The number of bootstrap resamples for the
   secondary bootstrap used to calculate Monte Carlo error.
-  See 'Details' below.
-
-  Monte Carlo error is calculated using a bootstrap of the
-  estimates obtained from the initial bootstrap procedure;
-  see Equation (9) in Koehler, Brown and Haneuse (2009).
-  Note that this secondary bootstrap does not require the
-  fitting of any further models, and so the increased
-  processing time due to this procedure is negligible.}
+  See 'Details' below. If M = 0, then this is skipped.}
 }
 \value{
 A list of class \code{"admbsecr.boot"}. Components contain
@@ -61,14 +54,32 @@ methods). For standard errors and the variance-covariance
 matrix based on maximum likelihood asymptotic theory, the
 methods \link{stdEr.admbsecr} and \link{vcov.admbsecr} must
 be called directly.
+}
+\section{Bootstrapping for acoustic surveys}{
+  For fits based on acoustic surveys where the argument
+  \code{call.freqs} is provided to the \code{admbsecr}
+  function, the simulated data allocates multiple calls to
+  the same location based on an estimated distribution of
+  the call frequencies. Using a parametric bootstrap is
+  currently the only way parameter uncertainty can be
+  estimated for such models (see Stevenson et al., in
+  prep., for details).
+}
 
-For fits based on acoustic surveys where the argument
-\code{call.freqs} is provided to the \code{admbsecr}
-function, the simulated data allocates multiple calls to
-the same location based on an estimated distribution of the
-call frequencies. Using a parametric bootstrap is currently
-the only way parameter uncertainty can be estimated for
-such models.
+\section{Monte Carlo error}{
+  There will be some error in esimates based on the
+  parametric bootstrap (e.g., standard errors and estimates
+  of bias) because the number of bootstrap simulations is
+  not infinite. By default, this function calculates Monte
+  Carlo error using a bootstrap of the estimates obtained
+  from the initial bootstrap procedure; see Equation (9) in
+  Koehler, Brown and Haneuse (2009). Note that this
+  secondary bootstrap does not require the fitting of any
+  further models, and so the increased processing time due
+  to this procedure is negligible.
+
+  Monte Carlo error for standard errors and estimates of
+  bias can be extracted using the function \link{get.mce}.
 }
 \examples{
 \dontrun{
@@ -81,5 +92,10 @@ Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009) On
 the assessment of Monte Carlo error in sumulation-based
 statistical analyses. \emph{The American Statistician},
 \strong{63}: 155--162.
+
+Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey, G.
+J., Swift, R. J., and Gillespie, D. M. (in prep.) An
+acoustic spatially explicit capture-recapture method for
+estimating vocalizing amphibian density.
 }
 

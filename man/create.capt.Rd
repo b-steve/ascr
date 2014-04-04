@@ -1,7 +1,6 @@
 \name{create.capt}
 \alias{create.capt}
-\title{Creating capture history object.
-Creates a capture history object to use with the function \code{\link{admbsecr}}.}
+\title{Creating capture history object.}
 \usage{
 create.capt(captures, n.traps = NULL)
 }
@@ -11,7 +10,7 @@ create.capt(captures, n.traps = NULL)
   \item{n.traps}{The total number of traps.}
 }
 \description{
-Creating capture history object. Creates a capture history
-object to use with the function \code{\link{admbsecr}}.
+Creates a capture history object to use with the function
+\code{\link{admbsecr}}.
 }
 

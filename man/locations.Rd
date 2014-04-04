@@ -29,9 +29,9 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   model fit, \code{"capt"} and \code{"ss"} are equivalent
   as the signal strength information is built into the
   detection function. By default, only the most informative
-  contour is plotted, i.e., \"capt\" if the model was
-  fitted with no additional information, and \"combined\"
-  otherwise.}
+  contour is plotted, i.e., \code{"capt"} if the model was
+  fitted with no additional information, and
+  \code{"combined"} otherwise.}
 
   \item{xlim}{A numeric vector of length 2, giving the x
   coordinate range.}

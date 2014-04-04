@@ -55,7 +55,9 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
   \item{ss.link}{A character string, either
   \code{"indentity"} or \code{"log"}, which specifies the
   link function for the signal strength detection function.
-  Only required when \code{detfn} is \code{"ss"}.}
+  Only required when \code{detfn} is \code{"ss"} (i.e.,
+  when there is signal strength information in
+  \code{capt}).}
 
   \item{cutoff}{The signal strength threshold, above which
   sounds are identified as detections. Only required when

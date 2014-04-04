@@ -1,0 +1,22 @@
+\name{get.mce}
+\alias{get.mce}
+\title{Extracting Monte Carlo error}
+\usage{
+get.mce(fit, estimate)
+}
+\arguments{
+  \item{estimate}{A character string, either \code{"bias"}
+  or \code{"se"}, which determines whether Monte Carlo
+  errors for bias estimates or standard errors are
+  reported.}
+
+  \item{fit}{A fitted model from \link{admbsecr}.}
+}
+\description{
+Extracts calculated Monte Carlo errors from a bootstrap
+procedure carried out by \link{boot.admbsecr}.
+}
+\seealso{
+\link{boot.admbsecr}
+}
+

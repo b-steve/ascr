@@ -40,8 +40,8 @@ model fitted using \link{admbsecr}.
 }
 \details{
 This is a similar function to \link{coef.admbsecr}, however
-the latter does not allow for extraction of parameters that
-have been fixed using \code{admbsecr}'s \code{fix}
+\code{get.par} also allows for extraction of parameters
+that have been fixed using \code{admbsecr}'s \code{fix}
 argument.
 }
 \examples{
