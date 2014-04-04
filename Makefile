@@ -53,7 +53,7 @@ install:
 	R CMD INSTALL . --install-tests
 
 pdf:
-	R CMD Rd2pdf --pdf .
+	R CMD Rd2pdf --pdf . &
 	rm ..pdf
 
 clean:
