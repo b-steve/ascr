@@ -94,9 +94,9 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' Extracts, estimated, derived, and fitted parameters from a model
 #' fitted using \link{admbsecr}.
 #'
-#' This is a similar function to \link{coef.admbsecr}, however the
-#' latter does not allow for extraction of parameters that have been
-#' fixed using \code{admbsecr}'s \code{fix} argument.
+#' This is a similar function to \link{coef.admbsecr}, however
+#' \code{get.par} also allows for extraction of parameters that have
+#' been fixed using \code{admbsecr}'s \code{fix} argument.
 #'
 #' @param pars A character vector containing names of parameter values
 #' to be extracted. Alternatively, the character string \code{"all"}
@@ -191,7 +191,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     out
 }
 
-#' Extracting mask point locations.
+#' Extracting mask point locations
 #'
 #' Extracts the mask used in an admbsecr fit.
 #'
@@ -204,7 +204,7 @@ get.mask <- function(fit){
     fit$args$mask
 }
 
-#' Extracting trap locations.
+#' Extracting trap locations
 #'
 #' Extracts the trap locations used in an admbsecr fit.
 #'
@@ -272,4 +272,28 @@ inv.scaled.logit.link <- function(x){
 scaled.log.link <- function(x){
     x <- x + 1e8
     log(x)
+}
+
+#' Extracting Monte Carlo error
+#'
+#' Extracts calculated Monte Carlo errors from a bootstrap procedure
+#' carried out by \link{boot.admbsecr}.
+#'
+#' @param estimate A character string, either \code{"bias"} or
+#' \code{"se"}, which determines whether Monte Carlo errors for bias
+#' estimates or standard errors are reported.
+#' @inheritParams locations
+#'
+#' @seealso \link{boot.admbsecr}
+#'
+#' @export
+get.mce <- function(fit, estimate){
+    if (estimate == "bias"){
+        out <- fit$boot$bias.mce
+    } else if (estimate == "se"){
+        out <- fit$boot$se.mce
+    } else {
+        stop("The argument 'estimate' must be either \"bias\" or \"se\"")
+    }
+    out
 }
