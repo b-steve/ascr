@@ -1,4 +1,4 @@
-*.sh
+updatepkg.sh
 *~
 results/
 .Rbuildignore/
