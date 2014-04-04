@@ -6,11 +6,10 @@
 #'
 #' ADMB uses a quasi-Newton method to find maximum likelihood
 #' estimates for the model parameters. Standard errors are calculated
-#' by taking the inverse of the negative of the Hessian.
-#'
-#' Alternatively, \link{boot.admbsecr} can be used to carry out a
-#' parametric bootstrap procedure, from which parameter uncertainty
-#' can also be inferred.
+#' by taking the inverse of the negative of the
+#' Hessian. Alternatively, \link{boot.admbsecr} can be used to carry
+#' out a parametric bootstrap procedure, from which parameter
+#' uncertainty can also be inferred.
 #'
 #' If the data are from an acoustic survey where individuals call more
 #' than once (i.e., the argument \code{call.freqs} contains values
@@ -126,13 +125,48 @@
 #'
 #' @section Convergence:
 #'
+#' If maximum likelihood estimates could not be found during
+#' optimisation, then \code{admbsecr} will usually show a warning that
+#' the maximum gradient component is large, or possibly throw an error
+#' reporting that a \code{.par} file is missing.
+#'
 #' The best approach to fixing convergence issues is to re-run the
 #' \code{admbsecr} function with the argument \code{trace} set to
 #' \code{TRUE}. Parameter values will be printed out for each step of
-#' the optimisation algorithm. Look for a large jump in a parameter to
-#' a value far from what is feasible. This can be fixed by using the
+#' the optimisation algorithm.
+#'
+#' First, look for a large jump in a parameter to a value far from
+#' what is feasible. This issue can be fixed by using the
 #' \code{bounds} argument to restrict the parameter space over which
-#' ADMB searches to maximise the likelihood.
+#' ADMB searches for the maximum likelihood estimate.
+#'
+#' Alternatively, try a different set of start values using the
+#' argument \code{sv}; by default \code{admbsecr} will choose some
+#' start values, but these are not necessarily sensible. The start
+#' values that were used appear as the first line of text when
+#' \code{trace} is \code{TRUE}.
+#'
+#' Sometimes the algorithm appears to converge, but nevertheless
+#' perseveres reporting the same parameter values again and again for
+#' a while (prior to the calculation of the Hessian). This is because
+#' ADMB has failed to detect convergence as at least one of the
+#' gradient components is still larger than the convergence criterion
+#' (by default, 0.0001). It is possible to speed things up and help
+#' ADMB detect convergence earlier by either tightening parameter
+#' bounds (as above), or by setting appropriate scalefactors (using
+#' the argument \code{sf}). To do this, first identify which
+#' parameters have large gradient components from the "final
+#' statistics" section of the \code{trace} output. Next, find the
+#' default settings of the scalefactors by printing the object
+#' \code{fit$args$sf}, where \code{fit} is the original object returned
+#' by \code{admbsecr}. Finally, rerun \code{admbsecr} again, but this
+#' time set the argument \code{sf} manually. Set scalefactors for any
+#' parameters with small gradient components to the same as the
+#' defaults ascertained above, and increase those associated with
+#' large gradient components by a factor of 10. If the problem
+#' persists, repeat this process (e.g., if the same parameters still
+#' have large gradient components, increase the associated
+#' scalefactors by another factor of 10).
 #'
 #' @references Borchers, D. L. (2012) A non-technical overview of
 #' spatially explicit capture-recapture models. \emph{Journal of
@@ -169,14 +203,15 @@
 #' @param fix A named list. Component names are parameter names to be
 #' fixed, and each component is the fixed value for the associated
 #' parameter.
-#' @param sf A named list. Component names are parameter
-#' names, and each component is a scalefactor for the associated
-#' parameter. The default behaviour is to automatically select
-#' scalefactors based on parameter start values.
+#' @param sf A named list. Component names are parameter names, and
+#' each component is a scalefactor for the associated parameter. The
+#' default behaviour is to automatically select scalefactors based on
+#' parameter start values. See the section on convergence below.
 #' @param ss.link A character string, either \code{"indentity"} or
 #' \code{"log"}, which specifies the link function for the signal
 #' strength detection function. Only required when \code{detfn} is
-#' \code{"ss"}.
+#' \code{"ss"} (i.e., when there is signal strength information in
+#' \code{capt}).
 #' @param cutoff The signal strength threshold, above which sounds are
 #' identified as detections. Only required when \code{detfn} is
 #' \code{"ss"}.
@@ -188,22 +223,31 @@
 #' implemented}.
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R console.
-#' @param clean Logical, if \code{TRUE} ADMB output files are removed.
-#' @param cbs The CMPDIF_BUFFER_SIZE, can increase if
-#' \code{cmpdiff.tmp} gets too large (please ignore, unless you are
-#' familiar with ADMB and know what you are doing).
-#' @param gbs The GRADSTACK_BUFFER_SIZE, can increase if
-#' \code{gradfil1.tmp} gets too large (please ignore, unless you are
-#' familiar with ADMB and know what you are doing).
+#' @param clean Logical, if \code{TRUE} ADMB output files are
+#' removed. Otherwise, ADMB output file will remain in a directory,
+#' the location of which is reported after the model is fitted.
+#' @param cbs The CMPDIF_BUFFER_SIZE, set using the \code{-cbs} option
+#' of the executable created by ADMB. This can be increased to speed
+#' up optimisation if \code{cmpdiff.tmp} gets too large (please
+#' ignore, unless you are familiar with ADMB and know what you are
+#' doing).
+#' @param gbs The GRADSTACK_BUFFER_SIZE, set using the \code{-gbs}
+#' option of the executable created by ADMB. This can be increased to
+#' speed up optimisation if \code{gradfil1.tmp} gets too large (please
+#' ignore, unless you are familiar with ADMB and know what you are
+#' doing).
 #' @param exe.type Character string, either \code{"old"} or
 #' \code{"new"}, depending on which executable is to be used (for
 #' development purposes only; please ignore).
 #'
+#' @seealso \link{boot.admbsecr} to calculate standard errors and
+#' estimate bias using a parametric bootstrap.
 #' @seealso \link{coef.admbsecr}, \link{stdEr.admbsecr}, and
 #' \link{vcov.admbsecr} to extract estimated parameters, standard
 #' errors, and the variance-covariance matrix, respectively.
-#' @seealso \link{boot.admbsecr} to calculate standard errors using a
-#' parametric bootstrap.
+#' @seealso \link{confint.admbsecr} to calculate confidence intervals.
+#' @seealso \link{summary.admbsecr} to get a summary of estimates and
+#' standard errors.
 #' @seealso \link{show.detfn} to plot the estimated detection
 #' function.
 #' @seealso \link{locations} to plot estimated locations of particular
