@@ -12,6 +12,7 @@ win:
 	make prepare
 	make rcpp
 	make roxygen
+	make clean
 	make buildwin
 	make check
 	make install
