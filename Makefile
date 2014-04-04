@@ -39,16 +39,16 @@ roxygen:
 
 build:
 	R CMD build .
-	mv admbsecr_1.0.1.tar.gz .Rbuildignore/
+	mv admbsecr_1.0.2.tar.gz .Rbuildignore/
 
 buildwin:
 	rm -rfv .Rbuildignore
 	R CMD build .
 	mkdir .Rbuildignore
-	mv admbsecr_1.0.1.tar.gz .Rbuildignore/
+	mv admbsecr_1.0.2.tar.gz .Rbuildignore/
 
 check:
-	R CMD check .Rbuildignore/admbsecr_1.0.1.tar.gz --no-tests
+	R CMD check .Rbuildignore/admbsecr_1.0.2.tar.gz --no-tests
 
 install:
 	R CMD INSTALL . --install-tests
