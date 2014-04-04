@@ -41,8 +41,8 @@ show.detsurf <- function(fit){
         index.y <- which(y == unique.y)
         z[index.x, index.y] <- p.det[i]
     }
-    wireframe(z, zlim = c(0, 1),
-              zlab = list("Detection probability", rot = 95),
-              xlab = "x", ylab = "y")
+    print(wireframe(z, zlim = c(0, 1),
+                    zlab = list("Detection probability", rot = 95),
+                    xlab = "x", ylab = "y"))
     invisible(TRUE)
 }
