@@ -288,7 +288,7 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
         stop("Standard errors not calculated; use boot.admbsecr().")
     }
     calc.cis(object, parm, level, method = "default", linked, qqplot = FALSE,
-             boot = FALSE, ...)
+             boot = FALSE, ask = FALSE, ...)
 }
 
 #' @param method A character string specifying the method used to
@@ -297,6 +297,8 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
 #' \code{"default"} then a normal QQ plot is plotted. The default
 #' method is based on a normal approximation; this plot tests its
 #' validity.
+#' @param ask Logical, if \code{TRUE}, hitting return will show the
+#' next plot.
 #' 
 #' @rdname confint.admbsecr
 #' @method confint admbsecr.boot
@@ -304,11 +306,11 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
 #'
 #' @export
 confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method = "default",
-                                  linked = FALSE, qqplot = FALSE, ...){
-    calc.cis(object, parm, level, method, linked, qqplot, boot = TRUE, ...)
+                                  linked = FALSE, qqplot = FALSE, ask = TRUE, ...){
+    calc.cis(object, parm, level, method, linked, qqplot, boot = TRUE, ask, ...)
 }
 
-calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
+calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...){
     if (parm == "all" | parm == "derived" | parm == "fitted"){
         parm <- names(coef(object, pars = parm))
     }
@@ -329,7 +331,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ...){
         }
         out <- t(apply(mat, 1, FUN.default, level = level))
         if (qqplot & boot){
-            opar <- par(ask = TRUE)
+            opar <- par(ask = ask)
             for (i in parm){
                 if (linked){
                     if (i %in% fitted.names){
