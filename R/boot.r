@@ -21,13 +21,40 @@
 #' \link{stdEr.admbsecr} and \link{vcov.admbsecr} must be called
 #' directly.
 #'
+#' @section Bootstrapping for acoustic surveys:
+#' 
 #' For fits based on acoustic surveys where the argument
 #' \code{call.freqs} is provided to the \code{admbsecr} function, the
 #' simulated data allocates multiple calls to the same location based
 #' on an estimated distribution of the call frequencies. Using a
 #' parametric bootstrap is currently the only way parameter
-#' uncertainty can be estimated for such models.
+#' uncertainty can be estimated for such models (see Stevenson et al.,
+#' in prep., for details).
 #'
+#' @section Monte Carlo error:
+#' 
+#' There will be some error in esimates based on the parametric
+#' bootstrap (e.g., standard errors and estimates of bias) because the
+#' number of bootstrap simulations is not infinite. By default, this
+#' function calculates Monte Carlo error using a bootstrap of the
+#' estimates obtained from the initial bootstrap procedure; see
+#' Equation (9) in Koehler, Brown and Haneuse (2009). Note that this
+#' secondary bootstrap does not require the fitting of any further
+#' models, and so the increased processing time due to this procedure
+#' is negligible.
+#'
+#' Monte Carlo error for standard errors and estimates of bias can be
+#' extracted using the function \link{get.mce}.
+#'
+#' @references Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009)
+#' On the assessment of Monte Carlo error in sumulation-based
+#' statistical analyses. \emph{The American Statistician},
+#' \strong{63}: 155--162.
+#'
+#' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
+#' G. J., Swift, R. J., and Gillespie, D. M. (in prep.) An acoustic
+#' spatially explicit capture-recapture method for estimating
+#' vocalizing amphibian density.
 #'
 #' @return A list of class \code{"admbsecr.boot"}. Components contain
 #' information such as estimated parameters and standard errors. The
@@ -44,19 +71,9 @@
 #' @param n.cores A positive integer representing the number of cores
 #' to use for parallel processing.
 #' @param M The number of bootstrap resamples for the secondary
-#' bootstrap used to calculate Monte Carlo error. See 'Details' below.
+#' bootstrap used to calculate Monte Carlo error. See 'Details'
+#' below. If M = 0, then this is skipped.
 #'
-#' Monte Carlo error is calculated using a bootstrap of the estimates
-#' obtained from the initial bootstrap procedure; see Equation (9) in
-#' Koehler, Brown and Haneuse (2009). Note that this secondary
-#' bootstrap does not require the fitting of any further models, and
-#' so the increased processing time due to this procedure is
-#' negligible.
-#'
-#' @references Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009)
-#' On the assessment of Monte Carlo error in sumulation-based
-#' statistical analyses. \emph{The American Statistician},
-#' \strong{63}: 155--162.
 #'
 #' @examples
 #' \dontrun{
@@ -166,17 +183,22 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     }
     bias <- apply(res, 2, mean, na.rm = TRUE) - coefs
     ## Bootstrap to calculate MCE for bias and standard errors.
-    converged <- which(!is.na(res[, 1]))
-    n.converged <- length(converged)
-    mce.boot <- matrix(sample(converged, size = n.converged*M,
-                              replace = TRUE), nrow = M,
-                       ncol = n.converged)
     bias.mce <- se.mce <- numeric(n.pars)
     names(bias.mce) <- names(se.mce) <- par.names
-    for (i in par.names){
-        par.boot <- matrix(res[mce.boot, i], nrow = M, ncol = n.converged)
-        bias.mce[i] <- sd(apply(par.boot, 1, mean) - coefs[i] - bias[i])
-        se.mce[i] <- sd(apply(par.boot, 1, sd))
+    if (M > 0){
+        converged <- which(!is.na(res[, 1]))
+        n.converged <- length(converged)
+        mce.boot <- matrix(sample(converged, size = n.converged*M,
+                                  replace = TRUE), nrow = M,
+                           ncol = n.converged)
+        for (i in par.names){
+            par.boot <- matrix(res[mce.boot, i], nrow = M, ncol = n.converged)
+            bias.mce[i] <- sd(apply(par.boot, 1, mean) - coefs[i] - bias[i])
+            se.mce[i] <- sd(apply(par.boot, 1, sd))
+        }
+    } else {
+        bias.mce <- NA
+        se.mce <- NA
     }
     out <- fit
     boot <- list(boots = res, se = se, se.mce = se.mce, cor = cor, vcov = vcov,
