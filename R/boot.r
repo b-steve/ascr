@@ -22,7 +22,7 @@
 #' directly.
 #'
 #' @section Bootstrapping for acoustic surveys:
-#' 
+#'
 #' For fits based on acoustic surveys where the argument
 #' \code{call.freqs} is provided to the \code{admbsecr} function, the
 #' simulated data allocates multiple calls to the same location based
@@ -32,7 +32,7 @@
 #' in prep., for details).
 #'
 #' @section Monte Carlo error:
-#' 
+#'
 #' There will be some error in esimates based on the parametric
 #' bootstrap (e.g., standard errors and estimates of bias) because the
 #' number of bootstrap simulations is not infinite. By default, this
@@ -128,6 +128,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         } else {
             out <- fit.boot$coefficients
         }
+        cat(i, "\n", file = "completed.txt", append = TRUE)
         out
     }
     if (n.cores == 1){
