@@ -83,9 +83,6 @@
 #'
 #' @export
 boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
-    if (n.cores != 1){
-        prog <- FALSE
-    }
     args <- fit$args
     orig.sv <- args$sv
     ## Set start values to estimated parameters.
@@ -165,8 +162,11 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         clusterEvalQ(cluster, {
             library(admbsecr)
         })
+        if (prog){
+            file.create("prog.txt")
+        }
         res <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit, args = args,
-                           call.freqs = call.freqs, seeds = seeds, prog = prog))
+                             call.freqs = call.freqs, seeds = seeds, prog = prog))
         stopCluster(cluster)
         if (prog){
             unlink("prog.txt")
