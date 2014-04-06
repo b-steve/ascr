@@ -4,8 +4,9 @@
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, sf = NULL, ss.link = "identity", cutoff = NULL,
-  call.freqs = NULL, sound.speed = 330, trace = FALSE, clean = TRUE,
-  cbs = NULL, gbs = NULL, exe.type = "old")
+  call.freqs = NULL, sound.speed = 330, hess = !any(call.freqs > 1),
+  trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
+  exe.type = "old")
 }
 \arguments{
   \item{capt}{A list with named components, containing the
@@ -66,6 +67,16 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   second, defaults to 330 (the speed of sound in air). Only
   used when \code{"toa"} is a component name of
   \code{capt}. \strong{Not yet implemented}.}
+
+  \item{hess}{Logical, if \code{TRUE} the Hessian is
+  estimated, allowing for calculation of standard errors,
+  the variance-covariance matrix, and the correlation
+  matrix, at the expense of a little processing time. If
+  \code{FALSE}, the Hessian is not estimated. Note that if
+  individuals are detectable more than once (e.g., by
+  calling more than once on an acoustic survey) then
+  parameter uncertainty is not properly represented by
+  these calculations.}
 
   \item{trace}{Logical, if \code{TRUE} parameter values at
   each step of the optimisation algorithm are printed to
