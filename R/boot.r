@@ -94,6 +94,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     args$sf <- NULL
     ## Setting trace to false.
     args$trace <- FALSE
+    ## Don't calculate the Hessian for bootstrap fits.
+    args$hess <- FALSE
     ## Setting start value for g0 away from 1.
     if ("g0" %in% names(args$sv)){
         args$sv[["g0"]] <- min(c(0.95, args$sv[["g0"]]))
@@ -124,9 +126,9 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         ## If still unconverged, give up and report NA.
         if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
             n.par <- length(fit$coefficients)
-            out <- rep(NA, n.par)
+            out <- rep(NA, n.par + 1)
         } else {
-            out <- fit.boot$coefficients
+            out <- c(fit.boot$coefficients, fit.boot$maxgrad)
         }
         out
     }
@@ -169,6 +171,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     }
     ## Calculating bootstrapped standard errors, correlations and
     ## covariances.
+    maxgrads <- res[, ncol(res)]
+    res <- res[, -ncol(res)]
     se <- apply(res, 2, sd, na.rm = TRUE)
     names(se) <- par.names
     cor <- diag(n.pars)
@@ -202,7 +206,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     }
     out <- fit
     boot <- list(boots = res, se = se, se.mce = se.mce, cor = cor, vcov = vcov,
-                 bias = bias, bias.mce = bias.mce)
+                 bias = bias, bias.mce = bias.mce, maxgrads = maxgrads)
     out$boot <- boot
     class(out) <- c("admbsecr.boot", class(fit))
     out
