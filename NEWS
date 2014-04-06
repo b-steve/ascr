@@ -1,3 +1,12 @@
+admbsecr 1.0.3
+--------------
+
+* Added argument 'hess' to admbsecr(). This means calculation of
+  standard errors, the variance-covariance matrix and the correlation
+  matrix can be foregone to save processing time. This is particularly
+  useful for the function boot.fit(), where estimation of parameter
+  uncertainty is not required.
+
 admbsecr 1.0.2
 --------------
 
