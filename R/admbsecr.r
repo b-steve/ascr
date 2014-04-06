@@ -243,6 +243,14 @@
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{"toa"} is a component name of \code{capt}. \strong{Not yet
 #' implemented}.
+#' @param hess Logical, if \code{TRUE} the Hessian is estimated,
+#' allowing for calculation of standard errors, the
+#' variance-covariance matrix, and the correlation matrix, at the
+#' expense of a little processing time. If \code{FALSE}, the Hessian
+#' is not estimated. Note that if individuals are detectable more than
+#' once (e.g., by calling more than once on an acoustic survey) then
+#' parameter uncertainty is not properly represented by these
+#' calculations.
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #' of the optimisation algorithm are printed to the R console.
 #' @param clean Logical, if \code{TRUE} ADMB output files are
@@ -292,8 +300,8 @@
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, sf = NULL, ss.link = "identity",
                      cutoff = NULL, call.freqs = NULL, sound.speed  = 330,
-                     trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
-                     exe.type = "old"){
+                     hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
+                     cbs = NULL, gbs = NULL, exe.type = "old"){
     arg.names <- names(as.list(environment()))
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
@@ -638,7 +646,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Running ADMB executable.
     cmd <- paste("./"[os.type != "windows"], exe.name,
                  " -ind secr.dat -ainp secr.pin",
-                 " -nohess"[fit.freqs], cbs, gbs, sep = "")
+                 " -nohess"[!hess], cbs, gbs, sep = "")
     if (os.type == "windows"){
         system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
     } else {
@@ -677,17 +685,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out$coefficients[n.est.pars + i] <-
             unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
     }
-    ## Putting in correct parameter names.
-    if (!fit.freqs){
-        replace <- substr(names(out$se), 1, 8) == "par_ests"
-        names(out$se)[replace] <- rownames(out$vcov)[replace] <-
-            colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                colnames(out$cor)[replace] <- est.pars
-        replace <- 1:length(est.pars)
-        names(out$se)[replace] <- rownames(out$vcov)[replace] <-
-            colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
-    }
     ## Adding extra components to list.
     if (detfn == "log.ss") detfn <- "ss"
     ## Putting in updated argument names.
@@ -708,7 +705,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$par.unlinks <- par.unlinks
     ## Putting in esa estimate.
     out$coefficients[2*n.est.pars + 1] <- p.dot(out, esa = TRUE)
-    ## Putting in call frequency information.
+    ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
         mu.freqs <- mean(call.freqs)
         Da <- get.par(out, "D")/mu.freqs
@@ -717,22 +714,57 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         names(coefs.updated) <- names.vec
         out[["coefficients"]] <- coefs.updated
         ## Removing ses, cor, vcov matrices.
-        ses.updated <- rep(NA, length(names.vec))
-        names(ses.updated) <- names.vec
-        out[["se"]] <- ses.updated
         cor.updated <- matrix(NA, nrow = length(names.vec),
                               ncol = length(names.vec))
         dimnames(cor.updated) <- list(names.vec, names.vec)
-        out[["cor"]] <- cor.updated
         vcov.updated <- matrix(NA, nrow = length(names.vec),
                                ncol = length(names.vec))
         dimnames(vcov.updated) <- list(names.vec, names.vec)
+        if (hess){
+            ses.updated <- c(out[["se"]], rep(NA, 2))
+            max.ind <- length(names.vec) - 2
+            cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
+            vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
+        } else {
+            ses.updated <- rep(NA, length(names.vec))
+        }
+        names(ses.updated) <- names.vec
+        out[["se"]] <- ses.updated
+        out[["cor"]] <- cor.updated
         out[["vcov"]] <- vcov.updated
         if (trace){
-            cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+            if (!hess){
+                cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+            } else {
+                cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
+            }
         }
     } else {
-        fit.freqs <- FALSE
+        if (hess){
+            ## Putting correct parameter names into se, cor, vcov.
+            replace <- substr(names(out$se), 1, 8) == "par_ests"
+            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                    colnames(out$cor)[replace] <- est.pars
+            replace <- 1:length(est.pars)
+            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                    colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
+        } else {
+            ## Filling se, cor, vcov with NAs.
+            names.vec <- names(out[["coefficients"]])
+            ses.updated <- rep(NA, length(names.vec))
+            names(ses.updated) <- names.vec
+            cor.updated <- matrix(NA, nrow = length(names.vec),
+                                  ncol = length(names.vec))
+            dimnames(cor.updated) <- list(names.vec, names.vec)
+            vcov.updated <- matrix(NA, nrow = length(names.vec),
+                                   ncol = length(names.vec))
+            dimnames(vcov.updated) <- list(names.vec, names.vec)
+            out[["se"]] <- ses.updated
+            out[["cor"]] <- cor.updated
+            out[["vcov"]] <- vcov.updated
+        }
     }
     out$fit.freqs <- fit.freqs
     if (out$maxgrad < -0.01){
