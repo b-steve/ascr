@@ -10,6 +10,17 @@
 #' on the parameters corresponding to the different detection
 #' functions, and to different types of additional information.
 #'
+#' Simulated call frequencies are not always integers, e.g. when
+#' \code{freq.dist} is \code{"norm"}, or when \code{freq.dist} is
+#' \codeP"edf"} and the call frequencies used to fit the model
+#' \code{fit} are not all integers. In this case, if \code{freq.dist}
+#' is \code{"edf"}, then simulated call frequencies are rounded at
+#' random as follows: Let \eqn{x} be the fraction part of the number,
+#' then the call frequency is rounded up with probability \eqn{x} and
+#' rounded down with probability \eqn{1 - x}. For example, a value of
+#' 8.1 will be rounded to 9 with probability 0.1, and rounded to 8
+#' with probability 0.9.
+#'
 #' @param fit A fitted \code{admbsecr} model object which provides the
 #' additional information types, detection function, and parameter
 #' values from which to generate capture histories.
@@ -32,7 +43,8 @@
 #' distribution of call frequencies is estimated using the empirical
 #' distribution function. If \code{"norm"}, then a normal distribution
 #' is fitted to the call frequencies using the sample mean and
-#' variance.
+#' variance. See 'Details' below for information on how call
+#' frequencies are rounded.
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
 #' function to aid debugging.
 #' @inheritParams admbsecr
@@ -135,12 +147,19 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             if (diff(range(call.freqs)) == 0){
                 freqs <- rep(unique(call.freqs), n.a)
             } else {
-                freqs <- round(rnorm(n.a, mean(call.freqs), sd(call.freqs)))
+                freqs <- rnorm(n.a, mean(call.freqs), sd(call.freqs))
             }
         } else {
             stop("The argument 'freq.dist' must be either \"edf\" or \"norm\"")
         }
-        popn <- popn[rep(1:n.a, times = round(freqs)), ]
+        ## Rounding frequencies up and down at random, depending
+        ## on which integer is closer.
+        which.integers <- floor(freqs) == freqs
+        for (i in (1:n.a)[!which.integers]){
+            prob <- freqs[i] - floor(freqs[i])
+            freqs[i] <- floor(freqs[i]) + rbinom(1, 1, prob)
+        }
+        popn <- popn[rep(1:n.a, times = freqs), ]
     }
     n.popn <- nrow(popn)
     if (n.popn == 0) stop("No animals in population.")
