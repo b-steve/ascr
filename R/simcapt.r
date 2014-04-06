@@ -140,7 +140,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         } else {
             stop("The argument 'freq.dist' must be either \"edf\" or \"norm\"")
         }
-        popn <- popn[rep(1:n.a, times = freqs), ]
+        popn <- popn[rep(1:n.a, times = round(freqs)), ]
     }
     n.popn <- nrow(popn)
     if (n.popn == 0) stop("No animals in population.")
