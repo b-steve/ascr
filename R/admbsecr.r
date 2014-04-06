@@ -638,15 +638,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out -cbs and -gbs.
     if (!is.null(cbs)){
-        cbs <- paste(" -cbs", format(cbs, scientific = FALSE))
+        cbs.cmd <- paste(" -cbs", format(cbs, scientific = FALSE))
     }
     if (!is.null(gbs)){
-        gbs <- paste(" -gbs", format(gbs, scientific = FALSE))
+        gbs.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
     }
     ## Running ADMB executable.
     cmd <- paste("./"[os.type != "windows"], exe.name,
                  " -ind secr.dat -ainp secr.pin",
-                 " -nohess"[!hess], cbs, gbs, sep = "")
+                 " -nohess"[!hess], cbs.cmd, gbs.cmd, sep = "")
     if (os.type == "windows"){
         system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
     } else {
