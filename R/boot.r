@@ -106,7 +106,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     n.pars <- length(coefs)
     seeds <- sample(1:1e8, size = N)
     ## Function to get fit.boot.
-    FUN <- function(i, fit, args, call.freqs, seeds){
+    FUN <- function(i, fit, args, call.freqs, seeds, prog){
         set.seed(seeds[i])
         ## Simulating capture history.
         args$capt <- sim.capt(fit)
@@ -130,11 +130,13 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         } else {
             out <- c(fit.boot$coefficients, fit.boot$maxgrad)
         }
-        cat(i, "\n", file = "completed.txt", append = TRUE)
+        if (prog){
+            cat(i, "\n", file = "prog.txt", append = TRUE)
+        }
         out
     }
     if (n.cores == 1){
-        res <- matrix(0, nrow = N, ncol = n.pars)
+        res <- matrix(0, nrow = N, ncol = n.pars + 1)
         colnames(res) <- par.names
         ## Setting up progress bar.
         if (prog){
@@ -142,7 +144,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         }
         for (i in 1:N){
             res[i, ] <- FUN(i, fit = fit, args = args, call.freqs = call.freqs,
-                            seeds = seeds)
+                            seeds = seeds, prog = FALSE)
             ## Updating progress bar.
             if (prog){
                 setTxtProgressBar(pb, i)
@@ -164,7 +166,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
             library(admbsecr)
         })
         res <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit, args = args,
-                           call.freqs = call.freqs, seeds = seeds))
+                           call.freqs = call.freqs, seeds = seeds, prog = prog))
         stopCluster(cluster)
         if (prog){
             unlink("prog.txt")
