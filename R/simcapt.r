@@ -12,7 +12,7 @@
 #'
 #' Simulated call frequencies are not always integers, e.g. when
 #' \code{freq.dist} is \code{"norm"}, or when \code{freq.dist} is
-#' \codeP"edf"} and the call frequencies used to fit the model
+#' \code{"edf"} and the call frequencies used to fit the model
 #' \code{fit} are not all integers. In this case, if \code{freq.dist}
 #' is \code{"edf"}, then simulated call frequencies are rounded at
 #' random as follows: Let \eqn{x} be the fraction part of the number,

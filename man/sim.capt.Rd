@@ -38,7 +38,9 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
   \code{"edf"}, then the distribution of call frequencies
   is estimated using the empirical distribution function.
   If \code{"norm"}, then a normal distribution is fitted to
-  the call frequencies using the sample mean and variance.}
+  the call frequencies using the sample mean and variance.
+  See 'Details' below for information on how call
+  frequencies are rounded.}
 
   \item{test.detfn}{Logical value, if \code{TRUE}, tests
   detection function to aid debugging.}
@@ -93,6 +95,18 @@ See documentation for the function \link{admbsecr} for
 information on the parameters corresponding to the
 different detection functions, and to different types of
 additional information.
+
+Simulated call frequencies are not always integers, e.g.
+when \code{freq.dist} is \code{"norm"}, or when
+\code{freq.dist} is \code{"edf"} and the call frequencies
+used to fit the model \code{fit} are not all integers. In
+this case, if \code{freq.dist} is \code{"edf"}, then
+simulated call frequencies are rounded at random as
+follows: Let \eqn{x} be the fraction part of the number,
+then the call frequency is rounded up with probability
+\eqn{x} and rounded down with probability \eqn{1 - x}. For
+example, a value of 8.1 will be rounded to 9 with
+probability 0.1, and rounded to 8 with probability 0.9.
 }
 \examples{
 ## Simulating based on model fits.
