@@ -84,23 +84,26 @@ vcov.admbsecr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
-    if (!all(pars %in% c("fitted", "derived", "linked"))){
-        stop("Argument 'pars' must contain a subset of \"fitted\", \"derived\", and \"linked\"")
-    }
     par.names <- names(object$coefficients)
-    keep <- NULL
-    which.linked <- grep("_link", par.names)
-    which.derived <- which(par.names == "esa" | par.names == "Da")
-    which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
-    keep <- NULL
-    if ("fitted" %in% pars){
-        keep <- c(keep, which.fitted)
+    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+        stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
-    if ("derived" %in% pars){
-        keep <- c(keep, which.derived)
-    }
-    if ("linked" %in% pars){
-        keep <- c(keep, which.linked)
+    if (any(c("fitted", "derived", "linked") %in% pars)){
+        which.linked <- grep("_link", par.names)
+        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
+        keep <- NULL
+        if ("fitted" %in% pars){
+            keep <- c(keep, which.fitted)
+        }
+        if ("derived" %in% pars){
+            keep <- c(keep, which.derived)
+        }
+        if ("linked" %in% pars){
+            keep <- c(keep, which.linked)
+        }
+    } else {
+        keep <- pars
     }
     object$vcov[keep, keep, drop = FALSE]
 }
@@ -122,23 +125,26 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
-    if (!all(pars %in% c("fitted", "derived", "linked"))){
-        stop("Argument 'pars' must contain a subset of \"fitted\", \"derived\", and \"linked\"")
-    }
     par.names <- names(object$coefficients)
-    keep <- NULL
-    which.linked <- grep("_link", par.names)
-    which.derived <- which(par.names == "esa" | par.names == "Da")
-    which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
-    keep <- NULL
-    if ("fitted" %in% pars){
-        keep <- c(keep, which.fitted)
+    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+        stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
-    if ("derived" %in% pars){
-        keep <- c(keep, which.derived)
-    }
-    if ("linked" %in% pars){
-        keep <- c(keep, which.linked)
+    if (any(c("fitted", "derived", "linked") %in% pars)){
+        which.linked <- grep("_link", par.names)
+        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
+        keep <- NULL
+        if ("fitted" %in% pars){
+            keep <- c(keep, which.fitted)
+        }
+        if ("derived" %in% pars){
+            keep <- c(keep, which.derived)
+        }
+        if ("linked" %in% pars){
+            keep <- c(keep, which.linked)
+        }
+    } else {
+        keep <- pars
     }
     object$boot$vcov[keep, keep, drop = FALSE]
 }
@@ -163,18 +169,23 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
-    if (!all(pars %in% c("fitted", "derived", "linked"))){
-        stop("Argument 'pars' must contain a subset of \"fitted\", \"derived\", and \"linked\"")
-    }
     par.names <- names(object$coefficients)
-    which.linked <- grep("_link", par.names)
-    linked <- object$se[which.linked]
-    which.derived <- which(par.names == "esa" | par.names == "Da")
-    derived <- object$se[which.derived]
-    fitted <- object$se[-c(which.linked, which.derived)]
-    out <- mget(pars)
-    names(out) <- NULL
-    c(out, recursive = TRUE)
+    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+        stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
+    }
+    if (any(c("fitted", "derived", "linked") %in% pars)){
+        which.linked <- grep("_link", par.names)
+        linked <- object$se[which.linked]
+        which.derived <- which(par.names == "esa" | par.names == "Da")
+        derived <- object$se[which.derived]
+        fitted <- object$se[-c(which.linked, which.derived)]
+        out <- mget(pars)
+        names(out) <- NULL
+        out <- c(out, recursive = TRUE)
+    } else {
+        out <- object$se[pars]
+    }
+    out
 }
 
 #' Extract standard errors from a bootstrapped admbsecr model object
@@ -193,18 +204,23 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
-    if (!all(pars %in% c("fitted", "derived", "linked"))){
-        stop("Argument 'pars' must contain a subset of \"fitted\", \"derived\", and \"linked\"")
-    }
     par.names <- names(object$coefficients)
-    which.linked <- grep("_link", par.names)
-    linked <- object$boot$se[which.linked]
-    which.derived <- which(par.names == "esa" | par.names == "Da")
-    derived <- object$boot$se[which.derived]
-    fitted <- object$boot$se[-c(which.linked, which.derived)]
-    out <- mget(pars)
-    names(out) <- NULL
-    c(out, recursive = TRUE)
+    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+        stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
+    }
+    if (any(c("fitted", "derived", "linked") %in% pars)){
+        which.linked <- grep("_link", par.names)
+        linked <- object$boot$se[which.linked]
+        which.derived <- which(par.names == "esa" | par.names == "Da")
+        derived <- object$boot$se[which.derived]
+        fitted <- object$boot$se[-c(which.linked, which.derived)]
+        out <- mget(pars)
+        names(out) <- NULL
+        out <- c(out, recursive = TRUE)
+    } else {
+        out <- object$boot$se[pars]
+    }
+    out
 }
 
 #' Extract AIC from an admbsecr model object
@@ -315,8 +331,8 @@ print.summary.admbsecr <- function(x, ...){
 #'
 #' @export
 confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, ...){
-    if (object$fit.freqs){
-        stop("Standard errors not calculated; use boot.admbsecr().")
+    if (!object$args$hess){
+        stop("Standard errors not calculated; use boot.admbsecr() or refit with 'hess = TRUE', if appropriate.")
     }
     calc.cis(object, parm, level, method = "default", linked, qqplot = FALSE,
              boot = FALSE, ask = FALSE, ...)
