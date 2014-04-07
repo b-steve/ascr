@@ -17,11 +17,12 @@ test_that("simple model bootstrapping", {
     relative.error <- max(abs((boot.ses - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Monte Carlo error calculation.
-    se.mces.test <- c(0.05604748, 0.02459689, 108.3314, 0.1411242, 0.002527854)
+    se.mces.test <- c(0.05597809, 0.02464268, 108.3764, 0.1413001, 0.002529669)
     boot.se.mces <- get.mce(boot.fit, "se")
     relative.error <- max(abs((boot.se.mces - se.mces.test)/se.mces.test))
     expect_that(relative.error < 1e-4, is_true())
-    bias.mces.test <- c(0.07585980, 0.03489304, 155.8189, 0.1994087, 0.003538833)
+    bias.mces.test <- c(0.07549380, 0.03483566, 155.2867,
+                        0.1989174, 0.003527918)
     boot.bias.mces <- get.mce(boot.fit, "bias")
     relative.error <- max(abs((boot.bias.mces - bias.mces.test)/bias.mces.test))
     expect_that(relative.error < 1e-4, is_true())
