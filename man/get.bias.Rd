@@ -1,12 +1,11 @@
-\name{stdEr.admbsecr}
-\alias{stdEr.admbsecr}
-\title{Extract standard errors from an admbsecr model fit}
+\name{get.bias}
+\alias{get.bias}
+\title{Extracting estimated biases}
 \usage{
-\method{stdEr}{admbsecr}(object, pars = "fitted", ...)
+get.bias(fit, pars = "fitted")
 }
 \arguments{
-  \item{object}{A fitted model from
-  \link[admbsecr]{admbsecr}.}
+  \item{fit}{A fitted model from \link{admbsecr}.}
 
   \item{pars}{A character vector containing either
   parameter names, or a subset of \code{"all"},
@@ -17,18 +16,15 @@
   survey area or animal density from an acoustic survey),
   and \code{"linked"} corresponds to the parameters AD
   Model Builder has maximised the likelihood over.}
-
-  \item{...}{Other parameters (for S3 generic
-  compatibility).}
 }
 \description{
-Extracts standard errors for estimated and derived
-parameters from a model fitted using
-\link[admbsecr]{admbsecr}.
+Extracts bias in parameter estimates, calculated using the
+bootstrap procedure carried out by \link{boot.admbsecr}.
 }
-\examples{
-stdEr(simple.hn.fit)
-stdEr(simple.hn.fit, pars = "all")
-stdEr(simple.hn.fit, pars = "derived")
+\seealso{
+\link{boot.admbsecr} for the bootstrap procedure.
+
+\link{get.mce} for Monte Carlo error the biases are subject
+to.
 }
 
