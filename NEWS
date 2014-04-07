@@ -5,7 +5,14 @@ admbsecr 1.0.3
   standard errors, the variance-covariance matrix and the correlation
   matrix can be foregone to save processing time. This is particularly
   useful for the function boot.fit(), where estimation of parameter
-  uncertainty is not required.
+  uncertainty for each individual simulation is not required.
+
+* Added function get.bias(), which extracts estimated bias from an
+  object of class admbsecr.boot.
+
+* Added method "default.bc" option to confint.admbsecr.boot. This is
+  similar to method "default", but additionally performs a bias
+  correction.
 
 admbsecr 1.0.2
 --------------
@@ -13,7 +20,7 @@ admbsecr 1.0.2
 * Some bug fixes to fitting signal strength models with a log-link
   function.
 
-* Added methods for the summary() and confint() generic
+* Added S3 methods for the summary() and confint() generic
   functions. The confint() method can calculate a range of different
   intervals, including a number of bootstrap techniques.
 
@@ -37,7 +44,7 @@ admbsecr 1.0.1
   changes:
 
     * The contours() function has been renamed to locations().
-    
+
     * All previous references to "angles" has now been changed to
       "bearings".
 
