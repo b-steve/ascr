@@ -61,6 +61,6 @@ pdf:
 clean:
 	rm -rfv ..Rcheck/ ..pdf
 	rm -rfv src/*.o src/*.so src/*.rds
-	rm -rfv src-i386/ src-x64/ src/admbsecr.dll
+	rm -rfv src-i386/ src-x64/
 	rm -rfv admbsecr.Rcheck
 
