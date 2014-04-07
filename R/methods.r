@@ -4,13 +4,14 @@
 #' \link{admbsecr}.
 #'
 #' @param object A fitted model from \link[admbsecr]{admbsecr}.
-#' @param pars A character containing a subset of \code{"all"},
-#' \code{"derived"}, \code{"fitted"}, and \code{"linked"};
-#' \code{"fitted"} corresponds to the parameters of interest,
-#' \code{"derived"} corresponds to quantities that are functions of
-#' these parameters (e.g., the effective survey area or animal density
-#' from an acoustic survey), and \code{"linked"} corresponds to the
-#' parameters AD Model Builder has maximised the likelihood over.
+#' @param pars A character vector containing either parameter names,
+#' or a subset of \code{"all"}, \code{"derived"}, \code{"fitted"}, and
+#' \code{"linked"}; \code{"fitted"} corresponds to the parameters of
+#' interest, \code{"derived"} corresponds to quantities that are
+#' functions of these parameters (e.g., the effective survey area or
+#' animal density from an acoustic survey), and \code{"linked"}
+#' corresponds to the parameters AD Model Builder has maximised the
+#' likelihood over.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @examples
@@ -26,20 +27,42 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
-    if (!all(pars %in% c("fitted", "derived", "linked"))){
-        stop("Argument 'pars' must contain a subset of \"fitted\", \"derived\", and \"linked\"")
-    }
     par.names <- names(object$coefficients)
-    which.linked <- grep("_link", par.names)
-    linked <- object$coefficients[which.linked]
-    which.derived <- which(par.names == "esa" | par.names == "Da")
-    derived <- object$coefficients[which.derived]
-    fitted <- object$coefficients[-c(which.linked, which.derived)]
-    out <- mget(pars)
-    names(out) <- NULL
-    c(out, recursive = TRUE)
+    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+        stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
+    }
+    if (any(c("fitted", "derived", "linked") %in% pars)){
+        which.linked <- grep("_link", par.names)
+        linked <- object$coefficients[which.linked]
+        which.derived <- which(par.names == "esa" | par.names == "Da")
+        derived <- object$coefficients[which.derived]
+        fitted <- object$coefficients[-c(which.linked, which.derived)]
+        out <- mget(pars)
+        names(out) <- NULL
+        out <- c(out, recursive = TRUE)
+    } else {
+        out <- object$coefficients[pars]
+    }
+    out
 }
 
+#' @rdname coef.admbsecr
+#'
+#' @param correct.bias Logical, if \code{TRUE}, estimated biases are
+#' subtracted from estimated parameter values.
+#'
+#' @method coef admbsecr.boot
+#' @S3method coef admbsecr.boot
+#'
+#' @export
+coef.admbsecr.boot <- function(object, pars = "fitted",
+                               correct.bias = FALSE, ...){
+    out <- coef.admbsecr(object, pars)
+    if (correct.bias){
+        out <- out - get.bias(object, pars)
+    }
+    out
+}
 #' Extract the variance-covariance matrix from an admbsecr model
 #' object
 #'
@@ -254,11 +277,13 @@ print.summary.admbsecr <- function(x, ...){
 #' \code{"default"} for intervals based on a normal approximation
 #' using the calculated standard errors (for objects of class
 #' \code{admbsecr.boot}, these standard errors are calculated from the
-#' bootstrap procedure); \code{"basic"} for the so-called "basic"
-#' bootstrap method; and \code{"percentile"} for intervals calculated
-#' using the bootstrap percentile method (the latter two are only
-#' available for objects of class \code{admbsecr.boot}; see Davison &
-#' Hinkley, 1997, for details).
+#' bootstrap procedure); \code{"default.bc"} is a bias-corrected
+#' version of \code{default}, whereby the estimated bias is subtracted
+#' from each confidence limit; \code{"basic"} for the so-called
+#' "basic" bootstrap method; and \code{"percentile"} for intervals
+#' calculated using the bootstrap percentile method (the latter three
+#' are only available for objects of class \code{admbsecr.boot}; see
+#' Davison & Hinkley, 1997, for details).
 #'
 #' For method \code{"default"} with objects of class
 #' \code{admbsecr.boot}, the appropriateness of the normal
@@ -271,8 +296,14 @@ print.summary.admbsecr <- function(x, ...){
 #' \emph{Bootstrap methods and their application}. Cambridge:
 #' Cambridge University Press.
 #'
-#' @param parm A character vector specifying which parameters are to
-#' be given confidence intervals.
+#' @param parm A character vector containing either parameter names,
+#' or a subset of \code{"all"}, \code{"derived"}, \code{"fitted"}, and
+#' \code{"linked"}; \code{"fitted"} corresponds to the parameters of
+#' interest, \code{"derived"} corresponds to quantities that are
+#' functions of these parameters (e.g., the effective survey area or
+#' animal density from an acoustic survey), and \code{"linked"}
+#' corresponds to the parameters AD Model Builder has maximised the
+#' likelihood over.
 #' @param linked Logical, if \code{TRUE}, intervals for fitted
 #' parameters are calculated on their link scales, then transformed
 #' back onto their "real" scales.
@@ -299,7 +330,7 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
 #' validity.
 #' @param ask Logical, if \code{TRUE}, hitting return will show the
 #' next plot.
-#' 
+#'
 #' @rdname confint.admbsecr
 #' @method confint admbsecr.boot
 #' @S3method confint admbsecr.boot
@@ -311,7 +342,7 @@ confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method 
 }
 
 calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...){
-    if (parm == "all" | parm == "derived" | parm == "fitted"){
+    if (any(c("all", "derived", "fitted") %in% parm)){
         parm <- names(coef(object, pars = parm))
     }
     if (linked){
@@ -323,13 +354,16 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
     } else {
         all.parm <- parm
     }
-    if (method == "default"){
+    if (method == "default" | method == "default.bc"){
         mat <- cbind(coef(object, pars = "all")[all.parm],
                      stdEr(object, pars = "all")[all.parm])
         FUN.default <- function(x, level){
             x[1] + qnorm((1 - level)/2)*c(1, -1)*x[2]
         }
         out <- t(apply(mat, 1, FUN.default, level = level))
+        if (method == "default.bc"){
+            out <- out - get.bias(object, parm)
+        }
         if (qqplot & boot){
             opar <- par(ask = ask)
             for (i in parm){
