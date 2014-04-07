@@ -10,8 +10,15 @@
   method = "default", linked = FALSE, qqplot = FALSE, ask = TRUE, ...)
 }
 \arguments{
-  \item{parm}{A character vector specifying which
-  parameters are to be given confidence intervals.}
+  \item{parm}{A character vector containing either
+  parameter names, or a subset of \code{"all"},
+  \code{"derived"}, \code{"fitted"}, and \code{"linked"};
+  \code{"fitted"} corresponds to the parameters of
+  interest, \code{"derived"} corresponds to quantities that
+  are functions of these parameters (e.g., the effective
+  survey area or animal density from an acoustic survey),
+  and \code{"linked"} corresponds to the parameters AD
+  Model Builder has maximised the likelihood over.}
 
   \item{linked}{Logical, if \code{TRUE}, intervals for
   fitted parameters are calculated on their link scales,
@@ -47,11 +54,14 @@ Options for the argument \code{method} are as follows:
 approximation using the calculated standard errors (for
 objects of class \code{admbsecr.boot}, these standard
 errors are calculated from the bootstrap procedure);
-\code{"basic"} for the so-called "basic" bootstrap method;
-and \code{"percentile"} for intervals calculated using the
-bootstrap percentile method (the latter two are only
-available for objects of class \code{admbsecr.boot}; see
-Davison & Hinkley, 1997, for details).
+\code{"default.bc"} is a bias-corrected version of
+\code{default}, whereby the estimated bias is subtracted
+from each confidence limit; \code{"basic"} for the
+so-called "basic" bootstrap method; and \code{"percentile"}
+for intervals calculated using the bootstrap percentile
+method (the latter three are only available for objects of
+class \code{admbsecr.boot}; see Davison & Hinkley, 1997,
+for details).
 
 For method \code{"default"} with objects of class
 \code{admbsecr.boot}, the appropriateness of the normal

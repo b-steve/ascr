@@ -17,6 +17,10 @@ Extracts calculated Monte Carlo errors from a bootstrap
 procedure carried out by \link{boot.admbsecr}.
 }
 \seealso{
-\link{boot.admbsecr}
+\link{boot.admbsecr} for the bootstrap procedure.
+
+\link{stdEr.admbsecr.boot} for standard errors.
+
+\link{get.bias} for estimated biases.
 }
 
