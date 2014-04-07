@@ -33,7 +33,7 @@ test_that("simple fitting -- half normal", {
     ## Checking hess argument.
     fit.nohess <- admbsecr(capt = simple.capt, traps = example.traps,
                            mask = example.mask, hess = FALSE)
-    expect_that(coef(fit.nohess), equals(fit.hess))
+    expect_that(coef(fit.nohess), equals(fit))
     ## Checking estimate equivalence with secr.fit.
     library(secr)
     mask.secr <- convert.mask(example.mask)
