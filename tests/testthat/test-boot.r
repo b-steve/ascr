@@ -25,6 +25,12 @@ test_that("simple model bootstrapping", {
     boot.bias.mces <- get.mce(boot.fit, "bias")
     relative.error <- max(abs((boot.bias.mces - bias.mces.test)/bias.mces.test))
     expect_that(relative.error < 1e-4, is_true())
+    ## Testing parallel bootstrap.
+    library(parallel)
+    set.seed(8871)
+    boot.fit.par <- boot.admbsecr(simple.hn.fit, N = 5, prog = FALSE,
+                                  n.cores = detectCores())
+    expect_that(boot.fit.par, is_identical_to(boot.fit))
 })
 
 test_that("bootstrapping helpers", {
