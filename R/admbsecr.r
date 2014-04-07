@@ -674,7 +674,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Moving back to original working directory.
     setwd(curr.dir)
     ## Removing fixed coefficients from list.
-    if (fit.freqs){
+    if (!hess){
         out$coeflist[c(D.phase, detpars.phase, suppars.phase) == -1] <- NULL
     }
     ## Creating coefficients vector.
