@@ -1,3 +1,4 @@
+library(admbsecr)
 set.seed(8173)
 example.capt <- sim.capt(traps = example.traps, mask = example.mask,
                          infotypes = c("bearing", "dist", "toa"),
@@ -14,7 +15,7 @@ simple.hr.fit <- admbsecr(capt = simple.capt, traps = example.traps,
 bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
                            mask = example.mask, fix = list(g0 = 1))
 boot.simple.hn.fit <- boot.admbsecr(simple.hn.fit, N = 500, n.cores = 4)
-##save(example.traps, example.mask, example.capt,
-##     file = "/scratch/admbsecr/data/example_data.RData")
-##save(simple.hn.fit, simple.hr.fit, bearing.hn.fit, boot.simple.hn.fit,
-##     file = "/scratch/admbsecr/data/example_fits.RData")
+save(example.traps, example.mask, example.capt,
+     file = "/scratch/admbsecr/data/example_data.RData")
+save(simple.hn.fit, simple.hr.fit, bearing.hn.fit, boot.simple.hn.fit,
+     file = "/scratch/admbsecr/data/example_fits.RData")
