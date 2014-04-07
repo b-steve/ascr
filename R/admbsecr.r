@@ -98,7 +98,7 @@
 #'         \ifelse{latex}{(\eqn{\tau})}{}.
 #'   \item \eqn{g(d) = 0.5 - 0.5\ erf(\kappa - exp(\nu - \tau d))}{g(d) = 0.5 - 0.5 * erf( shape.1 - exp( shape.2 - scale * d ) )}
 #' }
-#' 
+#'
 #' For \code{detfn = "th"}:
 #' \itemize{
 #'   \item Estimated parameters are \code{shape}
@@ -639,9 +639,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Sorting out -cbs and -gbs.
     if (!is.null(cbs)){
         cbs.cmd <- paste(" -cbs", format(cbs, scientific = FALSE))
+    } else {
+        cbs.cmd <- NULL
     }
     if (!is.null(gbs)){
         gbs.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
+    } else {
+        gbs.cmd <- NULL
     }
     ## Running ADMB executable.
     cmd <- paste("./"[os.type != "windows"], exe.name,
