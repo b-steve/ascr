@@ -30,6 +30,10 @@ test_that("simple fitting -- half normal", {
     ## Testing some generic functions.
     expect_that(is.list(summary(fit)), is_true())
     expect_that(confint(fit), is_a("matrix"))
+    ## Checking hess argument.
+    fit.nohess <- admbsecr(capt = simple.capt, traps = example.traps,
+                           mask = example.mask, hess = FALSE, trace = TRUE)
+    expect_that(coef(fit.nohess), equals(fit.hess))
     ## Checking estimate equivalence with secr.fit.
     library(secr)
     mask.secr <- convert.mask(example.mask)
@@ -214,8 +218,9 @@ test_that("joint bearing/dist fitting", {
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals(c("kappa", "alpha")))
 })
-      
+
 test_that("multiple calls fitting", {
+    ## Checking fit works.
     simple.capt <- example.capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1),
@@ -227,4 +232,13 @@ test_that("multiple calls fitting", {
     expect_that(confint(fit),
                 throws_error("Standard errors not calculated; use boot.admbsecr()"))
     expect_that(summary(fit), is_a("list"))
+    ## Checking hess argument.
+    fit.hess <- admbsecr(capt = simple.capt, traps = example.traps,
+                         mask = example.mask, fix = list(g0 = 1),
+                         call.freqs = c(9, 10, 11), hess = TRUE)
+    expect_that(coef(fit.hess), equals(coef(fit)))
+    expect_that(is.na(stdEr(fit.hess, "all")["Da"]), is_true())
+    ses.test <- c(345.89, 0.38032)
+    relative.error <- max(abs((stdEr(fit.hess)[1:2] - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
 })
