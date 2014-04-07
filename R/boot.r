@@ -102,6 +102,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     par.names <- names(coefs)
     n.pars <- length(coefs)
     seeds <- sample(1:1e8, size = N)
+    seed.mce <- sample(1:1e8, size = 1)
     ## Function to get fit.boot.
     FUN <- function(i, fit, args, call.freqs, seeds, prog){
         set.seed(seeds[i])
@@ -134,7 +135,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     }
     if (n.cores == 1){
         res <- matrix(0, nrow = N, ncol = n.pars + 1)
-        colnames(res) <- par.names
+        colnames(res) <- c(par.names, "maxgrad")
         ## Setting up progress bar.
         if (prog){
             pb <- txtProgressBar(min = 0, max = N, style = 3)
@@ -193,6 +194,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     bias.mce <- se.mce <- numeric(n.pars)
     names(bias.mce) <- names(se.mce) <- par.names
     if (M > 0){
+        set.seed(seed.mce)
         converged <- which(!is.na(res[, 1]))
         n.converged <- length(converged)
         mce.boot <- matrix(sample(converged, size = n.converged*M,
