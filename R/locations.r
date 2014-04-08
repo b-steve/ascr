@@ -327,7 +327,7 @@ toa.density <- function(fit, id, mask, dists){
     dists <- dists[capt == 1, ]
     toa.capt <- fit$args$capt$toa[id, capt == 1]
     sigma.toa <- get.par(fit, "sigma.toa")
-    prod.times <- toa.capt - dists/fit$sound.speed
+    prod.times <- toa.capt - dists/fit$args$sound.speed
     toa.ssq <- aaply(prod.times, 2, function(x) sum((x - mean(x))^2))
     out <- (2*pi*sigma.toa^2)^((1 - sum(capt))/2)*
         exp(toa.ssq/(-2*sigma.toa^2))
