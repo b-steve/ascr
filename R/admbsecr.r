@@ -770,11 +770,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             out[["vcov"]] <- vcov.updated
         }
     }
+    y <- 3
     out$fit.freqs <- fit.freqs
     if (out$maxgrad < -0.01){
         warning("Maximum gradient component is large.")
     }
-    x <- 3
+    x <- 2
     class(out) <- c("admbsecr", "admb")
     out
 }
