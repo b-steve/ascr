@@ -743,6 +743,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                 cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
             }
         }
+        z <- 10
     } else {
         if (hess){
             ## Putting correct parameter names into se, cor, vcov.
