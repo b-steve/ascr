@@ -743,6 +743,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                 cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
             }
         }
+        z <- 10
     } else {
         if (hess){
             ## Putting correct parameter names into se, cor, vcov.
@@ -774,7 +775,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (out$maxgrad < -0.01){
         warning("Maximum gradient component is large.")
     }
-    x <- 3
+    x <- 5
     class(out) <- c("admbsecr", "admb")
     out
 }
