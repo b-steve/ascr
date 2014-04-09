@@ -14,6 +14,8 @@ admbsecr 1.0.3
   similar to method "default", but additionally performs a bias
   correction.
 
+* Bug fix to locations() used on model fits using TOA.
+
 admbsecr 1.0.2
 --------------
 
