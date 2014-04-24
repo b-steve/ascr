@@ -34,9 +34,13 @@ For this option Windows users will need a compatible version of [Rtools](http://
 
 ## Troubleshooting
 
-* An error attempting to install the R-forge version using `install.packages()` (as above) is probably due to an outdated version of R. Update and try again.
+* It is best to use the newest version of R. In particular, installing from R-forge (as above) will not work unless R is up to date.
 
-* This R package is very much in development, so things are likely to go wrong. Please feel free to contact me at bcs5@st-andrews.ac.uk if you are having any problems.
+* There is a known issue with some versions of OSX, which causes a segmentation fault when the `admbsecr()` function is called.
+
+* If a permission error is thrown when the `admbsecr()` function is called, it probably means you do not have permission to call the ADMB executable used to fit the model. In R, run `system.file(package = "admbsecr")` to find the directory in which the admbsecr package is installed, then navigate to the appropriate directory (according to your OS) in `ADMB/bin`. Allow execute permission to the executable `secr` therein; e.g., using `chmod u+x secr` at a bash shell command line on Unix or OSX.
+
+* Please feel free to contact me at bcs5@st-andrews.ac.uk or submit an issue on Github if you are having any problems.
 
 ## Acknowledgements
 
