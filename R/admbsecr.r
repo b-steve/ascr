@@ -791,11 +791,31 @@ NULL
 
 ## Data documentation.
 
+#' \emph{Arthroleptella lightfooti} capture history object
+#'
+#' A capture history object from an acoustic survey of the Western
+#' Cape moss frog \emph{Arthroleptella lightfooti}. These data are
+#' from a 25 s subset of the original recording, taken on 16 May 2012
+#' at Silvermine, Table Mountain National Park, Cape Town, South
+#' Africa.
+#'
+#' Acoustic signal strengths and times of arrival were measured, and
+#' this information is contained in this capture history object.
+#' 
+#' @name lightfooti.capt
+#' @format A list, which is the correct format for use as the
+#' \code{capt} argument to the function \link{admbsecr}.
+#' @usage lightfooti.capt
+#' @docType data
+#' @keywords datasets
+NULL
+
 #' An example capture history object
 #'
 #' A list containing various additional information types. These data
 #' were simulated using \link{sim.capt} using the trap locations in
 #' \link{example.traps}.
+#' 
 #' @name example.capt
 #' @format A list, which is the correct format for use as the
 #' \code{capt} argument to the function \link{admbsecr}.
