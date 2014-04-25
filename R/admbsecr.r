@@ -241,8 +241,7 @@
 #' independently to an acoustic survey.
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
-#' \code{"toa"} is a component name of \code{capt}. \strong{Not yet
-#' implemented}.
+#' \code{"toa"} is a component name of \code{capt}.
 #' @param hess Logical, if \code{TRUE} the Hessian is estimated,
 #' allowing for calculation of standard errors, the
 #' variance-covariance matrix, and the correlation matrix, at the
