@@ -38,15 +38,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // make_toa_ssq
-NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists);
-RcppExport SEXP admbsecr_make_toa_ssq(SEXP captSEXP, SEXP distsSEXP) {
+NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists, const double& sound_speed);
+RcppExport SEXP admbsecr_make_toa_ssq(SEXP captSEXP, SEXP distsSEXP, SEXP sound_speedSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const NumericMatrix& >::type capt(captSEXP );
         Rcpp::traits::input_parameter< const NumericMatrix& >::type dists(distsSEXP );
-        NumericMatrix __result = make_toa_ssq(capt, dists);
+        Rcpp::traits::input_parameter< const double& >::type sound_speed(sound_speedSEXP );
+        NumericMatrix __result = make_toa_ssq(capt, dists, sound_speed);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
