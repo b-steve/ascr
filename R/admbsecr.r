@@ -241,8 +241,7 @@
 #' independently to an acoustic survey.
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
-#' \code{"toa"} is a component name of \code{capt}. \strong{Not yet
-#' implemented}.
+#' \code{"toa"} is a component name of \code{capt}.
 #' @param hess Logical, if \code{TRUE} the Hessian is estimated,
 #' allowing for calculation of standard errors, the
 #' variance-covariance matrix, and the correlation matrix, at the
@@ -299,7 +298,7 @@
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, sf = NULL, ss.link = "identity",
-                     cutoff = NULL, call.freqs = NULL, sound.speed  = 330,
+                     cutoff = NULL, call.freqs = NULL, sound.speed = 330,
                      hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
                      cbs = NULL, gbs = NULL, exe.type = "old"){
     arg.names <- names(as.list(environment()))
@@ -338,9 +337,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (!is.list(fix) & !is.null(fix)){
         stop("The 'fix' argument must be 'NULL' or a list.")
     }
-    ##if (!missing(sound.speed)){
-    ##    stop("The 'sound.speed' argument is not yet implemented.")
-    ##}
     n <- nrow(capt.bin)
     n.traps <- nrow(traps)
     n.mask <- nrow(mask)
@@ -521,14 +517,17 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## value. Not sure how sensible this is.
         ##bound.ranges <- laply(bounds.link, function(x) diff(range(x)))
         ##sf <- max(bound.ranges)/bound.ranges
-        sf <- max(sv.vec)/sv.vec
+        sf <- abs(max(sv.vec)/sv.vec)
         names(sf) <- par.names
-    } else {
+    } else if (is.list(sf)){
         sf <- numeric(n.pars)
         names(sf) <- par.names
         for (i in par.names){
             sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
         }
+    } else if (is.vector(sf) & length(sf) == 1){
+        sf <- rep(sf, length(par.names))
+        names(sf) <- par.names
     }
     ## Replacing infinite scalefactors.
     sf[!is.finite(sf)] <- 1
@@ -558,7 +557,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         bearings <- 0
     }
     if (fit.toas){
-        toa.ssq <- make_toa_ssq(capt$toa, dists)
+        toa.ssq <- make_toa_ssq(capt$toa, dists, sound.speed)
     } else {
         toa.ssq <- 0
     }

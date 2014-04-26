@@ -16,6 +16,9 @@ admbsecr 1.0.3
 
 * Bug fix to locations() used on model fits using TOA.
 
+* Added exported data from an acoustic survey of the Western Cape moss
+  frog.
+
 admbsecr 1.0.2
 --------------
 

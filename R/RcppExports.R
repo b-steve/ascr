@@ -35,7 +35,7 @@ bearings <- function(a, b) {
     .Call('admbsecr_bearings', PACKAGE = 'admbsecr', a, b)
 }
 
-make_toa_ssq <- function(capt, dists) {
-    .Call('admbsecr_make_toa_ssq', PACKAGE = 'admbsecr', capt, dists)
+make_toa_ssq <- function(capt, dists, sound_speed) {
+    .Call('admbsecr_make_toa_ssq', PACKAGE = 'admbsecr', capt, dists, sound_speed)
 }
 

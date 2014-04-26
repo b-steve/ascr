@@ -66,7 +66,7 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   \item{sound.speed}{The speed of sound in metres per
   second, defaults to 330 (the speed of sound in air). Only
   used when \code{"toa"} is a component name of
-  \code{capt}. \strong{Not yet implemented}.}
+  \code{capt}.}
 
   \item{hess}{Logical, if \code{TRUE} the Hessian is
   estimated, allowing for calculation of standard errors,

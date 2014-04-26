@@ -63,7 +63,7 @@ NumericMatrix bearings(const NumericMatrix& a, const NumericMatrix& b){
 }
 
 // [[Rcpp::export]]
-NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists){
+NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists, const double& sound_speed){
   int n = capt.nrow();
   int n_traps = capt.ncol();
   int n_mask = dists.ncol();
@@ -80,7 +80,7 @@ NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists
       index = 0;
       for (int k = 0; k < n_traps; k++){
 	if (capt(i, k) > 0){
-	  delts(index) = capt(i, k) - dists(k, j)/330;
+	  delts(index) = capt(i, k) - dists(k, j)/sound_speed;
 	  index++;
 	}
 	out(i, j) = sum(pow(delts - mean(delts), 2));

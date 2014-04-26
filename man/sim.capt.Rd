@@ -71,7 +71,7 @@ sim.capt(fit = NULL, traps = NULL, mask = NULL,
   \item{sound.speed}{The speed of sound in metres per
   second, defaults to 330 (the speed of sound in air). Only
   used when \code{"toa"} is a component name of
-  \code{capt}. \strong{Not yet implemented}.}
+  \code{capt}.}
 }
 \value{
 A list with named components, each corresponding to a data
