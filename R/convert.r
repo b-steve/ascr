@@ -28,12 +28,12 @@ create.mask <- function(traps, buffer, ...){
 }
 
 #' Creating capture history object.
-#' 
+#'
 #' Creates a capture history object to use with the function \code{\link{admbsecr}}.
 #'
 #' @param captures A data frame.
 #' @param n.traps The total number of traps.
-#' 
+#'
 #' @export
 create.capt <- function(captures, n.traps = NULL){
     ids <- captures[, 2]
@@ -157,4 +157,15 @@ convert.capt <- function(capt, traps, capthist = TRUE){
         out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1)
     }
     out
+}
+
+#' Create a capture history object from a PAMGuard output file
+#'
+#' Converts a PAMGuard output file to a capture history object
+#' suitable for use with the \link{admbsecr} function. This uses
+#' \link{make.acoustic.captures} to allocate call identities to
+#' detections.
+#'
+convert.pamguard <- function(dets, mics, sound.speed){
+
 }
