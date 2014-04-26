@@ -210,6 +210,7 @@ convert.capt <- function(capt, traps, capthist = TRUE){
 #' @param mics A matrix containing the coordinates of microphone
 #' locations.
 #' @param sound.speed The speed of sound in metres per second.
+#' @export
 convert.pamguard <- function(dets, mics, sound.speed = 330){
     toa.info <- dets$startSeconds + 1
     toa.info <- toa.info - toa.info[1]
@@ -219,6 +220,8 @@ convert.pamguard <- function(dets, mics, sound.speed = 330){
     clicks <- data.frame(session = rep(1, n), ID = 1:n,
                          occasion = rep(1, n), trap = mic.id,
                          ss = ss.info, toa = toa.info)
+    ord <- order(toa.info)
+    clicks <- clicks[ord, ]
     captures <- make.acoustic.captures(mics, clicks, sound.speed)
     create.capt(captures)
 }
