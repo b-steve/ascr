@@ -10,6 +10,9 @@ admbsecr 1.0.3
 * Added function get.bias(), which extracts estimated bias from an
   object of class admbsecr.boot.
 
+* Added function convert.pamguard(), which creates a capture history
+  for a PAMGuard detection file.
+
 * Added method "default.bc" option to confint.admbsecr.boot. This is
   similar to method "default", but additionally performs a bias
   correction.
