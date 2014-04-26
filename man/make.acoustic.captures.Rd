@@ -2,24 +2,23 @@
 \alias{make.acoustic.captures}
 \title{Assigning ID numbers to sounds.}
 \usage{
-make.acoustic.captures(mics, clicks, dt)
+make.acoustic.captures(mics, dets, sound.speed)
 }
 \arguments{
   \item{mics}{a matrix containing the coordinates of trap
   locations.}
 
-  \item{clicks}{a data frame containing (at least): (i)
+  \item{dets}{a data frame containing (at least): (i)
   \code{$toa}, the precise time of arrival of the received
   sound, and (ii) \code{$trap} the trap at which the sound
   was recorded.}
 
-  \item{dt}{a \code{K} by \code{K} matrix (where \code{K}
-  is the number of traps) containing the time taken for
-  sound to travel between each pair of traps.}
+  \item{sound.speed}{the speed of sound in metres per
+  second.}
 }
 \value{
-A data frame. Specifically, the \code{clicks} dataframe,
-now with a new variable, \code{ID}.
+A data frame. Specifically, the \code{dets} dataframe, now
+with a new variable, \code{ID}.
 }
 \description{
 Identifies recaptures and assigns ID numbers to sounds
