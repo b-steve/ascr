@@ -790,21 +790,28 @@ NULL
 
 ## Data documentation.
 
-#' \emph{Arthroleptella lightfooti} capture history object
+#' \emph{Arthroleptella lightfooti} survey data
 #'
-#' A capture history object from an acoustic survey of the Western
-#' Cape moss frog \emph{Arthroleptella lightfooti}. These data are
-#' from a 25 s subset of the original recording, taken on 16 May 2012
-#' at Silvermine, Table Mountain National Park, Cape Town, South
-#' Africa.
+#' Data from an acoustic survey of the Western Cape moss frog
+#' \emph{Arthroleptella lightfooti}. These data are from a 25 s subset
+#' of the original recording, taken on 16 May 2012 at Silvermine,
+#' Table Mountain National Park, Cape Town, South Africa. Acoustic
+#' signal strengths and times of arrival were measured, and this
+#' information is contained in the capture history object.
 #'
-#' Acoustic signal strengths and times of arrival were measured, and
-#' this information is contained in this capture history object.
-#' 
-#' @name lightfooti.capt
-#' @format A list, which is the correct format for use as the
-#' \code{capt} argument to the function \link{admbsecr}.
-#' @usage lightfooti.capt
+#' This object is a list which contains components:
+#' \itemize{
+#' \item \code{capt}: A capture history object.
+#' \item \code{traps}: A traps object.
+#' \item \code{mask}: A suitable mask object.
+#' \item \code{cutoff}: The microphone cutoff value.
+#' \item \code{freqs}: A vector of call frequencies measured
+#'                     independently to the acoustic survey.
+#' }
+#'
+#' @name lightfooti
+#' @format A list.
+#' @usage lightfooti
 #' @docType data
 #' @keywords datasets
 NULL
@@ -814,7 +821,7 @@ NULL
 #' A list containing various additional information types. These data
 #' were simulated using \link{sim.capt} using the trap locations in
 #' \link{example.traps}.
-#' 
+#'
 #' @name example.capt
 #' @format A list, which is the correct format for use as the
 #' \code{capt} argument to the function \link{admbsecr}.
