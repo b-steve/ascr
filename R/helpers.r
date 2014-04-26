@@ -21,47 +21,48 @@ animalIDvec <- function(capthist){
 #' time it would take for sound to travel between these microphones.
 #'
 #' @param mics a matrix containing the coordinates of trap locations.
-#' @param clicks a data frame containing (at least): (i) \code{$toa},
+#' @param dets a data frame containing (at least): (i) \code{$toa},
 #' the precise time of arrival of the received sound, and (ii)
 #' \code{$trap} the trap at which the sound was recorded.
-#' @param dt a \code{K} by \code{K} matrix (where \code{K} is the
-#' number of traps) containing the time taken for sound to travel
-#' between each pair of traps.
-#' @return A data frame. Specifically, the \code{clicks} dataframe,
+#' @param sound.speed the speed of sound in metres per second.
+#' @return A data frame. Specifically, the \code{dets} dataframe,
 #' now with a new variable, \code{ID}.
 #' @author David Borchers
-make.acoustic.captures <- function(mics, clicks, dt){
+make.acoustic.captures <- function(mics, dets, sound.speed){
+    mics <- as.matrix(mics)
+    dists <- distances(mics, mics)
+    dt <- dists/sound.speed
     K <- dim(mics)[1]
-    captures <- clicks
+    captures <- dets
     ct <- rep(-Inf, K)
     ID <- 1
-    ct[clicks$trap[1]] <- clicks$toa[1]
+    ct[dets$trap[1]] <- dets$toa[1]
     new <- FALSE
-    nclicks <- length(clicks$toa)
-    for (i in 2:nclicks){
-        if (ct[clicks$trap[i]] > -Inf){
+    ndets <- length(dets$toa)
+    for (i in 2:ndets){
+        if (ct[dets$trap[i]] > -Inf){
             nd <- length(which(ct > -Inf))
             captures$ID[(i - nd):(i - 1)] <- ID
             ct <- rep(-Inf, K)
-            ct[clicks$trap[i]] <- clicks$toa[i]
+            ct[dets$trap[i]] <- dets$toa[i]
             ID <- ID + 1
-            if(i == nclicks) captures$ID[i] <- ID
+            if(i == ndets) captures$ID[i] <- ID
         }
         else {
-            ct[clicks$trap[i]] <- clicks$toa[i]
+            ct[dets$trap[i]] <- dets$toa[i]
             ctset <- which(ct > -Inf)
-            dts <- dt[ctset, clicks$trap[i]]
-            cts <- -(ct[ctset] - clicks$toa[i])
+            dts <- dt[ctset, dets$trap[i]]
+            cts <- -(ct[ctset] - dets$toa[i])
             if (any((cts - dts) > 0)) new <- TRUE
             if (new) {
                 nd <- length(which(ct > -Inf)) - 1
                 captures$ID[(i - nd):(i - 1)] <- ID
                 ct <- rep(-Inf, K)
-                ct[clicks$trap[i]] <- clicks$toa[i]
+                ct[dets$trap[i]] <- dets$toa[i]
                 ID <- ID + 1
                 new <- FALSE
-                if (i == nclicks) captures$ID[i] <- ID
-            } else if(i == nclicks){
+                if (i == ndets) captures$ID[i] <- ID
+            } else if(i == ndets){
                 nd <- length(which(ct > -Inf))
                 captures$ID[(i - nd + 1):i] <- ID
             }

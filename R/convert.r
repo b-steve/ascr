@@ -28,7 +28,7 @@ create.mask <- function(traps, buffer, ...){
 }
 
 #' Creating capture history object.
-#' 
+#'
 #' Creates a capture history object to use with the function
 #' \code{\link{admbsecr}}.
 #'
@@ -73,7 +73,7 @@ create.mask <- function(traps, buffer, ...){
 #' @param n.traps The total number of traps. If \code{NULL} then the
 #' number of traps is assumed to be the largest value in the
 #' \code{traps} column of the \code{captures} argument.
-#' 
+#'
 #' @export
 create.capt <- function(captures, n.traps = NULL){
     ids <- captures[, 2]
@@ -197,4 +197,28 @@ convert.capt <- function(capt, traps, capthist = TRUE){
         out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1)
     }
     out
+}
+
+#' Create a capture history object from a PAMGuard output file
+#'
+#' Converts a PAMGuard output file to a capture history object
+#' suitable for use with the \link{admbsecr} function. This uses
+#' \link{make.acoustic.captures} to allocate call identities to
+#' detections.
+#'
+#' @param dets Detection output dataframe from PAMGuard.
+#' @param mics A matrix containing the coordinates of microphone
+#' locations.
+#' @param sound.speed The speed of sound in metres per second.
+convert.pamguard <- function(dets, mics, sound.speed = 330){
+    toa.info <- dets$startSeconds + 1
+    toa.info <- toa - toa[1]
+    mic.id <- log2(dets$channelMap) + 1
+    ss.info <- dets$amplitude
+    n <- nrow(dets)
+    clicks <- data.frame(session = rep(1, n), ID = 1:n,
+                         occasion = rep(1, n), trap = mic.id,
+                         ss = ss.info, toa = toa.info)
+    captures <- make.acoustic.captures(mics, clicks, sound.speed)
+    create.capt(captures)
 }
