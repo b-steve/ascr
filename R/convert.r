@@ -209,19 +209,27 @@ convert.capt <- function(capt, traps, capthist = TRUE){
 #' @param dets Detection output dataframe from PAMGuard.
 #' @param mics A matrix containing the coordinates of microphone
 #' locations.
+#' @param time.range A vector of length two, providing a range of
+#' times for which a subset should be taken to create the capture
+#' history.
 #' @param sound.speed The speed of sound in metres per second.
 #' @export
-convert.pamguard <- function(dets, mics, sound.speed = 330){
+convert.pamguard <- function(dets, mics, time.range = NULL,
+                             sound.speed = 330){
     toa.info <- dets$startSeconds
-    toa.info <- toa.info - toa.info[1] + 1
     mic.id <- log2(dets$channelMap) + 1
     ss.info <- dets$amplitude
     n <- nrow(dets)
     clicks <- data.frame(session = rep(1, n), ID = 1:n,
                          occasion = rep(1, n), trap = mic.id,
                          ss = ss.info, toa = toa.info)
-    ord <- order(toa.info)
+    if (!is.null(time.range)){
+        keep <- toa.info > time.range[1] & toa.info < time.range[2]
+        clicks <- clicks[keep, ]
+    }
+    ord <- order(clicks$toa)
     clicks <- clicks[ord, ]
+    clicks$toa <- clicks$toa - clicks$toa[1] + 1
     captures <- make.acoustic.captures(mics, clicks, sound.speed)
     create.capt(captures)
 }
