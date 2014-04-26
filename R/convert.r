@@ -212,7 +212,7 @@ convert.capt <- function(capt, traps, capthist = TRUE){
 #' @param sound.speed The speed of sound in metres per second.
 convert.pamguard <- function(dets, mics, sound.speed = 330){
     toa.info <- dets$startSeconds + 1
-    toa.info <- toa - toa[1]
+    toa.info <- toa.info - toa.info[1]
     mic.id <- log2(dets$channelMap) + 1
     ss.info <- dets$amplitude
     n <- nrow(dets)
