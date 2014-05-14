@@ -21,6 +21,23 @@
 #' \link{stdEr.admbsecr} and \link{vcov.admbsecr} must be called
 #' directly.
 #'
+#' If \code{infotypes} is provided it should take the form of a list,
+#' where each component is a subset of information types (i.e.,
+#' \code{fit$infotypes}) used to fit the original model. A \code{NULL}
+#' component is associated with no additional information. The
+#' bootstrap procedure is then repeated for each component, only
+#' utilising the appropriate additional information. In practice this
+#' is only useful if the user is looking to investigate the benefits
+#' of including particular information types. The results from these
+#' extra bootstrap procedures can be found in the
+#' \code{boot$extra.boots} component of the returned object.
+#'
+#' the bootstrap procedure will be
+#' repeated for each subset; usually this is only useful to
+#' investigate the impact on the density estimator associated with
+#' various combinations of information types. A \code{NULL} component
+#' will bootstrap without any additional information types.
+#'
 #' @section Bootstrapping for acoustic surveys:
 #'
 #' For fits based on acoustic surveys where the argument
@@ -52,9 +69,9 @@
 #' \strong{63}: 155--162.
 #'
 #' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
-#' G. J., Swift, R. J., and Gillespie, D. M. (in prep.) An acoustic
-#' spatially explicit capture-recapture method for estimating
-#' vocalizing amphibian density.
+#' G. J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
+#' framework for animal density estimation from acoustic detection
+#' data.
 #'
 #' @return A list of class \code{"admbsecr.boot"}. Components contain
 #' information such as estimated parameters and standard errors. The
@@ -73,6 +90,9 @@
 #' @param M The number of bootstrap resamples for the secondary
 #' bootstrap used to calculate Monte Carlo error. See 'Details'
 #' below. If M = 0, then this is skipped.
+#' @param infotypes A list, where each component contains information
+#' types for subsequent bootstrap procedures. See 'Details'.
+#'
 #'
 #'
 #' @examples
@@ -82,7 +102,7 @@
 #' }
 #'
 #' @export
-boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
+boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL){
     args <- fit$args
     orig.sv <- args$sv
     ## Set start values to estimated parameters.
@@ -104,10 +124,10 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     seeds <- sample(1:1e8, size = N)
     seed.mce <- sample(1:1e8, size = 1)
     ## Function to get fit.boot.
-    FUN <- function(i, fit, args, call.freqs, seeds, prog){
+    FUN <- function(i, fit, args, call.freqs, infotypes, seeds, prog){
         set.seed(seeds[i])
         ## Simulating capture history.
-        args$capt <- sim.capt(fit)
+        args$capt <- sim.capt(fit)[c("bincapt", infotypes)]
         ## Simulating calling frequencies (if required).
         if (fit$fit.freqs){
             if (length(call.freqs) > 1){
@@ -134,6 +154,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         out
     }
     if (n.cores == 1){
+        ## Main bootstrap.
         res <- matrix(0, nrow = N, ncol = n.pars + 1)
         colnames(res) <- c(par.names, "maxgrad")
         ## Setting up progress bar.
@@ -142,7 +163,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         }
         for (i in 1:N){
             res[i, ] <- FUN(i, fit = fit, args = args, call.freqs = call.freqs,
-                            seeds = seeds, prog = FALSE)
+                            infotypes = fit$infotypes, seeds = seeds, prog = FALSE)
             ## Updating progress bar.
             if (prog){
                 setTxtProgressBar(pb, i)
@@ -152,6 +173,40 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         if (prog){
             close(pb)
         }
+        ## Additional bootstraps.
+        extra.res <- vector(mode = "list", length = length(infotypes))
+        names(extra.res) <- names(infotypes)
+        for (i in seq(from = 1, by = 1, along.with = infotypes)){
+            new.args <- args
+            new.args$capt <- args$capt[c("bincapt", infotypes[[i]])]
+            options(warn = -1)
+            new.fit <- do.call("admbsecr", new.args)
+            options(warn = 1)
+            new.n.pars <- length(new.fit$coefficients)
+            new.par.names <- names(new.fit$coefficients)
+            extra.res[[i]] <- matrix(0, nrow = N, ncol = new.n.pars + 1)
+            colnames(extra.res[[i]]) <- c(new.par.names, "maxgrad")
+            ## Setting up another progress bar.
+            if (prog){
+                pb <- txtProgressBar(min = 0, max = N, style = 3)
+            }
+            for (j in 1:N){
+                options(warn = -1)
+                extra.res[[i]][j, ] <- FUN(j, fit = fit, args = args,
+                                           call.freqs = call.freqs,
+                                           infotypes = infotypes[[i]],
+                                           seeds = seeds, prog = FALSE)
+                options(warn = 1)
+                ## Updating progress bar.
+                if (prog){
+                    setTxtProgressBar(pb, j)
+                }
+            }
+            ## Closing progress bar.
+            if (prog){
+                close(pb)
+            }
+        }        
     } else {
         if (!require(parallel)){
             stop("The parallel package is required for n.cores > 1. Please install.")
@@ -163,19 +218,39 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
         clusterEvalQ(cluster, {
             library(admbsecr)
         })
+        ## Main bootstrap.
         if (prog){
             file.create("prog.txt")
         }
         res <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit, args = args,
-                             call.freqs = call.freqs, seeds = seeds, prog = prog))
-        stopCluster(cluster)
+                             call.freqs = call.freqs, infotypes = fit$infotypes,
+                             seeds = seeds, prog = prog))
         if (prog){
             unlink("prog.txt")
         }
+        ## Additional bootstrap.
+        extra.res <- vector(mode = "list", length = length(infotypes))
+        names(extra.res) <- names(infotypes)
+        for (i in seq(from = 1, by = 1, along.with = infotypes)){
+            if (prog){
+                file.create("prog.txt")
+            }
+            extra.res[[i]] <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit,
+                                            args = args, call.freqs = call.freqs,
+                                            infotypes = infotypes[[i]],
+                                            seeds = seeds, prog = prog))
+            ## Removing maximum gradient component.
+            extra.res[[i]] <- extra.res[[i]][, -ncol(extra.res[[i]])]
+            if (prog){
+                unlink("prog.txt")
+            }
+        }
+        stopCluster(cluster)
     }
     ## Calculating bootstrapped standard errors, correlations and
     ## covariances.
     maxgrads <- res[, ncol(res)]
+    ## Removing maximum gradient component.
     res <- res[, -ncol(res)]
     se <- apply(res, 2, sd, na.rm = TRUE)
     names(se) <- par.names
@@ -211,7 +286,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000){
     }
     out <- fit
     boot <- list(boots = res, se = se, se.mce = se.mce, cor = cor, vcov = vcov,
-                 bias = bias, bias.mce = bias.mce, maxgrads = maxgrads)
+                 bias = bias, bias.mce = bias.mce, maxgrads = maxgrads,
+                 extra.boots = extra.res)
     out$boot <- boot
     class(out) <- c("admbsecr.boot", class(fit))
     out
