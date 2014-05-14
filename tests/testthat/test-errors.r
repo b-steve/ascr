@@ -83,3 +83,18 @@ test_that("exe.type argument is correct", {
                          mask = example.mask, exe.type = "diff"),
                 throws_error("Argument 'exe.type' must be \"old\" or \"new\"."))
 })
+
+test_that("Extra components of 'sv' and 'fix' are removed", {
+    test.capt <- example.capt["bincapt"]
+    ## Testing warning checking 'sv' components.
+    expect_that(test.fit <- admbsecr(capt = test.capt, traps = example.traps,
+                                     mask = example.mask, sv = list(z = 5, g0 = 1),
+                                     fix = list(g0 = 1)),
+                gives_warning("Some parameters listed in 'sv' are not being used. These are being removed."))
+    expect_that(test.fit, is_identical_to(simple.hn.fit))
+    ## Testing warning checking 'fix' components.
+    expect_that(test.fit <- admbsecr(capt = test.capt, traps = example.traps,
+                                     mask = example.mask, fix = list(g0 = 1, foo = 0)),
+                gives_warning("Some parameters listed in 'fix' are not being used. These are being removed."))
+    expect_that(test.fit, is_identical_to(simple.hn.fit))
+})
