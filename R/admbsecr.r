@@ -402,6 +402,19 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.suppars <- length(suppar.names)
     any.suppars <- n.suppars > 0
     n.pars <- length(par.names)
+    ## Checking par.names against names of sv, fix, bounds, and sf.
+    for (i in c("sv", "fix", "bounds", "sf")){
+        obj <- get(i)
+        if (!is.null(obj)){
+            obj.fitted <- names(obj) %in% par.names
+            if(!all(obj.fitted)){
+                msg <- paste("Some parameters listed in '", i, "' are not being used. These are being removed.",
+                             sep = "")
+                warning(msg)
+                assign(i, obj[obj.fitted])
+            }
+        }
+    }
     ## Sets link function ID number for use in ADMB:
     ## 1 = identity
     ## 2 = log
