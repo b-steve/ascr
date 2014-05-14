@@ -2,7 +2,8 @@
 \alias{boot.admbsecr}
 \title{Bootstrapping SECR data}
 \usage{
-boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000)
+boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
+  infotypes = NULL)
 }
 \arguments{
   \item{fit}{A fitted \code{admbsecr} model object.}
@@ -18,6 +19,10 @@ boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000)
   \item{M}{The number of bootstrap resamples for the
   secondary bootstrap used to calculate Monte Carlo error.
   See 'Details' below. If M = 0, then this is skipped.}
+
+  \item{infotypes}{A list, where each component contains
+  information types for subsequent bootstrap procedures.
+  See 'Details'.}
 }
 \value{
 A list of class \code{"admbsecr.boot"}. Components contain
@@ -54,6 +59,24 @@ methods). For standard errors and the variance-covariance
 matrix based on maximum likelihood asymptotic theory, the
 methods \link{stdEr.admbsecr} and \link{vcov.admbsecr} must
 be called directly.
+
+If \code{infotypes} is provided it should take the form of
+a list, where each component is a subset of information
+types (i.e., \code{fit$infotypes}) used to fit the original
+model. A \code{NULL} component is associated with no
+additional information. The bootstrap procedure is then
+repeated for each component, only utilising the appropriate
+additional information. In practice this is only useful if
+the user is looking to investigate the benefits of
+including particular information types. The results from
+these extra bootstrap procedures can be found in the
+\code{boot$extra.boots} component of the returned object.
+
+the bootstrap procedure will be repeated for each subset;
+usually this is only useful to investigate the impact on
+the density estimator associated with various combinations
+of information types. A \code{NULL} component will
+bootstrap without any additional information types.
 }
 \section{Bootstrapping for acoustic surveys}{
   For fits based on acoustic surveys where the argument
@@ -94,8 +117,8 @@ statistical analyses. \emph{The American Statistician},
 \strong{63}: 155--162.
 
 Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey, G.
-J., Swift, R. J., and Gillespie, D. M. (in prep.) An
-acoustic spatially explicit capture-recapture method for
-estimating vocalizing amphibian density.
+J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
+framework for animal density estimation from acoustic
+detection data.
 }
 

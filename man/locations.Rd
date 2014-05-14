@@ -5,9 +5,10 @@
 locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
   nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
-  "purple", bearing = "green", dist = "brown", toa = "blue"),
+  "purple", bearing = "green", dist = "brown", toa = "blue"), lty = 1,
   show.labels = TRUE, plot.arrows = "bearing" \%in\% fit$infotypes,
-  plot.circles = "dist" \%in\% fit$infotypes, legend = TRUE, add = FALSE)
+  plot.circles = "dist" \%in\% fit$infotypes, show.legend = !add,
+  show.axes = TRUE, add = FALSE)
 }
 \arguments{
   \item{fit}{A fitted model from \link{admbsecr}.}
@@ -65,11 +66,14 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   \item{cols}{A list with named components corresponding to
   each contour type (i.e., a subset of \code{"capt"},
   \code{"bearing"}, \code{"dist"}, \code{"toa"}, and
-  \code{"combined"}). Each component provides the colour
+  \code{"combined"}). Each component provides the colour of
   the associated contour type (e.g., using a character
   string such as \code{"red"}, or a call to the function
   \link[grDevices]{rgb}). By default, if only one contour
   is to be plotted, it will be plotted in black.}
+
+  \item{lty}{The line type of the contours; see
+  \link{par}.}
 
   \item{show.labels}{Logical, if \code{TRUE}, contours are
   labelled with the appropriate probability density (if
@@ -86,7 +90,10 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   indicating the estimated distance to the individual are
   plotted around detectors at which detections were made.}
 
-  \item{legend}{Logical, if \code{TRUE}, a legend will be
+  \item{show.legend}{Logical, if \code{TRUE}, a legend will
+  be added to the plot.}
+
+  \item{show.axes}{Logical, if \code{TRUE}, axes will be
   added to the plot.}
 
   \item{add}{Logical, if \code{TRUE}, contours will be
