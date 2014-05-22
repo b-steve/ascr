@@ -341,8 +341,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.traps <- nrow(traps)
     n.mask <- nrow(mask)
     A <- attr(mask, "area")
+    buffer <- attr(mask, "buffer")
     ## Removing attributes from mask.
     mask <- as.matrix(mask)
+    attr(mask, "area") <- A
+    attr(mask, "buffer") <- buffer
     ## TODO: Sort out how to determine supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
     fit.types <- supp.types %in% names(capt)
@@ -454,7 +457,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                             detpar.names = detpar.names,
                                             mask = mask, traps = traps,
                                             sv = sv.link, cutoff = cutoff,
-                                            ss.link = ss.link)))
+                                            ss.link = ss.link, A = A)))
     }
     ## Converting start values to link scale.
     sv <- sv.link

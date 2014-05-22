@@ -28,7 +28,7 @@ autosigma <- function(args){
 autoD <- function(args){
     detfn <- args$detfn
     mask <- args$mask
-    a <- attr(mask, "area")
+    A <- args$A
     traps <- args$traps
     sv <- args$sv
     detpar.names <- args$detpar.names
@@ -37,7 +37,7 @@ autoD <- function(args){
     if (!is.null(cutoff)){
         pars$cutoff <- cutoff
     }
-    esa <- a*sum(p.dot(points = mask, traps = traps, detfn = detfn, pars = pars))
+    esa <- A*sum(p.dot(points = mask, traps = traps, detfn = detfn, pars = pars))
     ## HT-like estimator for D is n/esa.
     nrow(args$capt$bincapt)/esa
 }
