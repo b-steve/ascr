@@ -103,7 +103,15 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
                        xlab = "Distance (m)", ylab = "Detection probability",
                        add = FALSE, ...){
     if (is.null(xlim)){
-        xlim <- c(0, attr(get.mask(fit), "buffer"))
+        buffer <- attr(get.mask(fit), "buffer")
+        if (!is.null(buffer)){
+            x.max <- buffer
+        } else {
+            dists <- distances(fit$args$traps, fit$args$mask)
+            edge.point <- which(dists[1, ] == max(dists[1, ]))[1]
+            x.max <- min(dists[, edge.point])
+        }
+        xlim <- c(0, x.max)
     }
     detfn <- fit$args$detfn
     pars <- get.par(fit, pars = fit$detpars, cutoff = fit$fit.types["ss"],
