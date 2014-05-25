@@ -57,6 +57,8 @@
 #' @param plot.circles Logical, if \code{TRUE}, circles indicating the
 #' estimated distance to the individual are plotted around detectors
 #' at which detections were made.
+#' @param arrow.length Numeric, providing the length of the arrows
+#' (only used if \code{plot.arrows} is \code{TRUE}).
 #' @param show.legend Logical, if \code{TRUE}, a legend will be added to
 #' the plot.
 #' @param show.axes Logical, if \code{TRUE}, axes will be added to the
@@ -81,6 +83,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                       lty = 1, show.labels = TRUE,
                       plot.arrows = "bearing" %in% fit$infotypes,
                       plot.circles = "dist" %in% fit$infotypes,
+                      arrow.length = NULL,
                       show.legend = !add, show.axes = TRUE, add = FALSE){
     ## Setting up plotting area.
     if (!add){
@@ -180,7 +183,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                 f.combined <- f.combined*f.bearing
             }
             if (plot.arrows){
-                show.arrows(fit, i)
+                show.arrows(fit, i, arrow.length)
             }
         }
         ## Contour due to estimated distances.
@@ -339,10 +342,12 @@ toa.density <- function(fit, id, mask, dists){
 }
 
 ## Plots arrows on traps where a detection was made, showing estimated bearing.
-show.arrows <- function(fit, id){
+show.arrows <- function(fit, id, arrow.length = NULL){
     xlim <- par("usr")[c(1, 2)]
     ylim <- par("usr")[c(3, 4)]
-    arrow.length <- 0.05*min(c(diff(range(xlim)), diff(range(ylim))))
+    if (is.null(arrow.length)){
+        arrow.length <- 0.05*min(c(diff(range(xlim)), diff(range(ylim))))
+    }
     capt <- fit$args$capt$bincapt[id, ]
     bearing.capt <- fit$args$capt$bearing[id, capt == 1]
     trappos <- get.traps(fit)[which(capt == 1), , drop = FALSE]
