@@ -262,8 +262,11 @@ summary.admbsecr <- function(object, ...){
     derived <- coef(object, "derived")
     coefs.se <- stdEr(object, "fitted")
     derived.se <- stdEr(object, "derived")
+    infotypes <- object$infotypes
+    detfn <- object$args$detfn
     out <- list(coefs = coefs, derived = derived, coefs.se = coefs.se,
-                derived.se = derived.se)
+                derived.se = derived.se, infotypes = infotypes,
+                detfn = detfn)
     class(out) <- c("summary.admbsecr", class(out))
     out
 }
@@ -280,7 +283,14 @@ print.summary.admbsecr <- function(x, ...){
     mat[(n.coefs + 2):(n.coefs + n.derived + 1), ] <- c(x$derived, x$derived.se)
     rownames(mat) <- c(names(x$coefs), "---", names(x$derived))
     colnames(mat) <- c("Estimate", "Std. Error")
-    cat("Coefficients:", "\n")
+    detfn <- c(hn = "Halfnormal", hr = "Hazard rate", th = "Threshold",
+               lth = "Log-link threshold", ss = "Signal strength")[x$detfn]
+    infotypes <- c(bearing = "Bearings", dist = "Distances", ss = "Signal strengths",
+                   toa = "Time of arrival")[x$infotypes]
+    cat("Detection function:", detfn, "\n")
+    cat("Information types: ")
+    cat(infotypes, sep = ", ")
+    cat("\n", "\n", "Coefficients:", "\n")
     printCoefmat(mat, na.print = "")
 }
 
