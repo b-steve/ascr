@@ -8,8 +8,8 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
   "purple", bearing = "green", dist = "brown", toa = "blue"), lty = 1,
   show.labels = TRUE, plot.arrows = "bearing" \%in\% fit$infotypes,
-  plot.circles = "dist" \%in\% fit$infotypes, show.legend = !add,
-  show.axes = TRUE, add = FALSE)
+  plot.circles = "dist" \%in\% fit$infotypes, arrow.length = NULL,
+  show.legend = !add, show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
@@ -79,6 +79,9 @@ which detections were made.}
 \item{plot.circles}{Logical, if \code{TRUE}, circles indicating the
 estimated distance to the individual are plotted around detectors
 at which detections were made.}
+
+\item{arrow.length}{Numeric, providing the length of the arrows
+(only used if \code{plot.arrows} is \code{TRUE}).}
 
 \item{show.legend}{Logical, if \code{TRUE}, a legend will be added to
 the plot.}
