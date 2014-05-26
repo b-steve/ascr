@@ -73,7 +73,7 @@ test_that("ss-related parameters set up correctly", {
                          mask = example.mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10)),
                 throws_error("Argument 'cutoff' is missing."))
-    
+
 })
 
 test_that("exe.type argument is correct", {
@@ -91,10 +91,10 @@ test_that("Extra components of 'sv' and 'fix' are removed", {
                                      mask = example.mask, sv = list(z = 5, g0 = 1),
                                      fix = list(g0 = 1)),
                 gives_warning("Some parameters listed in 'sv' are not being used. These are being removed."))
-    expect_that(test.fit, is_identical_to(simple.hn.fit))
+    expect_that(test.fit, equals(simple.hn.fit))
     ## Testing warning checking 'fix' components.
     expect_that(test.fit <- admbsecr(capt = test.capt, traps = example.traps,
                                      mask = example.mask, fix = list(g0 = 1, foo = 0)),
                 gives_warning("Some parameters listed in 'fix' are not being used. These are being removed."))
-    expect_that(test.fit, is_identical_to(simple.hn.fit))
+    expect_that(test.fit, equals(simple.hn.fit))
 })
