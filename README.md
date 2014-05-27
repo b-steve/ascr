@@ -23,6 +23,8 @@ install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
 ```
 This requires the newest version of R.
 
+If you receive the warning `package 'admbsecr' is not available (for R version 3.x.x)`, you may have attempted to install during R-Forge's daily build process. Check [here](https://r-forge.r-project.org/R/?group_id=1506) to see the build status of admbsecr and wait for a "Current" status.
+
 * For the development version (i.e., this repository; stability not guaranteed):
 ```
 library(devtools)
