@@ -183,6 +183,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             stop("Argument 'ss.link' must be \"identity\" or \"log\".")
         }
         pars$cutoff <- cutoff
+        detpars$cutoff <- cutoff
         ss.mean <- inv.ss.link(pars$b0.ss - pars$b1.ss*dists)
         ss.error <- matrix(rnorm(n.popn*n.traps, mean = 0,
                                  sd = pars$sigma.ss),
