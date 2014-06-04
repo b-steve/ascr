@@ -14,7 +14,7 @@ To install:
 
 * Package dependencies will not install automatically as admbsecr is not on CRAN. To install these, run:
 ```
-install.packages(c("CircStats", "lattice", "matrixStats", "plyr", "Rcpp", "R2admb", "secr"))
+install.packages(c("CircStats", "lattice", "matrixStats", "plyr", "Rcpp", "R2admb", "secr", "testthat"))
 ```
 
 * For the [stable version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
