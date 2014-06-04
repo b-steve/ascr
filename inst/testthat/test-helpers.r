@@ -16,7 +16,7 @@ test_that("testing get.par", {
 })
 
 test_that("testing calculation of probability detection surface", {
-    esa.test <- sum(p.dot(simple.hn.fit))*attr(example.mask, "area")
+    esa.test <- sum(admbsecr:::p.dot(simple.hn.fit))*attr(example.mask, "area")
     esa <- get.par(simple.hn.fit, "esa")
     relative.error <- (esa.test - esa)/esa
     expect_that(relative.error < 1e-4, is_true())
