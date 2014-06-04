@@ -229,7 +229,7 @@
 #' each component is a scalefactor for the associated parameter. The
 #' default behaviour is to automatically select scalefactors based on
 #' parameter start values. See the section on convergence below.
-#' @param ss.link A character string, either \code{"indentity"} or
+#' @param ss.link A character string, either \code{"identity"} or
 #' \code{"log"}, which specifies the link function for the signal
 #' strength detection function. Only required when \code{detfn} is
 #' \code{"ss"} (i.e., when there is signal strength information in

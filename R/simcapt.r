@@ -26,8 +26,10 @@
 #' values from which to generate capture histories.
 #' @param infotypes A character vector indicating the type(s) of
 #' additional information to be simulated. Elements can be a subset of
-#' \code{"bearing"}, \code{"dist"}, \code{"ss"}, \code{"toa"}, and
-#' \code{"mrds"} (NOTE: \code{"mrds"} not yet implemented).
+#' \code{"bearing"}, \code{"dist"}, \code{"toa"}, and \code{"mrds"}
+#' (NOTE: \code{"mrds"} not yet implemented). If signal strength
+#' information is required, specify \code{detfn} as \code{"ss"} rather
+#' than including it here.
 #' @param detfn A character string specifying the detection function
 #' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
 #' (threshold), "lth" (log-link threshold), or "ss" (signal strength).
