@@ -32,6 +32,13 @@ install_github("admbsecr", "b-steve")
 ```
 For this option Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/) installed.
 
+* If you wish to test to see if your admbsecr installation is working properly, run:
+```
+library(admbsecr)
+test.admbsecr()
+```
+This will take a little while. Test passes will print a full stop (`.`) to the console. Any failures will print an alphanumeric character. If there are any failures, see the Troubleshooting section below, or contact the e-mail address below.
+
 * Note that this R package does not require an ADMB installation.
 
 ## Troubleshooting
@@ -46,7 +53,7 @@ If you are experiencing difficulties with getting things running, please get in 
 
 ## Contact
 
-Ben Stevenson, bcs5@st-andrews.ac.uk
+Ben Stevenson, bcs5[at]st-andrews.ac.uk
 
 ## Acknowledgements
 
