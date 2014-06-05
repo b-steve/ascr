@@ -364,11 +364,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     capt.bin.unique <- capt.bin.unique[!duplicated(as.data.frame(capt.bin.unique)), ]
     n.unique <- nrow(capt.bin.unique)
     unique.changes <- cumsum(c(0, capt.bin.freqs[-n.unique])) + 1
-    if (exe.type == "test"){
-        ## Reordering all capture history components.
-        for (i in 1:length(capt)){
-            capt[[i]] <- capt[[i]][capt.order, ]
-        }
+    ## Reordering all capture history components.
+    for (i in 1:length(capt)){
+        capt[[i]] <- capt[[i]][capt.order, ]
     }
     ## Capture histories for additional information types (if they exist)
     capt.bearing <- if (fit.bearings) capt$bearing else 0
@@ -601,43 +599,23 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sv.link$dummy <- 0
     }
     ## Stuff for the .dat file.
-    if (exe.type == "test"){
-        data.list <- list(
+    data.list <- list(
             D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf,
-            n_detpars = n.detpars, detpars_lb = detpars.lb, detpars_ub =
-            detpars.ub, detpars_phase = detpars.phase, detpars_sf =
+            n_detpars = n.detpars, detpars_lb = detpars.lb, detpars_ub
+            = detpars.ub, detpars_phase = detpars.phase, detpars_sf =
             detpars.sf, detpars_linkfns = detpars.link, n_suppars =
-            n.suppars, suppars_lb = suppars.lb, suppars_ub = suppars.ub,
-            suppars_phase = suppars.phase, suppars_sf = suppars.sf,
-            suppars_linkfns = suppars.link, detfn_id = detfn.id, trace =
-            as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps =
-            n.traps, n_mask = n.mask, A = A, capt_bin = capt.bin, n_unique
-            = n.unique, capt_bin_unique = capt.bin.unique, capt_bin_freqs
-            = capt.bin.freqs, fit_angs = as.numeric(fit.bearings),
-            capt_ang = capt.bearing, fit_dists = as.numeric(fit.dists),
-            capt_dist = capt.dist, fit_ss = as.numeric(fit.ss), cutoff =
-            cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
+            n.suppars, suppars_lb = suppars.lb, suppars_ub =
+            suppars.ub, suppars_phase = suppars.phase, suppars_sf =
+            suppars.sf, suppars_linkfns = suppars.link, detfn_id =
+            detfn.id, trace = as.numeric(trace), DBL_MIN = dbl.min, n
+            = n, n_traps = n.traps, n_mask = n.mask, A = A, fit_angs =
+            as.numeric(fit.bearings), capt_ang = capt.bearing,
+            fit_dists = as.numeric(fit.dists), capt_dist = capt.dist,
+            fit_ss = as.numeric(fit.ss), cutoff = cutoff, linkfn_id =
+            linkfn.id, capt_ss = capt.ss, fit_toas =
             as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
-            as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists,
-            angs = bearings, toa_ssq = toa.ssq)
-    } else {
-        data.list <- list(
-            D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf,
-            n_detpars = n.detpars, detpars_lb = detpars.lb, detpars_ub =
-            detpars.ub, detpars_phase = detpars.phase, detpars_sf =
-            detpars.sf, detpars_linkfns = detpars.link, n_suppars =
-            n.suppars, suppars_lb = suppars.lb, suppars_ub = suppars.ub,
-            suppars_phase = suppars.phase, suppars_sf = suppars.sf,
-            suppars_linkfns = suppars.link, detfn_id = detfn.id, trace =
-            as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps =
-            n.traps, n_mask = n.mask, A = A, capt_bin = capt.bin, fit_angs = as.numeric(fit.bearings),
-            capt_ang = capt.bearing, fit_dists = as.numeric(fit.dists),
-            capt_dist = capt.dist, fit_ss = as.numeric(fit.ss), cutoff =
-            cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
-            as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
-            as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists,
-            angs = bearings, toa_ssq = toa.ssq)
-    }
+            as.numeric(fit.mrds), mrds_dist = mrds.dist, dists =
+            dists, angs = bearings, toa_ssq = toa.ssq) }
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(call.freqs)){
         fit.freqs <- any(call.freqs != 1)

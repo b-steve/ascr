@@ -42,7 +42,6 @@ DATA_SECTION
   init_int n_traps
   init_int n_mask
   init_number A
-  init_matrix capt_bin(1,n,1,n_traps)
   init_int n_unique
   init_matrix capt_bin_unique(1,n_unique,1,n_traps)
   init_ivector capt_bin_freqs(1,n_unique)
