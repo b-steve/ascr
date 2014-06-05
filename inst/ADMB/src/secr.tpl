@@ -19,6 +19,8 @@ DATA_SECTION
   int n_ests
   int i
   int j
+  int u
+  int k
   !! n_ests = 0;
   !! if (D_phase > -1){
   !!   n_ests++;
@@ -41,6 +43,9 @@ DATA_SECTION
   init_int n_mask
   init_number A
   init_matrix capt_bin(1,n,1,n_traps)
+  init_int n_unique
+  init_matrix capt_bin_unique(1,n_unique,1,n_traps)
+  init_ivector capt_bin_freqs(1,n_unique)
   init_int fit_angs
   int nr_ang
   int nc_ang
@@ -166,7 +171,9 @@ PARAMETER_SECTION
   matrix expected_ss(1,nr_expected_ss,1,nc_expected_ss)
   number ss_resid
   vector capt_hist(1,n_traps)
-  vector total_contrib(1,n_mask)
+  vector bincapt_contrib(1,n_mask)
+  vector supp_contrib(1,n_mask)
+  vector evade_contrib(1,n_mask)
 
 PROCEDURE_SECTION
   // Grabbing detection function.
@@ -226,53 +233,60 @@ PROCEDURE_SECTION
     }
     sum_probs += 1 - undet_prob + DBL_MIN;
   }
+  // Resetting i index.
+  i = 0;
   // Contribution due to capture history.
-  for (i = 1; i <= n; i++){
-    capt_hist = row(capt_bin, i);
-    // Contribution from capture locations.
-    if (fit_ss){
-      dvar_matrix log_ss_density(1, n_traps, 1, n_mask);
-      for (j = 1; j <= n_traps; j++){
-        log_ss_density(j)(1, n_mask) = log_dnorm(capt_ss(i, j), row(expected_ss, j), detpars(3));
+  for (u = 1; u <= n_unique; u++){
+    for (k = 1; k <= capt_bin_freqs(u); k++){
+      i++;
+      capt_hist = row(capt_bin_unique, u);
+      // Contribution from capture locations.
+      if (fit_ss){
+        dvar_matrix log_ss_density(1, n_traps, 1, n_mask);
+        for (j = 1; j <= n_traps; j++){
+          log_ss_density(j)(1, n_mask) = log_dnorm(capt_ss(i, j), row(expected_ss, j), detpars(3));
+        }
+	if (k == 1){
+          evade_contrib = (1 - capt_hist)*log_evade_probs;
+	}
+        bincapt_contrib = capt_hist*log_ss_density + evade_contrib;
+      } else if (k == 1){
+        bincapt_contrib = capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs;
       }
-      total_contrib = capt_hist*log_ss_density + (1 - capt_hist)*log_evade_probs;
-    } else {
-      total_contrib = capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs;
-    }
-    // Contribution from supplementary information.
-    if (any_suppars){
-      dvar_vector supp_contrib(1, n_mask);
-      supp_contrib = 0;
-      for (j = 1; j <= n_traps; j++){
-      //  Try setting up a ragged array of capture locations for each individual instead.
-        if (capt_bin(i, j)){
-	  // Contribution from bearings.
-          if (fit_angs){
-            supp_contrib += suppars(kappa_ind)*cos(capt_ang(i, j) - row(angs, j));
+      // Contribution from supplementary information.
+      if (any_suppars){
+        supp_contrib = 0;
+        for (j = 1; j <= n_traps; j++){
+        //  Try setting up a ragged array of capture locations for each individual instead.
+          if (capt_bin_unique(u, j)){
+            // Contribution from bearings.
+            if (fit_angs){
+              supp_contrib += suppars(kappa_ind)*cos(capt_ang(i, j) - row(angs, j));
+            }
+            // Contribution from distances.
+            if (fit_dists){
+	      // Try saving alpha separately.
+	      dvar_vector beta(1, n_mask);
+	      beta = suppars(alpha_ind)/row(dists, j);
+              supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - beta*capt_dist(i, j);
+	    }
           }
-	  if (fit_dists){
-	    // Try saving alpha separately.
-	    dvar_vector beta(1, n_mask);
-	    beta = suppars(alpha_ind)/row(dists, j);
-            supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - beta*capt_dist(i, j);
-	  }
+        }
+        // Constant part of von Mises density.
+        if (fit_angs){
+          supp_contrib -= sum(capt_hist)*log(2*M_PI*bessi0(suppars(kappa_ind)));
+        }
+        // Constant part of the gamma density.
+        if (fit_dists){
+          supp_contrib -= sum(capt_hist)*gammln(suppars(alpha_ind));
+        }
+        if (fit_toas){
+          // Try saving sigma_toa separately.
+          supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row(toa_ssq, i)/(2*square(suppars(sigma_toa_ind))));
         }
       }
-      // Constant part of von Mises density.
-      if (fit_angs){
-        supp_contrib -= sum(capt_hist)*log(2*M_PI*bessi0(suppars(kappa_ind)));
-      }
-      // Constant part of the gamma density.
-      if (fit_dists){
-      	supp_contrib -= sum(capt_hist)*gammln(suppars(alpha_ind));
-      }     
-      if (fit_toas){
-	// Try saving sigma_toa separately.
-        supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row(toa_ssq, i)/(2*square(suppars(sigma_toa_ind))));
-      }
-      total_contrib += supp_contrib;
+      f -= log(sum(mfexp(bincapt_contrib + supp_contrib)) + DBL_MIN);
     }
-    f -= log(sum(mfexp(total_contrib)) + DBL_MIN);
   }
   // Calculating ESA.
   esa = A*sum_probs;
@@ -291,7 +305,7 @@ PROCEDURE_SECTION
         cout << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
-    cout << "LL: " << -f << endl;
+    cout << "LL: " << -f << " TEST EXE" << endl;
   }
 
 GLOBALS_SECTION
