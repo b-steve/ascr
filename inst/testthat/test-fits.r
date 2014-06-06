@@ -3,8 +3,10 @@ context("Testing model fits")
 test_that("simple fitting -- half normal", {
     ## Fitting model.
     simple.capt <- example.capt["bincapt"]
-    fit <- admbsecr(capt = simple.capt, traps = example.traps,
-                    mask = example.mask)
+    system.time(fit1 <- admbsecr(capt = simple.capt, traps = example.traps,
+                    mask = example.mask, trace = TRUE))
+    system.time(fit2 <- admbsecr(capt = simple.capt, traps = example.traps,
+                        mask = example.mask, trace = TRUE, exe.type = "test"))
     ## Checking parameter values.
     pars.test <- c(2358.737165, 1.000000000, 5.262653889)
     n.pars <- length(pars.test)
@@ -90,8 +92,10 @@ test_that("simple fitting -- hazard rate", {
 test_that("bearing fitting", {
     ## Fitting model.
     bearing.capt <- example.capt[c("bincapt", "bearing")]
-    fit <- admbsecr(capt = bearing.capt, traps = example.traps,
-                    mask = example.mask, fix = list(g0 = 1))
+    system.time(fit1 <- admbsecr(capt = bearing.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE))
+    system.time(fit2 <- admbsecr(capt = bearing.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE, exe.type = "test"))
     ## Checking parameter values.
     pars.test <- c(2394.109251, 5.214332270, 67.65495606)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
@@ -109,8 +113,11 @@ test_that("bearing fitting", {
 test_that("dist fitting", {
     ## Fitting model.
     dist.capt <- example.capt[c("bincapt", "dist")]
-    fit <- admbsecr(capt = dist.capt, traps = example.traps,
-                    mask = example.mask, fix = list(g0 = 1))
+    system.time(fit <- admbsecr(capt = dist.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE))
+    system.time(fit2 <- admbsecr(capt = dist.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE,
+                     exe.type = "test"))
     ## Checking parameter values.
     pars.test <- c(2477.446007, 5.104500978, 4.053234339)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
@@ -136,10 +143,14 @@ test_that("dist fitting", {
 test_that("ss fitting", {
     ## Fitting model.
     ss.capt <- example.capt[c("bincapt", "ss")]
-    fit <- admbsecr(capt = ss.capt, traps = example.traps,
+    system.time(fit1 <- admbsecr(capt = ss.capt, traps = example.traps,
                     mask = example.mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    cutoff = 60)
+                    cutoff = 60, trace = TRUE))
+    system.time(fit2 <- admbsecr(capt = ss.capt, traps = example.traps,
+                    mask = example.mask,
+                    sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
+                    cutoff = 60, trace = TRUE, exe.type = "test"))
     ## Checking parameter values.
     pars.test <- c(2631.276509, 90.94073454, 4.396885247, 10.552865862)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
@@ -160,8 +171,11 @@ test_that("ss fitting", {
 test_that("toa fitting", {
     ## Fitting model.
     toa.capt <- example.capt[c("bincapt", "toa")]
-    fit <- admbsecr(capt = toa.capt, traps = example.traps,
-                    mask = example.mask, fix = list(g0 = 1))
+    t1 <- system.time(fit1 <- admbsecr(capt = toa.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE))
+    t2 <- system.time(fit2 <- admbsecr(capt = toa.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE,
+                     exe.type = "test"))
     ## Checking parameter values.
     pars.test <- c(2238.943787, 5.434543258, 0.00184227498)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
@@ -182,10 +196,14 @@ test_that("toa fitting", {
 
 test_that("joint ss/toa fitting", {
     joint.capt <- example.capt[c("bincapt", "ss", "toa")]
-    fit <- admbsecr(capt = joint.capt, traps = example.traps,
+    t1 <- system.time(fit1 <- admbsecr(capt = joint.capt, traps = example.traps,
                     mask = example.mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    cutoff = 60)
+                    cutoff = 60, trace = TRUE))
+    t2 <- system.time(fit2 <- admbsecr(capt = joint.capt, traps = example.traps,
+                    mask = example.mask,
+                    sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
+                    cutoff = 60, trace = TRUE, exe.type = "test"))
     ## Checking parameter values.
     pars.test <- c(2518.778360, 91.11204602, 4.312022549,
                    10.85171521, 0.001954810264)
@@ -203,8 +221,11 @@ test_that("joint ss/toa fitting", {
 
 test_that("joint bearing/dist fitting", {
     joint.capt <- example.capt[c("bincapt", "bearing", "dist")]
-    fit <- admbsecr(capt = joint.capt, traps = example.traps,
-                    mask = example.mask, fix = list(g0 = 1))
+    t1 <- system.time(fit1 <- admbsecr(capt = joint.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE))
+    t2 <- system.time(fit2 <- admbsecr(capt = joint.capt, traps = example.traps,
+                    mask = example.mask, fix = list(g0 = 1), trace = TRUE,
+                    exe.type = "test"))
     ## Checking parameter values.
     pars.test <- c(2476.527851, 5.105681597, 70.35386170, 3.941970659)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))

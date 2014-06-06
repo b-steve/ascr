@@ -19,8 +19,10 @@ DATA_SECTION
   int n_ests
   int i
   int j
+  int jj
   int u
   int k
+  int kk
   !! n_ests = 0;
   !! if (D_phase > -1){
   !!   n_ests++;
@@ -36,6 +38,7 @@ DATA_SECTION
   !!   }
   !! }
   init_number detfn_id
+  init_number buffer
   init_number trace
   init_number DBL_MIN
   init_int n
@@ -50,6 +53,8 @@ DATA_SECTION
   int nc_ang
   int nr_angmat
   int nc_angmat
+  int nr_local_angmat
+  int nc_local_angmat
   !! if (fit_angs == 1){
   !!   nr_ang = n;
   !!   nc_ang = n_traps;
@@ -65,6 +70,8 @@ DATA_SECTION
   init_int fit_dists
   int nr_dist
   int nc_dist
+  int nr_local_dist
+  int nc_local_dist
   !! if (fit_dists == 1){
   !!   nr_dist = n;
   !!   nc_dist = n_traps;
@@ -80,6 +87,8 @@ DATA_SECTION
   int nc_ss
   int nr_expected_ss
   int nc_expected_ss
+  int nr_local_expected_ss
+  int nc_local_expected_ss
   !! if (fit_ss == 1){
   !!   nr_ss = n;
   !!   nc_ss = n_traps;
@@ -97,6 +106,8 @@ DATA_SECTION
   int nc_toa
   int nr_toa_ssq
   int nc_toa_ssq
+  int nr_local_toa_ssq
+  int nc_local_toa_ssq
   !! if (fit_toas == 1){
   !!   nr_toa = n;
   !!   nc_toa = n_traps;
@@ -123,9 +134,9 @@ DATA_SECTION
   init_matrix dists(1,n_traps,1,n_mask)
   init_matrix angs(1,nr_angmat,1,nc_angmat)
   init_matrix toa_ssq(1,nr_toa_ssq,1,nc_toa_ssq)
-  // Indicator for supplementary information.
+  // Indicator for supplementary information (other than SS).
   int any_suppars
-  !! if (fit_angs + fit_dists + fit_ss + fit_toas > 0){
+  !! if (fit_angs + fit_dists + fit_toas > 0){
   !!   any_suppars = 1;
   !! } else {
   !!   any_suppars = 0;
@@ -148,6 +159,9 @@ DATA_SECTION
   !!   sigma_toa_ind = curr_ind;
   !! }
   number dist
+  int is_local
+  int n_local
+  vector local_points(1,n_mask)
 
 PARAMETER_SECTION
   objective_function_value f
@@ -170,9 +184,6 @@ PARAMETER_SECTION
   matrix expected_ss(1,nr_expected_ss,1,nc_expected_ss)
   number ss_resid
   vector capt_hist(1,n_traps)
-  vector bincapt_contrib(1,n_mask)
-  vector supp_contrib(1,n_mask)
-  vector evade_contrib(1,n_mask)
 
 PROCEDURE_SECTION
   // Grabbing detection function.
@@ -236,37 +247,125 @@ PROCEDURE_SECTION
   i = 0;
   // Contribution due to capture history.
   for (u = 1; u <= n_unique; u++){
+    capt_hist = row(capt_bin_unique, u);
+    // Working out which mask points are within 'buffer' of triggered detectors.
+    // NEED TO DO THIS OUTSIDE PROCEDURE_SECTION.
+    local_points = 0;
+    for (j = 1; j <= n_mask; j++){
+      is_local = 1;
+      k = 0;
+      while (k < n_traps & is_local == 1){
+        k++;
+        if (capt_hist(k) == 1){
+	  if (dists(k, j) > buffer){
+            is_local = 0;
+          }
+        }
+      }
+      local_points(j) = is_local;
+    }
+    n_local = sum(local_points);
+    dvector which_local(1,n_local);
+    k = 0;
+    for (j = 1; j <= n_mask; j++){
+      if (local_points(j) == 1){
+        k++;
+        which_local(k) = j;
+      }
+    }
+    // Filling matrices with local capture/evasion probabilities.
+    dvar_matrix local_log_capt_probs(1,n_traps,1,n_local);
+    dvar_matrix local_log_evade_probs(1,n_traps,1,n_local);
+    for (j = 1; j <= n_local; j++){
+      local_log_capt_probs.colfill(j, column(log_capt_probs, which_local(j)));
+      local_log_evade_probs.colfill(j, column(log_evade_probs, which_local(j)));
+    }
+    dvar_vector bincapt_contrib(1,n_local);
+    dvar_vector evade_contrib(1,n_local);
+    evade_contrib = (1 - capt_hist)*local_log_evade_probs;
+    // Calculating contribution due to uth unique capture history.
+    if (fit_ss){      
+      nr_local_expected_ss = n_traps;
+      nc_local_expected_ss = n_local;
+    } else {
+      bincapt_contrib = capt_hist*local_log_capt_probs + evade_contrib;
+      nr_local_expected_ss = 1;
+      nc_local_expected_ss = 1;
+    }
+    // Filling local_expected_ss.
+    dvar_matrix local_expected_ss(1,nr_local_expected_ss,1,nc_local_expected_ss);
+    if (fit_ss){
+      for (j = 1; j <= n_local; j++){
+        local_expected_ss.colfill(j, column(expected_ss, which_local(j)));
+      }
+    }
+    // Filling local_angs.
+    if (fit_angs == 1){
+      nr_local_angmat = n_traps;
+      nc_local_angmat = n_local;
+    } else {
+      nr_local_angmat = 1;
+      nc_local_angmat = 1;
+    }
+    dmatrix local_angs(1,nr_local_angmat,1,nc_local_angmat);
+    if (fit_angs == 1){
+      for (j = 1; j <= n_local; j++){
+        local_angs.colfill(j, column(angs, which_local(j)));
+      }
+    }
+    // Filling local_dists.
+    if (fit_dists == 1){
+      nr_local_dist = n_traps;
+      nc_local_dist = n_local;
+    } else {
+      nr_local_dist = 1;
+      nc_local_dist = 1;
+    }
+    dmatrix local_dists(1,nr_local_dist,1,nc_local_dist);
+    if (fit_dists == 1){
+      for (j = 1; j <= n_local; j++){
+        local_dists.colfill(j, column(dists, which_local(j)));
+      }
+    }
+    // Filling local_toa_ssq.
+    if (fit_toas){
+      nr_local_toa_ssq = n;
+      nc_local_toa_ssq = n_local;
+    } else {
+      nr_local_toa_ssq = 1;
+      nc_local_toa_ssq = 1;
+    }
+    dmatrix local_toa_ssq(1,nr_local_toa_ssq,1,nc_local_toa_ssq);
+    if (fit_toas){
+      for (j = 1; j <= n_local; j++){
+        local_toa_ssq.colfill(j, column(toa_ssq, which_local(j)));
+      }
+    }
     for (k = 1; k <= capt_bin_freqs(u); k++){
       i++;
-      capt_hist = row(capt_bin_unique, u);
       // Contribution from capture locations.
       if (fit_ss){
-        dvar_matrix log_ss_density(1, n_traps, 1, n_mask);
+        dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
         for (j = 1; j <= n_traps; j++){
-          log_ss_density(j)(1, n_mask) = log_dnorm(capt_ss(i, j), row(expected_ss, j), detpars(3));
+          local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row(local_expected_ss, j), detpars(3)));
         }
-	if (k == 1){
-          evade_contrib = (1 - capt_hist)*log_evade_probs;
-	}
-        bincapt_contrib = capt_hist*log_ss_density + evade_contrib;
-      } else if (k == 1){
-        bincapt_contrib = capt_hist*log_capt_probs + (1 - capt_hist)*log_evade_probs;
+        bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
       }
-      // Contribution from supplementary information.
       if (any_suppars){
+        dvar_vector supp_contrib(1,n_local);
         supp_contrib = 0;
         for (j = 1; j <= n_traps; j++){
         //  Try setting up a ragged array of capture locations for each individual instead.
           if (capt_bin_unique(u, j)){
             // Contribution from bearings.
             if (fit_angs){
-              supp_contrib += suppars(kappa_ind)*cos(capt_ang(i, j) - row(angs, j));
+              supp_contrib += suppars(kappa_ind)*cos(capt_ang(i, j) - row(local_angs, j));
             }
             // Contribution from distances.
             if (fit_dists){
 	      // Try saving alpha separately.
-	      dvar_vector beta(1, n_mask);
-	      beta = suppars(alpha_ind)/row(dists, j);
+	      dvar_vector beta(1, n_local);
+	      beta = suppars(alpha_ind)/row(local_dists, j);
               supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - beta*capt_dist(i, j);
 	    }
           }
@@ -279,12 +378,15 @@ PROCEDURE_SECTION
         if (fit_dists){
           supp_contrib -= sum(capt_hist)*gammln(suppars(alpha_ind));
         }
+        // Contribution from times of arrival.
         if (fit_toas){
           // Try saving sigma_toa separately.
-          supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row(toa_ssq, i)/(2*square(suppars(sigma_toa_ind))));
+          supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row(local_toa_ssq, i)/(2*square(suppars(sigma_toa_ind))));
         }
+        f -= log(sum(mfexp(bincapt_contrib + supp_contrib)) + DBL_MIN);
+      } else {
+        f -= log(sum(mfexp(bincapt_contrib)) + DBL_MIN);
       }
-      f -= log(sum(mfexp(bincapt_contrib + supp_contrib)) + DBL_MIN);
     }
   }
   // Calculating ESA.
@@ -304,7 +406,7 @@ PROCEDURE_SECTION
         cout << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
-    cout << "LL: " << -f << " TEST EXE" << endl;
+    cout << "LL: " << -f << " TEST EXE22" << endl;
   }
 
 GLOBALS_SECTION
