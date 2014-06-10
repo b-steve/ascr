@@ -5,9 +5,9 @@
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, sf = NULL, ss.link = "identity", cutoff = NULL,
-  call.freqs = NULL, sound.speed = 330, hess = !any(call.freqs > 1),
-  trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
-  exe.type = "old")
+  call.freqs = NULL, sound.speed = 330, local = TRUE,
+  hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE, cbs = NULL,
+  gbs = NULL, exe.type = "old")
 }
 \arguments{
 \item{capt}{A list with named components, containing the capture
@@ -61,6 +61,10 @@ independently to an acoustic survey.}
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
 \code{"toa"} is a component name of \code{capt}.}
+
+\item{local}{Logical, if \code{TRUE} integration over unobserved
+animal activity centres is only carried out in a region local to
+detectors that detected individuals. See 'Details'.}
 
 \item{hess}{Logical, if \code{TRUE} the Hessian is estimated,
 allowing for calculation of standard errors, the
@@ -289,6 +293,25 @@ persists, repeat this process (e.g., if the same parameters still
 have large gradient components, increase the associated
 scalefactors by another factor of 10).
 }
+
+\section{Local integration}{
+
+
+For SECR models, the likelihood is calculated by integrating over
+the unobserved animal activity centres (see Borchers & Efford,
+2008). Here, the integral is approximated numerically by taking a
+finite sum over the mask points. The integrand is negligible in
+size for mask points far from detectors that detected a particular
+individual, and so to increase computational efficiency the region
+over which this sum takes place can be reduced.
+
+Setting \code{local} to \code{TRUE} will only carry out this sum
+across mask points that are within the mask buffer distance of
+\emph{all} detectors that made a detection. So long as the buffer
+suitably represents a distance beyond which detection is
+practically impossible, the effect this has on parameter estimates
+is negligible, but processing time can be substantially reduced.
+}
 \examples{
 \dontrun{
 simple.capt <- example.capt["bincapt"]
@@ -302,6 +325,10 @@ bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
 }
 }
 \references{
+Borchers, D. L., and Efford, M. G. (2008) Spatially
+explicit maximum likelihood methods for capture-recapture
+studies. \emph{Biometrics}, \strong{64}: 377--385.
+
 Borchers, D. L. (2012) A non-technical overview of
 spatially explicit capture-recapture models. \emph{Journal of
 Ornithology}, \strong{152}: 435--444.
@@ -312,10 +339,10 @@ capture-recapture and distance sampling surveys of wildlife
 populations. \emph{Journal of the American Statistical
 Association}.
 
-Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
-G. J., Swift, R. J., and Gillespie, D. M. (in prep.) An acoustic
-spatially explicit capture-recapture method for estimating
-vocalizing amphibian density.
+Stevenson, B. C., Borchers, D. L., Altwegg, R., Swift,
+R. J., Gillespie, D. M., and Measey, G. J. (submitted) A general
+framework for animal density estimation from acoustic detections
+across a fixed microphone array.
 }
 \seealso{
 \link{boot.admbsecr} to calculate standard errors and
