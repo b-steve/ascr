@@ -11,7 +11,7 @@ using namespace Rcpp;
 //' @return A matrix with pairwise distances between the two sets of points.
 //'
 //' @examples
-//' dists <- distances(example.traps, example.mask)
+//' dists <- distances(example$traps, example$mask)
 //'
 //' @export
 // [[Rcpp::export]]
@@ -37,7 +37,7 @@ NumericMatrix distances(const NumericMatrix& a, const NumericMatrix& b){
 //' @return A matrix with bearings of the points in matrix b from the points in matrix a.
 //'
 //' @examples
-//' bears <- bearings(example.traps, example.mask) 
+//' bears <- bearings(example$traps, example$mask) 
 //'
 //' @export
 // [[Rcpp::export]]
