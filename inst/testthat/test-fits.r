@@ -113,7 +113,7 @@ test_that("bearing fitting", {
 test_that("dist fitting", {
     ## Fitting model.
     dist.capt <- example.capt[c("bincapt", "dist")]
-    system.time(fit <- admbsecr(capt = dist.capt, traps = example.traps,
+    system.time(fit1 <- admbsecr(capt = dist.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1), trace = TRUE))
     system.time(fit2 <- admbsecr(capt = dist.capt, traps = example.traps,
                     mask = example.mask, fix = list(g0 = 1), trace = TRUE,
@@ -263,3 +263,4 @@ test_that("multiple calls fitting", {
     relative.error <- max(abs((stdEr(fit.hess)[1:2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
 })
+

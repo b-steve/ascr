@@ -578,7 +578,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## does not affect estimation.
     dbl.min <- 1e-150
     ## Calculating distances and angles.
-    ## TODO: Try calculating these in the PROCEDURE_SECTION instead.
     dists <- distances(traps, mask)
     if (fit.bearings){
         bearings <- bearings(traps, mask)
@@ -599,6 +598,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         n.suppars <- max(c(n.suppars, 1))
         sv.link$dummy <- 0
     }
+    ## Sorting out which mask points are local to each detection.
+    all.which.local <- find_local(capt.bin.unique, dists, buffer)
+    all.n.local <- laply(all.which.local, length)
+    all.which.local <- c(all.which.local, recursive = TRUE)
     ## Stuff for the .dat file.
     if (exe.type != "test"){
         data.list <- list(
@@ -636,7 +639,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             linkfn.id, capt_ss = capt.ss, fit_toas =
             as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
             as.numeric(fit.mrds), mrds_dist = mrds.dist, dists =
-            dists, angs = bearings, toa_ssq = toa.ssq)
+            dists, angs = bearings, toa_ssq = toa.ssq, all_n_local = all.n.local,
+            all_which_local = all.which.local)
     }
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(call.freqs)){

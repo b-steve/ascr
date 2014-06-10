@@ -54,3 +54,20 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// find_local
+List find_local(const IntegerMatrix& capt, const NumericMatrix& dists, const double& buffer);
+RcppExport SEXP admbsecr_find_local(SEXP captSEXP, SEXP distsSEXP, SEXP bufferSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const IntegerMatrix& >::type capt(captSEXP );
+        Rcpp::traits::input_parameter< const NumericMatrix& >::type dists(distsSEXP );
+        Rcpp::traits::input_parameter< const double& >::type buffer(bufferSEXP );
+        List __result = find_local(capt, dists, buffer);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}

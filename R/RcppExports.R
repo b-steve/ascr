@@ -39,3 +39,7 @@ make_toa_ssq <- function(capt, dists, sound_speed) {
     .Call('admbsecr_make_toa_ssq', PACKAGE = 'admbsecr', capt, dists, sound_speed)
 }
 
+find_local <- function(capt, dists, buffer) {
+    .Call('admbsecr_find_local', PACKAGE = 'admbsecr', capt, dists, buffer)
+}
+
