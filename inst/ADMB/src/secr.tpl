@@ -374,7 +374,7 @@ PROCEDURE_SECTION
         }
         toa_ssq_pointer = &local_toa_ssq;
       } else {
-        toa_ssq_pointer = toa_ssq;
+        toa_ssq_pointer = &toa_ssq;
       }
     }
     for (k = 1; k <= capt_bin_freqs(u); k++){
