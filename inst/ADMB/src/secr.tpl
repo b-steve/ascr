@@ -248,42 +248,13 @@ PROCEDURE_SECTION
   // Contribution due to capture history.
   for (u = 1; u <= n_unique; u++){
     capt_hist = row(capt_bin_unique, u);
-    // Working out which mask points are within 'buffer' of triggered detectors.
-    // NEED TO DO THIS OUTSIDE PROCEDURE_SECTION.
-    // local_points = 0;
-    // for (j = 1; j <= n_mask; j++){
-    //   is_local = 1;
-    //   k = 0;
-    //   while (k < n_traps & is_local == 1){
-    //     k++;
-    //     if (capt_hist(k) == 1){
-    // 	  if (dists(k, j) > buffer){
-    //         is_local = 0;
-    //       }
-    //     }
-    //   }
-    //   local_points(j) = is_local;
-    // }
-    // n_local = sum(local_points);
-    // dvector which_local(1,n_local);
-    // k = 0;
-    // for (j = 1; j <= n_mask; j++){
-    //   if (local_points(j) == 1){
-    //     k++;
-    //     which_local(k) = j;
-    //   }
-    // } 
-    // n_local = all_n_local(u);
-    // dvector which_local(1,n_local);
-    // for (j = 1; j <= n_local; j++){
-    //   which_local(j) = all_which_local(u, j);
-    // }
-    // Filling matrices with local capture/evasion probabilities.
+    n_local = all_n_local(u);
+    // Getting capture probabilities at local mask points.
     dvar_matrix local_log_capt_probs(1,n_traps,1,n_local);
     dvar_matrix local_log_evade_probs(1,n_traps,1,n_local);
     for (j = 1; j <= n_local; j++){
-      local_log_capt_probs.colfill(j, column(log_capt_probs, all_which_local(u,j)));
-      local_log_evade_probs.colfill(j, column(log_evade_probs, all_which_local(u,j)));
+      local_log_capt_probs.colfill(j, column(log_capt_probs, all_which_local(u, j)));
+      local_log_evade_probs.colfill(j, column(log_evade_probs, all_which_local(u, j)));
     }
     dvar_vector bincapt_contrib(1,n_local);
     dvar_vector evade_contrib(1,n_local);
@@ -301,7 +272,7 @@ PROCEDURE_SECTION
     dvar_matrix local_expected_ss(1,nr_local_expected_ss,1,nc_local_expected_ss);
     if (fit_ss){
       for (j = 1; j <= n_local; j++){
-        local_expected_ss.colfill(j, column(expected_ss, all_which_local(u,j)));
+        local_expected_ss.colfill(j, column(expected_ss, all_which_local(u, j)));
       }
     }
     // Filling local_angs.
@@ -315,7 +286,7 @@ PROCEDURE_SECTION
     dmatrix local_angs(1,nr_local_angmat,1,nc_local_angmat);
     if (fit_angs == 1){
       for (j = 1; j <= n_local; j++){
-        local_angs.colfill(j, column(angs, all_which_local(u,j)));
+        local_angs.colfill(j, column(angs, all_which_local(u, j)));
       }
     }
     // Filling local_dists.
@@ -329,7 +300,7 @@ PROCEDURE_SECTION
     dmatrix local_dists(1,nr_local_dist,1,nc_local_dist);
     if (fit_dists == 1){
       for (j = 1; j <= n_local; j++){
-        local_dists.colfill(j, column(dists, all_which_local(u,j)));
+        local_dists.colfill(j, column(dists, all_which_local(u, j)));
       }
     }
     // Filling local_toa_ssq.
@@ -343,7 +314,7 @@ PROCEDURE_SECTION
     dmatrix local_toa_ssq(1,nr_local_toa_ssq,1,nc_local_toa_ssq);
     if (fit_toas){
       for (j = 1; j <= n_local; j++){
-        local_toa_ssq.colfill(j, column(toa_ssq, all_which_local(u,j)));
+        local_toa_ssq.colfill(j, column(toa_ssq, all_which_local(u, j)));
       }
     }
     for (k = 1; k <= capt_bin_freqs(u); k++){
