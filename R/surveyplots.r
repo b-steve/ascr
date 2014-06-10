@@ -7,7 +7,7 @@
 #' @inheritParams locations
 #'
 #' @examples
-#' show.survey(simple.hn.fit)
+#' show.survey(example$fits$simple.hn)
 #'
 #' @export
 show.survey <- function(fit, ...){
@@ -24,7 +24,7 @@ show.survey <- function(fit, ...){
 #' @inheritParams locations
 #'
 #' @examples
-#' show.detsurf(simple.hn.fit)
+#' show.detsurf(example$fits$simple.hn)
 #'
 #' @export
 show.detsurf <- function(fit){

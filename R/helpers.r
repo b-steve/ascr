@@ -123,8 +123,8 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' returned.
 #'
 #' @examples
-#' get.par(fit = simple.hn.fit, pars = "all")
-#' get.par(fit = bearing.hn.fit, pars = c("D", "kappa", "esa"), as.list = TRUE)
+#' get.par(fit = example$fits$simple.hn, pars = "all")
+#' get.par(fit = example$fits$bearing.hn, pars = c("D", "kappa", "esa"), as.list = TRUE)
 #'
 #' @export
 get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){

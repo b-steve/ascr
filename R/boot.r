@@ -98,7 +98,7 @@
 #' @examples
 #' \dontrun{
 #' ## In practice, N should be >> 100, but this leads to long computation time for a simple example.
-#' boot.fit <- boot.admbsecr(fit = simple.hn.fit, N = 100)
+#' boot.fit <- boot.admbsecr(fit = example$fits$simple.hn, N = 100)
 #' }
 #'
 #' @export
@@ -222,6 +222,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
         if (prog){
             file.create("prog.txt")
         }
+        ## IF THERE'S AN ERROR HERE YOU NEED TO REBUILD THE PACKAGE
+        ## DUE TO library() CALL ABOVE.
         res <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit, args = args,
                              call.freqs = call.freqs, infotypes = fit$infotypes,
                              seeds = seeds, prog = prog))

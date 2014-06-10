@@ -67,11 +67,11 @@
 #' existing plot.
 #'
 #' @examples
-#' locations(simple.hn.fit, 1)
-#' locations(simple.hn.fit, 1, levels = c(0.50, 0.90, 0.95))
+#' locations(example$fits$simple.hn, 1)
+#' locations(example$fits$simple.hn, 1, levels = c(0.50, 0.90, 0.95))
 #' \dontrun{
-#' fine.mask <- create.mask(example.traps, 20, spacing = 0.2)
-#' locations(bearing.hn.fit, 1, infotypes = "all", mask = fine.mask)
+#' fine.mask <- create.mask(example$traps, 20, spacing = 0.2)
+#' locations(example$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
 #' }
 #' 
 #' @export

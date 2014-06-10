@@ -312,14 +312,14 @@
 #'
 #' @examples
 #' \dontrun{
-#' simple.capt <- example.capt["bincapt"]
-#' simple.hn.fit <- admbsecr(capt = simple.capt, traps = example.traps,
-#'                           mask = example.mask, fix = list(g0 = 1))
-#' simple.hr.fit <- admbsecr(capt = simple.capt, traps = example.traps,
-#'                           mask = example.mask, detfn = "hr")
+#' simple.capt <- example$capt["bincapt"]
+#' simple.hn.fit <- admbsecr(capt = simple.capt, traps = example$traps,
+#'                           mask = example$mask, fix = list(g0 = 1))
+#' simple.hr.fit <- admbsecr(capt = simple.capt, traps = example$traps,
+#'                           mask = example$mask, detfn = "hr")
 #' bearing.capt <- example.capt[c("bincapt", "bearing")]
-#' bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
-#'                            mask = example.mask, fix = list(g0 = 1))
+#' bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example$traps,
+#'                            mask = example$mask, fix = list(g0 = 1))
 #' }
 #'
 #' @export
@@ -327,7 +327,7 @@
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, sf = NULL, ss.link = "identity",
                      cutoff = NULL, call.freqs = NULL, sound.speed = 330,
-                     local = TRUE, hess = !any(call.freqs > 1), trace = FALSE,
+                     local = FALSE, hess = !any(call.freqs > 1), trace = FALSE,
                      clean = TRUE, cbs = NULL, gbs = NULL, exe.type = "old"){
     arg.names <- names(as.list(environment()))
     capt.bin <- capt$bincapt
@@ -889,102 +889,25 @@ NULL
 #' @keywords datasets
 NULL
 
-#' An example capture history object
+#' Example data
 #'
-#' A list containing various additional information types. These data
-#' were simulated using \link{sim.capt} using the trap locations in
-#' \link{example.traps}.
+#' This object contains simulated data with all types of supplementary
+#' information, corresponding trap locations, and a suitable mask
+#' object. Also included are some example model fits, which were
+#' generated from these data using the \link{admbsecr} function.
 #'
-#' @name example.capt
-#' @format A list, which is the correct format for use as the
-#' \code{capt} argument to the function \link{admbsecr}.
-#' @usage example.capt
-#' @docType data
-#' @keywords datasets
-NULL
-
-#' An example mask object
+#' This object is a list which contains components:
+#' \itemize{
+#' \item \code{capt}: A capture history object.
+#' \item \code{traps}: A traps object.
+#' \item \code{mask}: A suitable mask object.
+#' \item \code{cutoff}: The cutoff value used to simluate these data.
+#' \item \code{fits}: Some example model fits.
+#' }
 #'
-#' A matrix containing mask point locations. These mask point
-#' locations are suitable for analysis of the data \link{example.capt}
-#' using the function \link{admbsecr}.
-#' @name example.mask
-#' @format A matrix with two columns. Each row gives the Cartesian
-#' coordinates of a mask point.
-#' @usage example.mask
-#' @docType data
-#' @keywords datasets
-NULL
-
-
-#' An example traps object
-#'
-#' A matrix containing the trap locations used for the simulation of
-#' the data \link{example.capt}. This object is suitable for use as
-#' the \code{traps} argument of the function \link{admbsecr}.
-#'
-#' @name example.traps
-#' @format A matrix with two columns. Each row gives the Cartesian
-#' coordinates of a trap.
-#' @usage example.traps
-#' @docType data
-#' @keywords datasets
-NULL
-
-#' An example model object
-#'
-#' This is the model object that results when the \link{admbsecr}
-#' function is run with \link{example.capt}\code{["bincapt"]},
-#' \link{example.traps}, and \link{example.mask} set as the
-#' arguments \code{capt}, \code{traps}, and \code{mask}, respectively.
-#'
-#' @name simple.hn.fit
-#' @format A list of class \code{"admbsecr"}.
-#' @usage simple.hn.fit
-#' @docType data
-#' @keywords datasets
-NULL
-
-#' An example model object
-#'
-#' This is the model object that results when the
-#' \link{admbsecr} function is run with
-#' \link{example.capt}\code{["bincapt"]},
-#' \link{example.traps}, \link{example.mask}, and
-#' \code{"hr"} set as the arguments \code{capt}, \code{traps},
-#' \code{mask}, and \code{detfn}, respectively.
-#'
-#' @name simple.hr.fit
-#' @format A list of class \code{"admbsecr"}.
-#' @usage simple.hr.fit
-#' @docType data
-#' @keywords datasets
-NULL
-
-#' An example model object
-#'
-#' This is the model object that results when the
-#' \link{admbsecr} function is run with
-#' \link{example.capt}\code{[c("bincapt", "bearing"]},
-#' \link{example.traps}, and \link{example.mask}
-#' set as the arguments \code{capt}, \code{traps}, and \code{mask},
-#' respectively.
-#'
-#' @name bearing.hn.fit
-#' @format A list of class \code{"admbsecr"}.
-#' @usage bearing.hn.fit
-#' @docType data
-#' @keywords datasets
-NULL
-
-#' An example model object
-#'
-#' This is a model object that results when the \link{boot.admbsecr}
-#' function is run on the object \link{simple.hn.fit}, with \code{N}
-#' set to 500.
-#' @name boot.simple.hn.fit
-#' @format A list of class \code{"admbsecr.boot"}.
-#' @usage boot.simple.hn.fit
+#' @name example
+#' @format A list.
+#' @usage example
 #' @docType data
 #' @keywords datasets
 NULL

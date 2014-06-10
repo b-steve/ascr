@@ -14,7 +14,7 @@
 #' \link{secr} package.
 #'
 #' @examples
-#' mask <- create.mask(traps = example.traps, buffer = 20)
+#' mask <- create.mask(traps = example$traps, buffer = 20)
 #'
 #' @export
 create.mask <- function(traps, buffer, ...){
@@ -124,7 +124,7 @@ create.capt <- function(captures, n.traps = NULL){
 #' attributes.
 #'
 #' @examples
-#' traps <- convert.traps(traps = example.traps)
+#' traps <- convert.traps(traps = example$traps)
 #'
 #' @export
 convert.traps <- function(traps){
@@ -147,7 +147,7 @@ convert.traps <- function(traps){
 #' @return An object of class \code{mask}.
 #'
 #' @examples
-#' mask <- convert.mask(mask = example.mask)
+#' mask <- convert.mask(mask = example$mask)
 #'
 #' @export
 convert.mask <- function(mask){
@@ -171,7 +171,7 @@ convert.mask <- function(mask){
 #' @return An object of class \link{capthist}.
 #'
 #' @examples
-#' capt <- convert.capt(capt = example.capt, traps = example.traps)
+#' capt <- convert.capt(capt = example$capt, traps = example$traps)
 #'
 #' @export
 convert.capt <- function(capt, traps, capthist = TRUE){

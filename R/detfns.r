@@ -94,8 +94,8 @@ calc.log.ss <- function(d, pars){
 #'
 #' @examples
 #' ## Comparison of two detection functions fitted to the same data
-#' show.detfn(simple.hn.fit, main = "Detection function comparison")
-#' show.detfn(simple.hr.fit, add = TRUE, col = "blue")
+#' show.detfn(example$fits$simple.hn, main = "Detection function comparison")
+#' show.detfn(example$fits$simple.hr, add = TRUE, col = "blue")
 #' legend("topright", legend = c("Half normal", "Hazard rate"), lty = 1, col = c("black", "blue"), bg = "white")
 #' 
 #' @export

@@ -61,10 +61,10 @@
 #' 
 #' @examples
 #' ## Simulating based on model fits.
-#' simple.capt <- sim.capt(simple.hn.fit)
-#' bearing.capt <- sim.capt(bearing.hn.fit)
+#' simple.capt <- sim.capt(example$fits$simple.hn)
+#' bearing.capt <- sim.capt(example$fits$bearing.hn)
 #' ## Simulating from provided parameter values.
-#' new.capt <- sim.capt(traps = example.traps, mask = example.mask, infotypes = c("bearing", "dist"), detfn = "hr",
+#' new.capt <- sim.capt(traps = example$traps, mask = example$mask, infotypes = c("bearing", "dist"), detfn = "hr",
 #'                      pars = list(D = 2500, g0 = 0.9, sigma = 3, z = 2, kappa = 50, alpha = 10))
 #' 
 #' @export

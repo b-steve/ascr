@@ -15,9 +15,9 @@
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @examples
-#' coef(simple.hn.fit)
-#' coef(simple.hn.fit, pars = "all")
-#' coef(simple.hn.fit, pars = "derived")
+#' coef(example$fits$simple.hn)
+#' coef(example$fits$simple.hn, pars = "all")
+#' coef(example$fits$simple.hn, pars = "derived")
 #'
 #' @method coef admbsecr
 #' @S3method coef admbsecr
@@ -72,9 +72,9 @@ coef.admbsecr.boot <- function(object, pars = "fitted",
 #' @inheritParams coef.admbsecr
 #'
 #' @examples
-#' vcov(simple.hn.fit)
-#' vcov(simple.hn.fit, pars = "all")
-#' vcov(simple.hn.fit, pars = "derived")
+#' vcov(example$fits$simple.hn)
+#' vcov(example$fits$simple.hn, pars = "all")
+#' vcov(example$fits$simple.hn, pars = "derived")
 #'
 #' @method vcov admbsecr
 #' @S3method vcov admbsecr
@@ -157,9 +157,9 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
 #' @inheritParams coef.admbsecr
 #'
 #' @examples
-#' stdEr(simple.hn.fit)
-#' stdEr(simple.hn.fit, pars = "all")
-#' stdEr(simple.hn.fit, pars = "derived")
+#' stdEr(example$fits$simple.hn)
+#' stdEr(example$fits$simple.hn, pars = "all")
+#' stdEr(example$fits$simple.hn, pars = "derived")
 #'
 #' @method stdEr admbsecr
 #' @S3method stdEr admbsecr
