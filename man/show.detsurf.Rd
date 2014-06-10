@@ -14,6 +14,6 @@ and the estimated detection function from a model fitted using
 \link{admbsecr}.
 }
 \examples{
-show.detsurf(simple.hn.fit)
+show.detsurf(example$fits$simple.hn)
 }
 

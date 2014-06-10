@@ -22,7 +22,7 @@ Creates a mask object to use with the function
 \code{\link{admbsecr}}.
 }
 \examples{
-mask <- create.mask(traps = example.traps, buffer = 20)
+mask <- create.mask(traps = example$traps, buffer = 20)
 }
 \seealso{
 \link{convert.mask} to convert a mask compatible with the

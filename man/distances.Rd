@@ -17,6 +17,6 @@ A matrix with pairwise distances between the two sets of points.
 Calculates pairwise distances between two sets of points.
 }
 \examples{
-dists <- distances(example.traps, example.mask)
+dists <- distances(example$traps, example$mask)
 }
 

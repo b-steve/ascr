@@ -24,8 +24,8 @@ Extracts standard errors for estimated and derived parameters from
 a model fitted using \link[admbsecr]{admbsecr}.
 }
 \examples{
-stdEr(simple.hn.fit)
-stdEr(simple.hn.fit, pars = "all")
-stdEr(simple.hn.fit, pars = "derived")
+stdEr(example$fits$simple.hn)
+stdEr(example$fits$simple.hn, pars = "all")
+stdEr(example$fits$simple.hn, pars = "derived")
 }
 

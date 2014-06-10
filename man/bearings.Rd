@@ -17,6 +17,6 @@ A matrix with bearings of the points in matrix b from the points in matrix a.
 Calculates the bearing from one set of points to another.
 }
 \examples{
-bears <- bearings(example.traps, example.mask)
+bears <- bearings(example$traps, example$mask)
 }
 

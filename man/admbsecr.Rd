@@ -5,7 +5,7 @@
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, sf = NULL, ss.link = "identity", cutoff = NULL,
-  call.freqs = NULL, sound.speed = 330, local = TRUE,
+  call.freqs = NULL, sound.speed = 330, local = FALSE,
   hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE, cbs = NULL,
   gbs = NULL, exe.type = "old")
 }
@@ -311,17 +311,21 @@ across mask points that are within the mask buffer distance of
 suitably represents a distance beyond which detection is
 practically impossible, the effect this has on parameter estimates
 is negligible, but processing time can be substantially reduced.
+
+Note that this increases the parameter estimates' sensitivity to
+the buffer. A buffer that is too small will lead to inaccurate
+results.
 }
 \examples{
 \dontrun{
-simple.capt <- example.capt["bincapt"]
-simple.hn.fit <- admbsecr(capt = simple.capt, traps = example.traps,
-                          mask = example.mask, fix = list(g0 = 1))
-simple.hr.fit <- admbsecr(capt = simple.capt, traps = example.traps,
-                          mask = example.mask, detfn = "hr")
+simple.capt <- example$capt["bincapt"]
+simple.hn.fit <- admbsecr(capt = simple.capt, traps = example$traps,
+                          mask = example$mask, fix = list(g0 = 1))
+simple.hr.fit <- admbsecr(capt = simple.capt, traps = example$traps,
+                          mask = example$mask, detfn = "hr")
 bearing.capt <- example.capt[c("bincapt", "bearing")]
-bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example.traps,
-                           mask = example.mask, fix = list(g0 = 1))
+bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example$traps,
+                           mask = example$mask, fix = list(g0 = 1))
 }
 }
 \references{

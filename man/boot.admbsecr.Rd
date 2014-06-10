@@ -104,7 +104,7 @@ extracted using the function \link{get.mce}.
 \examples{
 \dontrun{
 ## In practice, N should be >> 100, but this leads to long computation time for a simple example.
-boot.fit <- boot.admbsecr(fit = simple.hn.fit, N = 100)
+boot.fit <- boot.admbsecr(fit = example$fits$simple.hn, N = 100)
 }
 }
 \references{

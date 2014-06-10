@@ -15,6 +15,6 @@ Plots the mask points and trap locations used in a model fitted
 with the function \link{admbsecr}.
 }
 \examples{
-show.survey(simple.hn.fit)
+show.survey(example$fits$simple.hn)
 }
 

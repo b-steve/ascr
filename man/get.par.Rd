@@ -43,7 +43,7 @@ This is a similar function to \link{coef.admbsecr}, however
 been fixed using \code{admbsecr}'s \code{fix} argument.
 }
 \examples{
-get.par(fit = simple.hn.fit, pars = "all")
-get.par(fit = bearing.hn.fit, pars = c("D", "kappa", "esa"), as.list = TRUE)
+get.par(fit = example$fits$simple.hn, pars = "all")
+get.par(fit = example$fits$bearing.hn, pars = c("D", "kappa", "esa"), as.list = TRUE)
 }
 

@@ -31,6 +31,6 @@ The returned object is suitable for use as the \code{capthist}
 argument of the function \link{secr.fit}.
 }
 \examples{
-capt <- convert.capt(capt = example.capt, traps = example.traps)
+capt <- convert.capt(capt = example$capt, traps = example$traps)
 }
 
