@@ -182,6 +182,31 @@
 #' have large gradient components, increase the associated
 #' scalefactors by another factor of 10).
 #'
+#' @section Local integration:
+#'
+#' For SECR models, the likelihood is calculated by integrating over
+#' the unobserved animal activity centres (see Borchers & Efford,
+#' 2008). Here, the integral is approximated numerically by taking a
+#' finite sum over the mask points. The integrand is negligible in
+#' size for mask points far from detectors that detected a particular
+#' individual, and so to increase computational efficiency the region
+#' over which this sum takes place can be reduced.
+#'
+#' Setting \code{local} to \code{TRUE} will only carry out this sum
+#' across mask points that are within the mask buffer distance of
+#' \emph{all} detectors that made a detection. So long as the buffer
+#' suitably represents a distance beyond which detection is
+#' practically impossible, the effect this has on parameter estimates
+#' is negligible, but processing time can be substantially reduced.
+#'
+#' Note that this increases the parameter estimates' sensitivity to
+#' the buffer. A buffer that is too small will lead to inaccurate
+#' results.
+#'
+#' @references Borchers, D. L., and Efford, M. G. (2008) Spatially
+#' explicit maximum likelihood methods for capture-recapture
+#' studies. \emph{Biometrics}, \strong{64}: 377--385.
+#' 
 #' @references Borchers, D. L. (2012) A non-technical overview of
 #' spatially explicit capture-recapture models. \emph{Journal of
 #' Ornithology}, \strong{152}: 435--444.
@@ -192,10 +217,10 @@
 #' populations. \emph{Journal of the American Statistical
 #' Association}.
 #'
-#' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
-#' G. J., Swift, R. J., and Gillespie, D. M. (in prep.) An acoustic
-#' spatially explicit capture-recapture method for estimating
-#' vocalizing amphibian density.
+#' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Swift,
+#' R. J., Gillespie, D. M., and Measey, G. J. (submitted) A general
+#' framework for animal density estimation from acoustic detections
+#' across a fixed microphone array.
 #'
 #' @return A list of class \code{"admbsecr"}. Components contain
 #' information such as estimated parameters and standard errors. The
@@ -242,6 +267,9 @@
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{"toa"} is a component name of \code{capt}.
+#' @param local Logical, if \code{TRUE} integration over unobserved
+#' animal activity centres is only carried out in a region local to
+#' detectors that detected individuals. See 'Details'.
 #' @param hess Logical, if \code{TRUE} the Hessian is estimated,
 #' allowing for calculation of standard errors, the
 #' variance-covariance matrix, and the correlation matrix, at the
@@ -299,8 +327,8 @@
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, sf = NULL, ss.link = "identity",
                      cutoff = NULL, call.freqs = NULL, sound.speed = 330,
-                     hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
-                     cbs = NULL, gbs = NULL, exe.type = "old"){
+                     local = TRUE, hess = !any(call.freqs > 1), trace = FALSE,
+                     clean = TRUE, cbs = NULL, gbs = NULL, exe.type = "old"){
     arg.names <- names(as.list(environment()))
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
@@ -599,49 +627,32 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sv.link$dummy <- 0
     }
     ## Sorting out which mask points are local to each detection.
-    all.which.local <- find_local(capt.bin.unique, dists, buffer)
-    all.n.local <- laply(all.which.local, length)
-    all.which.local <- c(all.which.local, recursive = TRUE)
-    ## Stuff for the .dat file.
-    if (exe.type != "test"){
-        data.list <- list(
-            D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf,
-            n_detpars = n.detpars, detpars_lb = detpars.lb, detpars_ub =
-            detpars.ub, detpars_phase = detpars.phase, detpars_sf = detpars.sf,
-            detpars_linkfns = detpars.link, n_suppars = n.suppars, suppars_lb =
-            suppars.lb, suppars_ub = suppars.ub, suppars_phase = suppars.phase,
-            suppars_sf = suppars.sf, suppars_linkfns = suppars.link, detfn_id =
-            detfn.id, trace = as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps
-            = n.traps, n_mask = n.mask, A = A, n_unique = n.unique,
-            capt_bin_unique = capt.bin.unique, capt_bin_freqs = capt.bin.freqs,
-            fit_angs = as.numeric(fit.bearings), capt_ang = capt.bearing,
-            fit_dists = as.numeric(fit.dists), capt_dist = capt.dist, fit_ss =
-            as.numeric(fit.ss), cutoff = cutoff, linkfn_id = linkfn.id, capt_ss =
-            capt.ss, fit_toas = as.numeric(fit.toas), capt_toa = capt.toa,
-            fit_mrds = as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists,
-            angs = bearings, toa_ssq = toa.ssq)
+    if (local){
+        all.which.local <- find_local(capt.bin.unique, dists, buffer)
+        all.n.local <- laply(all.which.local, length)
+        all.which.local <- c(all.which.local, recursive = TRUE)
     } else {
-        data.list <- list(
-            D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf,
-            n_detpars = n.detpars, detpars_lb = detpars.lb, detpars_ub
-            = detpars.ub, detpars_phase = detpars.phase, detpars_sf =
-            detpars.sf, detpars_linkfns = detpars.link, n_suppars =
-            n.suppars, suppars_lb = suppars.lb, suppars_ub =
-            suppars.ub, suppars_phase = suppars.phase, suppars_sf =
-            suppars.sf, suppars_linkfns = suppars.link, detfn_id =
-            detfn.id, buffer = buffer, trace = as.numeric(trace),
-            DBL_MIN = dbl.min, n = n, n_traps = n.traps, n_mask =
-            n.mask, A = A, n_unique = n.unique, capt_bin_unique =
-            capt.bin.unique, capt_bin_freqs = capt.bin.freqs, fit_angs
-            = as.numeric(fit.bearings), capt_ang = capt.bearing,
-            fit_dists = as.numeric(fit.dists), capt_dist = capt.dist,
-            fit_ss = as.numeric(fit.ss), cutoff = cutoff, linkfn_id =
-            linkfn.id, capt_ss = capt.ss, fit_toas =
-            as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
-            as.numeric(fit.mrds), mrds_dist = mrds.dist, dists =
-            dists, angs = bearings, toa_ssq = toa.ssq, all_n_local = all.n.local,
-            all_which_local = all.which.local)
+        all.n.local <- rep(1, n.unique)
+        all.which.local <- rep(0, n.unique)
     }
+    ## Stuff for the .dat file.
+    data.list <- list(        
+        n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
+        all_which_local = all.which.local, D_lb = D.lb, D_ub = D.ub, D_phase =
+        D.phase, D_sf = D.sf, n_detpars = n.detpars, detpars_lb = detpars.lb,
+        detpars_ub = detpars.ub, detpars_phase = detpars.phase, detpars_sf =
+        detpars.sf, detpars_linkfns = detpars.link, n_suppars = n.suppars,
+        suppars_lb = suppars.lb, suppars_ub = suppars.ub, suppars_phase =
+        suppars.phase, suppars_sf = suppars.sf, suppars_linkfns =
+        suppars.link, detfn_id = detfn.id, buffer = buffer, trace =
+        as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps = n.traps, n_mask
+        = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
+        capt.bin.freqs, fit_angs = as.numeric(fit.bearings), capt_ang =
+        capt.bearing, fit_dists = as.numeric(fit.dists), capt_dist =
+        capt.dist, fit_ss = as.numeric(fit.ss), cutoff = cutoff, linkfn_id =
+        linkfn.id, capt_ss = capt.ss, fit_toas = as.numeric(fit.toas),
+        capt_toa = capt.toa, fit_mrds = as.numeric(fit.mrds), mrds_dist =
+        mrds.dist, dists = dists, angs = bearings, toa_ssq = toa.ssq)
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(call.freqs)){
         fit.freqs <- any(call.freqs != 1)
