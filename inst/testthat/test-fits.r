@@ -55,7 +55,7 @@ test_that("simple fitting -- hazard rate", {
     ## Fitting model.
     simple.capt <- example$capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, detfn = "hr"))
+                    mask = example$mask, detfn = "hr")
     ## Checking parameter values.
     pars.test <- c(2647.32709086757, 0.862838540084305, 7.29740531390158, 
                    6.98650302516657)
@@ -76,7 +76,7 @@ test_that("simple fitting -- hazard rate", {
     capt.secr <- convert.capt(example$capt, example$traps)
     options(warn = -1)
     fit.secr <- secr.fit(capthist = capt.secr, mask = mask.secr, detectfn = 1,
-                         trace = FALSE))
+                         trace = FALSE)
     options(warn = 0)
     coefs.secr <- numeric(n.pars)
     invlog <- function(x) exp(x)
