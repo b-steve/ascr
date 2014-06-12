@@ -1,3 +1,20 @@
+admbsecr 1.0.6
+--------------
+
+* Improved efficiency of likelihood calculation. Integration over the
+  survey area to obtain the probability of a binary capture history
+  now only occurs for each *unique* capture history.
+
+* Added argument 'local' to admbsecr(); when TRUE, integration over
+  the survey area only occurs at mask points within the buffer
+  distance of all traps at which a detection was made.
+
+* Changed the format of the example data, so that various components
+  appear in a single list.
+
+* Bug fix to convert.capt(), allowing the cutoff value to be passed to
+  the secr capthist object.
+
 admbsecr 1.0.5
 --------------
 
