@@ -174,7 +174,7 @@ convert.mask <- function(mask){
 #' capt <- convert.capt(capt = example$capt, traps = example$traps)
 #'
 #' @export
-convert.capt <- function(capt, traps, capthist = TRUE){
+convert.capt <- function(capt, traps, capthist = TRUE, cutoff = NULL){
     n <- nrow(capt$bincapt)
     n.dets <- sum(capt$bincapt)
     session <- rep(1, n.dets)
@@ -194,7 +194,8 @@ convert.capt <- function(capt, traps, capthist = TRUE){
     }
     if (capthist){
         traps <- convert.traps(traps)
-        out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1)
+        out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1,
+                             cutval = cutoff)
     }
     out
 }
