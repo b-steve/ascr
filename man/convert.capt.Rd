@@ -3,7 +3,7 @@
 \alias{convert.capt}
 \title{Convert capture history object}
 \usage{
-convert.capt(capt, traps, capthist = TRUE)
+convert.capt(capt, traps, capthist = TRUE, cutoff = NULL)
 }
 \arguments{
 \item{capthist}{Logical, if \code{TRUE}, a \code{capthist} object
@@ -18,6 +18,10 @@ below.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
+
+\item{cutoff}{The signal strength threshold, above which sounds are
+identified as detections. Only required when \code{detfn} is
+\code{"ss"}.}
 }
 \value{
 An object of class \link{capthist}.
@@ -31,6 +35,6 @@ The returned object is suitable for use as the \code{capthist}
 argument of the function \link{secr.fit}.
 }
 \examples{
-capt <- convert.capt(capt = example$capt, traps = example$traps)
+capt <- convert.capt(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 }
 

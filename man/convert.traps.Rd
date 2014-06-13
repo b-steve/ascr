@@ -3,9 +3,12 @@
 \alias{convert.traps}
 \title{Convert traps object}
 \usage{
-convert.traps(traps)
+convert.traps(traps, ss = FALSE)
 }
 \arguments{
+\item{ss}{Logical, set to \code{TRUE} if a signal strength
+detection function is to be used.}
+
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
 }
