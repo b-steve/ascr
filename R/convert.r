@@ -116,6 +116,8 @@ create.capt <- function(captures, n.traps = NULL){
 #' The returned object is suitable for use as the \code{traps}
 #' argument of the function \link{make.capthist}.
 #'
+#' @param ss Logical, set to \code{TRUE} if a signal strength
+#' detection function is to be used.
 #' @inheritParams admbsecr
 #'
 #' @return An object of class \code{traps} comprising a data frame of
@@ -127,11 +129,12 @@ create.capt <- function(captures, n.traps = NULL){
 #' traps <- convert.traps(traps = example$traps)
 #'
 #' @export
-convert.traps <- function(traps){
+convert.traps <- function(traps, ss = FALSE){
     n.traps <- nrow(traps)
     colnames(traps) <- c("x", "y")
     traps.df <- data.frame(names = 1:n.traps, traps)
-    read.traps(data = traps.df, detector = "proximity")
+    detector <- ifelse(ss, "signal", "proximity")
+    read.traps(data = traps.df, detector = detector)
 }
 
 #' Convert mask object
@@ -171,7 +174,7 @@ convert.mask <- function(mask){
 #' @return An object of class \link{capthist}.
 #'
 #' @examples
-#' capt <- convert.capt(capt = example$capt, traps = example$traps)
+#' capt <- convert.capt(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 #'
 #' @export
 convert.capt <- function(capt, traps, capthist = TRUE, cutoff = NULL){
@@ -186,14 +189,15 @@ convert.capt <- function(capt, traps, capthist = TRUE, cutoff = NULL){
     names(trap) <- NULL
     out <- data.frame(session = session, ID = ID, occasion = occasion,
                       trap = trap)
-    if (!is.null(capt$ss)){
+    fit.ss <- !is.null(capt$ss)
+    if (fit.ss){
         out <- data.frame(out, ss = t(capt$ss)[t(capt$bincapt) == 1])
     }
     for (i in names(capt)[!(names(capt) %in% c("bincapt", "ss"))]){
         out[, i] <- t(capt[[i]])[t(capt$bincapt) == 1]
     }
     if (capthist){
-        traps <- convert.traps(traps)
+        traps <- convert.traps(traps, ss = fit.ss)
         out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1,
                              cutval = cutoff)
     }
