@@ -37,7 +37,7 @@ test_that("simple fitting -- half normal", {
     ## Checking estimate equivalence with secr.fit.
     library(secr)
     mask.secr <- convert.mask(example$mask)
-    capt.secr <- convert.capt(example$capt, example$traps)
+    capt.secr <- convert.capt(example$capt["bincapt"], example$traps)
     options(warn = -1)
     fit.secr <- secr.fit(capthist = capt.secr, mask = mask.secr, trace = FALSE)
     options(warn = 0)
@@ -73,7 +73,7 @@ test_that("simple fitting -- hazard rate", {
     ## Checking estimate equivalence with secr.fit.
     library(secr)
     mask.secr <- convert.mask(example$mask)
-    capt.secr <- convert.capt(example$capt, example$traps)
+    capt.secr <- convert.capt(example$capt["bincapt"], example$traps)
     options(warn = -1)
     fit.secr <- secr.fit(capthist = capt.secr, mask = mask.secr, detectfn = 1,
                          trace = FALSE)
