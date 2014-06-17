@@ -45,3 +45,10 @@ test_that("parameter bounds", {
     ## Check that bounds for g0 still set to defaults.
     expect_that(fit$args$bounds$g0, equals(c(0, 1)))
 })
+
+test_that("local integration", {
+    simple.capt <- example$capt[c("bincapt", "toa")]
+    fit <- admbsecr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, local = TRUE)
+    expect_that(fit$args$local, is_true())
+})
