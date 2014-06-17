@@ -33,10 +33,10 @@ build:
 	if [ $(shell hostname) == "Zeeba" ]; then rm -rfv .Rbuildignore; fi
 	R CMD build .
 	if [ $(shell hostname) == "Zeeba" ]; then mkdir .Rbuildignore; fi
-	mv admbsecr_1.0.5.tar.gz .Rbuildignore/
+	mv admbsecr_1.0.6.tar.gz .Rbuildignore/
 
 check:
-	R CMD check .Rbuildignore/admbsecr_1.0.5.tar.gz --no-tests
+	R CMD check .Rbuildignore/admbsecr_1.0.6.tar.gz --no-tests
 
 install:
 	R CMD INSTALL . --install-tests
