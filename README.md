@@ -10,6 +10,10 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 
 ## Installation
 
+ISEC WORKSHOP ATTENDEES PLEASE NOTE:
+
+There is currently an issue with R-forge which is preventing users from installing admbsecr using the instructions below. Alternative installation instructions will be available shortly.
+
 To install:
 
 * Package dependencies will not install automatically as admbsecr is not on CRAN. To install these, run:
