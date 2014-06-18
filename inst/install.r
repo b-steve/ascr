@@ -1,7 +1,7 @@
 pkgs <- c("CircStats", "lattice", "matrixStats", "plyr",
           "Rcpp", "R2admb", "secr", "testthat", "downloader")
 for (i in pkgs){
-    if (!require(i, character.only = TRUE)){
+    if (!require(i, quietly = TRUE, character.only = TRUE)){
         install.packages(i)
     }
 }
