@@ -206,7 +206,7 @@
 #' @references Borchers, D. L., and Efford, M. G. (2008) Spatially
 #' explicit maximum likelihood methods for capture-recapture
 #' studies. \emph{Biometrics}, \strong{64}: 377--385.
-#' 
+#'
 #' @references Borchers, D. L. (2012) A non-technical overview of
 #' spatially explicit capture-recapture models. \emph{Journal of
 #' Ornithology}, \strong{152}: 435--444.
@@ -636,7 +636,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         all.which.local <- rep(0, n.unique)
     }
     ## Stuff for the .dat file.
-    data.list <- list(        
+    data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
         all_which_local = all.which.local, D_lb = D.lb, D_ub = D.ub, D_phase =
         D.phase, D_sf = D.sf, n_detpars = n.detpars, detpars_lb = detpars.lb,
@@ -730,7 +730,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                    nchar(list.files()) - 3,
                                                                    nchar(list.files())) == ".par")]][1]
     }
-    out <- read.admbsecr(prefix.name)
+    out <- try(read.admbsecr(prefix.name), silent = TRUE)
     options(warn = 0)
     setwd(curr.dir)
     ## Cleaning up files.
@@ -738,6 +738,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         unlink(temp.dir, recursive = TRUE)
     } else {
         cat("ADMB files found in:", "\n", temp.dir, "\n")
+    }
+    if (class(out)[1] == "try-error"){
+        stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
     }
     ## Warning for non-convergence.
     if (out$maxgrad < -0.1){
