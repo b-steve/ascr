@@ -6,7 +6,7 @@ for (i in pkgs){
     }
 }
 if (.Platform$OS == "windows"){
-    bin.name <- "https://github.com/b-steve/admbsecr/releases/download/v1.0.6/admbsecr_1.0.6-win.zip"
+    bin.name <- "https://github.com/b-steve/admbsecr/releases/download/v1.0.6/admbsecr_1.0.6.zip"
     ext <- ".zip"
 } else if (.Platform$OS == "unix"){
     bin.name <- "https://github.com/b-steve/admbsecr/archive/v1.0.6.tar.gz"
