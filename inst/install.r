@@ -1,5 +1,10 @@
-install.packages(c("CircStats", "lattice", "matrixStats", "plyr",
-                   "Rcpp", "R2admb", "secr", "testthat", "downloader"))
+pkgs <- c("CircStats", "lattice", "matrixStats", "plyr",
+          "Rcpp", "R2admb", "secr", "testthat", "downloader")
+for (i in pkgs){
+    if (!require(i, character.only = TRUE)){
+        install.packages(i)
+    }
+}
 if (.Platform$OS == "windows"){
     bin.name <- "https://github.com/b-steve/admbsecr/releases/download/v1.0.6/admbsecr_1.0.6-win.zip"
     ext <- ".zip"
