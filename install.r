@@ -9,7 +9,7 @@ if (.Platform$OS == "windows"){
         ext <- ".tar.gz"
     } else if (Sys.info()["sysname"] == "Darwin"){
         os <- "osx"
-        suff <- ".tgz"
+        ext <- ".tgz"
     } else {
         stop("Unknown OS type.")
     }
