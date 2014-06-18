@@ -700,6 +700,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Creating link to executable.
     if (os.type == "windows"){
         file.copy(exe.loc, exe.name)
+        dll1.name <- "libstdc++-6.dll"
+        dll2.name <- "libgcc_s_dw2-1.dll"
+        dll1.loc <- paste(exe.dir, dll1.name, sep = "/")
+        dll2.loc <- paste(exe.dir, dll2.name, sep = "/")
+        file.copy(dll1.loc, dll1.name)
+        file.copy(dll2.loc, dll2.name)
     } else {
         file.symlink(exe.loc, exe.name)
     }
