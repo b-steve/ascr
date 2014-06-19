@@ -372,6 +372,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     buffer <- attr(mask, "buffer")
     ## Removing attributes from mask.
     mask <- as.matrix(mask)
+    traps <- as.matrix(traps)
     attr(mask, "area") <- A
     attr(mask, "buffer") <- buffer
     ## TODO: Sort out how to determine supplementary parameter names.
