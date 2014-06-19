@@ -10,50 +10,22 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 
 ## Installation
 
-ISEC WORKSHOP ATTENDEES PLEASE NOTE:
+* Run the script found [here](https://raw.githubusercontent.com/b-steve/admbsecr/master/inst/scripts/install.r).
 
-There is currently an issue with R-forge which is preventing users from installing admbsecr using the instructions below. Alternative installation instructions will be available shortly.
-
-To install:
-
-* Package dependencies will not install automatically as admbsecr is not on CRAN. To install these, run:
+* Optimisation is carried out using an ADMB executable. To ensure that the executable is running correctly, run
 ```
-install.packages(c("CircStats", "lattice", "matrixStats", "plyr", "Rcpp", "R2admb", "secr", "testthat"))
+test.admbsecr(quick = TRUE)
 ```
 
-* For the [stable version on R-Forge](https://r-forge.r-project.org/projects/admbsecr/):
+* If you wish, for more rigorous testing, run
 ```
-install.packages("admbsecr", repos = "http://R-Forge.R-project.org")
+test.admbsecr(quick = FALSE)
 ```
-This requires the newest version of R.
+This can take a little while.
 
-If you receive the warning `package 'admbsecr' is not available (for R version 3.x.x)`, you may have attempted to install during R-Forge's daily build process. Check [here](https://r-forge.r-project.org/R/?group_id=1506) to see the build status of admbsecr and wait for a "Current" status.
-
-* For the development version (i.e., this repository; stability not guaranteed):
-```
-library(devtools)
-install_github("admbsecr", "b-steve")
-```
-For this option Windows users will need a compatible version of [Rtools](http://cran.r-project.org/bin/windows/Rtools/) installed.
-
-* If you wish to test to see if your admbsecr installation is working properly, run:
-```
-library(admbsecr)
-test.admbsecr()
-```
-This will take a little while. Test passes will print a full stop (`.`) to the console. Any failures will print an alphanumeric character. If there are any failures, see the Troubleshooting section below, or contact the e-mail address below.
+* This package has not been widely tested on all platforms. If there are any errors in the above tests please get in touch using the contact details below.
 
 * Note that this R package does not require an ADMB installation.
-
-## Troubleshooting
-
-If you are experiencing difficulties with getting things running, please get in touch. We are attempting to iron out any problems with the installation procedure. Below are some known issues and some possible fixes.
-
-* It is best to use the newest version of R. In particular, installing from R-forge (as above) will not work unless R is up to date.
-
-* There is a known issue with some versions of OSX, which causes a segmentation fault when the `admbsecr()` function is called.
-
-* If a permission error is thrown when the `admbsecr()` function is called, it probably means you do not have permission to call the ADMB executable used to fit the model. In R, run `system.file(package = "admbsecr")` to find the directory in which the admbsecr package is installed, then navigate to the appropriate directory (according to your OS) in `ADMB/bin`. Allow execute permission to the executable `secr` therein; e.g., using `chmod u+x secr` at a shell command line on Unix or OSX.
 
 ## Contact
 

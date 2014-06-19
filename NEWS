@@ -15,6 +15,9 @@ admbsecr 1.0.6
 * Bug fix to convert.capt(), allowing the cutoff value to be passed to
   the secr capthist object.
 
+* Added a new install script so that installation no longer relies on
+  R-forge.
+
 admbsecr 1.0.5
 --------------
 
