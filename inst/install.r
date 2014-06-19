@@ -20,6 +20,6 @@ if (.Platform$OS == "windows"){
 }
 dest <- paste("admbsecr_1.0.6", ext, sep = "")
 library(downloader)
-download(bin.name, destfile = dest, type = type)
-install.packages(dest, repos = NULL)
+download(bin.name, destfile = dest)
+install.packages(dest, repos = NULL, type = type)
 unlink(dest)
