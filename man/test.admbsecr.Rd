@@ -3,7 +3,12 @@
 \alias{test.admbsecr}
 \title{Run admbsecr tests}
 \usage{
-test.admbsecr()
+test.admbsecr(quick = FALSE)
+}
+\arguments{
+\item{quick}{Logical, if \code{TRUE}, only a quick check is carried
+out that tests whether or not the AD Model Builder executable is
+running correctly.}
 }
 \description{
 Runs tests for admbsecr.
