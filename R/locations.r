@@ -297,7 +297,7 @@ bearing.density <- function(fit, id, mask){
 ## Calculating density due to estimated distances.
 dist.density <- function(fit, id, mask, dists){
     capt <- fit$args$capt$bincapt[id, ]
-    dists <- dists[capt == 1, ]
+    dists <- dists[capt == 1, , drop = FALSE]
     dist.capt <- fit$args$capt$dist[id, capt == 1]
     alpha <- get.par(fit, "alpha")
     mask.dens <- matrix(0, nrow = sum(capt), ncol = nrow(mask))
