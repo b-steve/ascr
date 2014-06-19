@@ -8,12 +8,35 @@
 #' installed. This is because tests fail on the R-forge servers due to
 #' the AD model builder executable.
 #'
+#' @param quick Logical, if \code{TRUE}, only a quick check is carried
+#' out that tests whether or not the AD Model Builder executable is
+#' running correctly.
+#' 
 #' @export
-test.admbsecr <- function(){
-    if (require(testthat)){
-        dir <- paste(system.file(package = "admbsecr"), "testthat", sep = "/")
-        test_dir(dir)
+test.admbsecr <- function(quick = FALSE){
+    dir <- ifelse(quick, "quick", "full")
+    if (quick){
+        simple.capt <- example$capt["bincapt"]
+        fit <- try(admbsecr(capt = simple.capt, traps = example$traps,
+                            mask = example$mask, fix = list(g0 = 1)),
+                   silent = TRUE)
+        if (class(fit)[1] == "try-error"){
+            cat("ADMB executable test: FAIL\n")
+        } else {
+            relative.error <- coef(fit, "D")/2429.626 - 1
+            if (abs(relative.error) < 1e-4){
+                cat("ADMB executable check: PASS\n")
+            } else {
+                cat("ADMB executable check: INCONCLUSIVE\n Executable has run successfully but results may not be correct.\n")
+            }
+        }
     } else {
-        stop("Please install package 'testthat' from CRAN.")
+        if (require(testthat)){
+            dir <- paste(system.file(package = "admbsecr"), "tests", sep = "/")
+            test_dir(dir)
+        } else {
+            stop("Please install package 'testthat' from CRAN.")
+        }
     }
 }
+
