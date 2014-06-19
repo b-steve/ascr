@@ -23,7 +23,7 @@ test.admbsecr(quick = FALSE)
 ```
 This can take a little while.
 
-* This package has not been widely tested on all platforms. If there are any errors in the above tests please get in touch using the contact details below.
+* This package has not been widely tested on all platforms. If there are any errors with the installation or in the above tests please get in touch using the contact details below.
 
 * Note that this R package does not require an ADMB installation.
 
