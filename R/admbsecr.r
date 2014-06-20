@@ -537,7 +537,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            b0.ss = c(0, 1e8),
                            b1.ss = c(0, 1e8),
                            sigma.ss = c(0, 1e8),
-                           z = c(0, 1e8),
+                           z = c(0, 200),
                            sigma.toa = c(0, 1e8),
                            kappa = c(0, 700),
                            alpha = c(0, 1e8))[par.names]
