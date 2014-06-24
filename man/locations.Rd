@@ -7,9 +7,10 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
   nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
   "purple", bearing = "green", dist = "brown", toa = "blue"), lty = 1,
-  show.labels = TRUE, plot.arrows = "bearing" \%in\% fit$infotypes,
-  plot.circles = "dist" \%in\% fit$infotypes, arrow.length = NULL,
-  show.legend = !add, show.axes = TRUE, add = FALSE)
+  show.labels = TRUE, plot.contours = TRUE, plot.estlocs = FALSE,
+  plot.arrows = "bearing" \%in\% fit$infotypes, plot.circles = "dist" \%in\%
+  fit$infotypes, arrow.length = NULL, show.legend = !add,
+  show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
@@ -71,6 +72,16 @@ with the appropriate probability density (if \code{density} is
 \code{TRUE}), or the corresponding probability of the individual
 being within the associated contour, under the estimated density
 (if \code{density} is \code{FALSE}).}
+
+\item{plot.contours}{Logical, if \code{TRUE}, contours are
+plotted. Note that, if \code{FALSE}, nothing corresponding to the
+density of the individuals' locations are plotted unless
+\code{plot.estlocs} is \code{TRUE}.}
+
+\item{plot.estlocs}{Logical, if \code{TRUE}, dots are plotted at
+the mode of the combined densities. If a density has more than a
+single mode (and the modes have the same density value) then a dot
+will be plotted for each.}
 
 \item{plot.arrows}{Logical, if \code{TRUE}, arrows indicating the
 estimated bearing to the individual are plotted from detectors at
