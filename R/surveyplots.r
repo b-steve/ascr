@@ -43,6 +43,12 @@ show.detsurf <- function(fit){
     }
     print(wireframe(z, zlim = c(0, 1),
                     zlab = list("Detection probability", rot = 95),
-                    xlab = "x", ylab = "y", shade = TRUE))
+                    xlab = "x", ylab = "y", shade = TRUE,
+                    shade.colors.palette = palette.fun))
     invisible(TRUE)
+}
+
+palette.fun <- function(irr, ref, height, saturation = 0.9){
+    hsv(h = 0.65, s = 1 - saturation * (1 - (1 - ref)^0.5), 
+        v = irr)
 }
