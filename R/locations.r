@@ -81,7 +81,7 @@
 #' fine.mask <- create.mask(example$traps, 20, spacing = 0.2)
 #' locations(example$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
 #' }
-#' 
+#'
 #' @export
 locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                       ylim = range(mask[, 2]), mask = get.mask(fit),
@@ -121,7 +121,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     }
     ## Error if "combined" is used when there is no additional information.
     if ("combined" %in% infotypes & !any.infotypes){
-        stop("No additional information used in model 'fit', so a \"combined\" contour cannot be plotted.") 
+        stop("No additional information used in model 'fit', so a \"combined\" contour cannot be plotted.")
     }
     ## Working out which contours to plot.
     if ("all" %in% infotypes){
@@ -262,7 +262,7 @@ show.contour <- function(mask, dens, nlevels, levels, prob, col = "black", lty =
     if (plot.contours){
         ## Divide densities by normalising constant before plotting.
         a <- attr(mask, "a")*10000
-        ## Not conversion of area to square metres.
+        ## Note conversion of area to square metres.
         dens <- dens/(a*sum(dens))
         unique.x <- sort(unique(mask[, 1]))
         unique.y <- sort(unique(mask[, 2]))
