@@ -1,12 +1,12 @@
 ## Shortcut to get detection probability
-calc.detfn <- function(d, detfn, pars, ss.link = NULL){
-    if (!is.null(ss.link)){
-        if (detfn == "ss" & ss.link == "log"){
-            detfn <- "log.ss"
-        }
-    }
+calc.detfn <- function(d, detfn, pars, ss.link = NULL, orientation = 0){
     g <- get.detfn(detfn)
-    g(d, pars)
+    if (identical(g, calc.ss)){
+        out <- g(d, pars, ss.link, orientation)
+    } else {
+        out <- g(d, pars)
+    }
+    out
 }
 
 ## Returns a detection function.
@@ -15,7 +15,7 @@ get.detfn <- function(detfn){
         stop("Argument 'detfn' must be \"hn\", \"hr\", \"th\", \"lth\", \"ss\", or \"log.ss\"")
     }
     switch(detfn, hn = calc.hn, hr = calc.hr, th = calc.th,
-           lth = calc.lth, ss = calc.ss, log.ss = calc.log.ss)
+           lth = calc.lth, ss = calc.ss)
 }
 
 calc.hn <- function(d, pars){
@@ -56,26 +56,28 @@ calc.lth <- function(d, pars){
     0.5 - 0.5*erf(shape.1 - exp(shape.2 - scale*d))
 }
 
-calc.ss <- function(d, pars){
+calc.ss <- function(d, pars, ss.link, orientation){
     if (!identical(sort(names(pars)), c("b0.ss", "b1.ss", "cutoff", "sigma.ss"))){
         stop("Argument 'pars' must have named components 'b0.ss', 'b1.ss', 'sigma.ss', and 'cutoff'.")
     }
     b0.ss <- pars$b0.ss
     b1.ss <- pars$b1.ss
+    b2.ss <- pars$b2.ss
     sigma.ss <- pars$sigma.ss
     cutoff <- pars$cutoff
-    1 - pnorm(cutoff, mean = b0.ss - b1.ss*d, sd = sigma.ss)
-}
-
-calc.log.ss <- function(d, pars){
-    if (!identical(sort(names(pars)), c("b0.ss", "b1.ss", "cutoff", "sigma.ss"))){
-        stop("Argument 'pars' must have named components 'b0.ss', 'b1.ss', 'sigma.ss', and 'cutoff'.")
+    if (ss.link == "log"){
+        inv.ss.link <- exp
+    } else if (ss.link == "identity") {
+        inv.ss.link <- identity
+    } else {
+        stop("Link function not recoginsed.")
     }
-    b0.ss <- pars$b0.ss
-    b1.ss <- pars$b1.ss
-    sigma.ss <- pars$sigma.ss
-    cutoff <- pars$cutoff
-    1 - pnorm(cutoff, mean = exp(b0.ss - b1.ss*d), sd = sigma.ss)
+    if (b2.ss == 0){
+        out <- 1 - pnorm(cutoff, mean = inv.ss.link(b0.ss - b1.ss*d), sd = sigma.ss)
+    } else {
+        out <- 1 - pnorm(cutoff, mean = inv.ss.link(b0.ss - (b1.ss - b2.ss*(cos(orientation) - 1))*d), sd = sigma.ss)
+    }
+    out
 }
 
 #' Plotting a detection function.
@@ -97,7 +99,7 @@ calc.log.ss <- function(d, pars){
 #' show.detfn(example$fits$simple.hn, main = "Detection function comparison")
 #' show.detfn(example$fits$simple.hr, add = TRUE, col = "blue")
 #' legend("topright", legend = c("Half normal", "Hazard rate"), lty = 1, col = c("black", "blue"), bg = "white")
-#' 
+#'
 #' @export
 show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
                        xlab = "Distance (m)", ylab = "Detection probability",
