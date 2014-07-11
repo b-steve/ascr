@@ -73,6 +73,10 @@ autob1.ss <- function(args){
     out
 }
 
+autob2.ss <- function(args){
+    0.1
+}
+
 autosigma.ss <- function(args){
     ss <- c(args$capt$ss)
     sd(ss[ss >= args$cutoff])

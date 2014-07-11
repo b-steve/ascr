@@ -440,8 +440,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            hr = c("g0", "sigma", "z"),
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),
-                           ss = c("b0.ss", "b1.ss", "sigma.ss"),
-                           log.ss = c("b0.ss", "b1.ss", "sigma.ss"))
+                           ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.ss"),
+                           log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
@@ -473,6 +473,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                   scale = 2,
                   b0.ss = 2,
                   b1.ss = 2,
+                  b2.ss = 2,
                   sigma.ss = 2,
                   z = 2,
                   sigma.toa = 2,
@@ -536,6 +537,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            scale = c(0, 1e8),
                            b0.ss = c(0, 1e8),
                            b1.ss = c(0, 1e8),
+                           b2.ss = c(0, 1e8),
                            sigma.ss = c(0, 1e8),
                            z = c(0, 200),
                            sigma.toa = c(0, 1e8),
@@ -637,6 +639,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         all.which.local <- rep(0, n.unique)
     }
     ## Stuff for the .dat file.
+    browser()
     data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
         all_which_local = all.which.local, D_lb = D.lb, D_ub = D.ub, D_phase =
