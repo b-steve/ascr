@@ -639,7 +639,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         all.which.local <- rep(0, n.unique)
     }
     ## Stuff for the .dat file.
-    browser()
     data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
         all_which_local = all.which.local, D_lb = D.lb, D_ub = D.ub, D_phase =
