@@ -231,12 +231,20 @@ p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
         detfn <- fit$args$detfn
         pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
         ss.link <- fit$args$ss.link
+        re.detfn <- fit$re.detfn
+    } else {
+        re.detfn <- FALSE
+        if (detfn == "ss"){
+            if (pars$b2.ss != 0){
+                re.detfn <- TRUE
+            }
+        }
     }
     dists <- distances(traps, points)
     ## Calculating probabilities of detection when random effects are
     ## in detection function. Detections at traps no longer
     ## independent.
-    if (fit$re.detfn){
+    if (re.detfn){
         n.traps <- nrow(traps)
         n.points <- nrow(points)
         dirs <- (0:(n.quadpoints - 1))*2*pi/n.quadpoints
