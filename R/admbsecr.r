@@ -794,7 +794,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Logical value for random effects in the detection function.
     out$re.detfn <- FALSE
     if (detfn == "ss"){
-        if (out$coefficients["b2.ss"] != 0){
+        if (get.par(out, "b2.ss") != 0){
             out$re.detfn <- TRUE
         }
     }

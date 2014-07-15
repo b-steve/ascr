@@ -34,14 +34,14 @@ dvariable detfn_logth (double x, const dvar_vector &detpars, dvariable ss_resid)
 // Order of detpars: b0ss, b1ss, sigmass.
 dvariable detfn_ss (double x, const dvar_vector &detpars, dvariable ss_resid)
 {
-  return 1 - cumd_norm(ss_resid/detpars(3));
+  return 1 - cumd_norm(ss_resid/detpars(4));
 }
 
 // Log-link signal strength.
 // Order of detpars: b0ss, b1ss, sigmass.
 dvariable detfn_logss (double x, const dvar_vector &detpars, dvariable ss_resid)
 {
-  return 1 - cumd_norm(ss_resid/detpars(3));
+  return 1 - cumd_norm(ss_resid/detpars(4));
 }
 
 detfn_pointer get_detfn(int detfn_id)
