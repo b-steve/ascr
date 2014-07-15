@@ -93,6 +93,7 @@ DATA_SECTION
   init_matrix capt_dist(1,nr_dist,1,nc_dist)
   // Initialising observed signal strengths.
   init_int fit_ss
+  init_int fit_dir
   init_number cutoff
   init_int linkfn_id
   int nr_ss
@@ -249,22 +250,26 @@ PROCEDURE_SECTION
   }
   // Calculating mask detection probabilities.
   sum_probs = 0;
-  for (i = 1; i <= n_mask; i++){
-    undet_prob = 1;
-    for (j = 1; j <= n_traps; j++){
-      dist = dists(j, i);
-      if (fit_ss){
-        ss_resid = cutoff - expected_ss(j, i);
-      } else {
-        ss_resid = 0;
+  if (fit_dir){
+    // Calculate probabilities in here for directional calling.
+  } else {
+    for (i = 1; i <= n_mask; i++){
+      undet_prob = 1;
+      for (j = 1; j <= n_traps; j++){
+        dist = dists(j, i);
+        if (fit_ss){
+          ss_resid = cutoff - expected_ss(j, i);
+        } else {
+          ss_resid = 0;
+        }
+        capt_prob = detfn(dist, detpars, ss_resid);
+        // Compare to calculating these outside loop.
+        log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
+        log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
+        undet_prob *= 1 - capt_prob;
       }
-      capt_prob = detfn(dist, detpars, ss_resid);
-      // Compare to calculating these outside loop.
-      log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
-      log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
-      undet_prob *= 1 - capt_prob;
+      sum_probs += 1 - undet_prob + DBL_MIN;
     }
-    sum_probs += 1 - undet_prob + DBL_MIN;
   }
   // Resetting i index.
   i = 0;
@@ -284,7 +289,7 @@ PROCEDURE_SECTION
       for (j = 1; j <= n_local; j++){
         local_log_capt_probs.colfill(j, column(log_capt_probs, all_which_local(u, j)));
         local_log_evade_probs.colfill(j, column(log_evade_probs, all_which_local(u, j)));
-      } 
+      }
       log_capt_probs_pointer = &local_log_capt_probs;
       log_evade_probs_pointer = &local_log_evade_probs;
     } else {
@@ -295,7 +300,7 @@ PROCEDURE_SECTION
     dvar_vector evade_contrib(1,n_local);
     evade_contrib = (1 - capt_hist)*(*log_evade_probs_pointer);
     // Calculating contribution due to uth unique capture history.
-    if (fit_ss){      
+    if (fit_ss){
       nr_local_expected_ss = nr_localmats;
       nc_local_expected_ss = nc_localmats;
     } else {

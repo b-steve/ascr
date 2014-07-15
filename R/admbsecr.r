@@ -383,6 +383,16 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.bearings <- fit.types["bearing"]
     fit.dists <- fit.types["dist"]
     fit.ss <- fit.types["ss"]
+    if (fit.ss){
+        fit.dir <- TRUE
+        if ("b2.ss" %in% names(fix)){
+            if (fix[["b2.ss"]] == 0){
+                fit.dir <- FALSE
+            }
+        }
+    } else {
+        fit.dir <- FALSE
+    }
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
     ## Generating ordered binary capture history.
@@ -652,7 +662,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
         capt.bin.freqs, fit_angs = as.numeric(fit.bearings), capt_ang =
         capt.bearing, fit_dists = as.numeric(fit.dists), capt_dist =
-        capt.dist, fit_ss = as.numeric(fit.ss), cutoff = cutoff, linkfn_id =
+        capt.dist, fit_ss = as.numeric(fit.ss), fit_dir = as.numeric(fit.dir),
+        cutoff = cutoff, linkfn_id =
         linkfn.id, capt_ss = capt.ss, fit_toas = as.numeric(fit.toas),
         capt_toa = capt.toa, fit_mrds = as.numeric(fit.mrds), mrds_dist =
         mrds.dist, dists = dists, angs = bearings, toa_ssq = toa.ssq)
