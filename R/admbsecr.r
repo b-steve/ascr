@@ -620,7 +620,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     dbl.min <- 1e-150
     ## Calculating distances and angles.
     dists <- distances(traps, mask)
-    if (fit.bearings){
+    if (fit.bearings | fit.dir){
         bearings <- bearings(traps, mask)
     } else {
         bearings <- 0
@@ -648,6 +648,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         all.n.local <- rep(1, n.unique)
         all.which.local <- rep(0, n.unique)
     }
+    ## Hardwiring number of quadrature points for directional calling.
+    n.dir.quadpoints <- 8
     ## Stuff for the .dat file.
     data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
@@ -660,10 +662,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         suppars.link, detfn_id = detfn.id, buffer = buffer, trace =
         as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps = n.traps, n_mask
         = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
-        capt.bin.freqs, fit_angs = as.numeric(fit.bearings), capt_ang =
-        capt.bearing, fit_dists = as.numeric(fit.dists), capt_dist =
-        capt.dist, fit_ss = as.numeric(fit.ss), fit_dir = as.numeric(fit.dir),
-        cutoff = cutoff, linkfn_id =
+        capt.bin.freqs, fit_angs = as.numeric(fit.bearings),
+        fit_dir = as.numeric(fit.dir), n_dir_quadpoints = n.dir.quadpoints,
+        capt_ang = capt.bearing, fit_dists = as.numeric(fit.dists), capt_dist =
+        capt.dist, fit_ss = as.numeric(fit.ss), cutoff = cutoff, linkfn_id =
         linkfn.id, capt_ss = capt.ss, fit_toas = as.numeric(fit.toas),
         capt_toa = capt.toa, fit_mrds = as.numeric(fit.mrds), mrds_dist =
         mrds.dist, dists = dists, angs = bearings, toa_ssq = toa.ssq)

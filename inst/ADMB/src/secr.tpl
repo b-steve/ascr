@@ -59,6 +59,9 @@ DATA_SECTION
   init_ivector capt_bin_freqs(1,n_unique)
   // Initialising observed bearings.
   init_int fit_angs
+  // Logical indicator for directional calling.
+  init_int fit_dir
+  init_number n_dir_quadpoints
   int nr_ang
   int nc_ang
   int nr_angmat
@@ -68,6 +71,11 @@ DATA_SECTION
   !! if (fit_angs == 1){
   !!   nr_ang = n;
   !!   nc_ang = n_traps;
+  !!   nr_angmat = n_traps;
+  !!   nc_angmat = n_mask;
+  !! } else if (fit_dir == 1){
+  !!   nr_ang = 1;
+  !!   nc_ang = 1;
   !!   nr_angmat = n_traps;
   !!   nc_angmat = n_mask;
   !! } else {
@@ -93,7 +101,6 @@ DATA_SECTION
   init_matrix capt_dist(1,nr_dist,1,nc_dist)
   // Initialising observed signal strengths.
   init_int fit_ss
-  init_int fit_dir
   init_number cutoff
   init_int linkfn_id
   int nr_ss
@@ -251,7 +258,40 @@ PROCEDURE_SECTION
   // Calculating mask detection probabilities.
   sum_probs = 0;
   if (fit_dir){
-    // Calculate probabilities in here for directional calling.
+    // Individual direction.
+    double dir;
+    // Individual orientation from trap.
+    double orientation;
+    // Signal strength attenuation per metre.
+    dvariable att;
+    // Bearing from individual to trap.
+    double ang;
+    // Expected signal strength at trap.
+    dvariable dir_expected_ss;
+    for (i = 1; i <= n_mask; i++){
+      dvariable prob_det = 0;
+      for (j = 1; j <= n_dir_quadpoints; j++){
+        undet_prob = 1;
+        dir = 2*M_PI*(j - 1)/n_dir_quadpoints;
+        for (k = 1; k <= n_traps; k++){
+          dist = dists(k, i);
+          ang = angs(k, i);
+          orientation = abs(ang - dir);
+          att = detpars(2) - detpars(3)*(cos(orientation) - 1);
+          if (linkfn_id == 1){
+            dir_expected_ss = detpars(1) - att*dist;
+          } else if (linkfn_id == 2){
+            dir_expected_ss = mfexp(detpars(1) - att*dist);
+          } else {
+            cerr << "linkfn_id not recognised." << endl;
+          }
+          ss_resid = cutoff - dir_expected_ss;
+          capt_prob = detfn(dist, detpars, ss_resid);
+          undet_prob *= 1 - capt_prob;
+        }
+	sum_probs += (1 - undet_prob)*(1/n_dir_quadpoints);
+      }
+    }
   } else {
     for (i = 1; i <= n_mask; i++){
       undet_prob = 1;
