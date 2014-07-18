@@ -185,7 +185,13 @@ DATA_SECTION
   int m
   int t
   number dist
-  vector capt_trap(1,n_unique)
+  number n_dets
+  int n_u_contribs
+  !! if (fit_ss){
+  !!   n_u_contribs = n;
+  !! } else {
+  !!   n_u_contribs = n_unique;
+  !! }
 
 PARAMETER_SECTION
   objective_function_value f
@@ -200,14 +206,14 @@ PARAMETER_SECTION
   number D
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
-  vector u_contribs(1,n_unique)
+  vector log_u_contribs(1,n_u_contribs)
   vector i_contribs(1,n)
-  vector point_contrib(1,n_unique)
+  number log_s_contribs
+  number log_b_contribs
   number point_capt
   number point_evade
   number sum_probs
   number capt_prob
-
 
 PROCEDURE_SECTION
   // Grabbing detection function.
@@ -237,39 +243,65 @@ PROCEDURE_SECTION
       j++;
     }
   }
-  u_contribs = 0;
+  // Looping over mask points. Simultaneously calculating
+  // contributions from each detection.
   i_contribs = 0;
   sum_probs = 0;
   for (m = 1; m <= n_mask; m++){
-    point_contrib = 1;
+    log_u_contribs = 0;
     point_evade = 1;
+    // Calculating contribution due to capture location.
     for (t = 1; t <= n_traps; t++){
       dist = dists(t, m);
       capt_prob = detfn(dist, detpars, cutoff);
-      capt_trap = column(capt_bin_unique, t);
-      for (i = 1; i <= n_unique; i++){
-        if (capt_trap(i) == 1){
-          point_contrib(i) *= capt_prob;
-        } else {
-          point_contrib(i) *= 1 - capt_prob;
+      if (fit_ss){
+        dvariable expected_ss;
+        expected_ss = detpars(1) - detpars(2)*dist;
+        k = 0;
+        for (i = 1; i <= n_unique; i++){
+          for (j = 1; j <= capt_bin_freqs(i); j++){
+            k++;
+            if (capt_bin_unique(i, t)){
+              log_u_contribs(k) += log_dnorm(capt_ss(k, t), expected_ss, detpars(3));
+            } else {
+              log_u_contribs(k) += log(1 - capt_prob + DBL_MIN);
+            }
+          }
+        }
+      } else {
+        for (i = 1; i <= n_unique; i++){
+          if (capt_bin_unique(i, t) == 1){
+            log_u_contribs(i) += log(capt_prob + DBL_MIN);
+          } else {
+            log_u_contribs(i) += log(1 - capt_prob + DBL_MIN);
+          }
         }
       }
-      //point_contrib = elem_prod(point_contrib, capt_trap*capt_prob + (1 - capt_trap)*(1 - capt_prob));
       point_evade *= 1 - capt_prob;
     }
     point_capt = 1 - point_evade;
     sum_probs += point_capt;
-    u_contribs += point_contrib;//*point_capt;
-  }
-  esa = A*sum_probs;
-  //u_contribs /= esa;
-  k = 0;
-  for (i = 1; i <= n_unique; i++){
-    for (j = 1; j <= capt_bin_freqs(i); j++){
-      k++;
-      i_contribs(k) = u_contribs(i);
+    k = 0;
+    for (i = 1; i <= n_unique; i++){
+      n_dets = sum(row(capt_bin_unique, i));
+      for (j = 1; j <= capt_bin_freqs(i); j++){
+        k++;
+        log_s_contribs = 0;
+        if (fit_toas){
+          if (n_dets > 1){
+            log_s_contribs += (1 - n_dets)*log(suppars(sigma_toa_ind)) - toa_ssq(k, m)/(2*square(suppars(sigma_toa_ind)));
+          }
+        }
+        if (fit_ss){
+          log_b_contribs = log_u_contribs(k);
+        } else {
+          log_b_contribs = log_u_contribs(i);
+        }
+        i_contribs(k) += mfexp(log_b_contribs + log_s_contribs);
+      }
     }
   }
+  esa = A*sum_probs;
   // Contribution from capture histories.
   f = -sum(log(i_contribs + DBL_MIN));
   // Contribution from n.
