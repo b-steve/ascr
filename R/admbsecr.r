@@ -649,7 +649,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         all.which.local <- rep(0, n.unique)
     }
     ## Hardwiring number of quadrature points for directional calling.
-    n.dir.quadpoints <- 8
+    n.dir.quadpoints <- ifelse(fit.dir, 8, 1)
     ## Stuff for the .dat file.
     data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
