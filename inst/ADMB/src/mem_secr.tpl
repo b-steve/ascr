@@ -265,7 +265,7 @@ PROCEDURE_SECTION
           for (j = 1; j <= capt_bin_freqs(i); j++){
             k++;
             if (capt_bin_unique(i, t)){
-              log_u_contribs(k) += log_dnorm(capt_ss(k, t), expected_ss, detpars(3));
+              log_u_contribs(k) += log_dnorm(capt_ss(k, t), expected_ss, detpars(4));
             } else {
               log_u_contribs(k) += log(1 - capt_prob + DBL_MIN);
             }

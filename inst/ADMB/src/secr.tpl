@@ -59,6 +59,9 @@ DATA_SECTION
   init_ivector capt_bin_freqs(1,n_unique)
   // Initialising observed bearings.
   init_int fit_angs
+  // Logical indicator for directional calling.
+  init_int fit_dir
+  init_number n_dir_quadpoints
   int nr_ang
   int nc_ang
   int nr_angmat
