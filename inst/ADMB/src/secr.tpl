@@ -287,7 +287,7 @@ PROCEDURE_SECTION
       for (j = 1; j <= n_local; j++){
         local_log_capt_probs.colfill(j, column(log_capt_probs, all_which_local(u, j)));
         local_log_evade_probs.colfill(j, column(log_evade_probs, all_which_local(u, j)));
-      } 
+      }
       log_capt_probs_pointer = &local_log_capt_probs;
       log_evade_probs_pointer = &local_log_evade_probs;
     } else {
@@ -298,7 +298,7 @@ PROCEDURE_SECTION
     dvar_vector evade_contrib(1,n_local);
     evade_contrib = (1 - capt_hist)*(*log_evade_probs_pointer);
     // Calculating contribution due to uth unique capture history.
-    if (fit_ss){      
+    if (fit_ss){
       nr_local_expected_ss = nr_localmats;
       nc_local_expected_ss = nc_localmats;
     } else {
@@ -386,7 +386,7 @@ PROCEDURE_SECTION
       if (fit_ss){
         dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
         for (j = 1; j <= n_traps; j++){
-          local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(3)));
+          local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(4)));
         }
         bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
       }
@@ -447,6 +447,8 @@ PROCEDURE_SECTION
     }
     cout << "LL: " << -f << endl;
   }
+  cout << "esa: " << esa << endl;
+  exit(123);
 
 GLOBALS_SECTION
   #include <densfuns.cpp>
