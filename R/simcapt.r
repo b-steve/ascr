@@ -58,7 +58,7 @@
 #' indicate detection, and provide simulated values of the additional
 #' information requested. This object can be used as the \code{capt}
 #' argument for the function \link{admbsecr}.
-#' 
+#'
 #' @examples
 #' ## Simulating based on model fits.
 #' simple.capt <- sim.capt(example$fits$simple.hn)
@@ -66,7 +66,7 @@
 #' ## Simulating from provided parameter values.
 #' new.capt <- sim.capt(traps = example$traps, mask = example$mask, infotypes = c("bearing", "dist"), detfn = "hr",
 #'                      pars = list(D = 2500, g0 = 0.9, sigma = 3, z = 2, kappa = 50, alpha = 10))
-#' 
+#'
 #' @export
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
@@ -120,7 +120,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                            hr = c("g0", "sigma", "z"),
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),
-                           ss = c("b0.ss", "b1.ss", "sigma.ss"),
+                           ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
     if (!identical(sort(par.names), sort(names(pars)))){
@@ -186,7 +186,16 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         }
         pars$cutoff <- cutoff
         detpars$cutoff <- cutoff
-        ss.mean <- inv.ss.link(pars$b0.ss - pars$b1.ss*dists)
+        ## Simulating animal directions and calculating orientations
+        ## to traps.
+        if (pars$b2.ss != 0){
+            popn.dirs <- runif(n.popn, 0, 2*pi)
+            popn.bearings <- t(bearings(traps, popn))
+            popn.orientations <- abs(popn.dirs - popn.bearings)
+        } else {
+            popn.orientations <- 0
+        }
+        ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1))*dists)
         ss.error <- matrix(rnorm(n.popn*n.traps, mean = 0,
                                  sd = pars$sigma.ss),
                            nrow = n.popn, ncol = n.traps)

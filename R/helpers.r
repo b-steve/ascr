@@ -225,16 +225,51 @@ erf <- function(x){
 
 ## Capture probability density surface from a model fit.
 p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
-                  detfn = NULL, ss.link = NULL, pars = NULL){
+                  detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8){
     if (!is.null(fit)){
         traps <- get.traps(fit)
         detfn <- fit$args$detfn
         pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
         ss.link <- fit$args$ss.link
+        re.detfn <- fit$re.detfn
+    } else {
+        re.detfn <- FALSE
+        if (detfn == "ss"){
+            if (pars$b2.ss != 0){
+                re.detfn <- TRUE
+            }
+        }
     }
     dists <- distances(traps, points)
-    probs <- calc.detfn(dists, detfn, pars, ss.link)
-    out <- aaply(probs, 2, function(x) 1 - prod(1 - x))
+    ## Calculating probabilities of detection when random effects are
+    ## in detection function. Detections at traps no longer
+    ## independent.
+    if (re.detfn){
+        n.traps <- nrow(traps)
+        n.points <- nrow(points)
+        dirs <- (0:(n.quadpoints - 1))*2*pi/n.quadpoints
+        probs <- numeric(n.points)
+        ## Integrating over all possible directions.
+        ## TODO: Write all this in C++.
+        for (i in 1:n.quadpoints){
+            dir <- dirs[i]
+            bearings <- bearings(traps, points)
+            orientations <- abs(dir - bearings)
+            for (j in 1:n.points){
+                ## Probabilities of detection given orientation.
+                o.prob <- numeric(n.traps)
+                for (k in 1:n.traps){
+                    o.prob[k] <- calc.detfn(dists[k, j], detfn, pars, ss.link,
+                                            orientations[k, j])
+                }
+                probs[j] <- probs[j] + (1/n.quadpoints)*(1 - prod(1 - o.prob))
+            }
+        }
+        out <- probs
+    } else {
+        probs <- calc.detfn(dists, detfn, pars, ss.link)
+        out <- aaply(probs, 2, function(x) 1 - prod(1 - x))
+    }
     if (esa){
         A <- attr(points, "area")
         if (is.null(A)){
