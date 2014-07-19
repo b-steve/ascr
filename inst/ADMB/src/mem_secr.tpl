@@ -62,9 +62,14 @@ DATA_SECTION
   int nc_angmat
   int nr_local_angmat
   int nc_local_angmat
-  !! if (fit_angs == 1){
+  !! if (fit_angs){
   !!   nr_ang = n;
   !!   nc_ang = n_traps;
+  !!   nr_angmat = n_traps;
+  !!   nc_angmat = n_mask;
+  !! } else if (fit_dir) {
+  !!   nr_ang = 1;
+  !!   nc_ang = 1;
   !!   nr_angmat = n_traps;
   !!   nc_angmat = n_mask;
   !! } else {
@@ -187,6 +192,7 @@ DATA_SECTION
   int k
   int m
   int t
+  int b
   number dist
   number n_dets
   int n_u_contribs
@@ -195,6 +201,8 @@ DATA_SECTION
   !! } else {
   !!   n_u_contribs = n_unique;
   !! }
+  number dir
+  number orientation
 
 PARAMETER_SECTION
   objective_function_value f
@@ -250,59 +258,90 @@ PROCEDURE_SECTION
   // contributions from each detection.
   i_contribs = 0;
   sum_probs = 0;
-  for (m = 1; m <= n_mask; m++){
-    log_u_contribs = 0;
-    point_evade = 1;
-    // Calculating contribution due to capture location.
-    for (t = 1; t <= n_traps; t++){
-      dist = dists(t, m);
-      capt_prob = detfn(dist, detpars, cutoff);
-      if (fit_ss){
-        dvariable expected_ss;
-        expected_ss = detpars(1) - detpars(2)*dist;
-        k = 0;
-        for (i = 1; i <= n_unique; i++){
-          for (j = 1; j <= capt_bin_freqs(i); j++){
-            k++;
-            if (capt_bin_unique(i, t)){
-              log_u_contribs(k) += log_dnorm(capt_ss(k, t), expected_ss, detpars(4));
+  for (b = 1; b <= n_dir_quadpoints; b++){
+    dir = 2*M_PI*(b - 1)/n_dir_quadpoints;
+    for (m = 1; m <= n_mask; m++){
+      log_u_contribs = 0;
+      point_evade = 1;
+      // Calculating contribution due to capture location.
+      for (t = 1; t <= n_traps; t++){
+        if (fit_dir){
+          double bearing_to_trap;
+          bearing_to_trap = angs(t, m);
+          // Adjusting bearing_to_trap, angs matrix gives bearing from
+          // trap to animal. Guess this doesn't really matter if
+          // f(b_i) is uniform on [0, 2*pi), but nice to have correct.
+          if (bearing_to_trap > M_PI){
+            bearing_to_trap -= M_PI;
+          } else {
+            bearing_to_trap += M_PI;
+          }
+          orientation = abs(bearing_to_trap - dir);
+        } else {
+          orientation = 0;
+        }
+        dist = dists(t, m);
+        capt_prob = detfn(dist, detpars, cutoff, orientation);
+        // For signal strength detection function, contribution is
+        // density of received strength (if detected) or probability
+        // of evasion (if undetected).
+        if (fit_ss){
+          dvariable expected_ss;
+          expected_ss = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1))*dist);
+          k = 0;
+          for (i = 1; i <= n_unique; i++){
+            for (j = 1; j <= capt_bin_freqs(i); j++){
+              k++;
+              if (capt_bin_unique(i, t)){
+                log_u_contribs(k) += log_dnorm(capt_ss(k, t), expected_ss, detpars(4));
+              } else {
+                log_u_contribs(k) += log(1 - capt_prob + DBL_MIN);
+              }
+            }
+          }
+        } else {
+          for (i = 1; i <= n_unique; i++){
+            if (capt_bin_unique(i, t) == 1){
+              log_u_contribs(i) += log(capt_prob + DBL_MIN);
             } else {
-              log_u_contribs(k) += log(1 - capt_prob + DBL_MIN);
+              log_u_contribs(i) += log(1 - capt_prob + DBL_MIN);
             }
           }
         }
-      } else {
-        for (i = 1; i <= n_unique; i++){
-          if (capt_bin_unique(i, t) == 1){
-            log_u_contribs(i) += log(capt_prob + DBL_MIN);
+        point_evade *= 1 - capt_prob;
+      }
+      point_capt = 1 - point_evade;
+      // Sum of detection probabilities across all mask points; used
+      // in calculation of ESA.
+      sum_probs += point_capt/n_dir_quadpoints;
+      k = 0;
+      for (i = 1; i <= n_unique; i++){
+        n_dets = sum(row(capt_bin_unique, i));
+        for (j = 1; j <= capt_bin_freqs(i); j++){
+          k++;
+          log_s_contribs = 0;
+          // Contribution due to times of arrival.
+          if (fit_toas){
+            if (n_dets > 1){
+              log_s_contribs += (1 - n_dets)*log(suppars(sigma_toa_ind)) - toa_ssq(k, m)/(2*square(suppars(sigma_toa_ind)));
+            }
+          }
+          // For signal strength detection function, individuals with
+          // the same capture history do not have the same likelihood
+          // contribution due to differing signal strengths. Object
+          // log_b_contribs must then be different for each
+          // individual.
+          if (fit_ss){
+            log_b_contribs = log_u_contribs(k);
           } else {
-            log_u_contribs(i) += log(1 - capt_prob + DBL_MIN);
+            log_b_contribs = log_u_contribs(i);
           }
+          i_contribs(k) += mfexp(log_b_contribs + log_s_contribs);
         }
       }
-      point_evade *= 1 - capt_prob;
     }
-    point_capt = 1 - point_evade;
-    sum_probs += point_capt;
-    k = 0;
-    for (i = 1; i <= n_unique; i++){
-      n_dets = sum(row(capt_bin_unique, i));
-      for (j = 1; j <= capt_bin_freqs(i); j++){
-        k++;
-        log_s_contribs = 0;
-        if (fit_toas){
-          if (n_dets > 1){
-            log_s_contribs += (1 - n_dets)*log(suppars(sigma_toa_ind)) - toa_ssq(k, m)/(2*square(suppars(sigma_toa_ind)));
-          }
-        }
-        if (fit_ss){
-          log_b_contribs = log_u_contribs(k);
-        } else {
-          log_b_contribs = log_u_contribs(i);
-        }
-        i_contribs(k) += mfexp(log_b_contribs + log_s_contribs);
-      }
-    }
+    // Multiplying contributions by f(b_i).
+    i_contribs *= 1/n_dir_quadpoints;
   }
   esa = A*sum_probs;
   // Contribution from capture histories.
@@ -324,6 +363,10 @@ PROCEDURE_SECTION
     }
     cout << "LL: " << -f << endl;
   }
+  cout << "tester" << endl;
+  cout << "esa: " << esa << endl;
+  exit(123);
+
 
 GLOBALS_SECTION
   #include <densfuns.cpp>
