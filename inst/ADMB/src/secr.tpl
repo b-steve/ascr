@@ -428,6 +428,7 @@ PROCEDURE_SECTION
       }
     }
   }
+  cout << "f: " << f << endl;
   // Calculating ESA.
   esa = A*sum_probs;
   // Contribution from n.
@@ -447,8 +448,6 @@ PROCEDURE_SECTION
     }
     cout << "LL: " << -f << endl;
   }
-  cout << "esa: " << esa << endl;
-  exit(123);
 
 GLOBALS_SECTION
   #include <densfuns.cpp>

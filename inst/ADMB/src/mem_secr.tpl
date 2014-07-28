@@ -202,6 +202,7 @@ DATA_SECTION
   !!   n_u_contribs = n_unique;
   !! }
   number dir
+  number bearing_to_trap
   number orientation
 
 PARAMETER_SECTION
@@ -266,7 +267,6 @@ PROCEDURE_SECTION
       // Calculating contribution due to capture location.
       for (t = 1; t <= n_traps; t++){
         if (fit_dir){
-          double bearing_to_trap;
           bearing_to_trap = angs(t, m);
           // Adjusting bearing_to_trap, angs matrix gives bearing from
           // trap to animal. Guess this doesn't really matter if
@@ -276,7 +276,8 @@ PROCEDURE_SECTION
           } else {
             bearing_to_trap += M_PI;
           }
-          orientation = abs(bearing_to_trap - dir);
+          //orientation = abs(bearing_to_trap - dir);
+          orientation = bearing_to_trap - dir;
         } else {
           orientation = 0;
         }
@@ -287,7 +288,9 @@ PROCEDURE_SECTION
         // of evasion (if undetected).
         if (fit_ss){
           dvariable expected_ss;
-          expected_ss = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1))*dist);
+          //expected_ss = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*dist;
+          //expected_ss = detpars(1) - (detpars(2) - (detpars(3)*((orientation) - 1)))*dist;
+          expected_ss = detpars(1) - (detpars(2) - (((orientation) - 1)))*dist;
           k = 0;
           for (i = 1; i <= n_unique; i++){
             for (j = 1; j <= capt_bin_freqs(i); j++){
@@ -336,12 +339,11 @@ PROCEDURE_SECTION
           } else {
             log_b_contribs = log_u_contribs(i);
           }
-          i_contribs(k) += mfexp(log_b_contribs + log_s_contribs);
+          // Multiplying contributions by f(b_i).
+          i_contribs(k) += mfexp(log_b_contribs + log_s_contribs)/n_dir_quadpoints;
         }
       }
     }
-    // Multiplying contributions by f(b_i).
-    i_contribs *= 1/n_dir_quadpoints;
   }
   esa = A*sum_probs;
   // Contribution from capture histories.
@@ -363,10 +365,7 @@ PROCEDURE_SECTION
     }
     cout << "LL: " << -f << endl;
   }
-  cout << "tester" << endl;
-  cout << "esa: " << esa << endl;
-  exit(123);
-
+  //exit(123);
 
 GLOBALS_SECTION
   #include <densfuns.cpp>
