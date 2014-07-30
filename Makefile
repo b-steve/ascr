@@ -15,7 +15,7 @@ docs:
 	make roxygen
 
 compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr.tpl
-	if [ $(shell hostname) == "heton" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/linux; rm -rfv secr; mv ../../src/secr ./secr; fi
+	if [ $(shell hostname) == "heton" ]; then cd inst/ADMB/src; admb -O secr.tpl; admb -O mem_secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; rm -rfv mem_secr.cpp mem_secr.htp mem_secr.o mem_secr.obj; cd ../bin/linux; rm -rfv secr secr_test; mv ../../src/secr ./secr; mv ../../src/mem_secr secr_test; fi
 	if [ $(shell hostname) == "albatross.mcs.st-and.ac.uk" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/mac; rm -rfv secr; mv ../../src/secr ./secr; fi
 	if [ $(shell hostname) == "Zeeba" ]; then export OLDPATH=$$PATH; echo $$OLDPATH; export PATH=/c/admb/bin:/c/MinGW/bin:$$PATH; cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; export PATH=$$OLDPATH; fi
 
