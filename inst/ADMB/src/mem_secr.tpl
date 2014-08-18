@@ -366,8 +366,6 @@ PROCEDURE_SECTION
     }
     cout << "LL: " << -f << endl;
   }
-  cout << "MEM_SECR, n_quadpoints: " << b - 1 << endl;
-  //exit(123);
 
 GLOBALS_SECTION
   #include <densfuns.cpp>
