@@ -28,6 +28,7 @@ DATA_SECTION
   int j
   int u
   int k
+  int b
   number dist
   // Calculating total number of estimated parameters.
   int n_ests
@@ -68,9 +69,14 @@ DATA_SECTION
   int nc_angmat
   int nr_local_angmat
   int nc_local_angmat
-  !! if (fit_angs == 1){
+  !! if (fit_angs){
   !!   nr_ang = n;
   !!   nc_ang = n_traps;
+  !!   nr_angmat = n_traps;
+  !!   nc_angmat = n_mask;
+  !! } else if (fit_dir) {
+  !!   nr_ang = 1;
+  !!   nc_ang = 1;
   !!   nr_angmat = n_traps;
   !!   nc_angmat = n_mask;
   !! } else {
@@ -187,6 +193,9 @@ DATA_SECTION
   !! } else {
   !!   nr_localmats = n_traps;
   !! }
+  number dir
+  number bearing_to_trap
+  number orientation
 
 PARAMETER_SECTION
   objective_function_value f
@@ -198,19 +207,25 @@ PARAMETER_SECTION
   !! suppars_link.set_scalefactor(suppars_sf);
   sdreport_vector par_ests(1,n_ests)
   sdreport_number esa
+  3darray log_capt_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
+  3darray log_evade_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
+  3darray expected_ss(1,n_dir_quadpoints,1,n_traps,1,n_mask)
+  //matrix log_capt_probs(1,n_traps,1,n_mask)
+  //matrix log_evade_probs(1,n_traps,1,n_mask)
+  //matrix expected_ss(1,nr_expected_ss,1,nc_expected_ss)
   number D
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
+  vector capt_hist(1,n_traps)
   number sum_probs
   number undet_prob
   number capt_prob
-  matrix log_capt_probs(1,n_traps,1,n_mask)
-  matrix log_evade_probs(1,n_traps,1,n_mask)
-  matrix expected_ss(1,nr_expected_ss,1,nc_expected_ss)
   number ss_resid
-  vector capt_hist(1,n_traps)
+  number point_capt
+  number point_evade
 
 PROCEDURE_SECTION
+  cout << "TESTEST" << endl;
   // Grabbing detection function.
   detfn_pointer detfn = get_detfn(detfn_id);
   // Converting linked parameters to real parameters and setting up par_ests vector.
@@ -240,34 +255,77 @@ PROCEDURE_SECTION
   }
   // Start of likelihood calculation.
   f = 0.0;
-  // Calculating expected signal strengths.
+  // Calculating expected signal strengths...
   if (fit_ss){
-    if (linkfn_id == 1){
-      expected_ss = detpars(1) - detpars(2)*dists;
-    } else if (linkfn_id == 2){
-      expected_ss = mfexp(detpars(1) - detpars(2)*dists);
+    // ... for a directional model...
+    if (fit_dir){
+      cout << "rege" << endl;
+    // ... and a non-directional model.
     } else {
-      cerr << "linkfn_id not recognised." << endl;
+      if (linkfn_id == 1){
+        // Is there a better way to fill these arrays?
+        for (j = 1; j <= nr_expected_ss; j++){
+          for (i = 1; i <= nc_expected_ss; i++){
+            expected_ss(1, j, i) = detpars(1) - detpars(2)*dists(j, i);
+          }
+        }
+      } else if (linkfn_id == 2){
+        for (j = 1; j <= nr_expected_ss; j++){
+          for (i = 1; i <= nc_expected_ss; i++){
+            expected_ss(1, j, i) = mfexp(detpars(1) - detpars(2)*dists(j, i));
+          }
+        }
+      } else {
+        cerr << "linkfn_id not recognised." << endl;
+      }
     }
   }
-  // Calculating mask detection probabilities.
+  // Calculating mask detection probabilities...
   sum_probs = 0;
-  for (i = 1; i <= n_mask; i++){
-    undet_prob = 1;
-    for (j = 1; j <= n_traps; j++){
-      dist = dists(j, i);
-      if (fit_ss){
-        ss_resid = cutoff - expected_ss(j, i);
-      } else {
-        ss_resid = 0;
+  // ... for a directional model...
+  cout << "fit_dir: " << fit_dir << endl;
+  if (fit_dir){
+    for (b = 1; b <= n_dir_quadpoints; b++){
+      dir = 2*M_PI*(b - 1)/n_dir_quadpoints;
+      for (i = 1; i <= n_mask; i++){
+        point_evade = 1;
+        for (j = 1; j <= n_traps; j++){
+          bearing_to_trap = angs(j, i);
+          // Adjusting bearing_to_trap, angs matrix gives bearing from
+          // trap to animal. Guess this doesn't really matter if
+          // f(b_i) is uniform on [0, 2*pi), but nice to have correct.
+          if (bearing_to_trap > M_PI){
+            bearing_to_trap -= M_PI;
+          } else {
+            bearing_to_trap += M_PI;
+          }
+          // Orientation of trap with respect to direction of animal.
+          orientation = bearing_to_trap - dir;
+          dist = dists(j, i);
+          capt_prob = detfn(dist, detpars, cutoff, orientation);
+          log_capt_probs(b, j, i) = log(capt_prob + DBL_MIN);
+          log_evade_probs(b, j, i) = log(1 - capt_prob + DBL_MIN);
+          point_evade *= 1 - capt_prob;
+        }
+        point_capt = 1 - point_evade;
+        sum_probs += point_capt/n_dir_quadpoints;
       }
-      capt_prob = detfn(dist, detpars, ss_resid);
-      // Compare to calculating these outside loop.
-      log_capt_probs(j, i) = log(capt_prob + DBL_MIN);
-      log_evade_probs(j, i) = log(1 - capt_prob + DBL_MIN);
-      undet_prob *= 1 - capt_prob;
     }
-    sum_probs += 1 - undet_prob + DBL_MIN;
+  // ... and a non-directional model.
+  } else {
+    orientation = 0;
+    for (i = 1; i <= n_mask; i++){
+      undet_prob = 1;
+      for (j = 1; j <= n_traps; j++){
+        dist = dists(j, i);
+        capt_prob = detfn(dist, detpars, cutoff, orientation);
+        // Compare to calculating these outside loop.
+        log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
+        log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
+        undet_prob *= 1 - capt_prob;
+      }
+      sum_probs += 1 - undet_prob + DBL_MIN;
+    }  
   }
   // Resetting i index.
   i = 0;
@@ -277,47 +335,6 @@ PROCEDURE_SECTION
     if (local == 1){
       n_local = all_n_local(u);
       nc_localmats = n_local;
-    }
-    // Getting capture probabilities at local mask points.
-    dvar_matrix * log_capt_probs_pointer;
-    dvar_matrix * log_evade_probs_pointer;
-    dvar_matrix local_log_capt_probs(1,nr_localmats,1,nc_localmats);
-    dvar_matrix local_log_evade_probs(1,nr_localmats,1,nc_localmats);
-    if (local){
-      for (j = 1; j <= n_local; j++){
-        local_log_capt_probs.colfill(j, column(log_capt_probs, all_which_local(u, j)));
-        local_log_evade_probs.colfill(j, column(log_evade_probs, all_which_local(u, j)));
-      }
-      log_capt_probs_pointer = &local_log_capt_probs;
-      log_evade_probs_pointer = &local_log_evade_probs;
-    } else {
-      log_capt_probs_pointer = &log_capt_probs;
-      log_evade_probs_pointer = &log_evade_probs;
-    }
-    dvar_vector bincapt_contrib(1,n_local);
-    dvar_vector evade_contrib(1,n_local);
-    evade_contrib = (1 - capt_hist)*(*log_evade_probs_pointer);
-    // Calculating contribution due to uth unique capture history.
-    if (fit_ss){
-      nr_local_expected_ss = nr_localmats;
-      nc_local_expected_ss = nc_localmats;
-    } else {
-      bincapt_contrib = capt_hist*(*log_capt_probs_pointer) + evade_contrib;
-      nr_local_expected_ss = 1;
-      nc_local_expected_ss = 1;
-    }
-    // Filling local_expected_ss.
-    dvar_matrix * expected_ss_pointer;
-    dvar_matrix local_expected_ss(1,nr_local_expected_ss,1,nc_local_expected_ss);
-    if (fit_ss){
-      if (local){
-        for (j = 1; j <= n_local; j++){
-          local_expected_ss.colfill(j, column(expected_ss, all_which_local(u, j)));
-        }
-	expected_ss_pointer = &local_expected_ss;
-      } else {
-	expected_ss_pointer = &expected_ss;
-      }
     }
     // Filling local_angs.
     // Move this sort of rubbish to the DATA_SECTION.
@@ -335,7 +352,7 @@ PROCEDURE_SECTION
         for (j = 1; j <= n_local; j++){
           local_angs.colfill(j, column(angs, all_which_local(u, j)));
         }
-	angs_pointer = &local_angs;
+        angs_pointer = &local_angs;
       } else {
         angs_pointer = &angs;
       }
@@ -346,7 +363,7 @@ PROCEDURE_SECTION
       nc_local_dist = nc_localmats;
     } else {
       nr_local_dist = 1;
-      nc_local_dist = 1;
+    nc_local_dist = 1;
     }
     dmatrix * dists_pointer;
     dmatrix local_dists(1,nr_local_dist,1,nc_local_dist);
@@ -380,55 +397,97 @@ PROCEDURE_SECTION
         toa_ssq_pointer = &toa_ssq;
       }
     }
-    for (k = 1; k <= capt_bin_freqs(u); k++){
-      i++;
-      // Contribution from capture locations.
-      if (fit_ss){
-        dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
-        for (j = 1; j <= n_traps; j++){
-          local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(4)));
+    // Getting capture probabilities at local mask points.
+    dvar_matrix * log_capt_probs_pointer;
+    dvar_matrix * log_evade_probs_pointer;
+    dvar_matrix local_log_capt_probs(1,nr_localmats,1,nc_localmats);
+    dvar_matrix local_log_evade_probs(1,nr_localmats,1,nc_localmats);
+    for (b = 1; b <= n_dir_quadpoints; b++){
+      if (local){
+        for (j = 1; j <= n_local; j++){
+          local_log_capt_probs.colfill(j, column(log_capt_probs(b), all_which_local(u, j)));
+          local_log_evade_probs.colfill(j, column(log_evade_probs(b), all_which_local(u, j)));
         }
-        bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
-      }
-      if (any_suppars){
-        dvar_vector supp_contrib(1,n_local);
-        supp_contrib = 0;
-        for (j = 1; j <= n_traps; j++){
-          //  Try setting up a ragged array of capture locations for each individual instead.
-          if (capt_bin_unique(u, j)){
-            // Contribution from bearings.
-            if (fit_angs){
-              supp_contrib += suppars(kappa_ind)*cos(capt_ang(i, j) - row((*angs_pointer), j));
-            }
-            // Contribution from distances.
-            if (fit_dists){
-	      // Try saving alpha separately.
-	      dvar_vector beta(1, n_local);
-	      beta = suppars(alpha_ind)/row((*dists_pointer), j);
-              supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - beta*capt_dist(i, j);
-	    }
-          }
-        }
-        // Constant part of von Mises density.
-        if (fit_angs){
-          supp_contrib -= sum(capt_hist)*log(2*M_PI*bessi0(suppars(kappa_ind)));
-        }
-        // Constant part of the gamma density.
-        if (fit_dists){
-          supp_contrib -= sum(capt_hist)*gammln(suppars(alpha_ind));
-        }
-        // Contribution from times of arrival.
-        if (fit_toas){
-          // Try saving sigma_toa separately.
-          supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row((*toa_ssq_pointer), i)/(2*square(suppars(sigma_toa_ind))));
-        }
-        f -= log(sum(mfexp(bincapt_contrib + supp_contrib)) + DBL_MIN);
+        log_capt_probs_pointer = &local_log_capt_probs;
+        log_evade_probs_pointer = &local_log_evade_probs;
       } else {
-        f -= log(sum(mfexp(bincapt_contrib)) + DBL_MIN);
+        log_capt_probs_pointer = &log_capt_probs(b);
+        log_evade_probs_pointer = &log_evade_probs(b);
+      }
+      dvar_vector bincapt_contrib(1,n_local);
+      dvar_vector evade_contrib(1,n_local);
+      evade_contrib = (1 - capt_hist)*(*log_evade_probs_pointer);
+      // Calculating contribution due to uth unique capture history.
+      if (fit_ss){
+        nr_local_expected_ss = nr_localmats;
+        nc_local_expected_ss = nc_localmats;
+      } else {
+        bincapt_contrib = capt_hist*(*log_capt_probs_pointer) + evade_contrib;
+        nr_local_expected_ss = 1;
+        nc_local_expected_ss = 1;
+      }
+      // Filling local_expected_ss.
+      dvar_matrix * expected_ss_pointer;
+      dvar_matrix local_expected_ss(1,nr_local_expected_ss,1,nc_local_expected_ss);
+      if (fit_ss){
+        if (local){
+          for (j = 1; j <= n_local; j++){
+            local_expected_ss.colfill(j, column(expected_ss(b), all_which_local(u, j)));
+          }
+          expected_ss_pointer = &local_expected_ss;
+        } else {
+          expected_ss_pointer = &expected_ss(b);
+        }
+      }
+      for (k = 1; k <= capt_bin_freqs(u); k++){
+        i++;
+        // Contribution from capture locations.
+        if (fit_ss){
+          dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
+          for (j = 1; j <= n_traps; j++){
+            local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(4)));
+          }
+          bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
+        }
+        if (any_suppars){
+          dvar_vector supp_contrib(1,n_local);
+          supp_contrib = 0;
+          for (j = 1; j <= n_traps; j++){
+            //  Try setting up a ragged array of capture locations for each individual instead.
+            if (capt_bin_unique(u, j)){
+              // Contribution from bearings.
+              if (fit_angs){
+                supp_contrib += suppars(kappa_ind)*cos(capt_ang(i, j) - row((*angs_pointer), j));
+              }
+              // Contribution from distances.
+              if (fit_dists){
+	        // Try saving alpha separately.
+	        dvar_vector beta(1, n_local);
+	        beta = suppars(alpha_ind)/row((*dists_pointer), j);
+                supp_contrib += suppars(alpha_ind)*log(beta) + (suppars(alpha_ind) - 1)*log(capt_dist(i, j)) - beta*capt_dist(i, j);
+	      }
+            }
+          }
+          // Constant part of von Mises density.
+          if (fit_angs){
+            supp_contrib -= sum(capt_hist)*log(2*M_PI*bessi0(suppars(kappa_ind)));
+          }
+          // Constant part of the gamma density.
+          if (fit_dists){
+            supp_contrib -= sum(capt_hist)*gammln(suppars(alpha_ind));
+          }
+          // Contribution from times of arrival.
+          if (fit_toas){
+            // Try saving sigma_toa separately.
+            supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row((*toa_ssq_pointer), i)/(2*square(suppars(sigma_toa_ind))));
+          }
+          f -= log(sum(mfexp(bincapt_contrib + supp_contrib)) + DBL_MIN);
+        } else {
+          f -= log(sum(mfexp(bincapt_contrib)) + DBL_MIN);
+        }
       }
     }
   }
-  cout << "f: " << f << endl;
   // Calculating ESA.
   esa = A*sum_probs;
   // Contribution from n.
@@ -451,6 +510,6 @@ PROCEDURE_SECTION
 
 GLOBALS_SECTION
   #include <densfuns.cpp>
-  #include <detfuns.cpp>
+  #include <mem_detfuns.cpp>
   #include <invlinkfuns.cpp>
 
