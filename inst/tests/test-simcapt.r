@@ -6,8 +6,8 @@ test_that("simulation produces correct output", {
                              infotypes = c("bearing", "dist", "toa"),
                              detfn = "ss",
                              pars = list(D = 2500, b0.ss = 90, b1.ss = 4,
-                                 sigma.ss = 10, kappa = 70, alpha = 4,
-                                 sigma.toa = 0.002), cutoff = 60)
+                                 b2.ss = 0, sigma.ss = 10, kappa = 70,
+                                 alpha = 4, sigma.toa = 0.002), cutoff = 60)
     ## Is a list.
     expect_that(test.capt, is_a("list"))
     ## Correct components.
