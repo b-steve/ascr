@@ -56,9 +56,6 @@ DATA_SECTION
   // Logical indicator for directional calling.
   init_int fit_dir
   init_number n_dir_quadpoints
-  // For testing.
-  number n_dir_quadpoints_test
-  !! n_dir_quadpoints_test = 8;
   int nr_ang
   int nc_ang
   int nr_angmat
@@ -262,8 +259,8 @@ PROCEDURE_SECTION
   // contributions from each detection.
   i_contribs = 0;
   sum_probs = 0;
-  for (b = 1; b <= n_dir_quadpoints_test; b++){
-    dir = 2*M_PI*(b - 1)/n_dir_quadpoints_test;
+  for (b = 1; b <= n_dir_quadpoints; b++){
+    dir = 2*M_PI*(b - 1)/n_dir_quadpoints;
     for (m = 1; m <= n_mask; m++){
       log_u_contribs = 0;
       point_evade = 1;
@@ -317,7 +314,7 @@ PROCEDURE_SECTION
       point_capt = 1 - point_evade;
       // Sum of detection probabilities across all mask points; used
       // in calculation of ESA.
-      sum_probs += point_capt/n_dir_quadpoints_test;
+      sum_probs += point_capt/n_dir_quadpoints;
       k = 0;
       for (i = 1; i <= n_unique; i++){
         n_dets = sum(row(capt_bin_unique, i));
@@ -341,7 +338,7 @@ PROCEDURE_SECTION
             log_b_contribs = log_u_contribs(i);
           }
           // Multiplying contributions by f(b_i).
-          i_contribs(k) += mfexp(log_b_contribs + log_s_contribs)/n_dir_quadpoints_test;
+          i_contribs(k) += mfexp(log_b_contribs + log_s_contribs)/n_dir_quadpoints;
         }
       }
     }
