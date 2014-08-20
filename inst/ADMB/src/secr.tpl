@@ -29,6 +29,8 @@ DATA_SECTION
   int u
   int k
   int b
+  int i_start
+  int i_end
   number dist
   // Calculating total number of estimated parameters.
   int n_ests
@@ -63,6 +65,12 @@ DATA_SECTION
   // Logical indicator for directional calling.
   init_int fit_dir
   init_number n_dir_quadpoints
+  int length_fs
+  !! if (fit_dir){
+  !!   length_fs = n;
+  !! } else {
+  !!   length_fs = 1;
+  !! }
   int nr_ang
   int nc_ang
   int nr_angmat
@@ -199,6 +207,8 @@ DATA_SECTION
 
 PARAMETER_SECTION
   objective_function_value f
+  number f_ind
+  vector fs(1,length_fs)
   init_bounded_number D_link(D_lb,D_ub,D_phase)
   init_bounded_number_vector detpars_link(1,n_detpars,detpars_lb,detpars_ub,detpars_phase)
   init_bounded_number_vector suppars_link(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
@@ -225,7 +235,6 @@ PARAMETER_SECTION
   number point_evade
 
 PROCEDURE_SECTION
-  cout << "TESTEST" << endl;
   // Grabbing detection function.
   detfn_pointer detfn = get_detfn(detfn_id);
   // Converting linked parameters to real parameters and setting up par_ests vector.
@@ -255,35 +264,10 @@ PROCEDURE_SECTION
   }
   // Start of likelihood calculation.
   f = 0.0;
-  // Calculating expected signal strengths...
-  if (fit_ss){
-    // ... for a directional model...
-    if (fit_dir){
-      cout << "rege" << endl;
-    // ... and a non-directional model.
-    } else {
-      if (linkfn_id == 1){
-        // Is there a better way to fill these arrays?
-        for (j = 1; j <= nr_expected_ss; j++){
-          for (i = 1; i <= nc_expected_ss; i++){
-            expected_ss(1, j, i) = detpars(1) - detpars(2)*dists(j, i);
-          }
-        }
-      } else if (linkfn_id == 2){
-        for (j = 1; j <= nr_expected_ss; j++){
-          for (i = 1; i <= nc_expected_ss; i++){
-            expected_ss(1, j, i) = mfexp(detpars(1) - detpars(2)*dists(j, i));
-          }
-        }
-      } else {
-        cerr << "linkfn_id not recognised." << endl;
-      }
-    }
-  }
-  // Calculating mask detection probabilities...
+  fs = 0.0;
+  // Calculating mask detection probabilities and expected signal strengths...
   sum_probs = 0;
   // ... for a directional model...
-  cout << "fit_dir: " << fit_dir << endl;
   if (fit_dir){
     for (b = 1; b <= n_dir_quadpoints; b++){
       dir = 2*M_PI*(b - 1)/n_dir_quadpoints;
@@ -306,6 +290,12 @@ PROCEDURE_SECTION
           log_capt_probs(b, j, i) = log(capt_prob + DBL_MIN);
           log_evade_probs(b, j, i) = log(1 - capt_prob + DBL_MIN);
           point_evade *= 1 - capt_prob;
+          if (fit_ss){
+            expected_ss(b, j, i) = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*dist;
+            if (linkfn_id == 2){
+              expected_ss(b, j, i) = mfexp(expected_ss(b, j, i));
+            }
+          }
         }
         point_capt = 1 - point_evade;
         sum_probs += point_capt/n_dir_quadpoints;
@@ -323,12 +313,14 @@ PROCEDURE_SECTION
         log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
         log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
         undet_prob *= 1 - capt_prob;
+        expected_ss(1, j, i) = detpars(1) - detpars(2)*dist;
+        if (linkfn_id == 2){
+          expected_ss(1, j, i) = mfexp(expected_ss(1, j, i));
+        }
       }
       sum_probs += 1 - undet_prob + DBL_MIN;
     }  
   }
-  // Resetting i index.
-  i = 0;
   // Contribution due to capture history.
   for (u = 1; u <= n_unique; u++){
     capt_hist = row(capt_bin_unique, u);
@@ -403,6 +395,8 @@ PROCEDURE_SECTION
     dvar_matrix local_log_capt_probs(1,nr_localmats,1,nc_localmats);
     dvar_matrix local_log_evade_probs(1,nr_localmats,1,nc_localmats);
     for (b = 1; b <= n_dir_quadpoints; b++){
+      // Resetting i index.
+      i = 0;
       if (local){
         for (j = 1; j <= n_local; j++){
           local_log_capt_probs.colfill(j, column(log_capt_probs(b), all_which_local(u, j)));
@@ -439,8 +433,15 @@ PROCEDURE_SECTION
           expected_ss_pointer = &expected_ss(b);
         }
       }
-      for (k = 1; k <= capt_bin_freqs(u); k++){
-        i++;
+      i_start = 0;
+      k = 1;
+      while (k < u){
+        i_start += capt_bin_freqs(k);
+        k++;
+      }
+      i_start += 1;
+      i_end = i_start + capt_bin_freqs(u) - 1;
+      for (i = i_start; i <= i_end; i++){
         // Contribution from capture locations.
         if (fit_ss){
           dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
@@ -481,12 +482,24 @@ PROCEDURE_SECTION
             // Try saving sigma_toa separately.
             supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row((*toa_ssq_pointer), i)/(2*square(suppars(sigma_toa_ind))));
           }
-          f -= log(sum(mfexp(bincapt_contrib + supp_contrib)) + DBL_MIN);
+          f_ind = sum(mfexp(bincapt_contrib + supp_contrib));
         } else {
-          f -= log(sum(mfexp(bincapt_contrib)) + DBL_MIN);
+          f_ind = sum(mfexp(bincapt_contrib));
+        }
+        // For directional calling, save components due to each
+        // direction for each individual.
+        if (fit_dir){
+          fs(i) += f_ind/n_dir_quadpoints;
+        } else {
+          f -= log(f_ind + DBL_MIN);
         }
       }
     }
+  }
+  // For directional calling, fs contains liklihood contributions for
+  // each individual. Need to log and sum for log-likelihood.
+  if (fit_dir){
+    f -= sum(log(fs + DBL_MIN));
   }
   // Calculating ESA.
   esa = A*sum_probs;
