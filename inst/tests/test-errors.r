@@ -67,6 +67,7 @@ test_that("ss-related parameters set up correctly", {
     expect_that(admbsecr(capt = test.capt, traps = example$traps,
                          mask = example$mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
+                         fix = list(b2.ss = 0),
                          cutoff = 60, detfn = "hr"),
                 gives_warning("Argument 'detfn' is being ignored as signal strength information is provided in 'capt'. A signal strength detection function has been fitted instead."))
     expect_that(admbsecr(capt = test.capt, traps = example$traps,

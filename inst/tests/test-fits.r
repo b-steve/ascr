@@ -246,3 +246,24 @@ test_that("multiple calls fitting", {
     relative.error <- max(abs((stdEr(fit.hess)[1:2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
 })
+
+test_that("directional call fitting", {
+    joint.capt <- example$capt[c("bincapt", "ss", "toa")]
+    joint.capt <- lapply(joint.capt, function(x) x[41:60, ])
+    fit <- admbsecr(capt = joint.capt, traps = example$traps,
+                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
+                     mask = example$mask, cutoff = 60)
+    ## Checking parameter values.
+    pars.test <- c(386.073482720871, 89.311447428016, 3.05408458965273, 
+                   1.22802638658725, 10.4127874608875, 0.00211264942873231)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking standard errors.
+    ses.test <- c(112.87, 4.1832, 0.82666, 1.0313, 1.5714, 0.0006204)
+    relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking detection parameters.
+    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.ss")))
+    ## Checking supplementary parameters.
+    expect_that(fit$suppars, equals("sigma.toa"))
+})
