@@ -1,23 +1,23 @@
 #include <admodel.h>
-typedef dvariable (*detfn_pointer)(double, const dvar_vector&, dvariable);
+typedef dvariable (*detfn_pointer)(double, const dvar_vector&, double, double);
 
 // Half normal.
 // Order of detpars: g0, sigma.
-dvariable detfn_hn (double x, const dvar_vector &detpars, dvariable ss_resid)
+dvariable detfn_hn (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
   return detpars(1)*mfexp(-square(x)/(2*square(detpars(2))));
 }
 
 // Hazard rate.
 // Order of detpars: g0, sigma, z.
-dvariable detfn_hr (double x, const dvar_vector &detpars, dvariable ss_resid)
+dvariable detfn_hr (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return detpars(1)*(1 - mfexp(-pow(x/detpars(2),-detpars(3))));
+  return detpars(1)*(1 - mfexp(-pow(x/detpars(2), -detpars(3))));
 }
 
 // Threshold.
 // Order of detpars: shape, scale.
-dvariable detfn_th (double x, const dvar_vector &detpars, dvariable ss_resid)
+dvariable detfn_th (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
   dvariable z = (x/detpars(2) - detpars(1))*pow(2,0.5);
   return 0.5 - 0.5*(2*cumd_norm(z) - 1);
@@ -25,23 +25,23 @@ dvariable detfn_th (double x, const dvar_vector &detpars, dvariable ss_resid)
 
 // Log-link threshold.
 // Order of detpars: shape1, shape2, scale.
-dvariable detfn_logth (double x, const dvar_vector &detpars, dvariable ss_resid)
+dvariable detfn_logth (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
   return 0.5 - 0.5*(2*cumd_norm((detpars(1) - mfexp(detpars(2) - detpars(3)*x))*pow(2,0.5)) - 1);
 }
 
 // Signal strength.
-// Order of detpars: b0ss, b1ss, b2ss, sigmass.
-dvariable detfn_ss (double x, const dvar_vector &detpars, dvariable ss_resid)
+// Order of detpars: b0ss, b1ss, sigmass.
+dvariable detfn_ss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm(ss_resid/detpars(4));
+  return 1 - cumd_norm((cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*x))/detpars(4));
 }
 
 // Log-link signal strength.
 // Order of detpars: b0ss, b1ss, sigmass.
-dvariable detfn_logss (double x, const dvar_vector &detpars, dvariable ss_resid)
+dvariable detfn_logss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm(ss_resid/detpars(4));
+  return 1 - cumd_norm(mfexp(cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1))*x)))/detpars(4));
 }
 
 detfn_pointer get_detfn(int detfn_id)

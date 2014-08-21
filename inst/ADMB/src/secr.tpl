@@ -523,6 +523,6 @@ PROCEDURE_SECTION
 
 GLOBALS_SECTION
   #include <densfuns.cpp>
-  #include <mem_detfuns.cpp>
+  #include <detfuns.cpp>
   #include <invlinkfuns.cpp>
 
