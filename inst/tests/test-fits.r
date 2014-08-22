@@ -49,6 +49,16 @@ test_that("simple fitting -- half normal", {
     }
     relative.error <- max(abs((coef(fit) - coefs.secr)/coefs.secr))
     expect_that(relative.error < 1e-4, is_true())
+    ## Checking fitting with local integration.
+    fit <- admbsecr(capt = simple.capt, traps = example$traps,
+                        mask = example$mask, local = TRUE)
+    pars.test <- c(2429.62882766283, 0.999999985691245, 5.36419062611109)
+    n.pars <- length(pars.test)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ses.test <- c(370.82, 0.41458)
+    relative.error <- max(abs((stdEr(fit)[-2] - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
 })
 
 test_that("simple fitting -- hazard rate", {
@@ -251,8 +261,8 @@ test_that("directional call fitting", {
     joint.capt <- example$capt[c("bincapt", "ss", "toa")]
     joint.capt <- lapply(joint.capt, function(x) x[41:60, ])
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
-                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                     mask = example$mask, cutoff = 60)
+                    sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
+                    mask = example$mask, cutoff = 60, trace = TRUE)
     ## Checking parameter values.
     pars.test <- c(386.073482720871, 89.311447428016, 3.05408458965273, 
                    1.22802638658725, 10.4127874608875, 0.00211264942873231)
@@ -266,4 +276,12 @@ test_that("directional call fitting", {
     expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.ss")))
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
+    ## Checking fitting with local integration.
+    fit <- admbsecr(capt = joint.capt, traps = example$traps,
+                    sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
+                    mask = example$mask, cutoff = 60, local = TRUE, trace = TRUE)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+    relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
 })
