@@ -262,7 +262,7 @@ test_that("directional call fitting", {
     joint.capt <- lapply(joint.capt, function(x) x[41:60, ])
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                    mask = example$mask, cutoff = 60, trace = TRUE)
+                    mask = example$mask, cutoff = 60)
     ## Checking parameter values.
     pars.test <- c(386.073482720871, 89.311447428016, 3.05408458965273, 
                    1.22802638658725, 10.4127874608875, 0.00211264942873231)
@@ -279,7 +279,7 @@ test_that("directional call fitting", {
     ## Checking fitting with local integration.
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                    mask = example$mask, cutoff = 60, local = TRUE, trace = TRUE)
+                    mask = example$mask, cutoff = 60, local = TRUE)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
