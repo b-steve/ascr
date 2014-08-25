@@ -1,3 +1,5 @@
 inst/ADMB/bin/linux/secr
 inst/ADMB/bin/mac/secr
 inst/ADMB/bin/windows/secr.exe
+inst/ADMB/bin/windows/libgcc_s_dw2-1.dll
+inst/ADMB/bin/windows/libstdc++-6.dll
