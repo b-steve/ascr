@@ -62,18 +62,23 @@ test_that("ss-related parameters set up correctly", {
     expect_that(admbsecr(capt = test.capt, traps = example$traps,
                          mask = example$mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                         cutoff = 60, ss.link = "identity.link"),
-                throws_error("ss.link must be either \"identity\" or \"log\""))
+                         ss.opts = list(cutoff = 60, ss.link = "identity.link")),
+                throws_error("Component 'ss.link' in 'ss.opts' must be either \"identity\" or \"log\"."))
     expect_that(admbsecr(capt = test.capt, traps = example$traps,
                          mask = example$mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                          fix = list(b2.ss = 0),
-                         cutoff = 60, detfn = "hr"),
+                         ss.opts = list(cutoff = 60), detfn = "hr"),
                 gives_warning("Argument 'detfn' is being ignored as signal strength information is provided in 'capt'. A signal strength detection function has been fitted instead."))
     expect_that(admbsecr(capt = test.capt, traps = example$traps,
                          mask = example$mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10)),
-                throws_error("Argument 'cutoff' is missing."))
+                throws_error("Argument 'ss.opts' is missing."))
+    expect_that(admbsecr(capt = test.capt, traps = example$traps,
+                         mask = example$mask,
+                         sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
+                         ss.opts = list(ss.link = "log")),
+                throws_error("The 'cutoff' component of 'ss.opts' must be specified."))
 
 })
 

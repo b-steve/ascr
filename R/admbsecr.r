@@ -25,6 +25,7 @@
 #' reliably (see Stevenson et al., in prep., for details).
 #'
 #' @section The \code{capt} argument:
+#' 
 #' The \code{capt} argument is a list with named components. Each
 #' component must be an \eqn{n} by \eqn{k} matrix, where \eqn{n} is
 #' the number of detections made, and \eqn{k} is the number of traps
@@ -60,6 +61,28 @@
 #'   \item For the \code{mrds} component, the element should be the
 #'         \emph{known} (not estimated) distance between the individual
 #'         and the detector at the time of the detection.
+#' }
+#'
+#' @section The \code{ss.opts} argument:
+#'
+#' This argument allows the user to select options for the signal
+#' strength detection function (for more details, see the section
+#' below on fitted parameters). It is therefore only required if
+#' signal strength information appears in the \code{capt} argument,
+#' and is ignored (with a warning) otherwise.
+#'
+#' The argument \code{ss.opts} is a list with up to three components:
+#' \itemize{
+#'   \item \code{cutoff}: Compulsory. The signal strength threshold,
+#'         above which sounds are identified as detections.
+#'   \item \code{directional}: Optional. Logical, if \code{TRUE} a
+#'         directional signal strength model is used; see the section below on
+#'         fitted parameters. If unspecified, it will default to \code{FALSE},
+#'         unless the \code{b2.ss} parameter is provided in \code{sv} or
+#'         \code{fix}, in which case it will default to \code{TRUE}.
+#'   \item \code{ss.link}: Optional. A character string, either \code{"identity"} or
+#'         \code{"log"}, which specifies the link function for the signal
+#'         strength detection function. Defaults to \code{"identity"}.
 #' }
 #'
 #' @section Fitted parameters:
@@ -107,7 +130,7 @@
 #'   \item \eqn{g(d) = 0.5 - 0.5\ erf(d/\tau - \kappa)}{g(d) = 0.5 - 0.5 * erf( d/scale - shape )}
 #' }
 #'
-#' For \code{detfn = "ss"}:
+#' For \code{detfn = "ss"} in a non-directional model:
 #' \itemize{
 #'   \item The signal strength detection function is special in that
 #'         it requires signal strength information to be collected in
@@ -117,6 +140,18 @@
 #'   \item The expected signal strength is modelled as:
 #'         \eqn{E(SS) = h^{-1}(\beta_0 - \beta_1d)}{E(SS) = h^{-1}(b0.ss - b1.ss*d)},
 #'         where \eqn{h} is specified by the argument \code{ss.link}.
+#' }
+#'
+#' For \code{detfn = "ss"} in a directional model:
+#' \itemize{
+#'   \item Estimated paramters are \code{b0.ss}, \code{b1.ss}, \code{b2.ss} and
+#'         \code{sigma.ss}.
+#'   \item The expected signal strength is modelled as:
+#'         \eqn{E(SS) = h^{-1}(\beta_0 - (\beta_1 - (\beta_2(cos(\theta) - 1)))d)}{E(SS) = h^{-1}( b0.ss - ( b1.ss - ( b2.ss * ( cos( theta ) - 1 ) ) ) * d )},
+#'         where \eqn{h} is specified by the argument \code{ss.link},
+#'         and \eqn{\theta}{theta} is the difference between the bearing the
+#'         animal is facing when it makes a call, and the bearing from the
+#'         animal to the detector.
 #' }
 #'
 #' Details of the parameters associated with different additional data
@@ -254,14 +289,8 @@
 #' each component is a scalefactor for the associated parameter. The
 #' default behaviour is to automatically select scalefactors based on
 #' parameter start values. See the section on convergence below.
-#' @param ss.link A character string, either \code{"identity"} or
-#' \code{"log"}, which specifies the link function for the signal
-#' strength detection function. Only required when \code{detfn} is
-#' \code{"ss"} (i.e., when there is signal strength information in
-#' \code{capt}).
-#' @param cutoff The signal strength threshold, above which sounds are
-#' identified as detections. Only required when \code{detfn} is
-#' \code{"ss"}.
+#' @param ss.opts Options for models using the signal strength
+#' detection function. See 'Details' below.
 #' @param call.freqs A vector of call frequencies collected
 #' independently to an acoustic survey.
 #' @param sound.speed The speed of sound in metres per second,
@@ -325,10 +354,10 @@
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-                     fix = NULL, sf = NULL, ss.link = "identity",
-                     cutoff = NULL, call.freqs = NULL, sound.speed = 330,
-                     local = FALSE, hess = !any(call.freqs > 1), trace = FALSE,
-                     clean = TRUE, cbs = NULL, gbs = NULL, exe.type = "old"){
+                     fix = NULL, sf = NULL, ss.opts = NULL, call.freqs = NULL,
+                     sound.speed = 330, local = FALSE, hess = !any(call.freqs > 1),
+                     trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
+                     exe.type = "old"){
     arg.names <- names(as.list(environment()))
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
@@ -364,7 +393,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (!is.list(fix) & !is.null(fix)){
         stop("The 'fix' argument must be 'NULL' or a list.")
-    }
+    }    
     n <- nrow(capt.bin)
     n.traps <- nrow(traps)
     n.mask <- nrow(mask)
@@ -383,6 +412,59 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.bearings <- fit.types["bearing"]
     fit.dists <- fit.types["dist"]
     fit.ss <- fit.types["ss"]
+    fit.toas <- fit.types["toa"]
+    fit.mrds <- fit.types["mrds"]
+    ## Storing objects from ss.opts.
+    cutoff <- ss.opts$cutoff
+    ss.link <- ss.opts$ss.link
+    directional <- ss.opts$directional
+    ## Sorting out signal strength options.
+    if (fit.ss){
+        if (missing(ss.opts)){
+            ## Error if ss.opts not provided for signal strength model.
+            stop("Argument 'ss.opts' is missing.")
+        } else {
+            if (!all(names(ss.opts) %in% c("cutoff", "directional", "ss.link"))){
+                ## Warning for unexpected component names.
+                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"directional\" and \"ss.link\"; others are being ignored.")
+            }
+            if (is.null(cutoff)){
+                ## Error for unspecified obejcts.
+                stop("The 'cutoff' component of 'ss.opts' must be specified.")
+            }
+            ## Setting default values for ss.link and directional.
+            if (is.null(ss.link)){
+                ss.opts$ss.link <- "identity"
+                ss.link <- "identity"
+            } else if (!(ss.link %in% c("identity", "log"))){
+                stop("Component 'ss.link' in 'ss.opts' must be either \"identity\" or \"log\".")
+            }
+            # By default, directional calling model is only used if b2.ss appears in sv or fix.
+            if (is.null(directional)){
+                if (is.null(sv$b2.ss) & is.null(fix$b2.ss)){
+                    ss.opts$directional <- FALSE
+                    directional <- FALSE
+                } else {
+                    ss.opts$directional <- TRUE
+                    directional <- TRUE
+                }
+            }   
+            if (!directional){
+                ## Fixing b2.ss to 0 if a directional calling model is not being used.
+                if (!is.null(sv$b2.ss) | !is.null(fix$b2.ss)){
+                    warning("As the 'directional' component of 'ss.opts' is FALSE, the values of parameter b2.ss in 'sv' and 'fix' are being ignored")
+                    sv$b2.ss <- NULL
+                    fix$b2.ss <- NULL
+                }
+                fix$b2.ss <- 0
+            }
+        }
+    } else {
+        if (!is.null(ss.opts)){
+            warning("Argument 'ss.opts' is being ignored as a signal strength model is not being fitted.")
+        }
+    }
+    ## Setting fit.dir.
     if (fit.ss){
         fit.dir <- TRUE
         if ("b2.ss" %in% names(fix)){
@@ -393,8 +475,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         fit.dir <- FALSE
     }
-    fit.toas <- fit.types["toa"]
-    fit.mrds <- fit.types["mrds"]
     ## Generating ordered binary capture history.
     capt.bin.order <- do.call(order, as.data.frame(capt.bin))
     capt.bin.unique <- capt.bin[capt.bin.order, ]
@@ -416,10 +496,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     mrds.dist <- if (fit.mrds) capt.ord$mrds else 0
     suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("bearing", "dist", "toa")]]
     if (fit.ss){
-        ## Warning for failure to provide 'cutoff'.
-        if (missing(cutoff)){
-            stop("Argument 'cutoff' is missing.")
-        }
         if (!missing(detfn) & detfn != "ss"){
             warning("Argument 'detfn' is being ignored as signal strength information is provided in 'capt'. A signal strength detection function has been fitted instead.")
         }
@@ -429,8 +505,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else if (ss.link == "log"){
             detfn <- "log.ss"
             linkfn.id <- 2
-        } else {
-            stop("ss.link must be either \"identity\" or \"log\"")
         }
     } else {
         ## Not sure what a linkfn.id of 3 means? Probably throws an error in ADMB.
@@ -509,8 +583,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                        list(capt = capt, detfn = detfn,
                                             detpar.names = detpar.names,
                                             mask = mask, traps = traps,
-                                            sv = sv.link, cutoff = cutoff,
-                                            ss.link = ss.link, A = A)))
+                                            sv = sv.link, ss.opts = ss.opts,
+                                            A = A)))
     }
     ## Converting start values to link scale.
     sv <- sv.link

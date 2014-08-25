@@ -32,9 +32,9 @@ autoD <- function(args){
     traps <- args$traps
     sv <- args$sv
     detpar.names <- args$detpar.names
-    ss.link <- args$ss.link
+    ss.link <- args$ss.opts$ss.link
     pars <- sv[detpar.names]
-    cutoff <- args$cutoff
+    cutoff <- args$ss.opts$cutoff
     if (!is.null(cutoff)){
         pars$cutoff <- cutoff
     }
@@ -60,15 +60,15 @@ autokappa <- function(args){
 }
 
 autob0.ss <- function(args){
-    do.call(args$ss.link, list(max(args$capt$ss)))
+    do.call(args$ss.opts$ss.link, list(max(args$capt$ss)))
 }
 
 autob1.ss <- function(args){
     buffer <- attr(args$mask, "buffer")
-    cutoff <- args$cutoff
+    cutoff <- args$ss.opts$cutoff
     max.ss <- max(args$capt$ss)
     out <- (max.ss - cutoff)/(buffer/2)
-    if (args$ss.link == "log"){
+    if (args$ss.opts$ss.link == "log"){
         out <- out/max.ss
     }
     out
@@ -80,7 +80,7 @@ autob2.ss <- function(args){
 
 autosigma.ss <- function(args){
     ss <- c(args$capt$ss)
-    sd(ss[ss >= args$cutoff])
+    sd(ss[ss >= args$ss.opts$cutoff])
 }
 
 autoalpha <- function(args){

@@ -7,7 +7,7 @@ example.capt <- sim.capt(traps = example.traps, mask = example.mask,
                          detfn = "ss",
                          pars = list(D = 2500, b0.ss = 90, b1.ss = 4,
                              sigma.ss = 10, kappa = 70, alpha = 4,
-                             sigma.toa = 0.002), cutoff = 60)
+                             sigma.toa = 0.002), ss.opts = list(cutoff = 60))
 simple.capt <- example.capt["bincapt"]
 bearing.capt <- example.capt[c("bincapt", "bearing")]
 simple.hn.fit <- admbsecr(capt = simple.capt, traps = example.traps,

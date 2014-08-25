@@ -177,7 +177,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     out[!fixed.pars] <- fit$coefficients[admb.pars[!fixed.pars]]
     ## Adding the cutoff if necessary.
     if (cutoff){
-        out <- c(out, fit$args$cutoff)
+        out <- c(out, fit$args$ss.opts$cutoff)
         names(out) <- c(pars, "cutoff")
     }
     if (as.list){
@@ -230,7 +230,7 @@ p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
         traps <- get.traps(fit)
         detfn <- fit$args$detfn
         pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
-        ss.link <- fit$args$ss.link
+        ss.link <- fit$args$ss.opts$ss.link
         re.detfn <- fit$re.detfn
     } else {
         re.detfn <- FALSE

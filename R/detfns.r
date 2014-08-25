@@ -120,7 +120,7 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
                     as.list = TRUE)
     dists <- seq(xlim[1], xlim[2], length.out = 1000)
     probs <- calc.detfn(dists, detfn = detfn, pars = pars,
-                        ss.link = fit$args$ss.link)
+                        ss.link = fit$args$ss.opts$ss.link)
     if (!add){
         plot.new()
         old.par <- par(xaxs = "i")

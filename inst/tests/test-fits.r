@@ -148,9 +148,9 @@ test_that("ss fitting", {
     ## Fitting model.
     ss.capt <- example$capt[c("bincapt", "ss")]
     fit <- admbsecr(capt = ss.capt, traps = example$traps,
-                    mask = example$mask, fix = list(b2.ss = 0),
+                    mask = example$mask, #fix = list(b2.ss = 0),
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    cutoff = 60)
+                    ss.opts = list(cutoff = 60), sf = 0)
     ## Checking parameter values.
     pars.test <- c(2440.99968246751, 88.2993844240013, 3.7663100027822, 
                    10.8142267688236)
@@ -195,9 +195,9 @@ test_that("toa fitting", {
 test_that("joint ss/toa fitting", {
     joint.capt <- example$capt[c("bincapt", "ss", "toa")]
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
-                    mask = example$mask, fix = list(b2.ss = 0),
+                    mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    cutoff = 60)
+                    ss.opts = list(cutoff = 60))
     ## Checking parameter values.
     pars.test <- c(2439.05009421856, 89.6628138603152, 3.85848602239484, 
                    10.2843370178208, 0.00212227986424938)
@@ -262,7 +262,7 @@ test_that("directional call fitting", {
     joint.capt <- lapply(joint.capt, function(x) x[41:60, ])
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                    mask = example$mask, cutoff = 60)
+                    mask = example$mask, ss.opts = list(cutoff = 60))
     ## Checking parameter values.
     pars.test <- c(386.073482720871, 89.311447428016, 3.05408458965273, 
                    1.22802638658725, 10.4127874608875, 0.00211264942873231)
@@ -279,7 +279,7 @@ test_that("directional call fitting", {
     ## Checking fitting with local integration.
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                    mask = example$mask, cutoff = 60, local = TRUE)
+                    mask = example$mask, ss.opts = list(cutoff = 60), local = TRUE)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))

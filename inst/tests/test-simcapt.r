@@ -3,11 +3,12 @@ context("Testing sim.capt()")
 test_that("simulation produces correct output", {
     set.seed(8173)
     test.capt <- sim.capt(traps = example$traps, mask = example$mask,
-                             infotypes = c("bearing", "dist", "toa"),
-                             detfn = "ss",
-                             pars = list(D = 2500, b0.ss = 90, b1.ss = 4,
-                                 b2.ss = 0, sigma.ss = 10, kappa = 70,
-                                 alpha = 4, sigma.toa = 0.002), cutoff = 60)
+                          infotypes = c("bearing", "dist", "toa"),
+                          detfn = "ss",
+                          pars = list(D = 2500, b0.ss = 90, b1.ss = 4,
+                              sigma.ss = 10, kappa = 70,
+                              alpha = 4, sigma.toa = 0.002),
+                          ss.opts = list(cutoff = 60, directional = FALSE))
     ## Is a list.
     expect_that(test.capt, is_a("list"))
     ## Correct components.
@@ -25,25 +26,26 @@ test_that("simulation errors", {
     ## Specifying incorrect SS link.
     expect_that(sim.capt(traps = example$traps, mask = example$mask, detfn = "ss",
                          pars = list(D = 2000, ss.b0 = 20, ss.b1 = 5,
-                             sigma.ss = 10), ss.link = "identity.link",
-                         cutoff= 0),
+                             sigma.ss = 10),
+                         ss.opts = list(cutoff = 0, ss.link = "identity.link")),
                 throws_error("The argument 'ss.link' must be either \"identity\" or \"log\""))
     ## Trying to simulate SS using 'infotypes'.
     expect_that(sim.capt(traps = example$traps, mask = example$mask,
                          infotypes = c("ss", "toa"),
                          pars = list(D = 2000, ss.b0 = 20, ss.b1 = 5,
-                             sigma.ss = 10, sigma.toa = 0.002), cutoff= 0),
+                             sigma.ss = 10, sigma.toa = 0.002),
+                         ss.opts = list(cutoff = 0)),
                 throws_error("Signal strength information is simulated by setting argument 'detfn' to \"ss\"."))
     ## Cutoff provided when not required.
     expect_that(sim.capt(traps = example$traps, mask = example$mask,
                          pars = list(D = 2000, g0 = 0.75, sigma = 5),
-                         cutoff = 0),
-                gives_warning("The argument 'cutoff' is being ignored, as 'detfn' is not \"ss\"."))
+                         ss.opts = list(cutoff = 0)),
+                gives_warning("The argument 'ss.opts' is being ignored, as 'detfn' is not \"ss\"."))
     ## Signal strength link provided when not required.
     expect_that(sim.capt(traps = example$traps, mask = example$mask,
                          pars = list(D = 2000, g0 = 0.75, sigma = 5),
-                         ss.link = "identity"),
-                gives_warning("The argument 'ss.link' is being ignored, as 'detfn' is not \"ss\"."))
+                         ss.opts = list(ss.link = "identity")),
+                gives_warning("The argument 'ss.opts' is being ignored, as 'detfn' is not \"ss\"."))
     ## Extra parameter.
     expect_that(sim.capt(traps = example$traps, mask = example$mask,
                          pars = list(D = 2000, g0 = 0.75, sigma = 5,

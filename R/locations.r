@@ -149,7 +149,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     }
     traps <- get.traps(fit)
     detfn <- fit$args$detfn
-    ss.link <- fit$args$ss.link
+    ss.link <- fit$args$ss.opts$ss.link
     dists <- distances(traps, mask)
     ## Calculating density due to animal locations.
     p.det <- p.dot(fit = fit, points = mask)
@@ -338,7 +338,7 @@ ss.density <- function(fit, id, mask, dists){
     ss.capt <- fit$args$capt$ss[id, ]
     det.pars <- get.par(fit, fit$detpars, cutoff = TRUE, as.list = TRUE)
     detfn <- fit$args$detfn
-    ss.link <- fit$args$ss.link
+    ss.link <- fit$args$ss.opts$ss.link
     n.traps <- nrow(get.traps(fit))
     mask.dens <- matrix(0, nrow = n.traps, ncol = nrow(mask))
     for (i in 1:n.traps){

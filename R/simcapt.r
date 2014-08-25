@@ -70,18 +70,14 @@
 #' @export
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
-                     pars = NULL, ss.link = "identity",
-                     cutoff = NULL, call.freqs = NULL, freq.dist = "edf",
-                     sound.speed = 330, test.detfn = FALSE){
+                     pars = NULL, ss.opts = NULL, call.freqs = NULL,
+                     freq.dist = "edf", sound.speed = 330, test.detfn = FALSE){
     ## Some error checking.
     if (any(infotypes == "ss")){
         stop("Signal strength information is simulated by setting argument 'detfn' to \"ss\".")
     }
-    if (!missing(cutoff) & detfn != "ss"){
-        warning("The argument 'cutoff' is being ignored, as 'detfn' is not \"ss\".")
-    }
-    if (!missing(ss.link) & detfn != "ss"){
-        warning("The argument 'ss.link' is being ignored, as 'detfn' is not \"ss\".")
+    if (!missing(ss.opts) & detfn != "ss"){
+        warning("The argument 'ss.opts' is being ignored, as 'detfn' is not \"ss\".")
     }
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
@@ -90,8 +86,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         infotypes <- fit$infotypes
         detfn <- fit$args$detfn
         pars <- get.par(fit, "fitted", as.list = TRUE)
-        ss.link <- fit$args$ss.link
-        cutoff <- fit$args$cutoff
+        ss.link <- fit$args$ss.opts$ss.link
+        cutoff <- fit$args$ss.opts$cutoff
         call.freqs <- fit$args$call.freqs
         sound.speed <- fit$args$sound.speed
     }
@@ -104,6 +100,34 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     sim.toas <- sim.types["toa"]
     sim.mrds <- sim.types["mrds"]
     sim.ss <- ifelse(detfn == "ss", TRUE, FALSE)
+    cutoff <- ss.opts$cutoff
+    directional <- ss.opts$directional
+    ss.link <- ss.opts$ss.link
+    ## Sorting out directional calling stuff.
+    if (sim.ss){
+        if (is.null(cutoff)){
+            stop("For signal strength models, the 'cutoff' component of 'ss.opts' must be specified.")
+        }
+        if (is.null(directional)){
+            if ("b2.ss" %in% names(pars)){
+                directional <- TRUE
+            } else {
+                directional <- FALSE
+            }
+        } else if (directional & !("b2.ss" %in% names(pars))){
+            stop("Parameter 'b2.ss' must be specified for a directional calling model.")
+        } else if (!directional & "b2.ss" %in% names(pars)){
+            warning("Parameter 'b2.ss' in 'pars' is being ignored as the 'directional' component of 'ss.opts' is 'FALSE'.")
+            b2.ss <- 0
+        }
+        if (is.null(ss.link)){
+            ss.link <- "identity"
+        }
+        ## Setting b2.ss to 0 if model is not directional.
+        if (!directional){
+            pars$b2.ss <- 0
+        }
+    }
     ## Working out required parameters.
     suppar.names <- c("kappa", "alpha", "sigma.toa")[sim.types[c("bearing", "dist", "toa")]]
     if (sim.ss){

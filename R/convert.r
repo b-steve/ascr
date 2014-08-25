@@ -169,6 +169,9 @@ convert.mask <- function(mask){
 #' is returned. Otherwise a data frame is returned, which is suitable
 #' for the \code{captures} argument to the \link{make.capthist}
 #' function.
+#' @param cutoff A character string, either \code{"identity"} or
+#' \code{"log"}, which specifies the link function for the signal
+#' strength detection function.
 #' @inheritParams admbsecr
 #'
 #' @return An object of class \link{capthist}.
