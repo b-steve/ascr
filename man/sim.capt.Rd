@@ -4,9 +4,9 @@
 \title{Simulating SECR data}
 \usage{
 sim.capt(fit = NULL, traps = NULL, mask = NULL,
-  infotypes = character(0), detfn = "hn", pars = NULL,
-  ss.link = "identity", cutoff = NULL, call.freqs = NULL,
-  freq.dist = "edf", sound.speed = 330, test.detfn = FALSE)
+  infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
+  call.freqs = NULL, freq.dist = "edf", sound.speed = 330,
+  test.detfn = FALSE)
 }
 \arguments{
 \item{fit}{A fitted \code{admbsecr} model object which provides the
@@ -50,15 +50,8 @@ coordinates for the location of a trap (or detector).}
 coordinates for the location of a mask point. The function
 \link{create.mask} will return a suitable object.}
 
-\item{ss.link}{A character string, either \code{"identity"} or
-\code{"log"}, which specifies the link function for the signal
-strength detection function. Only required when \code{detfn} is
-\code{"ss"} (i.e., when there is signal strength information in
-\code{capt}).}
-
-\item{cutoff}{The signal strength threshold, above which sounds are
-identified as detections. Only required when \code{detfn} is
-\code{"ss"}.}
+\item{ss.opts}{Options for models using the signal strength
+detection function. See 'Details' below.}
 
 \item{call.freqs}{A vector of call frequencies collected
 independently to an acoustic survey.}

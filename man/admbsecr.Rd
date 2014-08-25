@@ -4,10 +4,10 @@
 \title{Fitting SECR models in ADMB}
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, sf = NULL, ss.link = "identity", cutoff = NULL,
-  call.freqs = NULL, sound.speed = 330, local = FALSE,
-  hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE, cbs = NULL,
-  gbs = NULL, exe.type = "old")
+  fix = NULL, sf = NULL, ss.opts = NULL, call.freqs = NULL,
+  sound.speed = 330, local = FALSE, hess = !any(call.freqs > 1),
+  trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
+  exe.type = "old")
 }
 \arguments{
 \item{capt}{A list with named components, containing the capture
@@ -45,15 +45,8 @@ each component is a scalefactor for the associated parameter. The
 default behaviour is to automatically select scalefactors based on
 parameter start values. See the section on convergence below.}
 
-\item{ss.link}{A character string, either \code{"identity"} or
-\code{"log"}, which specifies the link function for the signal
-strength detection function. Only required when \code{detfn} is
-\code{"ss"} (i.e., when there is signal strength information in
-\code{capt}).}
-
-\item{cutoff}{The signal strength threshold, above which sounds are
-identified as detections. Only required when \code{detfn} is
-\code{"ss"}.}
+\item{ss.opts}{Options for models using the signal strength
+detection function. See 'Details' below.}
 
 \item{call.freqs}{A vector of call frequencies collected
 independently to an acoustic survey.}
@@ -132,6 +125,7 @@ reliably (see Stevenson et al., in prep., for details).
 }
 \section{The \code{capt} argument}{
 
+
 The \code{capt} argument is a list with named components. Each
 component must be an \eqn{n} by \eqn{k} matrix, where \eqn{n} is
 the number of detections made, and \eqn{k} is the number of traps
@@ -167,6 +161,30 @@ trapped (or detected) by the \eqn{j}th trap (or detector), then:
   \item For the \code{mrds} component, the element should be the
         \emph{known} (not estimated) distance between the individual
         and the detector at the time of the detection.
+}
+}
+
+\section{The \code{ss.opts} argument}{
+
+
+This argument allows the user to select options for the signal
+strength detection function (for more details, see the section
+below on fitted parameters). It is therefore only required if
+signal strength information appears in the \code{capt} argument,
+and is ignored (with a warning) otherwise.
+
+The argument \code{ss.opts} is a list with up to three components:
+\itemize{
+  \item \code{cutoff}: Compulsory. The signal strength threshold,
+        above which sounds are identified as detections.
+  \item \code{directional}: Optional. Logical, if \code{TRUE} a
+        directional signal strength model is used; see the section below on
+        fitted parameters. If unspecified, it will default to \code{FALSE},
+        unless the \code{b2.ss} parameter is provided in \code{sv} or
+        \code{fix}, in which case it will default to \code{TRUE}.
+  \item \code{ss.link}: Optional. A character string, either \code{"identity"} or
+        \code{"log"}, which specifies the link function for the signal
+        strength detection function. Defaults to \code{"identity"}.
 }
 }
 
@@ -216,7 +234,7 @@ For \code{detfn = "th"}:
   \item \eqn{g(d) = 0.5 - 0.5\ erf(d/\tau - \kappa)}{g(d) = 0.5 - 0.5 * erf( d/scale - shape )}
 }
 
-For \code{detfn = "ss"}:
+For \code{detfn = "ss"} in a non-directional model:
 \itemize{
   \item The signal strength detection function is special in that
         it requires signal strength information to be collected in
@@ -226,6 +244,18 @@ For \code{detfn = "ss"}:
   \item The expected signal strength is modelled as:
         \eqn{E(SS) = h^{-1}(\beta_0 - \beta_1d)}{E(SS) = h^{-1}(b0.ss - b1.ss*d)},
         where \eqn{h} is specified by the argument \code{ss.link}.
+}
+
+For \code{detfn = "ss"} in a directional model:
+\itemize{
+  \item Estimated paramters are \code{b0.ss}, \code{b1.ss}, \code{b2.ss} and
+        \code{sigma.ss}.
+  \item The expected signal strength is modelled as:
+        \eqn{E(SS) = h^{-1}(\beta_0 - (\beta_1 - (\beta_2(cos(\theta) - 1)))d)}{E(SS) = h^{-1}( b0.ss - ( b1.ss - ( b2.ss * ( cos( theta ) - 1 ) ) ) * d )},
+        where \eqn{h} is specified by the argument \code{ss.link},
+        and \eqn{\theta}{theta} is the difference between the bearing the
+        animal is facing when it makes a call, and the bearing from the
+        animal to the detector.
 }
 
 Details of the parameters associated with different additional data

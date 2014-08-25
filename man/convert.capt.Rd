@@ -11,6 +11,10 @@ is returned. Otherwise a data frame is returned, which is suitable
 for the \code{captures} argument to the \link{make.capthist}
 function.}
 
+\item{cutoff}{A character string, either \code{"identity"} or
+\code{"log"}, which specifies the link function for the signal
+strength detection function.}
+
 \item{capt}{A list with named components, containing the capture
 history and supplementary information. The function
 \link{create.capt} will return a suitable object. See 'Details'
@@ -18,10 +22,6 @@ below.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
-
-\item{cutoff}{The signal strength threshold, above which sounds are
-identified as detections. Only required when \code{detfn} is
-\code{"ss"}.}
 }
 \value{
 An object of class \link{capthist}.
