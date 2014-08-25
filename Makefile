@@ -31,7 +31,7 @@ roxygen:
 
 build:
 	if [ $(shell hostname) == "Zeeba" ]; then rm -rfv .Rbuildignore; fi
-	R CMD build .
+	R CMD build --resave-data .
 	if [ $(shell hostname) == "Zeeba" ]; then mkdir .Rbuildignore; fi
 	mv admbsecr_1.0.7.tar.gz .Rbuildignore/
 
