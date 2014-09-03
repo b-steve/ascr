@@ -6,7 +6,7 @@
 sim.capt(fit = NULL, traps = NULL, mask = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
   call.freqs = NULL, freq.dist = "edf", sound.speed = 330,
-  test.detfn = FALSE)
+  test.detfn = FALSE, first.only = FALSE)
 }
 \arguments{
 \item{fit}{A fitted \code{admbsecr} model object which provides the
@@ -42,6 +42,8 @@ frequencies are rounded.}
 
 \item{test.detfn}{Logical value, if \code{TRUE}, tests detection
 function to aid debugging.}
+
+\item{first.only}{Only keep the first detection for each individual.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
