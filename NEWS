@@ -1,4 +1,4 @@
-admbsecr 1.0.8
+admbsecr 1.0.7
 --------------
 
 * Implemented directional calling models. Only available with signal
@@ -7,9 +7,6 @@ admbsecr 1.0.8
 * Signal strength cutoff and link function for admbsecr() are now
   specified using the argument 'ss.opts'. A logical indicator for
   whether or not a directional calling model is set here, too.
-
-admbsecr 1.0.7
---------------
 
 * Added arguments plot.contours and plot.estlocs to locations(). These
   control whether or not contours and modes of location densities are
