@@ -49,6 +49,7 @@
 #' frequencies are rounded.
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
 #' function to aid debugging.
+#' @param first.only Only keep the first detection for each individual.
 #' @inheritParams admbsecr
 #'
 #' @return A list with named components, each corresponding to a data
@@ -71,7 +72,8 @@
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
                      pars = NULL, ss.opts = NULL, call.freqs = NULL,
-                     freq.dist = "edf", sound.speed = 330, test.detfn = FALSE){
+                     freq.dist = "edf", sound.speed = 330, test.detfn = FALSE,
+                     first.only = FALSE){
     ## Some error checking.
     if (any(infotypes == "ss")){
         stop("Signal strength information is simulated by setting argument 'detfn' to \"ss\".")
@@ -86,8 +88,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         infotypes <- fit$infotypes
         detfn <- fit$args$detfn
         pars <- get.par(fit, "fitted", as.list = TRUE)
-        ss.link <- fit$args$ss.opts$ss.link
-        cutoff <- fit$args$ss.opts$cutoff
+        ss.opts <- fit$args$ss.opts
+        ss.link <- ss.opts$ss.link
+        cutoff <- ss.opts$cutoff
+        directional <- ss.opts$directional
         call.freqs <- fit$args$call.freqs
         sound.speed <- fit$args$sound.speed
     }
@@ -117,8 +121,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         } else if (directional & !("b2.ss" %in% names(pars))){
             stop("Parameter 'b2.ss' must be specified for a directional calling model.")
         } else if (!directional & "b2.ss" %in% names(pars)){
-            warning("Parameter 'b2.ss' in 'pars' is being ignored as the 'directional' component of 'ss.opts' is 'FALSE'.")
-            b2.ss <- 0
+            if (pars$b2.ss != 0){
+                warning("Parameter 'b2.ss' in 'pars' is being ignored as the 'directional' component of 'ss.opts' is 'FALSE'.")
+                pars$b2.ss <- 0
+            }
         }
         if (is.null(ss.link)){
             ss.link <- "identity"
@@ -159,6 +165,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     ## Simulating population.
     if (is.null(call.freqs)){
         popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
+        ## Indicates which individual is being detected.
+        individual <- 1:nrow(popn)
     } else {
         D <- pars$D/mean(call.freqs)
         popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
@@ -185,7 +193,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             prob <- freqs[i] - floor(freqs[i])
             freqs[i] <- floor(freqs[i]) + rbinom(1, 1, prob)
         }
-        popn <- popn[rep(1:n.a, times = freqs), ]
+        ## Indicates which individual is being detected.
+        individual <- rep(1:n.a, times = freqs)
+        popn <- popn[individual, ]
     }
     n.popn <- nrow(popn)
     if (n.popn == 0) stop("No animals in population.")
@@ -253,6 +263,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     }
     ## Total number of detections.
     n.dets <- sum(bin.capt)
+    ## Keeping identities of captured individuals.
+    capt.individual <- individual[captures]
     ## Locations of captured individuals.
     capt.popn <- popn[captures, ]
     ## Capture distances.
@@ -284,6 +296,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     }
     if (sim.mrds){
         out$mrds <- capt.dists
+    }
+    if (first.only){
+        keep <- c(TRUE, capt.individual[-1] != capt.individual[-nrow(bin.capt)])
+        out <- lapply(out, function(x, keep) x[keep, ], keep = keep)
     }
     out
 }
