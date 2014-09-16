@@ -104,7 +104,7 @@ admbsecr 1.0.1
 
     * The contours() function has been renamed to locations().
 
-    * All previous references to "angles" has now been changed to
+    * All previous references to "angles" have now been changed to
       "bearings".
 
 * There are also some additional features:
