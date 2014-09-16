@@ -53,7 +53,7 @@
 #' (if \code{density} is \code{FALSE}).
 #' @param plot.contours Logical, if \code{TRUE}, contours are
 #' plotted. Note that, if \code{FALSE}, nothing corresponding to the
-#' density of the individuals' locations are plotted unless
+#' density of the individuals' locations is plotted unless
 #' \code{plot.estlocs} is \code{TRUE}.
 #' @param plot.estlocs Logical, if \code{TRUE}, dots are plotted at
 #' the mode of the combined densities. If a density has more than a
