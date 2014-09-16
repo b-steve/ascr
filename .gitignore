@@ -3,3 +3,4 @@ updatepkg.sh
 results/
 .Rbuildignore/
 inst/ADMB/bin/linux/secr_new
+HELP-release.txt
