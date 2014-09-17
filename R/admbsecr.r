@@ -25,7 +25,7 @@
 #' reliably (see Stevenson et al., in prep., for details).
 #'
 #' @section The \code{capt} argument:
-#' 
+#'
 #' The \code{capt} argument is a list with named components. Each
 #' component must be an \eqn{n} by \eqn{k} matrix, where \eqn{n} is
 #' the number of detections made, and \eqn{k} is the number of traps
@@ -393,7 +393,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (!is.list(fix) & !is.null(fix)){
         stop("The 'fix' argument must be 'NULL' or a list.")
-    }    
+    }
     n <- nrow(capt.bin)
     n.traps <- nrow(traps)
     n.mask <- nrow(mask)
@@ -448,7 +448,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     ss.opts$directional <- TRUE
                     directional <- TRUE
                 }
-            }   
+            }
             if (!directional){
                 ## Fixing b2.ss to 0 if a directional calling model is not being used.
                 if (!is.null(sv$b2.ss) | !is.null(fix$b2.ss)){
@@ -953,6 +953,24 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         warning("Maximum gradient component is large.")
     }
     class(out) <- c("admbsecr", "admb")
+    out
+}
+
+par.admbsecr <- function(n.cores = 1, ...){
+    if (n.cores > detectCores()){
+        stop("The argument n.cores is greater than the number of available cores.")
+    }
+    arg.list <- list(...)
+    n.fits <- length(arg.list)
+    FUN <- function(i, arg.list){
+        do.call(admbsecr, arg.list[[i]])
+    }
+    cluster <- makeCluster(n.cores)
+    clusterEvalQ(cluster, {
+        library(admbsecr)
+    })
+    out <- parLapplyLB(cluster, 1:n.fits, FUN, arg.list = arg.list)
+    stopCluster(cluster)
     out
 }
 
