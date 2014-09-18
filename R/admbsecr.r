@@ -962,6 +962,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 #'
 #' @param ... Lists with components comprising arguments for a call to
 #' \link{admbsecr}. Component names must be the argument names.
+#' @param arg.list Alternatively, a list with components comprising
+#' the lists of arguments, as above.
 #' @inheritParams boot.admbsecr
 #'
 #' @return A list, where components are objects returned by
@@ -986,15 +988,17 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 #' }
 #'
 #' @export
-#' 
-par.admbsecr <- function(n.cores, ...){
+#'
+par.admbsecr <- function(n.cores, ..., arg.list = NULL){
     if (!require(parallel)){
         stop("The parallel package is required for parallelisation. Please install.")
     }
     if (n.cores > detectCores()){
         stop("The argument n.cores is greater than the number of available cores.")
     }
-    arg.list <- list(...)
+    if (is.null(arg.list)){
+        arg.list <- list(...)
+    }
     n.fits <- length(arg.list)
     FUN <- function(i, arg.list){
         out <- try(do.call(admbsecr, arg.list[[i]]), silent = TRUE)
