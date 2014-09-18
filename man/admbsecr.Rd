@@ -353,7 +353,7 @@ simple.hn.fit <- admbsecr(capt = simple.capt, traps = example$traps,
                           mask = example$mask, fix = list(g0 = 1))
 simple.hr.fit <- admbsecr(capt = simple.capt, traps = example$traps,
                           mask = example$mask, detfn = "hr")
-bearing.capt <- example.capt[c("bincapt", "bearing")]
+bearing.capt <- example$capt[c("bincapt", "bearing")]
 bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example$traps,
                            mask = example$mask, fix = list(g0 = 1))
 }
