@@ -75,6 +75,9 @@
 #' \itemize{
 #'   \item \code{cutoff}: Compulsory. The signal strength threshold,
 #'         above which sounds are identified as detections.
+#'   \item \code{het.source}: Optional Logical, if \code{TRUE} a model with
+#'         heterogeneity in source signal strengths is used. If unspecified,
+#'         it will default to \code{FALSE}.
 #'   \item \code{directional}: Optional. Logical, if \code{TRUE} a
 #'         directional signal strength model is used; see the section below on
 #'         fitted parameters. If unspecified, it will default to \code{FALSE},
@@ -418,28 +421,29 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     cutoff <- ss.opts$cutoff
     ss.link <- ss.opts$ss.link
     directional <- ss.opts$directional
+    het.source <- ss.opts$het.source
     ## Sorting out signal strength options.
     if (fit.ss){
         if (missing(ss.opts)){
             ## Error if ss.opts not provided for signal strength model.
             stop("Argument 'ss.opts' is missing.")
         } else {
-            if (!all(names(ss.opts) %in% c("cutoff", "directional", "ss.link"))){
+            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "directional", "ss.link"))){
                 ## Warning for unexpected component names.
-                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"directional\" and \"ss.link\"; others are being ignored.")
+                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.ss\", \"directional\" and \"ss.link\"; others are being ignored.")
             }
             if (is.null(cutoff)){
                 ## Error for unspecified obejcts.
                 stop("The 'cutoff' component of 'ss.opts' must be specified.")
             }
-            ## Setting default values for ss.link and directional.
+            ## Setting default values for ss.link, het.source and directional.
             if (is.null(ss.link)){
                 ss.opts$ss.link <- "identity"
                 ss.link <- "identity"
             } else if (!(ss.link %in% c("identity", "log"))){
                 stop("Component 'ss.link' in 'ss.opts' must be either \"identity\" or \"log\".")
             }
-            # By default, directional calling model is only used if b2.ss appears in sv or fix.
+            ## By default, directional calling model is only used if b2.ss appears in sv or fix.
             if (is.null(directional)){
                 if (is.null(sv$b2.ss) & is.null(fix$b2.ss)){
                     ss.opts$directional <- FALSE
@@ -458,6 +462,27 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                 }
                 fix$b2.ss <- 0
             }
+            ## By default, heterogeneity source strength model is only
+            ## used if sigma.b0.ss appears in sv or fix.
+            if (is.null(het.source)){
+                if (is.null(sv$sigma.b0.ss) & is.null(fix$sigma.b0.ss)){
+                    ss.opts$het.source <- FALSE
+                    het.source <- FALSE
+                } else {
+                    ss.opts$het.source <- TRUE
+                    het.source <- TRUE
+                }
+            }
+            if (!het.source){
+                ## Fixing sigma.b0.ss to 0 if a heterogeneous source
+                ## strength model is not being used.
+                if (!is.null(sv$sigma.b0.ss) | !is.null(sv$sigma.b0.ss)){
+                    warning("As the 'het.source' component of 'ss.opts' is FALSE, the values of the parameter sigma.b0.ss in 'sv' and 'fix' are being ignored")
+                    sv$sigma.b0.ss <- NULL
+                    fix$sigma.b0.ss <- NULL
+                }
+                fix$sigma.b0.ss <- 0
+            }
         }
     } else {
         if (!is.null(ss.opts)){
@@ -474,6 +499,17 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     } else {
         fit.dir <- FALSE
+    }
+    ## Setting fit.het.source
+    if (fit.ss){
+        fit.het.source <- TRUE
+        if ("sigma.b0.ss" %in% names(fix)){
+            if (fix[["sigma.bo.ss"]] == 0){
+                fit.het.source <- FALSE
+            }
+        }
+    } else {
+        fit.het.source <- FALSE
     }
     ## Generating ordered binary capture history.
     capt.bin.order <- do.call(order, as.data.frame(capt.bin))
@@ -724,6 +760,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Hardwiring number of quadrature points for directional calling.
     n.dir.quadpoints <- ifelse(fit.dir, 8, 1)
+    ## Hardwiring number of quadrature points for hetergeneous source strength.
+    n.het.source.quadpoints <- ifelse(fit.het.source, 15, 1)
     ## Stuff for the .dat file.
     data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
@@ -738,11 +776,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
         capt.bin.freqs, fit_angs = as.numeric(fit.bearings),
         fit_dir = as.numeric(fit.dir), n_dir_quadpoints = n.dir.quadpoints,
-        capt_ang = capt.bearing, fit_dists = as.numeric(fit.dists), capt_dist =
-        capt.dist, fit_ss = as.numeric(fit.ss), cutoff = cutoff, linkfn_id =
-        linkfn.id, capt_ss = capt.ss, fit_toas = as.numeric(fit.toas),
-        capt_toa = capt.toa, fit_mrds = as.numeric(fit.mrds), mrds_dist =
-        mrds.dist, dists = dists, angs = bearings, toa_ssq = toa.ssq)
+        fit_het_source = as.numeric(fit.het.source), n_het_source_quadpoints =
+        n.het.source.quadpoints, capt_ang = capt.bearing, fit_dists =
+        as.numeric(fit.dists), capt_dist = capt.dist, fit_ss = as.numeric(fit.ss),
+        cutoff = cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
+        as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
+        as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
+        bearings, toa_ssq = toa.ssq)
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(call.freqs)){
         fit.freqs <- any(call.freqs != 1)

@@ -65,6 +65,8 @@ DATA_SECTION
   // Logical indicator for directional calling.
   init_int fit_dir
   init_number n_dir_quadpoints
+  init_int fit_het_source
+  init_number n_het_source_quadpoints
   int length_fs
   !! if (fit_dir){
   !!   length_fs = n;
