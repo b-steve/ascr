@@ -11,7 +11,7 @@ animalIDvec <- function(capthist){
     as.character(x)
 }
 
-#' Assigning ID numbers to sounds.
+#' Assigning ID numbers to sounds
 #'
 #' Identifies recaptures and assigns ID numbers to sounds recorded for
 #' an SECR model.
@@ -92,7 +92,7 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 
 #' Extract estimated or fixed parameter values from an \code{admbsecr} model fit
 #'
-#' Extracts, estimated, derived, and fitted parameters from a model
+#' Extracts estimated, derived, and fitted parameters from a model
 #' fitted using \link{admbsecr}.
 #'
 #' This is a similar function to \link{coef.admbsecr}, however
