@@ -956,14 +956,45 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out
 }
 
-par.admbsecr <- function(n.cores = 1, ...){
+#' Parallelising admbsecr fits using a cluster
+#'
+#' Fits SECR models on different cores within a cluster.
+#'
+#' @param ... Lists with components comprising arguments for a call to
+#' \link{admbsecr}. Component names must be the argument names.
+#' @inheritParams boot.admbsecr
+#'
+#' @return A list, where components are objects returned by
+#' \link{admbsecr}. There is one component for each list of arguments
+#' provide in \code{...}.
+#'
+#' @examples
+#' \dontrun{
+#' ## Running the examples in the admbsecr() documentation in parallel.
+#' simple.capt <- example$capt["bincapt"]
+#' simple.hn.args <- list(capt = simple.capt, traps = example$traps,
+#'                        mask = example$mask, fix = list(g0 = 1))
+#' simple.hr.args <- list(capt = simple.capt, traps = example$traps,
+#'                        mask = example$mask, detfn = "hr")
+#' bearing.capt <- example.capt[c("bincapt", "bearing")]
+#' bearing.hn.args <- list(capt = bearing.capt, traps = example$traps,
+#'                         mask = example$mask, fix = list(g0 = 1))
+#' ## This will only run if you have 4 cores available, you may need
+#' ## to alter n.cores as appropriate.
+#' fits <- par.admbsecr(n.cores = 4, simple.hn.args, simple.hr.args,
+#'                      bearing.hn.args)
+#' }
+par.admbsecr <- function(n.cores, ...){
+    if (!require(parallel)){
+        stop("The parallel package is required for parallelisation. Please install.")
+    }
     if (n.cores > detectCores()){
         stop("The argument n.cores is greater than the number of available cores.")
     }
     arg.list <- list(...)
     n.fits <- length(arg.list)
     FUN <- function(i, arg.list){
-        do.call(admbsecr, arg.list[[i]])
+        out <- try(do.call(admbsecr, arg.list[[i]]), silent = TRUE)
     }
     cluster <- makeCluster(n.cores)
     clusterEvalQ(cluster, {
