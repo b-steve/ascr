@@ -3,7 +3,7 @@
 \alias{par.admbsecr}
 \title{Parallelising admbsecr fits using a cluster}
 \usage{
-par.admbsecr(n.cores, ...)
+par.admbsecr(n.cores, ..., arg.list = NULL)
 }
 \arguments{
 \item{n.cores}{A positive integer representing the number of cores
@@ -11,6 +11,9 @@ to use for parallel processing.}
 
 \item{...}{Lists with components comprising arguments for a call to
 \link{admbsecr}. Component names must be the argument names.}
+
+\item{arg.list}{Alternatively, a list with components comprising
+the lists of arguments, as above.}
 }
 \value{
 A list, where components are objects returned by
