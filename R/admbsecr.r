@@ -346,7 +346,7 @@
 #'                           mask = example$mask, fix = list(g0 = 1))
 #' simple.hr.fit <- admbsecr(capt = simple.capt, traps = example$traps,
 #'                           mask = example$mask, detfn = "hr")
-#' bearing.capt <- example.capt[c("bincapt", "bearing")]
+#' bearing.capt <- example$capt[c("bincapt", "bearing")]
 #' bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example$traps,
 #'                            mask = example$mask, fix = list(g0 = 1))
 #' }
@@ -976,7 +976,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 #'                        mask = example$mask, fix = list(g0 = 1))
 #' simple.hr.args <- list(capt = simple.capt, traps = example$traps,
 #'                        mask = example$mask, detfn = "hr")
-#' bearing.capt <- example.capt[c("bincapt", "bearing")]
+#' bearing.capt <- example$capt[c("bincapt", "bearing")]
 #' bearing.hn.args <- list(capt = bearing.capt, traps = example$traps,
 #'                         mask = example$mask, fix = list(g0 = 1))
 #' ## This will only run if you have 4 cores available, you may need
@@ -984,6 +984,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 #' fits <- par.admbsecr(n.cores = 4, simple.hn.args, simple.hr.args,
 #'                      bearing.hn.args)
 #' }
+#'
+#' @export
+#' 
 par.admbsecr <- function(n.cores, ...){
     if (!require(parallel)){
         stop("The parallel package is required for parallelisation. Please install.")
