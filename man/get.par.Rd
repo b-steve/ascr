@@ -34,7 +34,7 @@ See above information about the argument \code{as.list}. If
 returned.
 }
 \description{
-Extracts, estimated, derived, and fitted parameters from a model
+Extracts estimated, derived, and fitted parameters from a model
 fitted using \link{admbsecr}.
 }
 \details{
