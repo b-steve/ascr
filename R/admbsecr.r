@@ -504,7 +504,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (fit.ss){
         fit.het.source <- TRUE
         if ("sigma.b0.ss" %in% names(fix)){
-            if (fix[["sigma.bo.ss"]] == 0){
+            if (fix[["sigma.b0.ss"]] == 0){
                 fit.het.source <- FALSE
             }
         }
@@ -560,7 +560,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            hr = c("g0", "sigma", "z"),
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),
-                           ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.ss"),
+                           ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
     n.detpars <- length(detpar.names)
@@ -594,6 +594,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                   b0.ss = 2,
                   b1.ss = 2,
                   b2.ss = 2,
+                  sigma.b0.ss = 2,
                   sigma.ss = 2,
                   z = 2,
                   sigma.toa = 2,
@@ -658,6 +659,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            b0.ss = c(0, 1e8),
                            b1.ss = c(0, 1e8),
                            b2.ss = c(0, 1e8),
+                           sigma.b0.ss = c(0, 1e8),
                            sigma.ss = c(0, 1e8),
                            z = c(0, 200),
                            sigma.toa = c(0, 1e8),

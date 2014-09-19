@@ -251,6 +251,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         sigma.mat <- matrix(pars$sigma.b0.ss^2, nrow = n.traps, ncol = n.traps)
         diag(sigma.mat) <- diag(sigma.mat) + pars$sigma.ss^2
         ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
+        ## Filling ss.error for non-hetergeneity models for consistency with old versions.
+        if (pars$sigma.b0.ss == 0){
+            ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
+        }
         ## Creating SS capture history.
         full.ss.capt <- ss.mean + ss.error
         captures <- which(apply(full.ss.capt, 1,

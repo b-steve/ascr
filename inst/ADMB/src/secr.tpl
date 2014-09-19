@@ -448,7 +448,7 @@ PROCEDURE_SECTION
         if (fit_ss){
           dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
           for (j = 1; j <= n_traps; j++){
-            local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(4)));
+            local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(5)));
           }
           bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
         }
