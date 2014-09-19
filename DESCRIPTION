@@ -14,6 +14,7 @@ Imports:
     CircStats,
     lattice,
     matrixStats,
+    mvtnorm,
     plyr,
     secr
 Suggests:

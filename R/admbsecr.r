@@ -71,7 +71,7 @@
 #' signal strength information appears in the \code{capt} argument,
 #' and is ignored (with a warning) otherwise.
 #'
-#' The argument \code{ss.opts} is a list with up to three components:
+#' The argument \code{ss.opts} is a list with up to four components:
 #' \itemize{
 #'   \item \code{cutoff}: Compulsory. The signal strength threshold,
 #'         above which sounds are identified as detections.
@@ -430,7 +430,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else {
             if (!all(names(ss.opts) %in% c("cutoff", "het.source", "directional", "ss.link"))){
                 ## Warning for unexpected component names.
-                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.ss\", \"directional\" and \"ss.link\"; others are being ignored.")
+                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"directional\" and \"ss.link\"; others are being ignored.")
             }
             if (is.null(cutoff)){
                 ## Error for unspecified obejcts.
@@ -1059,6 +1059,7 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 #' @importFrom CircStats dvm rvm
 #' @importFrom lattice wireframe
 #' @importFrom matrixStats colProds
+#' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @useDynLib admbsecr
 NULL
