@@ -173,7 +173,7 @@ below on fitted parameters). It is therefore only required if
 signal strength information appears in the \code{capt} argument,
 and is ignored (with a warning) otherwise.
 
-The argument \code{ss.opts} is a list with up to three components:
+The argument \code{ss.opts} is a list with up to four components:
 \itemize{
   \item \code{cutoff}: Compulsory. The signal strength threshold,
         above which sounds are identified as detections.
