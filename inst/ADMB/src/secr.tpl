@@ -67,6 +67,12 @@ DATA_SECTION
   init_number n_dir_quadpoints
   init_int fit_het_source
   init_number n_het_source_quadpoints
+  int dim_sigma_ss_mat;
+  !! if (fit_het_source){
+  !!   dim_sigma_ss_mat = n_traps;
+  !! } else {
+  !!   dim_sigma_ss_mat = 1;
+  !! }
   int length_fs
   !! if (fit_dir){
   !!   length_fs = n;
@@ -222,10 +228,9 @@ PARAMETER_SECTION
   3darray log_capt_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
   3darray log_evade_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
   3darray expected_ss(1,n_dir_quadpoints,1,n_traps,1,n_mask)
-  //matrix log_capt_probs(1,n_traps,1,n_mask)
-  //matrix log_evade_probs(1,n_traps,1,n_mask)
-  //matrix expected_ss(1,nr_expected_ss,1,nc_expected_ss)
+  matrix sigma_ss_mat(1,dim_sigma_ss_mat,1,dim_sigma_ss_mat)
   number D
+  number corr_ss
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
   vector capt_hist(1,n_traps)
@@ -263,6 +268,14 @@ PROCEDURE_SECTION
       par_ests(j) = suppars(i);
       j++;
     }
+  }
+  // Generating variance-covariance matrix and correlation matrix for fits with heterogeneity in source strength.
+  if (fit_het_source){
+    sigma_ss_mat = square(detpars(4));
+    for (i = 1; i <= dim_sigma_ss_mat; i++){
+      sigma_ss_mat(i, i) += square(detpars(5));
+    }
+    corr_ss = square(detpars(4))/(square(detpars(4)) + square(detpars(5)));
   }
   // Start of likelihood calculation.
   f = 0.0;
