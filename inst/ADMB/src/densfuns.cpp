@@ -94,10 +94,47 @@ double log_dmvn (dvector x, dvector mu, dmatrix sigma)
   return -0.5*(k*log(2*M_PI) + log(det(sigma)) + e);
 }
 
-// Multivariate normal cumulative distribution functions:
+// Multivariate normal cumulative distribution functions. 
 
-// Must be normalised, i.e., mu = 0, diagonal elements of sigma are all 1.
-double log_pmvn (dvector x, double corr, bool gh, dvector weights, dvector nodes, double n_quadpoints = 10, double lower = -5, double upper = 5)
+// Uses either Gauss-Hermite quadrature (gh = true) or the rectangle
+// rule (gh = false). Implements the simplification of the MVN CDF
+// from Dunnett and Sobel (1955), see Kotz, Balakrishnan and Johnson
+// (2000) pp. 134.
+
+// Vector x must be normalised, i.e., mu = 0, diagonal elements of
+// sigma are all 1.
+dvariable pmvn (const dvar_vector& x, const dvariable& corr, bool gh, dvector weights, dvector nodes, double n_quadpoints, double lower, double upper)
+{
+  int k = x.size();
+  int i, j;
+  dvariable out = 0;
+  dvariable summand;
+  if (gh){
+    for (i = 1; i <= n_quadpoints; i++){
+      summand = weights(i)/pow(M_PI, 0.5);
+      for (j = 1; j <= k; j++){
+        // Note nodes altered due to change of variable technique.
+	summand *= cumd_norm((x(j) - pow(corr, 0.5)*nodes(i)*pow(2, 0.5))/pow(1 - corr, 0.5));
+      }
+      out += summand;
+    }
+  } else {
+    double bin_width = (upper - lower)/n_quadpoints;
+    double bin_mid;
+    for (i = 1; i <= n_quadpoints; i++){
+      bin_mid = lower + bin_width*(i - 0.5);
+      summand = mfexp(log_dnorm(bin_mid, 0, 1));
+      for (j = 1; j <= k; j++){
+	summand *= cumd_norm((x(j) - pow(corr, 0.5)*bin_mid)/pow(1 - corr, 0.5));
+      }
+      summand *= bin_width;
+      out += summand;
+    }
+  }
+  return out;
+}
+
+double pmvn (dvector x, double corr, bool gh, dvector weights, dvector nodes, double n_quadpoints, double lower, double upper)
 {
   int k = x.size();
   int i, j;
@@ -106,11 +143,10 @@ double log_pmvn (dvector x, double corr, bool gh, dvector weights, dvector nodes
   if (gh){
     cout << "gh" << endl;
     // Altering nodes due to change of variable technique.
-    nodes *= pow(2, 0.5);
     for (i = 1; i <= n_quadpoints; i++){
       summand = weights(i)/pow(M_PI, 0.5);
       for (j = 1; j <= k; j++){
-	summand *= cumd_norm((x(j) - pow(corr, 0.5)*nodes(i))/pow(1 - corr, 0.5));
+	summand *= cumd_norm((x(j) - pow(corr, 0.5)*nodes(i)*pow(2, 0.5))/pow(1 - corr, 0.5));
       }
       out += summand;
     }
