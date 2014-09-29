@@ -251,17 +251,6 @@ PARAMETER_SECTION
   number point_evade
 
 PROCEDURE_SECTION
-  dvector x_test(1,3);
-
-  // Stuff to test MVN CDF.
-  // x_test(1) = 0;
-  // x_test(2) = -0.5;
-  // x_test(3) = 0.5;
-  // double corr_test = 0.5;
-  // cout << "Gauss-Hermite: " << log_pmvn(x_test, corr_test, true, het_source_weights, het_source_nodes, n_het_source_quadpoints) << endl;
-  // cout << "Rectangle: " << log_pmvn(x_test, corr_test, false, het_source_weights, het_source_nodes, n_het_source_quadpoints) << endl;
-  // exit(1234);
-
   // Grabbing detection function.
   detfn_pointer detfn = get_detfn(detfn_id);
   // Converting linked parameters to real parameters and setting up par_ests vector.
