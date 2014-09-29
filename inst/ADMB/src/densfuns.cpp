@@ -105,9 +105,6 @@ double log_pmvn (dvector x, double corr, bool gh, dvector weights, dvector nodes
   double summand;
   if (gh){
     cout << "gh" << endl;
-    if (n_quadpoints != 25){
-      cerr << "Argument 'n_quadpoints' must be 25 if using Gauss-Hermite quadrature" << endl;
-    }
     // Altering nodes due to change of variable technique.
     nodes *= pow(2, 0.5);
     for (i = 1; i <= n_quadpoints; i++){
