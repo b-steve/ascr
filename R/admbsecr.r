@@ -81,6 +81,10 @@
 #'   \item \code{het.source.method}: Optional. A character string, either
 #'         \code{"GH"} or \code{"rect"}. If "GH", integration over source strengths
 #'         uses Gauss-Hermite quadrature. If "rect", the rectangle method is used.
+#'   \item \code{n.het.source.quadpoints}: Optional. An integer, giving the number
+#'         of quadrature points used for numerical integration over source strengths.
+#'         Defaults to 15. A larger number of quadrature points leads to more accurate
+#'         results, but will increase computation time.
 #'   \item \code{directional}: Optional. Logical, if \code{TRUE} a
 #'         directional signal strength model is used; see the section below on
 #'         fitted parameters. If unspecified, it will default to \code{FALSE},
@@ -89,7 +93,9 @@
 #'   \item \code{n.dir.quadpoints}: Optional. An integer, giving the number of
 #'         quadrature points used for numerical integration over the possible
 #'         call directions. Defaults to 8, but needs to be larger when calls are
-#'         more directional (i.e., b2.ss parameter is large).
+#'         more directional (i.e., b2.ss parameter is large). A larger number of
+#'         quadrature points leads to more accurate results, but will increase computation
+#'         time.
 #'   \item \code{ss.link}: Optional. A character string, either \code{"identity"} or
 #'         \code{"log"}, which specifies the link function for the signal
 #'         strength detection function. Defaults to \code{"identity"}.
@@ -431,15 +437,16 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     het.source <- ss.opts$het.source
     het.source.method <- ss.opts$het.source.method
     n.dir.quadpoints <- ss.opts$n.dir.quadpoints
+    n.het.source.quadpoints <- ss.opts$n.het.source.quadpoints
     ## Sorting out signal strength options.
     if (fit.ss){
         if (missing(ss.opts)){
             ## Error if ss.opts not provided for signal strength model.
             stop("Argument 'ss.opts' is missing.")
         } else {
-            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "directional", "n.dir.quadpoints", "ss.link"))){
+            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "n.het.source.quadpoints", "directional", "n.dir.quadpoints", "ss.link"))){
                 ## Warning for unexpected component names.
-                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"directional\",  \"n.dir.quadpoints\", and \"ss.link\"; others are being ignored.")
+                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"n.het.source.quadpoints\", \"directional\",  \"n.dir.quadpoints\", and \"ss.link\"; others are being ignored.")
             }
             if (is.null(cutoff)){
                 ## Error for unspecified obejcts.
@@ -796,8 +803,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         n.dir.quadpoints <- 1
     }
-    ## Hardwiring number of quadrature points for hetergeneous source strength.
-    n.het.source.quadpoints <- ifelse(fit.het.source, 25, 1)
+    ## Sorting out number of quadrature points for heteroegeous source strength.
+    if (fit.het.source){
+        if (is.null(n.het.source.quadpoints)){
+            n.het.source.quadpoints <- 15
+        }  
+    } else {
+        n.het.source.quadpoints <- 1
+    }
     ## Getting nodes and weights for Gauss-Hermite quadrature.
     if (het.source.gh){
         GHd <- gaussHermiteData(n.het.source.quadpoints)
