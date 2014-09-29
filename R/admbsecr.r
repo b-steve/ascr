@@ -820,6 +820,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         het.source.nodes <- 0
         het.source.weights <- 0
     }
+    ## Error thrown for model with both heterogeneity in source strength and directional calling.
+    if (fit.het.source & fit.dir){
+        stop("Fitting of models with both heterogeneity in signal strength and directional calling is not yet implemented.")
+    }
     ## Stuff for the .dat file.
     data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
