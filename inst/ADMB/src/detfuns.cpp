@@ -38,7 +38,7 @@ dvariable detfn_ss (double x, const dvar_vector &detpars, double cutoff, double 
 }
 
 // Log-link signal strength.
-// Order of detpars: b0ss, b1ss, b2ss, sigmass, sigmab0ss.
+// Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
 dvariable detfn_logss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
   return 1 - cumd_norm(mfexp(cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1))*x)))/detpars(5));
