@@ -329,17 +329,29 @@ PROCEDURE_SECTION
   } else {
     orientation = 0;
     for (i = 1; i <= n_mask; i++){
-      undet_prob = 1;
-      for (j = 1; j <= n_traps; j++){
-        dist = dists(j, i);
-        capt_prob = detfn(dist, detpars, cutoff, orientation);
-        // Compare to calculating these outside loop.
-        log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
-        log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
-        undet_prob *= 1 - capt_prob;
-        expected_ss(1, j, i) = detpars(1) - detpars(2)*dist;
-        if (linkfn_id == 2){
-          expected_ss(1, j, i) = mfexp(expected_ss(1, j, i));
+      // For a model with heterogeneity in signal strengths.
+      if (fit_het_source){
+        // Expected signal strengths.
+        dvar_vector mu_ss(1, n_traps);
+        mu_ss = detpars(1) - detpars(2)*column(dists, i);
+        expected_ss(1).colfill(i, mu_ss);
+        dvar_vector z_ss(1, n_traps);
+        z_ss = (cutoff - mu_ss)/pow(square(detpars(4)) + square(detpars(5)), 0.5);
+        undet_prob = pmvn(z_ss, corr_ss, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5);
+      } else {
+        // No heterogeneity in signal strengths.
+        undet_prob = 1;
+        for (j = 1; j <= n_traps; j++){
+          dist = dists(j, i);
+          capt_prob = detfn(dist, detpars, cutoff, orientation);
+          // Compare to calculating these outside loop.
+          log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
+          log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
+          undet_prob *= 1 - capt_prob;
+          expected_ss(1, j, i) = detpars(1) - detpars(2)*dist;
+          if (linkfn_id == 2){
+            expected_ss(1, j, i) = mfexp(expected_ss(1, j, i));
+          }        
         }
       }
       sum_probs += 1 - undet_prob + DBL_MIN;
