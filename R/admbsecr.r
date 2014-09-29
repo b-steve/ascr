@@ -75,9 +75,12 @@
 #' \itemize{
 #'   \item \code{cutoff}: Compulsory. The signal strength threshold,
 #'         above which sounds are identified as detections.
-#'   \item \code{het.source}: Optional Logical, if \code{TRUE} a model with
+#'   \item \code{het.source}: Optional. Logical, if \code{TRUE} a model with
 #'         heterogeneity in source signal strengths is used. If unspecified,
 #'         it will default to \code{FALSE}.
+#'   \item \code{het.source.method}: Optional. A character string, either
+#'         \code{"GH"} or \code{"rect"}. If "GH", integration over source strengths
+#'         uses Gauss-Hermite quadrature. If "rect", the rectangle method is used.
 #'   \item \code{directional}: Optional. Logical, if \code{TRUE} a
 #'         directional signal strength model is used; see the section below on
 #'         fitted parameters. If unspecified, it will default to \code{FALSE},
@@ -422,15 +425,16 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ss.link <- ss.opts$ss.link
     directional <- ss.opts$directional
     het.source <- ss.opts$het.source
+    het.source.method <- ss.opts$het.source.method
     ## Sorting out signal strength options.
     if (fit.ss){
         if (missing(ss.opts)){
             ## Error if ss.opts not provided for signal strength model.
             stop("Argument 'ss.opts' is missing.")
         } else {
-            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "directional", "ss.link"))){
+            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "directional", "ss.link"))){
                 ## Warning for unexpected component names.
-                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"directional\" and \"ss.link\"; others are being ignored.")
+                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"directional\" and \"ss.link\"; others are being ignored.")
             }
             if (is.null(cutoff)){
                 ## Error for unspecified obejcts.
@@ -471,9 +475,16 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                 } else {
                     ss.opts$het.source <- TRUE
                     het.source <- TRUE
+                    ss.opts$het.source.method <- "GH"
+                    het.source.method <- "GH"
                 }
             }
-            if (!het.source){
+            if (het.source){
+                if (is.null(het.source.method)){
+                    ss.opts$het.source.method <- "GH"
+                    het.source.method <- "GH"
+                }
+            } else {
                 ## Fixing sigma.b0.ss to 0 if a heterogeneous source
                 ## strength model is not being used.
                 if (!is.null(sv$sigma.b0.ss) | !is.null(sv$sigma.b0.ss)){
@@ -500,9 +511,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         fit.dir <- FALSE
     }
-    ## Setting fit.het.source
+    ## Setting fit.het.source.
     if (fit.ss){
-        fit.het.source <- TRUE
+        fit.het.source <- TRUE      
         if ("sigma.b0.ss" %in% names(fix)){
             if (fix[["sigma.b0.ss"]] == 0){
                 fit.het.source <- FALSE
@@ -510,6 +521,18 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     } else {
         fit.het.source <- FALSE
+    }
+    ## Setting het.source.gh.
+    if (fit.het.source){
+        het.source.gh <- het.source.method == "GH"
+    } else {
+        het.source.gh <- FALSE
+    }
+    if (het.source.gh){
+        if (!require(fastGHQuad)){
+            warning("Package fastGHQuad must be installed to use Gauss-Hermite quadrature. Using the rectangle rule instead.")
+            het.source.gh <- FALSE
+        }
     }
     ## Generating ordered binary capture history.
     capt.bin.order <- do.call(order, as.data.frame(capt.bin))
@@ -763,7 +786,16 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Hardwiring number of quadrature points for directional calling.
     n.dir.quadpoints <- ifelse(fit.dir, 8, 1)
     ## Hardwiring number of quadrature points for hetergeneous source strength.
-    n.het.source.quadpoints <- ifelse(fit.het.source, 15, 1)
+    n.het.source.quadpoints <- ifelse(fit.het.source, 25, 1)
+    ## Getting nodes and weights for Gauss-Hermite quadrature.
+    if (het.source.gh){
+        GHd <- gaussHermiteData(n.het.source.quadpoints)
+        het.source.nodes <- GHd$x      
+        het.source.weights <- GHd$w
+    } else {
+        het.source.nodes <- 0
+        het.source.weights <- 0
+    }
     ## Stuff for the .dat file.
     data.list <- list(
         n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
@@ -778,8 +810,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
         capt.bin.freqs, fit_angs = as.numeric(fit.bearings),
         fit_dir = as.numeric(fit.dir), n_dir_quadpoints = n.dir.quadpoints,
-        fit_het_source = as.numeric(fit.het.source), n_het_source_quadpoints =
-        n.het.source.quadpoints, capt_ang = capt.bearing, fit_dists =
+        fit_het_source = as.numeric(fit.het.source), het_source_gh =
+        as.numeric(het.source.gh), n_het_source_quadpoints =
+        n.het.source.quadpoints, het_source_nodes = het.source.nodes,
+        het_source_weights = het.source.weights, capt_ang = capt.bearing, fit_dists =
         as.numeric(fit.dists), capt_dist = capt.dist, fit_ss = as.numeric(fit.ss),
         cutoff = cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
         as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =

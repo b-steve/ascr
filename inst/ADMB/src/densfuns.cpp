@@ -97,44 +97,39 @@ double log_dmvn (dvector x, dvector mu, dmatrix sigma)
 // Multivariate normal cumulative distribution functions:
 
 // Must be normalised, i.e., mu = 0, diagonal elements of sigma are all 1.
-dvariable log_pmvn (const dvar_vector& x, const prevariable& corr, double lower = -5, double upper = 5, double n_quadpoints = 10)
+double log_pmvn (dvector x, double corr, bool gh, dvector weights, dvector nodes, double n_quadpoints = 10, double lower = -5, double upper = 5)
 {
   int k = x.size();
   int i, j;
-  double bin_width = (upper - lower)/n_quadpoints;
-  double bin_mid;
-  dvariable out = 0;
-  dvariable summand;
-  dvariable z;
-  for (i = 1; i <= n_quadpoints; i++){
-    bin_mid = lower + bin_width*(i - 0.5);
-    summand = mfexp(log_dnorm(bin_mid, 0, 1));
-    for (j = 1; j <= k; j++){
-      summand *= cumd_norm((x(j) - pow(corr, 0.5)*bin_mid)/pow(1 - corr, 0.5));
-    }
-    summand *= bin_width;
-    out += summand;
-  }
-  return out;
-}
-
-double log_pmvn (dvector x, double corr, double lower = -5, double upper = 5, double n_quadpoints = 10)
-{
-  int k = x.size();
-  int i, j;
-  double bin_width = (upper - lower)/n_quadpoints;
-  double bin_mid;
   double out = 0;
   double summand;
-  double z;
-  for (i = 1; i <= n_quadpoints; i++){
-    bin_mid = lower + bin_width*(i - 0.5);
-    summand = mfexp(log_dnorm(bin_mid, 0, 1));
-    for (j = 1; j <= k; j++){
-      summand *= cumd_norm((x(j) - pow(corr, 0.5)*bin_mid)/pow(1 - corr, 0.5));
+  if (gh){
+    cout << "gh" << endl;
+    if (n_quadpoints != 25){
+      cerr << "Argument 'n_quadpoints' must be 25 if using Gauss-Hermite quadrature" << endl;
     }
-    summand *= bin_width;
-    out += summand;
+    // Altering nodes due to change of variable technique.
+    nodes *= pow(2, 0.5);
+    for (i = 1; i <= n_quadpoints; i++){
+      summand = weights(i)/pow(M_PI, 0.5);
+      for (j = 1; j <= k; j++){
+	summand *= cumd_norm((x(j) - pow(corr, 0.5)*nodes(i))/pow(1 - corr, 0.5));
+      }
+      out += summand;
+    }
+  } else {
+    cout << "rect" << endl;
+    double bin_width = (upper - lower)/n_quadpoints;
+    double bin_mid;
+    for (i = 1; i <= n_quadpoints; i++){
+      bin_mid = lower + bin_width*(i - 0.5);
+      summand = mfexp(log_dnorm(bin_mid, 0, 1));
+      for (j = 1; j <= k; j++){
+	summand *= cumd_norm((x(j) - pow(corr, 0.5)*bin_mid)/pow(1 - corr, 0.5));
+      }
+      summand *= bin_width;
+      out += summand;
+    }
   }
   return out;
 }
