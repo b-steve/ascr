@@ -177,9 +177,12 @@ The argument \code{ss.opts} is a list with up to four components:
 \itemize{
   \item \code{cutoff}: Compulsory. The signal strength threshold,
         above which sounds are identified as detections.
-  \item \code{het.source}: Optional Logical, if \code{TRUE} a model with
+  \item \code{het.source}: Optional. Logical, if \code{TRUE} a model with
         heterogeneity in source signal strengths is used. If unspecified,
         it will default to \code{FALSE}.
+  \item \code{het.source.method}: Optional. A character string, either
+        \code{"GH"} or \code{"rect"}. If "GH", integration over source strengths
+        uses Gauss-Hermite quadrature. If "rect", the rectangle method is used.
   \item \code{directional}: Optional. Logical, if \code{TRUE} a
         directional signal strength model is used; see the section below on
         fitted parameters. If unspecified, it will default to \code{FALSE},
