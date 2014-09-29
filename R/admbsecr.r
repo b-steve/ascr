@@ -86,6 +86,10 @@
 #'         fitted parameters. If unspecified, it will default to \code{FALSE},
 #'         unless the \code{b2.ss} parameter is provided in \code{sv} or
 #'         \code{fix}, in which case it will default to \code{TRUE}.
+#'   \item \code{n.dir.quadpoints}: Optional. An integer, giving the number of
+#'         quadrature points used for numerical integration over the possible
+#'         call directions. Defaults to 8, but needs to be larger when calls are
+#'         more directional (i.e., b2.ss parameter is large).
 #'   \item \code{ss.link}: Optional. A character string, either \code{"identity"} or
 #'         \code{"log"}, which specifies the link function for the signal
 #'         strength detection function. Defaults to \code{"identity"}.
@@ -426,15 +430,16 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     directional <- ss.opts$directional
     het.source <- ss.opts$het.source
     het.source.method <- ss.opts$het.source.method
+    n.dir.quadpoints <- ss.opts$n.dir.quadpoints
     ## Sorting out signal strength options.
     if (fit.ss){
         if (missing(ss.opts)){
             ## Error if ss.opts not provided for signal strength model.
             stop("Argument 'ss.opts' is missing.")
         } else {
-            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "directional", "ss.link"))){
+            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "directional", "n.dir.quadpoints", "ss.link"))){
                 ## Warning for unexpected component names.
-                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"directional\" and \"ss.link\"; others are being ignored.")
+                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"directional\",  \"n.dir.quadpoints\", and \"ss.link\"; others are being ignored.")
             }
             if (is.null(cutoff)){
                 ## Error for unspecified obejcts.
@@ -783,8 +788,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         all.n.local <- rep(1, n.unique)
         all.which.local <- rep(0, n.unique)
     }
-    ## Hardwiring number of quadrature points for directional calling.
-    n.dir.quadpoints <- ifelse(fit.dir, 8, 1)
+    ## Sorting out number of quadrature points for directional calling.
+    if (fit.dir){
+        if (is.null(n.dir.quadpoints)){
+            n.dir.quadpoints <- 8
+        }
+    } else {
+        n.dir.quadpoints <- 1
+    }
     ## Hardwiring number of quadrature points for hetergeneous source strength.
     n.het.source.quadpoints <- ifelse(fit.het.source, 25, 1)
     ## Getting nodes and weights for Gauss-Hermite quadrature.

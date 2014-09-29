@@ -94,6 +94,12 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                       plot.circles = "dist" %in% fit$infotypes,
                       arrow.length = NULL,
                       show.legend = !add, show.axes = TRUE, add = FALSE){
+    ## Error for locations() with a directional model.
+    if (!is.null(fit$args$ss.opts$directional)){
+        if (fit$args$ss.opts$directional){
+            stop("The locations() function has not yet been implemented for directional model fits.")
+        }
+    }
     ## Setting up plotting area.
     if (!add){
         plot.new()

@@ -5,6 +5,8 @@ test_that("simple fitting -- half normal", {
     simple.capt <- example$capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example$traps,
                     mask = example$mask)
+    args.simple <- list(capt = simple.capt, traps = example$traps,
+                        mask = example$mask)
     ## Checking parameter values.
     pars.test <- c(2429.62882766283, 0.999999985691245, 5.36419062611109)
     n.pars <- length(pars.test)
@@ -50,15 +52,24 @@ test_that("simple fitting -- half normal", {
     relative.error <- max(abs((coef(fit) - coefs.secr)/coefs.secr))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking fitting with local integration.
-    fit <- admbsecr(capt = simple.capt, traps = example$traps,
+    fit.loc <- admbsecr(capt = simple.capt, traps = example$traps,
                         mask = example$mask, local = TRUE)
+    args.loc <- list(capt = simple.capt, traps = example$traps,
+                     mask = example$mask, local = TRUE)
     pars.test <- c(2429.62882766283, 0.999999985691245, 5.36419062611109)
     n.pars <- length(pars.test)
-    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    relative.error <- max(abs((coef(fit.loc) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ses.test <- c(370.82, 0.41458)
-    relative.error <- max(abs((stdEr(fit)[-2] - ses.test)/ses.test))
+    relative.error <- max(abs((stdEr(fit.loc)[-2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
+    ## Checking parallel function.
+    fits <- par.admbsecr(n.cores = 2, args.simple, args.loc)
+    expect_that(fits[[1]], is_identical_to(fit))
+    expect_that(fits[[2]], is_identical_to(fit.loc))
+    fits.list <- par.admbsecr(n.cores = 2,
+                              arg.list = list(args.simple, args.loc))
+    expect_that(fits.list, is_identical_to(fits))
 })
 
 test_that("simple fitting -- hazard rate", {
