@@ -183,6 +183,10 @@ The argument \code{ss.opts} is a list with up to four components:
   \item \code{het.source.method}: Optional. A character string, either
         \code{"GH"} or \code{"rect"}. If "GH", integration over source strengths
         uses Gauss-Hermite quadrature. If "rect", the rectangle method is used.
+  \item \code{n.het.source.quadpoints}: Optional. An integer, giving the number
+        of quadrature points used for numerical integration over source strengths.
+        Defaults to 15. A larger number of quadrature points leads to more accurate
+        results, but will increase computation time.
   \item \code{directional}: Optional. Logical, if \code{TRUE} a
         directional signal strength model is used; see the section below on
         fitted parameters. If unspecified, it will default to \code{FALSE},
@@ -191,7 +195,9 @@ The argument \code{ss.opts} is a list with up to four components:
   \item \code{n.dir.quadpoints}: Optional. An integer, giving the number of
         quadrature points used for numerical integration over the possible
         call directions. Defaults to 8, but needs to be larger when calls are
-        more directional (i.e., b2.ss parameter is large).
+        more directional (i.e., b2.ss parameter is large). A larger number of
+        quadrature points leads to more accurate results, but will increase computation
+        time.
   \item \code{ss.link}: Optional. A character string, either \code{"identity"} or
         \code{"log"}, which specifies the link function for the signal
         strength detection function. Defaults to \code{"identity"}.
