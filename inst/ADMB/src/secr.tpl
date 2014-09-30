@@ -236,7 +236,7 @@ PARAMETER_SECTION
   sdreport_number esa
   3darray log_capt_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
   3darray log_evade_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
-  3darray expected_ss(1,n_dir_quadpoints,1,n_traps,1,n_mask)
+  3darray expected_ss(1,n_dir_quadpoints,1,nr_expected_ss,1,nc_expected_ss)
   matrix sigma_ss_mat(1,dim_sigma_ss_mat,1,dim_sigma_ss_mat)
   number D
   number corr_ss
@@ -329,17 +329,24 @@ PROCEDURE_SECTION
   } else {
     orientation = 0;
     for (i = 1; i <= n_mask; i++){
-      // For a model with heterogeneity in signal strengths.
-      if (fit_het_source){
-        // Expected signal strengths.
+      // Saving expected signal strengths.
+      if (fit_ss){
         dvar_vector mu_ss(1, n_traps);
         mu_ss = detpars(1) - detpars(2)*column(dists, i);
+        if (linkfn_id == 2){
+          mu_ss = mfexp(mu_ss);
+        }  
         expected_ss(1).colfill(i, mu_ss);
-        dvar_vector z_ss(1, n_traps);
-        z_ss = (cutoff - mu_ss)/pow(square(detpars(4)) + square(detpars(5)), 0.5);
-        undet_prob = pmvn(z_ss, corr_ss, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5);
-      } else {
-        // No heterogeneity in signal strengths.
+        // For a model with heterogeneity in signal strengths.
+        if (fit_het_source){
+          cout << "not here" << endl;
+          dvar_vector z_ss(1, n_traps);
+          z_ss = (cutoff - mu_ss)/pow(square(detpars(4)) + square(detpars(5)), 0.5);
+          undet_prob = pmvn(z_ss, corr_ss, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5);
+        } 
+      }
+      if (!fit_het_source){
+        // No heterogeneity in source signal strengths.
         undet_prob = 1;
         for (j = 1; j <= n_traps; j++){
           dist = dists(j, i);
@@ -347,11 +354,7 @@ PROCEDURE_SECTION
           // Compare to calculating these outside loop.
           log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
           log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
-          undet_prob *= 1 - capt_prob;
-          expected_ss(1, j, i) = detpars(1) - detpars(2)*dist;
-          if (linkfn_id == 2){
-            expected_ss(1, j, i) = mfexp(expected_ss(1, j, i));
-          }        
+          undet_prob *= 1 - capt_prob;       
         }
       }
       sum_probs += 1 - undet_prob + DBL_MIN;
