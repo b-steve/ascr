@@ -204,6 +204,7 @@ DATA_SECTION
   number dir
   number bearing_to_trap
   number orientation
+  vector capt_hist(1,n_traps)
 
 PARAMETER_SECTION
   objective_function_value f
@@ -226,7 +227,6 @@ PARAMETER_SECTION
   number D
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
-  vector capt_hist(1,n_traps)
   number sum_probs
   number undet_prob
   number capt_prob
