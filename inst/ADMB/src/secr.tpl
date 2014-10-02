@@ -221,6 +221,7 @@ DATA_SECTION
   number dir
   number bearing_to_trap
   number orientation
+  vector capt_hist(1,n_traps)
 
 PARAMETER_SECTION
   objective_function_value f
@@ -242,7 +243,6 @@ PARAMETER_SECTION
   number corr_ss
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
-  vector capt_hist(1,n_traps)
   number sum_probs
   number undet_prob
   number capt_prob
@@ -339,11 +339,10 @@ PROCEDURE_SECTION
         expected_ss(1).colfill(i, mu_ss);
         // For a model with heterogeneity in signal strengths.
         if (fit_het_source){
-          cout << "not here" << endl;
           dvar_vector z_ss(1, n_traps);
           z_ss = (cutoff - mu_ss)/pow(square(detpars(4)) + square(detpars(5)), 0.5);
           undet_prob = pmvn(z_ss, corr_ss, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5);
-        } 
+        }
       }
       if (!fit_het_source){
         // No heterogeneity in source signal strengths.
@@ -483,11 +482,26 @@ PROCEDURE_SECTION
       for (i = i_start; i <= i_end; i++){
         // Contribution from capture locations.
         if (fit_ss){
-          dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
-          for (j = 1; j <= n_traps; j++){
-            local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(5)));
+          // Do something in here for heterogeneous source strengths.
+          if (fit_het_source){
+            // In here goes f(w, i | x), right?
+            for (j = 1; j <= n_local; j++){
+              int n_dets = sum(capt_hist);
+              int n_nodets = n_traps - n_dets;
+              bool all_dets = n_nodets == 0;
+              // Expected signal strengths at traps at which there was a detection.
+              dvector mu_ss_det(1, n_dets);
+              // Expected signal strengths at traps at which there was no detection.
+              
+              dvector mu_ss_nodet(1, n_nodets);
+            }
+          } else {
+            dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
+            for (j = 1; j <= n_traps; j++){
+              local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(5)));
+            }
+            bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
           }
-          bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
         }
         if (any_suppars){
           dvar_vector supp_contrib(1,n_local);
