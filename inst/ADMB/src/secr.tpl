@@ -29,6 +29,8 @@ DATA_SECTION
   int u
   int k
   int b
+  int a
+  int c
   int i_start
   int i_end
   number dist
@@ -484,16 +486,34 @@ PROCEDURE_SECTION
         if (fit_ss){
           // Do something in here for heterogeneous source strengths.
           if (fit_het_source){
-            // In here goes f(w, i | x), right?
-            for (j = 1; j <= n_local; j++){
-              int n_dets = sum(capt_hist);
-              int n_nodets = n_traps - n_dets;
-              bool all_dets = n_nodets == 0;
+            double n_dets = sum(capt_hist);
+            bool all_dets = n_dets == n_traps;
+            if (all_dets){
+              // Put in log_dmvn for received signal strengths.
+            } else {
+              double n_nodets = n_traps - n_dets;
+              ivector ind_det(1, n_dets);
+              ivector ind_nodet(1, n_nodets);
+              a = 1;
+              c = 1;
+              for (j = 1; j <= n_traps; j++){
+                if (capt_hist(j) == 1){
+                  ind_det(a) = j;
+                  a++;
+                } else {
+                  ind_nodet(c) = j;
+                  j++;
+                }
+              }
               // Expected signal strengths at traps at which there was a detection.
-              dvector mu_ss_det(1, n_dets);
-              // Expected signal strengths at traps at which there was no detection.
-              
-              dvector mu_ss_nodet(1, n_nodets);
+              dvar_vector mu_ss_det(1, n_dets);
+              // Expected signal strengths at traps at which there was no detection.              
+              dvar_vector mu_ss_nodet(1, n_nodets);
+              // In here goes f(w, i | x), right?
+              for (j = 1; j <= n_local; j++){
+                mu_ss_det = column((*expected_ss_pointer), j)(ind_det);
+                mu_ss_nodet = column((*expected_ss_pointer), j)(ind_nodet);
+              }
             }
           } else {
             dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
