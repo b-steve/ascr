@@ -63,6 +63,10 @@ autob0.ss <- function(args){
     do.call(args$ss.opts$ss.link, list(max(args$capt$ss)))
 }
 
+autosigma.b0.ss <- function(args){
+    0.01*do.call(args$ss.opts$ss.link, list(max(args$capt$ss)))
+}
+
 autob1.ss <- function(args){
     buffer <- attr(args$mask, "buffer")
     cutoff <- args$ss.opts$cutoff

@@ -159,7 +159,7 @@ test_that("ss fitting", {
     ## Fitting model.
     ss.capt <- example$capt[c("bincapt", "ss")]
     fit <- admbsecr(capt = ss.capt, traps = example$traps,
-                    mask = example$mask, #fix = list(b2.ss = 0),
+                    mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                     ss.opts = list(cutoff = 60), sf = 0)
     ## Checking parameter values.
@@ -172,11 +172,11 @@ test_that("ss fitting", {
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
-    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.ss")))
+    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss")))
     ## Checking supplementary parameters.
     expect_that(length(fit$suppars), equals(0))
     ## Checking get.par() with SS stuff.
-    expect_that(get.par(fit, "all")[-4], equals(coef(fit, c("fitted", "derived"))))
+    expect_that(get.par(fit, "all")[c(-4, -5)], equals(coef(fit, c("fitted", "derived"))))
     expect_that(get.par(fit, "b0.ss"), equals(fit$coefficients["b0.ss"]))
 })
 
@@ -219,7 +219,7 @@ test_that("joint ss/toa fitting", {
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
-    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.ss")))
+    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss")))
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
 })
@@ -284,7 +284,7 @@ test_that("directional call fitting", {
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
-    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.ss")))
+    expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss")))
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
     ## Checking fitting with local integration.

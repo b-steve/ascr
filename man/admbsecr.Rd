@@ -173,10 +173,20 @@ below on fitted parameters). It is therefore only required if
 signal strength information appears in the \code{capt} argument,
 and is ignored (with a warning) otherwise.
 
-The argument \code{ss.opts} is a list with up to three components:
+The argument \code{ss.opts} is a list with up to four components:
 \itemize{
   \item \code{cutoff}: Compulsory. The signal strength threshold,
         above which sounds are identified as detections.
+  \item \code{het.source}: Optional. Logical, if \code{TRUE} a model with
+        heterogeneity in source signal strengths is used. If unspecified,
+        it will default to \code{FALSE}.
+  \item \code{het.source.method}: Optional. A character string, either
+        \code{"GH"} or \code{"rect"}. If "GH", integration over source strengths
+        uses Gauss-Hermite quadrature. If "rect", the rectangle method is used.
+  \item \code{n.het.source.quadpoints}: Optional. An integer, giving the number
+        of quadrature points used for numerical integration over source strengths.
+        Defaults to 15. A larger number of quadrature points leads to more accurate
+        results, but will increase computation time.
   \item \code{directional}: Optional. Logical, if \code{TRUE} a
         directional signal strength model is used; see the section below on
         fitted parameters. If unspecified, it will default to \code{FALSE},
@@ -185,7 +195,9 @@ The argument \code{ss.opts} is a list with up to three components:
   \item \code{n.dir.quadpoints}: Optional. An integer, giving the number of
         quadrature points used for numerical integration over the possible
         call directions. Defaults to 8, but needs to be larger when calls are
-        more directional (i.e., b2.ss parameter is large).
+        more directional (i.e., b2.ss parameter is large). A larger number of
+        quadrature points leads to more accurate results, but will increase computation
+        time.
   \item \code{ss.link}: Optional. A character string, either \code{"identity"} or
         \code{"log"}, which specifies the link function for the signal
         strength detection function. Defaults to \code{"identity"}.

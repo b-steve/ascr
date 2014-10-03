@@ -29,6 +29,8 @@ DATA_SECTION
   int u
   int k
   int b
+  int a
+  int c
   int i_start
   int i_end
   number dist
@@ -65,6 +67,23 @@ DATA_SECTION
   // Logical indicator for directional calling.
   init_int fit_dir
   init_number n_dir_quadpoints
+  init_int fit_het_source
+  init_int het_source_gh
+  init_number n_het_source_quadpoints
+  int n_het_source_nodes
+  !! if (fit_het_source & het_source_gh){
+  !!   n_het_source_nodes = n_het_source_quadpoints;
+  !! } else {
+  !!   n_het_source_nodes = 1;
+  !! }
+  init_vector het_source_nodes(1,n_het_source_nodes);
+  init_vector het_source_weights(1,n_het_source_nodes);
+  int dim_sigma_ss_mat;
+  !! if (fit_het_source){
+  !!   dim_sigma_ss_mat = n_traps;
+  !! } else {
+  !!   dim_sigma_ss_mat = 1;
+  !! }
   int length_fs
   !! if (fit_dir){
   !!   length_fs = n;
@@ -220,11 +239,10 @@ PARAMETER_SECTION
   sdreport_number esa
   3darray log_capt_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
   3darray log_evade_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
-  3darray expected_ss(1,n_dir_quadpoints,1,n_traps,1,n_mask)
-  //matrix log_capt_probs(1,n_traps,1,n_mask)
-  //matrix log_evade_probs(1,n_traps,1,n_mask)
-  //matrix expected_ss(1,nr_expected_ss,1,nc_expected_ss)
+  3darray expected_ss(1,n_dir_quadpoints,1,nr_expected_ss,1,nc_expected_ss)
+  matrix sigma_ss_mat(1,dim_sigma_ss_mat,1,dim_sigma_ss_mat)
   number D
+  number corr_ss
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
   number sum_probs
@@ -261,6 +279,14 @@ PROCEDURE_SECTION
       par_ests(j) = suppars(i);
       j++;
     }
+  }
+  // Generating variance-covariance matrix and correlation matrix for fits with heterogeneity in source strength.
+  if (fit_het_source){
+    sigma_ss_mat = square(detpars(4));
+    for (i = 1; i <= dim_sigma_ss_mat; i++){
+      sigma_ss_mat(i, i) += square(detpars(5));
+    }
+    corr_ss = square(detpars(4))/(square(detpars(4)) + square(detpars(5)));
   }
   // Start of likelihood calculation.
   f = 0.0;
@@ -305,17 +331,31 @@ PROCEDURE_SECTION
   } else {
     orientation = 0;
     for (i = 1; i <= n_mask; i++){
-      undet_prob = 1;
-      for (j = 1; j <= n_traps; j++){
-        dist = dists(j, i);
-        capt_prob = detfn(dist, detpars, cutoff, orientation);
-        // Compare to calculating these outside loop.
-        log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
-        log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
-        undet_prob *= 1 - capt_prob;
-        expected_ss(1, j, i) = detpars(1) - detpars(2)*dist;
+      // Saving expected signal strengths.
+      if (fit_ss){
+        dvar_vector mu_ss(1, n_traps);
+        mu_ss = detpars(1) - detpars(2)*column(dists, i);
         if (linkfn_id == 2){
-          expected_ss(1, j, i) = mfexp(expected_ss(1, j, i));
+          mu_ss = mfexp(mu_ss);
+        }  
+        expected_ss(1).colfill(i, mu_ss);
+        // For a model with heterogeneity in signal strengths.
+        if (fit_het_source){
+          dvar_vector z_ss(1, n_traps);
+          z_ss = (cutoff - mu_ss)/pow(square(detpars(4)) + square(detpars(5)), 0.5);
+          undet_prob = pmvn(z_ss, corr_ss, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5);
+        }
+      }
+      if (!fit_het_source){
+        // No heterogeneity in source signal strengths.
+        undet_prob = 1;
+        for (j = 1; j <= n_traps; j++){
+          dist = dists(j, i);
+          capt_prob = detfn(dist, detpars, cutoff, orientation);
+          // Compare to calculating these outside loop.
+          log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
+          log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
+          undet_prob *= 1 - capt_prob;       
         }
       }
       sum_probs += 1 - undet_prob + DBL_MIN;
@@ -444,11 +484,44 @@ PROCEDURE_SECTION
       for (i = i_start; i <= i_end; i++){
         // Contribution from capture locations.
         if (fit_ss){
-          dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
-          for (j = 1; j <= n_traps; j++){
-            local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(4)));
+          // Do something in here for heterogeneous source strengths.
+          if (fit_het_source){
+            double n_dets = sum(capt_hist);
+            bool all_dets = n_dets == n_traps;
+            if (all_dets){
+              // Put in log_dmvn for received signal strengths.
+            } else {
+              double n_nodets = n_traps - n_dets;
+              ivector ind_det(1, n_dets);
+              ivector ind_nodet(1, n_nodets);
+              a = 1;
+              c = 1;
+              for (j = 1; j <= n_traps; j++){
+                if (capt_hist(j) == 1){
+                  ind_det(a) = j;
+                  a++;
+                } else {
+                  ind_nodet(c) = j;
+                  j++;
+                }
+              }
+              // Expected signal strengths at traps at which there was a detection.
+              dvar_vector mu_ss_det(1, n_dets);
+              // Expected signal strengths at traps at which there was no detection.              
+              dvar_vector mu_ss_nodet(1, n_nodets);
+              // In here goes f(w, i | x), right?
+              for (j = 1; j <= n_local; j++){
+                mu_ss_det = column((*expected_ss_pointer), j)(ind_det);
+                mu_ss_nodet = column((*expected_ss_pointer), j)(ind_nodet);
+              }
+            }
+          } else {
+            dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
+            for (j = 1; j <= n_traps; j++){
+              local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(5)));
+            }
+            bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
           }
-          bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
         }
         if (any_suppars){
           dvar_vector supp_contrib(1,n_local);

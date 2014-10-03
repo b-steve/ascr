@@ -31,17 +31,17 @@ dvariable detfn_logth (double x, const dvar_vector &detpars, double cutoff, doub
 }
 
 // Signal strength.
-// Order of detpars: b0ss, b1ss, sigmass.
+// Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
 dvariable detfn_ss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm((cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*x))/detpars(4));
+  return 1 - cumd_norm((cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*x))/detpars(5));
 }
 
 // Log-link signal strength.
-// Order of detpars: b0ss, b1ss, sigmass.
+// Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
 dvariable detfn_logss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm(mfexp(cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1))*x)))/detpars(4));
+  return 1 - cumd_norm(mfexp(cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1))*x)))/detpars(5));
 }
 
 detfn_pointer get_detfn(int detfn_id)

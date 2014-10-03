@@ -14,9 +14,11 @@ Imports:
     CircStats,
     lattice,
     matrixStats,
+    mvtnorm,
     plyr,
     secr
 Suggests:
+    fastGHQuad,
     parallel,
     testthat
 LinkingTo: Rcpp

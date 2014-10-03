@@ -57,8 +57,8 @@ calc.lth <- function(d, pars){
 }
 
 calc.ss <- function(d, pars, ss.link, orientation){
-    if (!identical(sort(names(pars)), c("b0.ss", "b1.ss", "b2.ss", "cutoff", "sigma.ss"))){
-        stop("Argument 'pars' must have named components 'b0.ss', 'b1.ss', 'b2.ss', 'sigma.ss', and 'cutoff'.")
+    if (!identical(sort(names(pars)), c("b0.ss", "b1.ss", "b2.ss", "cutoff", "sigma.b0.ss", "sigma.ss"))){
+        stop("Argument 'pars' must have named components 'b0.ss', 'b1.ss', 'b2.ss', 'sigma.b0.ss', 'sigma.ss', and 'cutoff'.")
     }
     b0.ss <- pars$b0.ss
     b1.ss <- pars$b1.ss

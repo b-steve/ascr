@@ -89,9 +89,6 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         detfn <- fit$args$detfn
         pars <- get.par(fit, "fitted", as.list = TRUE)
         ss.opts <- fit$args$ss.opts
-        ss.link <- ss.opts$ss.link
-        cutoff <- ss.opts$cutoff
-        directional <- ss.opts$directional
         call.freqs <- fit$args$call.freqs
         sound.speed <- fit$args$sound.speed
     }
@@ -105,6 +102,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     sim.mrds <- sim.types["mrds"]
     sim.ss <- ifelse(detfn == "ss", TRUE, FALSE)
     cutoff <- ss.opts$cutoff
+    het.source <- ss.opts$het.source
     directional <- ss.opts$directional
     ss.link <- ss.opts$ss.link
     ## Sorting out directional calling stuff.
@@ -126,12 +124,30 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                 pars$b2.ss <- 0
             }
         }
+        if (is.null(het.source)){
+            if ("sigma.b0.ss" %in% names(pars)){
+                het.source <- TRUE
+            } else {
+                het.source <- FALSE
+            }
+        } else if (het.source & !("sigma.b0.ss" %in% names(pars))){
+            stop("Parameter 'sigma.b0.ss' must be specified for a model with heterogeneity in source strengths'.")
+        } else if (!het.source & "sigma.b0.ss" %in% names(pars)){
+            if (pars$sigma.b0.ss != 0){
+                warning("Parameter 'sigma.b0.ss' in 'pars' is being ignores ad the 'het.source' component of 'ss.opts' is 'FALSE'.")
+                pars$sigma.b0.ss <- 0
+            }
+        }
         if (is.null(ss.link)){
             ss.link <- "identity"
         }
         ## Setting b2.ss to 0 if model is not directional.
         if (!directional){
             pars$b2.ss <- 0
+        }
+        ## Setting sigma.b0.ss if model does not have heterogeneity in source strengths.
+        if (!het.source){
+            pars$sigma.b0.ss <- 0
         }
     }
     ## Working out required parameters.
@@ -150,7 +166,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                            hr = c("g0", "sigma", "z"),
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),
-                           ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.ss"),
+                           ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
     if (!identical(sort(par.names), sort(names(pars)))){
@@ -229,10 +245,17 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         } else {
             popn.orientations <- 0
         }
+        ## Expected received strength at each microphone for each call.
         ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1))*dists)
-        ss.error <- matrix(rnorm(n.popn*n.traps, mean = 0,
-                                 sd = pars$sigma.ss),
-                           nrow = n.popn, ncol = n.traps)
+        ## Random error at each microphone.
+        sigma.mat <- matrix(pars$sigma.b0.ss^2, nrow = n.traps, ncol = n.traps)
+        diag(sigma.mat) <- diag(sigma.mat) + pars$sigma.ss^2
+        ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
+        ## Filling ss.error for non-hetergeneity models for consistency with old versions.
+        if (pars$sigma.b0.ss == 0){
+            ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
+        }
+        ## Creating SS capture history.
         full.ss.capt <- ss.mean + ss.error
         captures <- which(apply(full.ss.capt, 1,
                                 function(x, cutoff) any(x > cutoff),
