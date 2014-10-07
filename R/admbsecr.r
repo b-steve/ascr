@@ -825,8 +825,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         stop("Fitting of models with both heterogeneity in source signal strength and directional calling is not yet implemented.")
     }
     ## Error thrown for model with heterogeneity in source strength and a log-link function.
-    if (fit.het.source & ss.link == "log"){
-        stop("Fitting of signal strength models with a log-link function and heterogeneity in source signal strength is not yet implemented.")
+    if (fit.het.source){
+        if (ss.link == "log"){
+            stop("Fitting of signal strength models with a log-link function and heterogeneity in source signal strength is not yet implemented.")
+        }
     }
     ## Stuff for the .dat file.
     data.list <- list(
