@@ -1,8 +1,5 @@
 #include <admodel.h>
 
-// Helper prototypes:
-dvariable bessi0 (dvariable x);
-
 // Gamma distribution density functions:
 
 dvariable log_dgamma (double x, const prevariable& alpha, const prevariable& beta)
@@ -55,7 +52,7 @@ dvar_vector log_dvm (double x, dvector mu, const prevariable& kappa)
 
 // Multivariate normal distribution density functions:
 
-dvariable log_dmvn (dvector x, const dvar_vector& mu, const dvar_matrix& sigma)
+dvariable log_dmvn_diag (dvector x, const dvar_vector& mu, const prevariable& diag, const prevariable& offdiag, double DBL_MIN = 1e-150)
 {
   double k = x.size();
   dvar_matrix diff(1,1,1,k);
@@ -64,11 +61,11 @@ dvariable log_dmvn (dvector x, const dvar_vector& mu, const dvar_matrix& sigma)
     diff(1,i) = x(i) - mu(i);
     tdiff(i,1) = diff(1,i);
   }
-  dvariable e = (diff*inv(sigma)*tdiff)(1,1);
-  return -0.5*(k*log(2*M_PI) + log(det(sigma)) + e);
+  dvariable e = (diff*inv_diag(k, diag, offdiag)*tdiff)(1,1);
+  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + DBL_MIN) + e);
 }
 
-dvariable log_dmvn (dvector x, dvector mu, const dvar_matrix& sigma)
+dvariable log_dmvn_diag (dvector x, dvector mu, const prevariable& diag, const prevariable& offdiag, double DBL_MIN = 1e-150)
 {
   double k = x.size();
   dmatrix diff(1,1,1,k);
@@ -77,11 +74,11 @@ dvariable log_dmvn (dvector x, dvector mu, const dvar_matrix& sigma)
     diff(1,i) = x(i) - mu(i);
     tdiff(i,1) = diff(1,i);
   }
-  dvariable e = (diff*inv(sigma)*tdiff)(1,1);
-  return -0.5*(k*log(2*M_PI) + log(det(sigma)) + e);
+  dvariable e = (diff*inv_diag(k, diag, offdiag)*tdiff)(1,1);
+  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + DBL_MIN) + e);
 }
 
-double log_dmvn (dvector x, dvector mu, dmatrix sigma)
+double log_dmvn_diag (dvector x, dvector mu, double diag, double offdiag, double DBL_MIN = 1e-150)
 {
   double k = x.size();
   dmatrix diff(1,1,1,k);
@@ -90,8 +87,8 @@ double log_dmvn (dvector x, dvector mu, dmatrix sigma)
     diff(1,i) = x(i) - mu(i);
     tdiff(i,1) = diff(1,i);
   }
-  double e = (diff*inv(sigma)*tdiff)(1,1);
-  return -0.5*(k*log(2*M_PI) + log(det(sigma)) + e);
+  double e = (diff*inv_diag(k, diag, offdiag)*tdiff)(1,1);
+  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + DBL_MIN) + e);
 }
 
 // Multivariate normal cumulative distribution functions. 
@@ -167,18 +164,3 @@ double pmvn (dvector x, double corr, bool gh, dvector weights, dvector nodes, do
   return out;
 }
 
-//Helpers:
-dvariable bessi0 (dvariable x)
-{
-  dvariable ax,ans;
-  dvariable y;
-    if ((ax = fabs(x)) < 3.75){
-    y = x/3.75;
-    y *= y;
-    ans = 1.0 + y*(3.5156229 + y*(3.0899424 + y*(1.2067492 + y*(0.2659732 + y*(0.360768e-1 + y*0.45813e-2)))));
-  } else {
-    y = 3.75/ax;
-    ans = (exp(ax)/sqrt(ax))*(0.39894228 + y*(0.1328592e-1 + y*(0.225319e-2 + y*(-0.157565e-2 + y*(0.916281e-2 + y*(-0.2057706e-1 + y*(0.2635537e-1 + y*(-0.1647633e-1 + y*0.392377e-2))))))));
-  }
-  return ans;
-}

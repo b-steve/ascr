@@ -31,6 +31,7 @@ DATA_SECTION
   int b
   int a
   int c
+  int d
   int i_start
   int i_end
   number dist
@@ -78,12 +79,6 @@ DATA_SECTION
   !! }
   init_vector het_source_nodes(1,n_het_source_nodes);
   init_vector het_source_weights(1,n_het_source_nodes);
-  int dim_sigma_ss_mat;
-  !! if (fit_het_source){
-  !!   dim_sigma_ss_mat = n_traps;
-  !! } else {
-  !!   dim_sigma_ss_mat = 1;
-  !! }
   int length_fs
   !! if (fit_dir){
   !!   length_fs = n;
@@ -240,9 +235,9 @@ PARAMETER_SECTION
   3darray log_capt_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
   3darray log_evade_probs(1,n_dir_quadpoints,1,n_traps,1,n_mask)
   3darray expected_ss(1,n_dir_quadpoints,1,nr_expected_ss,1,nc_expected_ss)
-  matrix sigma_ss_mat(1,dim_sigma_ss_mat,1,dim_sigma_ss_mat)
   number D
   number corr_ss
+  number cond_corr_ss
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
   number sum_probs
@@ -251,6 +246,8 @@ PARAMETER_SECTION
   number ss_resid
   number point_capt
   number point_evade
+  number diag_sigma_ss
+  number offdiag_sigma_ss
 
 PROCEDURE_SECTION
   // Grabbing detection function.
@@ -282,10 +279,8 @@ PROCEDURE_SECTION
   }
   // Generating variance-covariance matrix and correlation matrix for fits with heterogeneity in source strength.
   if (fit_het_source){
-    sigma_ss_mat = square(detpars(4));
-    for (i = 1; i <= dim_sigma_ss_mat; i++){
-      sigma_ss_mat(i, i) += square(detpars(5));
-    }
+    diag_sigma_ss = square(detpars(4)) + square(detpars(5));
+    offdiag_sigma_ss = square(detpars(4));
     corr_ss = square(detpars(4))/(square(detpars(4)) + square(detpars(5)));
   }
   // Start of likelihood calculation.
@@ -342,7 +337,7 @@ PROCEDURE_SECTION
         // For a model with heterogeneity in signal strengths.
         if (fit_het_source){
           dvar_vector z_ss(1, n_traps);
-          z_ss = (cutoff - mu_ss)/pow(square(detpars(4)) + square(detpars(5)), 0.5);
+          z_ss = (cutoff - mu_ss)/pow(diag_sigma_ss, 0.5);
           undet_prob = pmvn(z_ss, corr_ss, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5);
         }
       }
@@ -488,7 +483,13 @@ PROCEDURE_SECTION
           if (fit_het_source){
             double n_dets = sum(capt_hist);
             bool all_dets = n_dets == n_traps;
+            // Observed signal strengths.
+            dvector obs_ss(1, n_dets);
             if (all_dets){
+              obs_ss = row(capt_ss, i);
+              for (j = 1; j <= n_local; j++){
+                bincapt_contrib(j) = log_dmvn_diag(obs_ss, column((*expected_ss_pointer), j), diag_sigma_ss, offdiag_sigma_ss, DBL_MIN);
+              }
               // Put in log_dmvn for received signal strengths.
             } else {
               double n_nodets = n_traps - n_dets;
@@ -502,17 +503,29 @@ PROCEDURE_SECTION
                   a++;
                 } else {
                   ind_nodet(c) = j;
-                  j++;
+                  c++;
                 }
               }
-              // Expected signal strengths at traps at which there was a detection.
-              dvar_vector mu_ss_det(1, n_dets);
-              // Expected signal strengths at traps at which there was no detection.              
+              obs_ss = row(capt_ss, i)(ind_det);
+              // Marginal and conditional mean vectors.
+	      dvar_vector mu_ss_det(1, n_dets);
               dvar_vector mu_ss_nodet(1, n_nodets);
-              // In here goes f(w, i | x), right?
+              dvar_vector mu_ss_cond(1, n_nodets);
+              // Diagonal and off-diagonal elements of the conditional variance-covariance matrix.
+              dvariable diag_sigma_ss_cond = (pow(detpars(5), 4) + (n_dets + 1)*square(detpars(5))*square(detpars(4)))/(square(detpars(5)) + n_dets*square(detpars(4)));
+              dvariable offdiag_sigma_ss_cond = (square(detpars(5))*square(detpars(4)))/(square(detpars(5)) + n_dets*square(detpars(4)));
+              // Conditional correlation.
+              dvariable corr_ss_cond = square(detpars(4))/(square(detpars(5)) + (n_dets + 1)*square(detpars(4)));
+              // Standardised discrepency between conditional expected strength and cutoff strength.
+              dvar_vector z_ss_nodet(1, n_nodets);
+              // In here goes f(w, r | x), right?
               for (j = 1; j <= n_local; j++){
                 mu_ss_det = column((*expected_ss_pointer), j)(ind_det);
                 mu_ss_nodet = column((*expected_ss_pointer), j)(ind_nodet);
+                mu_ss_cond = mu_ss_nodet + (square(detpars(4))*sum(obs_ss - mu_ss_det))/(square(detpars(5)) + n_dets*square(detpars(4)));
+                bincapt_contrib(j) = log_dmvn_diag(obs_ss, mu_ss_det, diag_sigma_ss, offdiag_sigma_ss, DBL_MIN);
+                z_ss_nodet = (cutoff - mu_ss_cond)/pow(diag_sigma_ss_cond, 0.5);
+                bincapt_contrib(j) += log(pmvn(z_ss_nodet, corr_ss_cond, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5) + DBL_MIN);
               }
             }
           } else {
@@ -595,7 +608,8 @@ PROCEDURE_SECTION
   }
 
 GLOBALS_SECTION
-  #include <densfuns.cpp>
   #include <detfuns.cpp>
+  #include <helpers.cpp>
   #include <invlinkfuns.cpp>
+  #include <densfuns.cpp>
 
