@@ -235,7 +235,7 @@ p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
     } else {
         re.detfn <- FALSE
         if (detfn == "ss"){
-            if (pars$b2.ss != 0){
+            if (pars$b2.ss != 0 | pars$sigma.b0.ss != 0){
                 re.detfn <- TRUE
             }
         }
@@ -245,6 +245,11 @@ p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
     ## in detection function. Detections at traps no longer
     ## independent.
     if (re.detfn){
+        if (!is.null(pars$sigma.b0.ss)){
+            if (pars$sigma.b0.ss != 0){
+                stop("Function p.dot() has not yet been implemented for models with heterogeneous source strengths.")
+            }
+        }
         n.traps <- nrow(traps)
         n.points <- nrow(points)
         dirs <- (0:(n.quadpoints - 1))*2*pi/n.quadpoints

@@ -100,6 +100,11 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             stop("The locations() function has not yet been implemented for directional model fits.")
         }
     }
+    if (!is.null(fit$args$ss.opts$het.source)){
+        if (fit$args$ss.opts$het.source){
+            stop("The locations() function has not yet been implemented for heterogeneous source strength model fits.")
+        }
+    }
     ## Setting up plotting area.
     if (!add){
         plot.new()
