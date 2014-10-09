@@ -937,6 +937,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                    nchar(list.files())) == ".par")]][1]
     }
     out <- try(read.admbsecr(prefix.name), silent = TRUE)
+    ## Saving esa to prevent recalculation.
+    esa <- out$coefficients["esa"]
     options(warn = 0)
     setwd(curr.dir)
     ## Cleaning up files.
@@ -996,7 +998,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     ## Putting in esa estimate.
-    out$coefficients[2*n.est.pars + 1] <- p.dot(out, esa = TRUE)
+    out$coefficients[2*n.est.pars + 1] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
         mu.freqs <- mean(call.freqs)
