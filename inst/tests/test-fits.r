@@ -273,7 +273,7 @@ test_that("directional call fitting", {
     joint.capt <- lapply(joint.capt, function(x) x[41:60, ])
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                    mask = example$mask, ss.opts = list(cutoff = 60))
+                    mask = example$mask, ss.opts = list(cutoff = 60), trace = TRUE)
     ## Checking parameter values.
     pars.test <- c(386.073482720871, 89.311447428016, 3.05408458965273, 
                    1.22802638658725, 10.4127874608875, 0.00211264942873231)
@@ -285,6 +285,9 @@ test_that("directional call fitting", {
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
     expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss")))
+    ## Checking R's ESA calculation.
+    relative.error <- (p.dot(fit, esa = TRUE) - coef(fit, "esa"))/coef(fit, "esa")
+    expect_that(relative.error < 1e-4, is_true())
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
     ## Checking fitting with local integration.
