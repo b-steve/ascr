@@ -607,6 +607,10 @@ PROCEDURE_SECTION
     cout << "LL: " << -f << endl;
   }
 
+REPORT_SECTION
+  // Writing ESA to report file.
+  report << esa << endl;
+
 GLOBALS_SECTION
   #include <detfuns.cpp>
   #include <helpers.cpp>

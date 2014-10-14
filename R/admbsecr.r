@@ -938,7 +938,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     out <- try(read.admbsecr(prefix.name), silent = TRUE)
     ## Saving esa to prevent recalculation.
-    esa <- out$coefficients["esa"]
+    esa <- as.numeric(readLines("secr.rep"))
     options(warn = 0)
     setwd(curr.dir)
     ## Cleaning up files.
