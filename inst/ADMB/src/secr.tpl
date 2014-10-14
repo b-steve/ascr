@@ -218,7 +218,6 @@ DATA_SECTION
   number dir
   number bearing_to_trap
   number orientation
-  vector capt_hist(1,n_traps)
 
 PARAMETER_SECTION
   objective_function_value f
@@ -248,6 +247,8 @@ PARAMETER_SECTION
   number point_evade
   number diag_sigma_ss
   number offdiag_sigma_ss
+  // Keep this here, otherwise get an error on Mac.
+  vector capt_hist(1,n_traps)
 
 PROCEDURE_SECTION
   // Grabbing detection function.
@@ -481,7 +482,7 @@ PROCEDURE_SECTION
         if (fit_ss){
           // Do something in here for heterogeneous source strengths.
           if (fit_het_source){
-            double n_dets = sum(capt_hist);
+            double n_dets = value(sum(capt_hist));
             bool all_dets = n_dets == n_traps;
             // Observed signal strengths.
             dvector obs_ss(1, n_dets);
