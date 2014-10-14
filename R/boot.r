@@ -253,7 +253,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
     ## covariances.
     maxgrads <- res[, ncol(res)]
     ## Removing maximum gradient component.
-    res <- res[, -ncol(res)]
+    res <- res[, -ncol(res), drop = FALSE]
     se <- apply(res, 2, sd, na.rm = TRUE)
     names(se) <- par.names
     cor <- diag(n.pars)
