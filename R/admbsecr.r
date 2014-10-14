@@ -217,17 +217,29 @@
 #' ADMB has failed to detect convergence as at least one of the
 #' gradient components is still larger than the convergence criterion
 #' (by default, 0.0001). It is possible to speed things up and help
-#' ADMB detect convergence earlier by either tightening parameter
-#' bounds (as above), or by setting appropriate scalefactors (using
-#' the argument \code{sf}). To do this, first identify which
+#' ADMB detect convergence earlier by tightening parameter bounds (as
+#' above), by setting parameter phases, or by setting appropriate
+#' scalefactors.
+#'
+#' To improve convergence using parameter phases use the \code{phases}
+#' argument. By default all parameters are given a phase of 1, unless
+#' it is changed. First, all parameters with a phase of 1 will be
+#' maximised over, while all others are fixed at their original
+#' values. Following that, parameters with a phase of 2 are
+#' introduced, with all parameters with later phases remaining
+#' fixed. This process continues until all parameters are maximised
+#' over. Maximising paramters in phases can greatly improve the
+#' stability of optimisation.
+#' 
+#' To improve convergence using scalefactors, first identify which
 #' parameters have large gradient components from the "final
 #' statistics" section of the \code{trace} output. Next, find the
 #' default settings of the scalefactors by printing the object
-#' \code{fit$args$sf}, where \code{fit} is the original object returned
-#' by \code{admbsecr}. Finally, rerun \code{admbsecr} again, but this
-#' time set the argument \code{sf} manually. Set scalefactors for any
-#' parameters with small gradient components to the same as the
-#' defaults ascertained above, and increase those associated with
+#' \code{fit$args$sf}, where \code{fit} is the original object
+#' returned by \code{admbsecr}. Finally, rerun \code{admbsecr} again,
+#' but this time set the argument \code{sf} manually. Set scalefactors
+#' for any parameters with small gradient components to the same as
+#' the defaults ascertained above, and increase those associated with
 #' large gradient components by a factor of 10. If the problem
 #' persists, repeat this process (e.g., if the same parameters still
 #' have large gradient components, increase the associated
@@ -301,6 +313,9 @@
 #' @param fix A named list. Component names are parameter names to be
 #' fixed, and each component is the fixed value for the associated
 #' parameter.
+#' @param phases A named list. Component names are parameter names,
+#' and each component is a phase for the associated parameter. See the
+#' section on convergence below for information on parameter phases.
 #' @param sf A named list. Component names are parameter names, and
 #' each component is a scalefactor for the associated parameter. The
 #' default behaviour is to automatically select scalefactors based on
@@ -370,10 +385,10 @@
 #' @export
 #'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-                     fix = NULL, sf = NULL, ss.opts = NULL, call.freqs = NULL,
-                     sound.speed = 330, local = FALSE, hess = !any(call.freqs > 1),
-                     trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
-                     exe.type = "old"){
+                     fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
+                     call.freqs = NULL, sound.speed = 330, local = FALSE,
+                     hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
+                     cbs = NULL, gbs = NULL, exe.type = "old"){
     arg.names <- names(as.list(environment()))
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
@@ -401,6 +416,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (!is.list(bounds) & !is.null(bounds)){
         stop("The 'bounds' argument must be 'NULL' or a list.")
+    }
+    if (!is.list(phases) & !is.null(phases)){
+        stop("The 'phases' argument must be 'NULL' or a list.")
     }
     if (is.list(bounds)){
         if (any(laply(bounds, length) != 2)){
@@ -603,7 +621,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     any.suppars <- n.suppars > 0
     n.pars <- length(par.names)
     ## Checking par.names against names of sv, fix, bounds, and sf.
-    for (i in c("sv", "fix", "bounds", "sf")){
+    for (i in c("sv", "fix", "bounds", "phases", "sf")){
         obj <- get(i)
         if (!is.null(obj)){
             obj.fitted <- names(obj) %in% par.names
@@ -665,6 +683,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out phases.
     ## TODO: Add phases parameter so that these can be controlled by user.
+    phases.save <- phases
     phases <- vector("list", length = n.pars)
     names(phases) <- par.names
     for (i in par.names){
@@ -672,7 +691,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             ## Phase of -1 in ADMB fixes parameter at starting value.
             phases[[i]] <- -1
         } else {
-            phases[[i]] <- 0
+            if (any(i == names(phases.save))){
+                phases[[i]] <- phases.save[[i]]
+            } else {
+                phases[[i]] <- 1
+            }
         }
     }
     D.phase <- phases[["D"]]
