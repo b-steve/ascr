@@ -4,10 +4,10 @@
 \title{Fitting SECR models in ADMB}
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, sf = NULL, ss.opts = NULL, call.freqs = NULL,
-  sound.speed = 330, local = FALSE, hess = !any(call.freqs > 1),
-  trace = FALSE, clean = TRUE, cbs = NULL, gbs = NULL,
-  exe.type = "old")
+  fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
+  call.freqs = NULL, sound.speed = 330, local = FALSE,
+  hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE, cbs = NULL,
+  gbs = NULL, exe.type = "old")
 }
 \arguments{
 \item{capt}{A list with named components, containing the capture
@@ -39,6 +39,10 @@ bounds for the associated parameter.}
 \item{fix}{A named list. Component names are parameter names to be
 fixed, and each component is the fixed value for the associated
 parameter.}
+
+\item{phases}{A named list. Component names are parameter names,
+and each component is a phase for the associated parameter. See the
+section on convergence below for information on parameter phases.}
 
 \item{sf}{A named list. Component names are parameter names, and
 each component is a scalefactor for the associated parameter. The
@@ -323,17 +327,29 @@ a while (prior to the calculation of the Hessian). This is because
 ADMB has failed to detect convergence as at least one of the
 gradient components is still larger than the convergence criterion
 (by default, 0.0001). It is possible to speed things up and help
-ADMB detect convergence earlier by either tightening parameter
-bounds (as above), or by setting appropriate scalefactors (using
-the argument \code{sf}). To do this, first identify which
+ADMB detect convergence earlier by tightening parameter bounds (as
+above), by setting parameter phases, or by setting appropriate
+scalefactors.
+
+To improve convergence using parameter phases use the \code{phases}
+argument. By default all parameters are given a phase of 1, unless
+it is changed. First, all parameters with a phase of 1 will be
+maximised over, while all others are fixed at their original
+values. Following that, parameters with a phase of 2 are
+introduced, with all parameters with later phases remaining
+fixed. This process continues until all parameters are maximised
+over. Maximising paramters in phases can greatly improve the
+stability of optimisation.
+
+To improve convergence using scalefactors, first identify which
 parameters have large gradient components from the "final
 statistics" section of the \code{trace} output. Next, find the
 default settings of the scalefactors by printing the object
-\code{fit$args$sf}, where \code{fit} is the original object returned
-by \code{admbsecr}. Finally, rerun \code{admbsecr} again, but this
-time set the argument \code{sf} manually. Set scalefactors for any
-parameters with small gradient components to the same as the
-defaults ascertained above, and increase those associated with
+\code{fit$args$sf}, where \code{fit} is the original object
+returned by \code{admbsecr}. Finally, rerun \code{admbsecr} again,
+but this time set the argument \code{sf} manually. Set scalefactors
+for any parameters with small gradient components to the same as
+the defaults ascertained above, and increase those associated with
 large gradient components by a factor of 10. If the problem
 persists, repeat this process (e.g., if the same parameters still
 have large gradient components, increase the associated

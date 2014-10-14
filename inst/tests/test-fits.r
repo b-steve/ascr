@@ -161,7 +161,8 @@ test_that("ss fitting", {
     fit <- admbsecr(capt = ss.capt, traps = example$traps,
                     mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    ss.opts = list(cutoff = 60), sf = 0)
+                    ss.opts = list(cutoff = 60),
+                    trace = TRUE, clean = FALSE)
     ## Checking parameter values.
     pars.test <- c(2440.99968246751, 88.2993844240013, 3.7663100027822, 
                    10.8142267688236)
@@ -178,6 +179,14 @@ test_that("ss fitting", {
     ## Checking get.par() with SS stuff.
     expect_that(get.par(fit, "all")[c(-4, -5)], equals(coef(fit, c("fitted", "derived"))))
     expect_that(get.par(fit, "b0.ss"), equals(fit$coefficients["b0.ss"]))
+    ## Testing parameter phases.
+    fit.phase <- admbsecr(capt = ss.capt, traps = example$traps,
+                    mask = example$mask,
+                    sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
+                    ss.opts = list(cutoff = 60),
+                    phases = list(sigma.ss = 2, b0.ss = 3))
+    relative.error <- max(abs((coef(fit.phase) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
 })
 
 test_that("toa fitting", {
