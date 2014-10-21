@@ -161,7 +161,7 @@ test_that("ss fitting", {
     fit <- admbsecr(capt = ss.capt, traps = example$traps,
                     mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    ss.opts = list(cutoff = 60), trace = TRUE)
+                    ss.opts = list(cutoff = 60))
     ## Checking parameter values.
     pars.test <- c(2440.99968246751, 88.2993844240013, 3.7663100027822, 
                    10.8142267688236)
@@ -281,7 +281,7 @@ test_that("directional call fitting", {
     joint.capt <- lapply(joint.capt, function(x) x[41:60, ])
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                    mask = example$mask, ss.opts = list(cutoff = 60), trace = TRUE)
+                    mask = example$mask, ss.opts = list(cutoff = 60))
     ## Checking parameter values.
     pars.test <- c(386.073482720871, 89.311447428016, 3.05408458965273, 
                    1.22802638658725, 10.4127874608875, 0.00211264942873231)
@@ -321,7 +321,7 @@ test_that("fitting heterogeneity in source strengths", {
                         sigma.ss = 4),
                     ss.opts = list(cutoff = 60, het.source = TRUE,
                         n.het.source.quadpoints = 5), hess = FALSE,
-                    local = TRUE, trace = TRUE, cbs = 1e10, gbs = 1e10)
+                    local = TRUE, cbs = 1e10, gbs = 1e10)
     pars.test <- c(386.144666484659, 92.2146905293059, 3.63309967668573, 
                    2.76546363479188, 10.306889983415)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
