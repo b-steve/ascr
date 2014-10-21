@@ -161,8 +161,7 @@ test_that("ss fitting", {
     fit <- admbsecr(capt = ss.capt, traps = example$traps,
                     mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    ss.opts = list(cutoff = 60),
-                    trace = TRUE, clean = FALSE)
+                    ss.opts = list(cutoff = 60), trace = TRUE)
     ## Checking parameter values.
     pars.test <- c(2440.99968246751, 88.2993844240013, 3.7663100027822, 
                    10.8142267688236)
@@ -295,7 +294,7 @@ test_that("directional call fitting", {
     ## Checking detection parameters.
     expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss")))
     ## Checking R's ESA calculation.
-    relative.error <- (p.dot(fit, esa = TRUE) - coef(fit, "esa"))/coef(fit, "esa")
+    relative.error <- (admbsecr:::p.dot(fit, esa = TRUE) - coef(fit, "esa"))/coef(fit, "esa")
     expect_that(relative.error < 1e-4, is_true())
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
@@ -306,5 +305,25 @@ test_that("directional call fitting", {
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
+})
+
+test_that("fitting heterogeneity in source strengths", {
+    set.seed(6434)
+    pars <- list(D = 500, b0.ss = 90, b1.ss = 4, sigma.b0.ss = 5, sigma.ss = 10)
+    capt <- sim.capt(traps = example$traps, mask = example$mask, detfn = "ss",
+                     pars = pars, ss.opts = list(cutoff = 60))
+    ## First line is:
+    ## 0.00000  0.00000  0.00000 65.49092   0.00000 79.19198
+    fit <- admbsecr(capt = capt, traps = example$traps,
+                    mask = example$mask, sv = pars,
+                    phases = list(b0.ss = 2, sigma.b0.ss = 3,
+                        sigma.ss = 4),
+                    ss.opts = list(cutoff = 60, het.source = TRUE,
+                        n.het.source.quadpoints = 5), hess = FALSE,
+                    local = TRUE, trace = TRUE, cbs = 1e10, gbs = 1e10)
+    pars.test <- c(386.144666484659, 92.2146905293059, 3.63309967668573, 
+                   2.76546363479188, 10.306889983415)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
 })
