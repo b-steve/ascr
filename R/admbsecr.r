@@ -409,6 +409,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.dir.quadpoints <- ss.opts$n.dir.quadpoints
     n.het.source.quadpoints <- ss.opts$n.het.source.quadpoints
     if (fit.ss){
+        if (missing(ss.opts)){
+            ## Error if ss.opts not provided for signal strength model.
+            stop("Argument 'ss.opts' is missing.")
+        }
         ## Error for unspecified cutoff.
         if (is.null(cutoff)){
             stop("The 'cutoff' component of 'ss.opts' must be specified.")
@@ -476,69 +480,65 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     attr(mask, "buffer") <- buffer
     ## Sorting out signal strength options.
     if (fit.ss){
-        if (missing(ss.opts)){
-            ## Error if ss.opts not provided for signal strength model.
-            stop("Argument 'ss.opts' is missing.")
-        } else {
-            ## Warning for unexpected component names.
-            if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "n.het.source.quadpoints", "directional", "n.dir.quadpoints", "ss.link"))){
-                warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"n.het.source.quadpoints\", \"directional\",  \"n.dir.quadpoints\", and \"ss.link\"; others are being ignored.")
-            }
-            ## Setting default values for ss.link, het.source and directional.
-            if (is.null(ss.link)){
-                ss.opts$ss.link <- "identity"
-                ss.link <- "identity"
-            } else if (!(ss.link %in% c("identity", "log"))){
-                stop("Component 'ss.link' in 'ss.opts' must be either \"identity\" or \"log\".")
-            }
-            ## By default, directional calling model is only used if b2.ss appears in sv or fix.
-            if (is.null(directional)){
-                if (is.null(sv$b2.ss) & is.null(fix$b2.ss)){
-                    ss.opts$directional <- FALSE
-                    directional <- FALSE
-                } else {
-                    ss.opts$directional <- TRUE
-                    directional <- TRUE
-                }
-            }
-            ## Fixing b2.ss to 0 if a directional calling model is not being used.
-            if (!directional){
-                if (!is.null(sv$b2.ss) | !is.null(fix$b2.ss)){
-                    warning("As the 'directional' component of 'ss.opts' is FALSE, the values of parameter b2.ss in 'sv' and 'fix' are being ignored")
-                    sv$b2.ss <- NULL
-                    fix$b2.ss <- NULL
-                }
-                fix$b2.ss <- 0
-            }
-            ## By default, heterogeneity source strength model is only
-            ## used if sigma.b0.ss appears in sv or fix.
-            if (is.null(het.source)){
-                if (is.null(sv$sigma.b0.ss) & is.null(fix$sigma.b0.ss)){
-                    ss.opts$het.source <- FALSE
-                    het.source <- FALSE
-                } else {
-                    ss.opts$het.source <- TRUE
-                    het.source <- TRUE
-                    ss.opts$het.source.method <- "GH"
-                    het.source.method <- "GH"
-                }
-            }
-            if (het.source){
-                if (is.null(het.source.method)){
-                    ss.opts$het.source.method <- "GH"
-                    het.source.method <- "GH"
-                }
+        ## Warning for unexpected component names.
+        if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "n.het.source.quadpoints", "directional", "n.dir.quadpoints", "ss.link"))){
+            warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"n.het.source.quadpoints\", \"directional\",  \"n.dir.quadpoints\", and \"ss.link\"; others are being ignored.")
+        }
+        ## Setting default values for ss.link, het.source and directional.
+        if (is.null(ss.link)){
+            ss.opts$ss.link <- "identity"
+            ss.link <- "identity"
+        } else if (!(ss.link %in% c("identity", "log"))){
+            stop("Component 'ss.link' in 'ss.opts' must be either \"identity\" or \"log\".")
+        }
+        ## By default, directional calling model is only used if b2.ss appears in sv or fix.
+        if (is.null(directional)){
+            if (is.null(sv$b2.ss) & is.null(fix$b2.ss)){
+                ss.opts$directional <- FALSE
+                directional <- FALSE
             } else {
-                ## Fixing sigma.b0.ss to 0 if a heterogeneous source
-                ## strength model is not being used.
-                if (!is.null(sv$sigma.b0.ss) | !is.null(sv$sigma.b0.ss)){
-                    warning("As the 'het.source' component of 'ss.opts' is FALSE, the values of the parameter sigma.b0.ss in 'sv' and 'fix' are being ignored")
-                    sv$sigma.b0.ss <- NULL
-                    fix$sigma.b0.ss <- NULL
-                }
-                fix$sigma.b0.ss <- 0
+                ss.opts$directional <- TRUE
+                directional <- TRUE
             }
         }
+        ## Fixing b2.ss to 0 if a directional calling model is not being used.
+        if (!directional){
+            if (!is.null(sv$b2.ss) | !is.null(fix$b2.ss)){
+                warning("As the 'directional' component of 'ss.opts' is FALSE, the values of parameter b2.ss in 'sv' and 'fix' are being ignored")
+                sv$b2.ss <- NULL
+                fix$b2.ss <- NULL
+            }
+            fix$b2.ss <- 0
+        }
+        ## By default, heterogeneity source strength model is only
+        ## used if sigma.b0.ss appears in sv or fix.
+        if (is.null(het.source)){
+            if (is.null(sv$sigma.b0.ss) & is.null(fix$sigma.b0.ss)){
+                ss.opts$het.source <- FALSE
+                het.source <- FALSE
+            } else {
+                ss.opts$het.source <- TRUE
+                het.source <- TRUE
+                ss.opts$het.source.method <- "GH"
+                het.source.method <- "GH"
+            }
+        }
+        if (het.source){
+            if (is.null(het.source.method)){
+                ss.opts$het.source.method <- "GH"
+                het.source.method <- "GH"
+            }
+        } else {
+            ## Fixing sigma.b0.ss to 0 if a heterogeneous source
+            ## strength model is not being used.
+            if (!is.null(sv$sigma.b0.ss) | !is.null(sv$sigma.b0.ss)){
+                warning("As the 'het.source' component of 'ss.opts' is FALSE, the values of the parameter sigma.b0.ss in 'sv' and 'fix' are being ignored")
+                sv$sigma.b0.ss <- NULL
+                fix$sigma.b0.ss <- NULL
+            }
+            fix$sigma.b0.ss <- 0
+        }
+        
     } else {
         if (!is.null(ss.opts)){
             warning("Argument 'ss.opts' is being ignored as a signal strength model is not being fitted.")
