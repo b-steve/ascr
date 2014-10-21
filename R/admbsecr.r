@@ -390,6 +390,42 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
                      cbs = NULL, gbs = NULL, exe.type = "old"){
     arg.names <- names(as.list(environment()))
+    ## TODO: Sort out how to determine supplementary parameter names.
+    supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
+    fit.types <- supp.types %in% names(capt)
+    names(fit.types) <- supp.types
+    ## Logical indicators for additional information types.
+    fit.bearings <- fit.types["bearing"]
+    fit.dists <- fit.types["dist"]
+    fit.ss <- fit.types["ss"]
+    fit.toas <- fit.types["toa"]
+    fit.mrds <- fit.types["mrds"]
+    ## Storing objects from ss.opts.
+    cutoff <- ss.opts$cutoff
+    ss.link <- ss.opts$ss.link
+    directional <- ss.opts$directional
+    het.source <- ss.opts$het.source
+    het.source.method <- ss.opts$het.source.method
+    n.dir.quadpoints <- ss.opts$n.dir.quadpoints
+    n.het.source.quadpoints <- ss.opts$n.het.source.quadpoints
+    if (fit.ss){
+        ## Error for unspecified cutoff.
+        if (is.null(cutoff)){
+            stop("The 'cutoff' component of 'ss.opts' must be specified.")
+        }
+        ## Removing detections below the cutoff.
+        rem <- capt$ss < cutoff
+        capt <- lapply(capt, function(x, rem){
+            x[rem] <- 0
+            x
+        }, rem = rem)
+        keep <- apply(capt$bincapt, 1, sum) > 0
+        capt <- lapply(capt, function(x, keep) x[keep, ], keep = keep)
+        n.removed <- sum(!keep)
+        if (trace & n.removed > 0){
+            cat(n.removed, " capture history entries have no received signal strengths above the cutoff and have therefore been removed.\n", sep = "") 
+        }
+    }
     capt.bin <- capt$bincapt
     ## Checking for bincapt.
     if (is.null(capt.bin)){
@@ -438,37 +474,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     traps <- as.matrix(traps)
     attr(mask, "area") <- A
     attr(mask, "buffer") <- buffer
-    ## TODO: Sort out how to determine supplementary parameter names.
-    supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
-    fit.types <- supp.types %in% names(capt)
-    names(fit.types) <- supp.types
-    ## Logical indicators for additional information types.
-    fit.bearings <- fit.types["bearing"]
-    fit.dists <- fit.types["dist"]
-    fit.ss <- fit.types["ss"]
-    fit.toas <- fit.types["toa"]
-    fit.mrds <- fit.types["mrds"]
-    ## Storing objects from ss.opts.
-    cutoff <- ss.opts$cutoff
-    ss.link <- ss.opts$ss.link
-    directional <- ss.opts$directional
-    het.source <- ss.opts$het.source
-    het.source.method <- ss.opts$het.source.method
-    n.dir.quadpoints <- ss.opts$n.dir.quadpoints
-    n.het.source.quadpoints <- ss.opts$n.het.source.quadpoints
     ## Sorting out signal strength options.
     if (fit.ss){
         if (missing(ss.opts)){
             ## Error if ss.opts not provided for signal strength model.
             stop("Argument 'ss.opts' is missing.")
         } else {
+            ## Warning for unexpected component names.
             if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "n.het.source.quadpoints", "directional", "n.dir.quadpoints", "ss.link"))){
-                ## Warning for unexpected component names.
                 warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"n.het.source.quadpoints\", \"directional\",  \"n.dir.quadpoints\", and \"ss.link\"; others are being ignored.")
-            }
-            if (is.null(cutoff)){
-                ## Error for unspecified obejcts.
-                stop("The 'cutoff' component of 'ss.opts' must be specified.")
             }
             ## Setting default values for ss.link, het.source and directional.
             if (is.null(ss.link)){
@@ -487,8 +501,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                     directional <- TRUE
                 }
             }
+            ## Fixing b2.ss to 0 if a directional calling model is not being used.
             if (!directional){
-                ## Fixing b2.ss to 0 if a directional calling model is not being used.
                 if (!is.null(sv$b2.ss) | !is.null(fix$b2.ss)){
                     warning("As the 'directional' component of 'ss.opts' is FALSE, the values of parameter b2.ss in 'sv' and 'fix' are being ignored")
                     sv$b2.ss <- NULL
@@ -569,7 +583,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     capt.bin.unique <- capt.bin[capt.bin.order, ]
     capt.bin.freqs <- as.vector(table(apply(capt.bin.unique, 1, paste, collapse = "")))
     names(capt.bin.freqs) <- NULL
-    capt.bin.unique <- capt.bin.unique[!duplicated(as.data.frame(capt.bin.unique)), ]
+    capt.bin.unique <- capt.bin.unique[!duplicated(as.data.frame(capt.bin.unique)), , drop = FALSE]
     n.unique <- nrow(capt.bin.unique)
     unique.changes <- cumsum(c(0, capt.bin.freqs[-n.unique])) + 1
     ## Reordering all capture history components.
