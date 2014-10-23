@@ -321,7 +321,7 @@ test_that("fitting heterogeneity in source strengths", {
                         sigma.ss = 4),
                     ss.opts = list(cutoff = 60, het.source = TRUE,
                         n.het.source.quadpoints = 5), hess = FALSE,
-                    local = TRUE, cbs = 1e10, gbs = 1e10)
+                    local = TRUE, cbs = 1e8, gbs = 1e8)
     pars.test <- c(386.144666484659, 92.2146905293059, 3.63309967668573, 
                    2.76546363479188, 10.306889983415)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
