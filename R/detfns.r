@@ -70,7 +70,7 @@ calc.ss <- function(d, pars, ss.link, orientation){
     } else if (ss.link == "identity") {
         inv.ss.link <- identity
     } else {
-        stop("Link function not recoginsed.")
+        stop("Link function not recognised.")
     }
     if (b2.ss == 0){
         out <- 1 - pnorm(cutoff, mean = inv.ss.link(b0.ss - b1.ss*d), sd = sigma.ss)

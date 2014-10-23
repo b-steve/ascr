@@ -41,19 +41,27 @@ dvariable detfn_ss (double x, const dvar_vector &detpars, double cutoff, double 
 // Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
 dvariable detfn_logss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm(mfexp(cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1))*x)))/detpars(5));
+  return 1 - cumd_norm((cutoff - mfexp(detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*x))/detpars(5));
+}
+
+// Spherical spreading signal strength.
+// Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
+dvariable detfn_sphericalss (double x, const dvar_vector &detpars, double cutoff, double orientation)
+{
+  return 1 - cumd_norm((cutoff - (detpars(1) - 10*log10(square(x)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*(x - 1)))/detpars(5));
 }
 
 detfn_pointer get_detfn(int detfn_id)
 {
   detfn_pointer detfn;
   switch(detfn_id){
-    case 1: detfn = detfn_hn; break;
-    case 2: detfn = detfn_hr; break;
-    case 3: detfn = detfn_th; break;
-    case 4: detfn = detfn_logth; break;
-    case 5: detfn = detfn_ss; break;
-    case 6: detfn = detfn_logss; break;
+  case 1: detfn = detfn_hn; break;
+  case 2: detfn = detfn_hr; break;
+  case 3: detfn = detfn_th; break;
+  case 4: detfn = detfn_logth; break;
+  case 5: detfn = detfn_ss; break;
+  case 6: detfn = detfn_logss; break;
+  case 7: detfn = detfn_sphericalss; break;
   }
   return(detfn) ;
 }

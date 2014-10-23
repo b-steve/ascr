@@ -53,7 +53,6 @@ DATA_SECTION
   !! }
   // Initialising various scalars.
   init_number detfn_id
-  init_number buffer
   init_number trace
   init_number DBL_MIN
   init_int n
@@ -313,9 +312,13 @@ PROCEDURE_SECTION
           log_evade_probs(b, j, i) = log(1 - capt_prob + DBL_MIN);
           point_evade *= 1 - capt_prob;
           if (fit_ss){
-            expected_ss(b, j, i) = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*dist;
-            if (linkfn_id == 2){
-              expected_ss(b, j, i) = mfexp(expected_ss(b, j, i));
+            if (linkfn_id == 3){
+              expected_ss(b, j, i) = detpars(1) - 10*log10(square(dist)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*(dist - 1);
+            } else {
+              expected_ss(b, j, i) = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*dist;
+              if (linkfn_id == 2){
+                expected_ss(b, j, i) = mfexp(expected_ss(b, j, i));
+              }
             }
           }
         }
@@ -330,9 +333,13 @@ PROCEDURE_SECTION
       // Saving expected signal strengths.
       if (fit_ss){
         dvar_vector mu_ss(1, n_traps);
-        mu_ss = detpars(1) - detpars(2)*column(dists, i);
-        if (linkfn_id == 2){
-          mu_ss = mfexp(mu_ss);
+        if (linkfn_id == 3){
+          mu_ss = detpars(1) - 10*log10(square(column(dists, i))) - detpars(2)*(column(dists, i) - 1);
+        } else {
+          mu_ss = detpars(1) - detpars(2)*column(dists, i);
+          if (linkfn_id == 2){
+            mu_ss = mfexp(mu_ss);
+          }
         }  
         expected_ss(1).colfill(i, mu_ss);
         // For a model with heterogeneity in signal strengths.

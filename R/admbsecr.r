@@ -488,8 +488,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (is.null(ss.link)){
             ss.opts$ss.link <- "identity"
             ss.link <- "identity"
-        } else if (!(ss.link %in% c("identity", "log"))){
-            stop("Component 'ss.link' in 'ss.opts' must be either \"identity\" or \"log\".")
+        } else if (!(ss.link %in% c("identity", "log", "spherical"))){
+            stop("Component 'ss.link' in 'ss.opts' must be either \"identity\", \"log\", or \"spherical\".")
         }
         ## By default, directional calling model is only used if b2.ss appears in sv or fix.
         if (is.null(directional)){
@@ -608,12 +608,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else if (ss.link == "log"){
             detfn <- "log.ss"
             linkfn.id <- 2
+        } else if (ss.link == "spherical"){
+            detfn <- "spherical.ss"
+            linkfn.id <- 3
         }
     } else {
-        ## Not sure what a linkfn.id of 3 means? Probably throws an error in ADMB.
-        linkfn.id <- 3
+        ## Not sure what a linkfn.id of 4 means? Probably throws an error in ADMB.
+        linkfn.id <- 4
     }
-    detfns <- c("hn", "hr", "th", "lth", "ss", "log.ss")
+    detfns <- c("hn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss")
     ## Sets detection function ID number for use in ADMB:
     ## 1 = Half normal
     ## 2 = Hazard rate
@@ -628,7 +631,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),
                            ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
-                           log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.ss"))
+                           log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
+                           spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
@@ -863,8 +867,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Error thrown for model with heterogeneity in source strength and a log-link function.
     if (fit.het.source){
-        if (ss.link == "log"){
-            stop("Fitting of signal strength models with a log-link function and heterogeneity in source signal strength is not yet implemented.")
+        if (ss.link != "identity"){
+            stop("Fitting of signal strength models with heterogeneity in source signal strength is only implemented with an identity link function.")
         }
     }
     ## Stuff for the .dat file.
@@ -876,7 +880,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         detpars.sf, detpars_linkfns = detpars.link, n_suppars = n.suppars,
         suppars_lb = suppars.lb, suppars_ub = suppars.ub, suppars_phase =
         suppars.phase, suppars_sf = suppars.sf, suppars_linkfns =
-        suppars.link, detfn_id = detfn.id, buffer = buffer, trace =
+        suppars.link, detfn_id = detfn.id, trace =
         as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps = n.traps, n_mask
         = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
         capt.bin.freqs, fit_angs = as.numeric(fit.bearings),
