@@ -161,7 +161,7 @@ test_that("ss fitting", {
     fit <- admbsecr(capt = ss.capt, traps = example$traps,
                     mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
-                    ss.opts = list(cutoff = 60), trace = TRUE)
+                    ss.opts = list(cutoff = 60))
     ## Checking parameter values.
     pars.test <- c(2440.99968246751, 88.2993844240013, 3.7663100027822, 
                    10.8142267688236)
@@ -190,7 +190,7 @@ test_that("ss fitting", {
     fit.log <- admbsecr(capt = ss.capt, traps = example$traps,
                         mask = example$mask,
                         ss.opts = list(cutoff = 60, ss.link = "log"),
-                        phase = list(b0.ss = 2), trace = TRUE, hess = FALSE)
+                        phase = list(b0.ss = 2), hess = FALSE)
     pars.test <- c(2356.45734991859, 4.53613924774161, 0.0611158039671795, 
                    10.5025697036287)
     relative.error <- max(abs((coef(fit.log) - pars.test)/pars.test))
@@ -200,7 +200,7 @@ test_that("ss fitting", {
                               mask = example$mask,
                               sv = list(D = 2000, b0.ss = 100, b1.ss = 4, sigma.ss = 15),
                               ss.opts = list(cutoff = 60, ss.link = "spherical"),
-                              phase = list(b0.ss = 2), trace = TRUE, hess = FALSE)
+                              phase = list(b0.ss = 2), hess = FALSE)
     pars.test <- c(2389.03212838198, 91.841110973961, 2.33768815022206, 
                    10.6843748292046)
     relative.error <- max(abs((coef(fit.spherical) - pars.test)/pars.test))
