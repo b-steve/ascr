@@ -11,11 +11,11 @@ calc.detfn <- function(d, detfn, pars, ss.link = NULL, orientation = 0){
 
 ## Returns a detection function.
 get.detfn <- function(detfn){
-    if (!(detfn %in% c("hn", "hr", "th", "lth", "ss", "log.ss"))){
+    if (!(detfn %in% c("hn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss"))){
         stop("Argument 'detfn' must be \"hn\", \"hr\", \"th\", \"lth\", \"ss\", or \"log.ss\"")
     }
     switch(detfn, hn = calc.hn, hr = calc.hr, th = calc.th,
-           lth = calc.lth, ss = calc.ss)
+           lth = calc.lth, ss = calc.ss, log.ss = calc.ss, spherical.ss = calc.ss)
 }
 
 calc.hn <- function(d, pars){
@@ -66,16 +66,16 @@ calc.ss <- function(d, pars, ss.link, orientation){
     sigma.ss <- pars$sigma.ss
     cutoff <- pars$cutoff
     if (ss.link == "log"){
-        inv.ss.link <- exp
+        mean <- exp(b0.ss - (b1.ss - b2.ss*(cos(orientation) - 1))*d)
     } else if (ss.link == "identity") {
-        inv.ss.link <- identity
+        mean <- b0.ss - (b1.ss - b2.ss*(cos(orientation) - 1))*d
+    } else if (ss.link == "spherical"){
+        mean <- b0.ss - 10*log10(d^2) - (b1.ss - b2.ss*(cos(orientation) - 1))*(d - 1)
     } else {
         stop("Link function not recognised.")
     }
     if (b2.ss == 0){
-        out <- 1 - pnorm(cutoff, mean = inv.ss.link(b0.ss - b1.ss*d), sd = sigma.ss)
-    } else {
-        out <- 1 - pnorm(cutoff, mean = inv.ss.link(b0.ss - (b1.ss - b2.ss*(cos(orientation) - 1))*d), sd = sigma.ss)
+        out <- 1 - pnorm(cutoff, mean = mean, sd = sigma.ss)
     }
     out
 }
