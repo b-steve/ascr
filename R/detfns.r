@@ -12,7 +12,7 @@ calc.detfn <- function(d, detfn, pars, ss.link = NULL, orientation = 0){
 ## Returns a detection function.
 get.detfn <- function(detfn){
     if (!(detfn %in% c("hn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss"))){
-        stop("Argument 'detfn' must be \"hn\", \"hr\", \"th\", \"lth\", \"ss\", or \"log.ss\"")
+        stop("Argument 'detfn' must be \"hn\", \"hr\", \"th\", \"lth\", \"ss\", \"log.ss\", or \"spherical.ss\".")
     }
     switch(detfn, hn = calc.hn, hr = calc.hr, th = calc.th,
            lth = calc.lth, ss = calc.ss, log.ss = calc.ss, spherical.ss = calc.ss)
@@ -57,9 +57,18 @@ calc.lth <- function(d, pars){
 }
 
 calc.ss <- function(d, pars, ss.link, orientation){
+    if (!any(names(pars) == "b2.ss")){
+        warning("Parameter b2.ss is missing. Setting to zero.")
+        pars$b2.ss <- 0
+    }
+    if (!any(names(pars) == "sigma.b0.ss")){
+        warning("Parameter sigma.b0.ss is missing. Setting to zero.")
+        pars$sigma.b0.ss <- 0
+    }
     if (!identical(sort(names(pars)), c("b0.ss", "b1.ss", "b2.ss", "cutoff", "sigma.b0.ss", "sigma.ss"))){
         stop("Argument 'pars' must have named components 'b0.ss', 'b1.ss', 'b2.ss', 'sigma.b0.ss', 'sigma.ss', and 'cutoff'.")
     }
+
     b0.ss <- pars$b0.ss
     b1.ss <- pars$b1.ss
     b2.ss <- pars$b2.ss
