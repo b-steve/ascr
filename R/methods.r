@@ -20,7 +20,6 @@
 #' coef(example$fits$simple.hn, pars = "derived")
 #'
 #' @method coef admbsecr
-#' @S3method coef admbsecr
 #'
 #' @export
 coef.admbsecr <- function(object, pars = "fitted", ...){
@@ -52,7 +51,6 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
 #' subtracted from estimated parameter values.
 #'
 #' @method coef admbsecr.boot
-#' @S3method coef admbsecr.boot
 #'
 #' @export
 coef.admbsecr.boot <- function(object, pars = "fitted",
@@ -77,7 +75,6 @@ coef.admbsecr.boot <- function(object, pars = "fitted",
 #' vcov(example$fits$simple.hn, pars = "derived")
 #'
 #' @method vcov admbsecr
-#' @S3method vcov admbsecr
 #'
 #' @export
 vcov.admbsecr <- function(object, pars = "fitted", ...){
@@ -118,7 +115,6 @@ vcov.admbsecr <- function(object, pars = "fitted", ...){
 #' @inheritParams coef.admbsecr
 #'
 #' @method vcov admbsecr.boot
-#' @S3method vcov admbsecr.boot
 #'
 #' @export
 vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
@@ -162,7 +158,6 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
 #' stdEr(example$fits$simple.hn, pars = "derived")
 #'
 #' @method stdEr admbsecr
-#' @S3method stdEr admbsecr
 #'
 #' @export
 stdEr.admbsecr <- function(object, pars = "fitted", ...){
@@ -197,7 +192,6 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
 #' @inheritParams coef.admbsecr
 #'
 #' @method stdEr admbsecr.boot
-#' @S3method stdEr admbsecr.boot
 #'
 #' @export
 stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
@@ -235,7 +229,6 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
 #' @inheritParams stats::AIC
 #'
 #' @method AIC admbsecr
-#' @S3method AIC admbsecr
 #'
 #' @export
 AIC.admbsecr <- function(object, ..., k = 2){
@@ -254,7 +247,6 @@ AIC.admbsecr <- function(object, ..., k = 2){
 #' @inheritParams coef.admbsecr
 #'
 #' @method summary admbsecr
-#' @S3method summary admbsecr
 #'
 #' @export
 summary.admbsecr <- function(object, ...){
@@ -272,7 +264,6 @@ summary.admbsecr <- function(object, ...){
 }
 
 #' @method print summary.admbsecr
-#' @S3method print summary.admbsecr
 print.summary.admbsecr <- function(x, ...){
     n.coefs <- length(x$coefs)
     n.derived <- length(x$derived)
@@ -337,7 +328,6 @@ print.summary.admbsecr <- function(x, ...){
 #' @inheritParams stats::confint
 #'
 #' @method confint admbsecr
-#' @S3method confint admbsecr
 #'
 #' @export
 confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, ...){
@@ -359,7 +349,6 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
 #'
 #' @rdname confint.admbsecr
 #' @method confint admbsecr.boot
-#' @S3method confint admbsecr.boot
 #'
 #' @export
 confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method = "default",
