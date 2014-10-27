@@ -96,7 +96,7 @@
 #'         more directional (i.e., b2.ss parameter is large). A larger number of
 #'         quadrature points leads to more accurate results, but will increase computation
 #'         time.
-#' 
+#'
 #'   \item \code{ss.link}: Optional. A character string, either
 #'         \code{"identity"}, \code{"log"}, or \code{"spherical"}, which
 #'         specifies the relationship between the expected received signal
@@ -104,7 +104,7 @@
 #'         signal strength detection function in the section 'Fitted
 #'         parameters' below. Defaults to \code{"identity"}.
 #'
-#' 
+#'
 #' }
 #'
 #' @section Fitted parameters:
@@ -249,7 +249,7 @@
 #' fixed. This process continues until all parameters are maximised
 #' over. Maximising paramters in phases can greatly improve the
 #' stability of optimisation.
-#' 
+#'
 #' To improve convergence using scalefactors, first identify which
 #' parameters have large gradient components from the "final
 #' statistics" section of the \code{trace} output. Next, find the
@@ -446,7 +446,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         capt <- lapply(capt, function(x, keep) x[keep, ], keep = keep)
         n.removed <- sum(!keep)
         if (trace & n.removed > 0){
-            cat(n.removed, " capture history entries have no received signal strengths above the cutoff and have therefore been removed.\n", sep = "") 
+            cat(n.removed, " capture history entries have no received signal strengths above the cutoff and have therefore been removed.\n", sep = "")
         }
     }
     capt.bin <- capt$bincapt
@@ -508,7 +508,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             ss.opts$ss.link <- "identity"
             ss.link <- "identity"
         } else if (!(ss.link %in% c("identity", "log", "spherical"))){
-            stop("Component 'ss.link' in 'ss.opts' must be either \"identity\", \"log\", or \"spherical\".")
+            stop("Component 'ss.link' in 'ss.opts' must be \"identity\", \"log\", or \"spherical\".")
         }
         ## By default, directional calling model is only used if b2.ss appears in sv or fix.
         if (is.null(directional)){
@@ -557,7 +557,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             }
             fix$sigma.b0.ss <- 0
         }
-        
+
     } else {
         if (!is.null(ss.opts)){
             warning("Argument 'ss.opts' is being ignored as a signal strength model is not being fitted.")
@@ -576,7 +576,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Setting fit.het.source.
     if (fit.ss){
-        fit.het.source <- TRUE      
+        fit.het.source <- TRUE
         if ("sigma.b0.ss" %in% names(fix)){
             if (fix[["sigma.b0.ss"]] == 0){
                 fit.het.source <- FALSE
@@ -867,14 +867,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (fit.het.source){
         if (is.null(n.het.source.quadpoints)){
             n.het.source.quadpoints <- 15
-        }  
+        }
     } else {
         n.het.source.quadpoints <- 1
     }
     ## Getting nodes and weights for Gauss-Hermite quadrature.
     if (het.source.gh){
         GHd <- gaussHermiteData(n.het.source.quadpoints)
-        het.source.nodes <- GHd$x      
+        het.source.nodes <- GHd$x
         het.source.weights <- GHd$w
     } else {
         het.source.nodes <- 0

@@ -63,7 +63,7 @@ test_that("ss-related parameters set up correctly", {
                          mask = example$mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                          ss.opts = list(cutoff = 60, ss.link = "identity.link")),
-                throws_error("Component 'ss.link' in 'ss.opts' must be either \"identity\" or \"log\"."))
+                throws_error("Component 'ss.link' in 'ss.opts' must be \"identity\", \"log\", or \"spherical\"."))
     expect_that(admbsecr(capt = test.capt, traps = example$traps,
                          mask = example$mask,
                          sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
