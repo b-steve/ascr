@@ -202,9 +202,15 @@ The argument \code{ss.opts} is a list with up to four components:
         more directional (i.e., b2.ss parameter is large). A larger number of
         quadrature points leads to more accurate results, but will increase computation
         time.
-  \item \code{ss.link}: Optional. A character string, either \code{"identity"} or
-        \code{"log"}, which specifies the link function for the signal
-        strength detection function. Defaults to \code{"identity"}.
+
+  \item \code{ss.link}: Optional. A character string, either
+        \code{"identity"}, \code{"log"}, or \code{"spherical"}, which
+        specifies the relationship between the expected received signal
+        strength and distance from the microphone. See details on the
+        signal strength detection function in the section 'Fitted
+        parameters' below. Defaults to \code{"identity"}.
+
+
 }
 }
 
@@ -270,12 +276,25 @@ For \code{detfn = "ss"} in a directional model:
 \itemize{
   \item Estimated paramters are \code{b0.ss}, \code{b1.ss}, \code{b2.ss} and
         \code{sigma.ss}.
-  \item The expected signal strength is modelled as:
-        \eqn{E(SS) = h^{-1}(\beta_0 - (\beta_1 - (\beta_2(cos(\theta) - 1)))d)}{E(SS) = h^{-1}( b0.ss - ( b1.ss - ( b2.ss * ( cos( theta ) - 1 ) ) ) * d )},
-        where \eqn{h} is specified by the argument \code{ss.link},
-        and \eqn{\theta}{theta} is the difference between the bearing the
-        animal is facing when it makes a call, and the bearing from the
-        animal to the detector.
+  \item The expected signal strength is modelled differently depending on the value of \code{ss.link} in \code{ss.opts}:
+  \itemize{
+    \item For \code{ss.link = "identity"} (the default):
+    \itemize{
+      \item \eqn{E(SS) = \beta_0 - (\beta_1 - (\beta_2(\cos(\theta) - 1)))d)}{E(SS) = h^{-1}( b0.ss - ( b1.ss - ( b2.ss * ( cos( theta ) - 1 ) ) ) * d }
+    }
+    \item For \code{ss.link = "log"}:
+    \itemize{
+      \item \eqn{E(SS) = log(\beta_0 - (\beta_1 - (\beta_2(\cos(\theta) - 1)))d)}{E(SS) = h^{-1}( b0.ss - ( b1.ss - ( b2.ss * ( cos( theta ) - 1 ) ) ) * d ) }
+    }
+    \item For \code{ss.link = "spherical"}:
+    \itemize{
+      \item \eqn{E(SS) = \beta_0 - 10\log_{10}(d^2) - ( \beta_1 - ( \beta_2(\cos(\theta ) - 1)))(d - 1)}{E(SS) = \beta_0 - 10 * \log_{10}(d^2) - ( b1.ss - ( b2.ss( \cos( \theta ) - 1 ) ) ) * ( d - 1 )}
+    }
+  }
+  \item In all cases \eqn{\theta}{theta} is the difference between
+  the bearing the animal is facing when it makes a call, and the
+  bearing from the animal to the detector.
+
 }
 
 Details of the parameters associated with different additional data
