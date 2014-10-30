@@ -23,7 +23,7 @@ coordinates for the location of a mask point. The function
 \link{create.mask} will return a suitable object.}
 
 \item{detfn}{A character string specifying the detection function
-to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
+to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
 (threshold), "lth" (log-link threshold), or "ss" (signal
 strength). If the latter is used, signal strength information must
 be provided in \code{capt}.}
