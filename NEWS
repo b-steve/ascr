@@ -8,6 +8,11 @@ admbsecr 1.0.8
   optimised in phases. This improves stability in of the optimisation
   process in come cases.
 
+* Implemented spherical spreading signal strength models. Set
+  'ss.link' component of 'ss.opts' to '"spherical"'.
+
+* Various bug fixes.
+
 admbsecr 1.0.7
 --------------
 
