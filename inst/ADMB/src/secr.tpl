@@ -313,7 +313,7 @@ PROCEDURE_SECTION
           point_evade *= 1 - capt_prob;
           if (fit_ss){
             if (linkfn_id == 3){
-              expected_ss(b, j, i) = detpars(1) - 10*log10(square(dist)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*(dist - 1);
+              expected_ss(b, j, i) = detpars(1) - 10*log10(square(dist)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)))*(dist - 1.0);
             } else {
               expected_ss(b, j, i) = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*dist;
               if (linkfn_id == 2){
@@ -334,7 +334,7 @@ PROCEDURE_SECTION
       if (fit_ss){
         dvar_vector mu_ss(1, n_traps);
         if (linkfn_id == 3){
-          mu_ss = detpars(1) - 10*log10(square(column(dists, i))) - detpars(2)*(column(dists, i) - 1);
+          mu_ss = detpars(1) - 10*log10(square(column(dists, i))) - detpars(2)*(column(dists, i) - 1.0);
         } else {
           mu_ss = detpars(1) - detpars(2)*column(dists, i);
           if (linkfn_id == 2){
