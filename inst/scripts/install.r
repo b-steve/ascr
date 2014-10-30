@@ -8,17 +8,17 @@ for (i in pkgs){
 }
 options(warn = 0)
 if (.Platform$OS == "windows"){
-    bin.name <- "https://github.com/b-steve/admbsecr/releases/download/v1.0.7/admbsecr_1.0.7.zip"
+    bin.name <- "https://github.com/b-steve/admbsecr/releases/download/v1.1.0/admbsecr_1.1.0.zip"
     ext <- ".zip"
     type <- "win.binary"
 } else if (.Platform$OS == "unix"){
-    bin.name <- "https://github.com/b-steve/admbsecr/archive/v1.0.7.tar.gz"
+    bin.name <- "https://github.com/b-steve/admbsecr/archive/v1.1.0.tar.gz"
     ext <- ".tar.gz"
     type <- "source"
 } else {
     stop("Unknown OS type.")
 }
-dest <- paste("admbsecr_1.0.7", ext, sep = "")
+dest <- paste("admbsecr_1.1.0", ext, sep = "")
 library(downloader)
 download(bin.name, destfile = dest)
 install.packages(dest, repos = NULL, type = type)
