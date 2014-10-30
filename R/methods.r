@@ -264,6 +264,8 @@ summary.admbsecr <- function(object, ...){
 }
 
 #' @method print summary.admbsecr
+#' 
+#' @export
 print.summary.admbsecr <- function(x, ...){
     n.coefs <- length(x$coefs)
     n.derived <- length(x$derived)
