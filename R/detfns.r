@@ -72,6 +72,7 @@ calc.ss <- function(d, pars, ss.link, orientation){
     b0.ss <- pars$b0.ss
     b1.ss <- pars$b1.ss
     b2.ss <- pars$b2.ss
+    sigma.b0.ss <- pars$sigma.b0.ss
     sigma.ss <- pars$sigma.ss
     cutoff <- pars$cutoff
     if (ss.link == "log"){
@@ -83,7 +84,7 @@ calc.ss <- function(d, pars, ss.link, orientation){
     } else {
         stop("Link function not recognised.")
     }
-    if (b2.ss == 0){
+    if (sigma.b0.ss == 0){
         out <- 1 - pnorm(cutoff, mean = mean, sd = sigma.ss)
     }
     out
