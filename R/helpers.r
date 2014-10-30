@@ -28,6 +28,8 @@ animalIDvec <- function(capthist){
 #' @return A data frame. Specifically, the \code{dets} dataframe,
 #' now with a new variable, \code{ID}.
 #' @author David Borchers
+#'
+#' @export
 make.acoustic.captures <- function(mics, dets, sound.speed){
     mics <- as.matrix(mics)
     dists <- distances(mics, mics)
@@ -223,7 +225,41 @@ erf <- function(x){
     2*pnorm(x*sqrt(2)) - 1
 }
 
-## Capture probability density surface from a model fit.
+#' Calculating detection probabilities.
+#'
+#' Calculates the probability of detection by at least one detector
+#' for specific locations in the survey area.
+#'
+#' @param fit A fitted model from \link{admbsecr}.
+#' @param esa Logical, if \code{TRUE} the effective sampling area is
+#' returned instead of capture probabilities.
+#' @param points A matrix with two columns. Each row provides
+#' Cartesian coordinates for the location of a point at which a
+#' capture probability should be returned.
+#' @param traps A matrix with two columns. Each row provides Cartesian
+#' coordinates for the location of a trap (or detector). Ignored if
+#' \code{fit} is not \code{NULL}.
+#' @param detfn A character string specifying the detection function
+#' to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
+#' (threshold), "lth" (log-link threshold), or "ss" (signal
+#' strength). Ignored if \code{fit} is not \code{NULL}.
+#' @param ss.link A character string, either \code{"identity"},
+#' \code{"log"}, or \code{"spherical"}, which specifies the
+#' relationship between the expected received signal strength and
+#' distance from the microphone. See the documentation for
+#' \link{admbsecr} for further details. Ignored if \code{fit} is not
+#' \code{NULL}.
+#' @param pars A named list. Component names are parameter names, and
+#' each component is a value for the associated parameter. Ignored if
+#' \code{fit} is not \code{NULL}.
+#' @param n.quadpoints An integer, giving the number of quadrature
+#' points used for numerical integration over the possible call
+#' directions.
+#'
+#' @return A vector containing detection probabilities for each
+#' location in \code{points}.
+#'
+#' @export
 p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
                   detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8){
     if (!is.null(fit)){
