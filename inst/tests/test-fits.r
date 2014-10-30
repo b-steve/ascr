@@ -37,7 +37,7 @@ test_that("simple fitting -- half normal", {
                            mask = example$mask, hess = FALSE)
     expect_that(coef(fit.nohess), equals(coef(fit)))
     ## Checking estimate equivalence with secr.fit.
-    library(secr)
+    suppressPackageStartupMessages(library(secr))
     mask.secr <- convert.mask(example$mask)
     capt.secr <- convert.capt(example$capt["bincapt"], example$traps)
     options(warn = -1)
