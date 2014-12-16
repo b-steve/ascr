@@ -1,0 +1,102 @@
+\documentclass{article}
+
+%\VignetteIndexEntry{Data structures}
+
+\usepackage[left = 3.5cm, right = 3.5cm, top = 3.0cm, bottom = 4.5cm]{geometry}
+
+\title{Data input for \texttt{admbsecr}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+In order to carry out analysis with \texttt{admbsecr}, three objects are required:
+\begin{itemize}
+\item A capture history object, \texttt{capt}, providing information
+  about which individuals/calls were detected by which detectors (see
+  Section \ref{sec:capt}).
+\item A detector locations object, \texttt{traps}, providing the
+  detector locations (see Section \ref{sec:traps}).
+\item A mask point locations object, \texttt{mask}, providing the
+  discrete locations of mask points over which numerical integration
+  occurs (see Section \ref{sec:mask}).
+\end{itemize}
+
+Data input for the \texttt{admbsecr} package is designed to work
+similarly to the procedures used by the \texttt{secr}
+package. Currently (as of Version 1.1.0) functions exist to convert
+data objects used by \texttt{admbsecr} to objects suitable for
+analysis with \texttt{secr} (e.g., \texttt{convert.capt()},
+\texttt{convert.mask()}, and \texttt{convert.traps()}), and
+implementation of functions to perform the conversion in the other
+direction are planned.
+
+\section{Capture data format}
+\label{sec:capt}
+
+The \texttt{capt} object must be a list with the compulsory named
+component \texttt{bincapt}, the binary capture history. This is a
+matrix with $n$ rows and $k$ columns, where $n$ is the total number of
+detected individuals/calls, and $k$ is the total number of detectors
+used. The $j$th element in the $i$th row should take the value $1$ if
+the $j$th detector detected the $i$th individual/call, and take the
+value $0$ if it did not.
+
+There are four optional components that can be used, each
+corresponding to a type of additional information collected by the
+detectors:
+\begin{itemize}
+\item \texttt{bearing}, for estimated bearings (in radians).
+\item \texttt{dist}, for estimated distances (in metres).
+\item \texttt{ss}, for received signal strengths.
+\item \texttt{toa}, for measured times of arrival since the beginning
+  of the survey (in seconds).
+\end{itemize}
+
+In all cases, these are matrices where the $j$th element in the $i$th
+row either corresponds to the corresponding estimated or measured data
+(if the $j$th detector detected the $i$th individual/call) or a value
+of $0$ (if the $j$th detector did not detect the $i$th call).
+
+The easiest way to create this object is via the \texttt{captures}
+data frame; see the section \emph{Capture data format} in the
+\texttt{secr} package vignette \emph{Data input for
+  \texttt{secr}}. This is a data frame where each row corresponds to a
+detection of an individual/call at a detector. It has four variables:
+\begin{itemize}
+\item \texttt{Session}: Identifies the session.
+\item \texttt{ID}: Identifies the individual/call that was detected.
+\item \texttt{Occasion}: Identifies the occasion.
+\item \texttt{Detector}: Identifies which detector detected the
+  individual/call.
+\end{itemize}
+
+As \texttt{admbsecr} does not (yet) support multi-session or
+multi-occasion data, the first and third columns of this data frame
+are ignored. If additional information has been collected by the
+detectors, then this information should appear in subsequent columns
+with the appropriate names (\texttt{bearing}, \texttt{dist},
+\texttt{ss}, or \texttt{toa}).
+
+\section{Detector location format}
+\label{sec:traps}
+
+The \texttt{traps} object must be a matrix with $k$ rows and two
+columns. Each row provides the Cartesian coordinates of a detector.
+
+\section{Mask point location format}
+\label{sec:mask}
+
+See the section \emph{Habitat mask} in the \texttt{secr} package
+overview vignette for a brief explanation of the mask object. Mask
+objects created for analysis using the \texttt{secr} package should
+also be compatible with \texttt{admbsecr}.
+
+The functions \texttt{create.mask()} (in \texttt{admbsecr}) and
+\texttt{make.mask} (in \texttt{secr}) are both capable of creating
+suitable mask objects.
+
+\end{document}
