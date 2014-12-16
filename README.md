@@ -42,4 +42,4 @@ Ben Stevenson, bcs5[at]st-andrews.ac.uk
 
 I am grateful to David Borchers and Hans Skaug for their continued assistance with this project.
 
-Additional thanks to the National Geographic Society/Waitt Grants Program (Grant #W184-11).
+Additional thanks to the EPSRC and the NERC (Grant #EP/1000917/1), and the National Geographic Society/Waitt Grants Program (Grant #W184-11).
