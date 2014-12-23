@@ -427,6 +427,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     het.source.method <- ss.opts$het.source.method
     n.dir.quadpoints <- ss.opts$n.dir.quadpoints
     n.het.source.quadpoints <- ss.opts$n.het.source.quadpoints
+    lower.cutoff <- ss.opts$lower.cutoff
+    ## Setting up first.calls indicator.
+    first.calls <- FALSE
+    first.calls.trunc <- 1e-5
     if (fit.ss){
         if (missing(ss.opts)){
             ## Error if ss.opts not provided for signal strength model.
@@ -435,6 +439,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Error for unspecified cutoff.
         if (is.null(cutoff)){
             stop("The 'cutoff' component of 'ss.opts' must be specified.")
+        }
+        if (!is.null(lower.cutoff)){
+            first.calls <- TRUE
+            if (!(lower.cutoff < cutoff)){
+                stop("The 'lower.cutoff' component of 'ss.opts' must be lower than the 'cutoff' component.")
+            }
+        } else {
+            ss.opts$lower.cutoff <- 0
+            lower.cutoff <- 0
         }
         ## Removing detections below the cutoff.
         rem <- capt$ss < cutoff
@@ -500,8 +513,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
-        if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "n.het.source.quadpoints", "directional", "n.dir.quadpoints", "ss.link"))){
-            warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"n.het.source.quadpoints\", \"directional\",  \"n.dir.quadpoints\", and \"ss.link\"; others are being ignored.")
+        if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "n.het.source.quadpoints", "directional", "n.dir.quadpoints", "ss.link", "lower.cutoff"))){
+            warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"n.het.source.quadpoints\", \"directional\",  \"n.dir.quadpoints\", \"ss.link\", and \"lower.cutoff\"; others are being ignored.")
         }
         ## Setting default values for ss.link, het.source and directional.
         if (is.null(ss.link)){
@@ -596,6 +609,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             warning("Package fastGHQuad must be installed to use Gauss-Hermite quadrature. Using the rectangle rule instead.")
             het.source.gh <- FALSE
         }
+    }
+    if (fit.het.source & first.calls){
+        stop("Models with both first calls and heterogeneity in source signal strengths are not yet implemented.")
+    }
+    if (fit.dir & first.calls){
+        stop("Models with both first calls and directional calling are not yet implemented.")
     }
     ## Generating ordered binary capture history.
     capt.bin.order <- do.call(order, as.data.frame(capt.bin))
@@ -909,7 +928,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         n.het.source.quadpoints, het_source_nodes = het.source.nodes,
         het_source_weights = het.source.weights, capt_ang = capt.bearing, fit_dists =
         as.numeric(fit.dists), capt_dist = capt.dist, fit_ss = as.numeric(fit.ss),
-        cutoff = cutoff, linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
+        cutoff = cutoff, first_calls = as.numeric(first.calls), lower_cutoff = lower.cutoff,
+        first_calls_trunc = first.calls.trunc,
+        linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
         as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
         as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
         bearings, toa_ssq = toa.ssq)
@@ -998,8 +1019,19 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     out <- try(read.admbsecr(prefix.name), silent = TRUE)
     ## Saving esa to prevent recalculation.
-    esa <- as.numeric(readLines("secr.rep"))
+    rep.string <- readLines("secr.rep")
+    esa <- as.numeric(readLines("secr.rep")[1])
     options(warn = 0)
+    ## Checking truncation for first calls.
+    if (first.calls){
+        first.calls.den <- as.numeric(strsplit(rep.string[3], " ")[[1]])[-1]
+        first.calls.quo <- as.numeric(strsplit(rep.string[4], " ")[[1]])[-1]
+        perc.trunc <- sum(first.calls.quo[first.calls.den < first.calls.trunc])/sum(first.calls.quo)*100
+        if (perc.trunc > 1){
+            warning(paste("Error due to truncation of effective sampling area for subsequent calls is ",
+                          round(perc.trunc, 1), "%. Consider increasing 'cutoff'.", sep = ""))
+        }
+    }
     setwd(curr.dir)
     ## Cleaning up files.
     if (clean){
