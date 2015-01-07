@@ -575,6 +575,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (!is.null(ss.opts)){
             warning("Argument 'ss.opts' is being ignored as a signal strength model is not being fitted.")
         }
+        ss.opts$lower.cutoff <- 0
+        lower.cutoff <- 0
     }
     ## Setting fit.dir.
     if (fit.ss){

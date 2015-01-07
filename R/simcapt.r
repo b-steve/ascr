@@ -282,7 +282,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         plot(mids, props, type = "l", xlim = c(0, max(all.dists)),
              ylim = c(0, 1))
         xx <- seq(0, max(all.dists), length.out = 100)
-        lines(xx, calc.detfn(xx, detfn, detpars), col = "blue")
+        lines(xx, calc.detfn(xx, detfn, detpars, ss.link), col = "blue")
     }
     ## Total number of detections.
     n.dets <- sum(bin.capt)
