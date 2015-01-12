@@ -125,6 +125,12 @@ DATA_SECTION
   init_int fit_ss
   init_number cutoff
   init_int first_calls
+  int n_mask_det_probs
+  !! if (first_calls == 1){
+  !!   n_mask_det_probs = n_mask;
+  !! } else {
+  !!   n_mask_det_probs = 1;
+  !! }
   init_number lower_cutoff
   init_number first_calls_trunc
   init_int linkfn_id
@@ -243,9 +249,15 @@ PARAMETER_SECTION
   number cond_corr_ss
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
+  // Keep this here, otherwise get an error on Mac.
+  vector capt_hist(1,n_traps)
+  // Need to save probabilities of detection and probabilities of subsequent detection for first call models.
+  vector mask_det_probs(1,n_mask_det_probs)
+  vector mask_all_det_probs(1,n_mask_det_probs)
   number det_prob
   number sum_det_probs
   // Probabilities for a subsequent call appearing in capture history.
+  number sub_det_prob
   number sum_sub_det_probs
   number undet_prob
   // Probabilities of a call being undetected at the lower cutoff.
@@ -256,8 +268,6 @@ PARAMETER_SECTION
   number point_evade
   number diag_sigma_ss
   number offdiag_sigma_ss
-  // Keep this here, otherwise get an error on Mac.
-  vector capt_hist(1,n_traps)
 
 PROCEDURE_SECTION
   // Grabbing detection function.
@@ -380,13 +390,23 @@ PROCEDURE_SECTION
       det_prob = 1 - undet_prob;
       sum_det_probs += det_prob + DBL_MIN;
       if (first_calls){
+	// Saving detection probabilities for first calls, and
+	// detection probabilities for any subsequent calls.
+	mask_det_probs(i) = 0;
+	mask_all_det_probs(i) = 0;
         //num = det_prob*undet_lower_prob;
 	quo(i) = value((det_prob*undet_lower_prob)/(1 - undet_lower_prob + DBL_MIN));
 	den(i) = value(1 - undet_lower_prob);
-	if (den(i) > first_calls_trunc){
+	//if (den(i) > first_calls_trunc){
+	if (den(i) > 1e-20){
           // Will probably find some numerical instability here.
           sum_sub_det_probs += (det_prob*undet_lower_prob)/(1 - undet_lower_prob);
 	}
+	if (den(i) > 1e-20){
+          sub_det_prob = (det_prob*undet_lower_prob)/(1 - undet_lower_prob);
+	  mask_det_probs(i) += det_prob;
+	  mask_all_det_probs(i) += det_prob + sub_det_prob;
+        }
       }
     }  
   }
@@ -553,6 +573,9 @@ PROCEDURE_SECTION
               // Standardised discrepency between conditional expected strength and cutoff strength.
               dvar_vector z_ss_nodet(1, n_nodets);
               // In here goes f(w, r | x), right?
+              //
+              // Why are you writing questions? I don't fucking know
+              // but it seems to work so I guess you did this fine.
               for (j = 1; j <= n_local; j++){
                 mu_ss_det = column((*expected_ss_pointer), j)(ind_det);
                 mu_ss_nodet = column((*expected_ss_pointer), j)(ind_nodet);
@@ -602,9 +625,19 @@ PROCEDURE_SECTION
             // Try saving sigma_toa separately.
             supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row((*toa_ssq_pointer), i)/(2*square(suppars(sigma_toa_ind))));
           }
-          f_ind = sum(mfexp(bincapt_contrib + supp_contrib));
+	  if (first_calls){
+            //f_ind = sum(mfexp(bincapt_contrib + supp_contrib + log_mask_all_det_probs - log_mask_det_probs));
+	    f_ind = sum(mfexp(bincapt_contrib + supp_contrib + log(mask_all_det_probs + DBL_MIN) - log(mask_det_probs + DBL_MIN)));
+          } else {
+            f_ind = sum(mfexp(bincapt_contrib + supp_contrib));
+          }
         } else {
-          f_ind = sum(mfexp(bincapt_contrib));
+	  if (first_calls){
+            //f_ind = sum(mfexp(bincapt_contrib + log_mask_all_det_probs - log_mask_det_probs));
+	    f_ind = sum(mfexp(bincapt_contrib + log(mask_all_det_probs + DBL_MIN) - log(mask_det_probs + DBL_MIN)));
+          } else {
+            f_ind = sum(mfexp(bincapt_contrib));
+          }
         }
         // For directional calling, save components due to each
         // direction for each individual.
@@ -638,7 +671,7 @@ PROCEDURE_SECTION
         cout << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
-    cout << "LL: " << -f << endl;
+    cout << "LL: " << -f << ", ESA: " << esa << ", test" << endl;
   }
 
 REPORT_SECTION

@@ -106,6 +106,35 @@
 #'
 #'
 #' }
+#' @section The \code{optim.opts} argument:
+#'
+#' This argument allows the user to select options for the
+#' maximisation of the likelihood.
+#'
+#' The argument \code{optim.opts} is a list with up to four components:
+#' \itemize{
+#' 
+#'   \item \code{cbs}: Optional. The CMPDIF_BUFFER_SIZE, set using the
+#' \code{-cbs} option of the executable created by ADMB. This can be
+#' increased to speed up optimisation if \code{cmpdiff.tmp} gets too
+#' large (please ignore, unless you are familiar with ADMB and know
+#' what you are doing).
+#' 
+#'   \item \code{gbs}: Optional. The GRADSTACK_BUFFER_SIZE, set using
+#' the \code{-gbs} option of the executable created by ADMB. This can
+#' be increased to speed up optimisation if \code{gradfil1.tmp} gets
+#' too large (please ignore, unless you are familiar with ADMB and
+#' know what you are doing).
+#' 
+#'   \item \code{exe.type}: Optional. Character string, either
+#' \code{"old"} or \code{"new"}, depending on which executable is to
+#' be used (for development purposes only; please ignore).
+#' 
+#'   \item \code{neld.mead}: Optional. A logical value specifying
+#' whether or not to use Nelder-Mead optimisation. Defaults to
+#' \code{FALSE}, which is recommended.
+#' 
+#' }
 #'
 #' @section Fitted parameters:
 #'
@@ -362,19 +391,8 @@
 #' @param clean Logical, if \code{TRUE} ADMB output files are
 #' removed. Otherwise, ADMB output file will remain in a directory,
 #' the location of which is reported after the model is fitted.
-#' @param cbs The CMPDIF_BUFFER_SIZE, set using the \code{-cbs} option
-#' of the executable created by ADMB. This can be increased to speed
-#' up optimisation if \code{cmpdiff.tmp} gets too large (please
-#' ignore, unless you are familiar with ADMB and know what you are
-#' doing).
-#' @param gbs The GRADSTACK_BUFFER_SIZE, set using the \code{-gbs}
-#' option of the executable created by ADMB. This can be increased to
-#' speed up optimisation if \code{gradfil1.tmp} gets too large (please
-#' ignore, unless you are familiar with ADMB and know what you are
-#' doing).
-#' @param exe.type Character string, either \code{"old"} or
-#' \code{"new"}, depending on which executable is to be used (for
-#' development purposes only; please ignore).
+#' @param optim.opts Optimisation options. See 'Details' for further
+#' information.
 #'
 #' @seealso \link{boot.admbsecr} to calculate standard errors and
 #' estimate bias using a parametric bootstrap.
@@ -407,7 +425,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      call.freqs = NULL, sound.speed = 330, local = FALSE,
                      hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
-                     cbs = NULL, gbs = NULL, exe.type = "old"){
+                     optim.opts = NULL){
     arg.names <- names(as.list(environment()))
     ## TODO: Sort out how to determine supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
@@ -428,6 +446,20 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.dir.quadpoints <- ss.opts$n.dir.quadpoints
     n.het.source.quadpoints <- ss.opts$n.het.source.quadpoints
     lower.cutoff <- ss.opts$lower.cutoff
+    ## Sorting objects from optim.opts.
+    cbs <- optim.opts$cbs
+    gbs <- optim.opts$gbs
+    exe.type <- optim.opts$exe.type
+    neld.mead <- optim.opts$neld.mead
+    if (is.null(exe.type)){
+        exe.type <- "old"
+    }
+    if (is.null(neld.mead)){
+        neld.mead <- FALSE
+        neld.mead.force <- FALSE
+    } else {
+        neld.mead.force <- TRUE
+    }
     ## Setting up first.calls indicator.
     first.calls <- FALSE
     first.calls.trunc <- 1e-5
@@ -617,6 +649,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (fit.dir & first.calls){
         stop("Models with both first calls and directional calling are not yet implemented.")
+    }
+    ## Setting neld.mead to TRUE if first.calls used.
+    if (first.calls & !neld.mead.force){
+        neld.mead <- TRUE
+        if (hess){
+            hess <- FALSE
+        }
     }
     ## Generating ordered binary capture history.
     capt.bin.order <- do.call(order, as.data.frame(capt.bin))
@@ -1005,8 +1044,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Running ADMB executable.
     cmd <- paste("./"[os.type != "windows"], exe.name,
-                 " -ind secr.dat -ainp secr.pin",
+                 " -ind secr.dat -ainp secr.pin", " -neldmead"[neld.mead],
                  " -nohess"[!hess], cbs.cmd, gbs.cmd, sep = "")
+    cat(cmd, "\n")
     if (os.type == "windows"){
         system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
     } else {

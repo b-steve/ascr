@@ -6,8 +6,8 @@
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
   call.freqs = NULL, sound.speed = 330, local = FALSE,
-  hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE, cbs = NULL,
-  gbs = NULL, exe.type = "old")
+  hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
+  optim.opts = NULL)
 }
 \arguments{
 \item{capt}{A list with named components, containing the capture
@@ -79,21 +79,8 @@ of the optimisation algorithm are printed to the R console.}
 removed. Otherwise, ADMB output file will remain in a directory,
 the location of which is reported after the model is fitted.}
 
-\item{cbs}{The CMPDIF_BUFFER_SIZE, set using the \code{-cbs} option
-of the executable created by ADMB. This can be increased to speed
-up optimisation if \code{cmpdiff.tmp} gets too large (please
-ignore, unless you are familiar with ADMB and know what you are
-doing).}
-
-\item{gbs}{The GRADSTACK_BUFFER_SIZE, set using the \code{-gbs}
-option of the executable created by ADMB. This can be increased to
-speed up optimisation if \code{gradfil1.tmp} gets too large (please
-ignore, unless you are familiar with ADMB and know what you are
-doing).}
-
-\item{exe.type}{Character string, either \code{"old"} or
-\code{"new"}, depending on which executable is to be used (for
-development purposes only; please ignore).}
+\item{optim.opts}{Optimisation options. See 'Details' for further
+information.}
 }
 \value{
 A list of class \code{"admbsecr"}. Components contain
@@ -210,6 +197,38 @@ The argument \code{ss.opts} is a list with up to four components:
         signal strength detection function in the section 'Fitted
         parameters' below. Defaults to \code{"identity"}.
 
+
+}
+}
+
+\section{The \code{optim.opts} argument}{
+
+
+This argument allows the user to select options for the
+maximisation of the likelihood.
+
+The argument \code{optim.opts} is a list with up to four components:
+\itemize{
+
+  \item \code{cbs}: Optional. The CMPDIF_BUFFER_SIZE, set using the
+\code{-cbs} option of the executable created by ADMB. This can be
+increased to speed up optimisation if \code{cmpdiff.tmp} gets too
+large (please ignore, unless you are familiar with ADMB and know
+what you are doing).
+
+  \item \code{gbs}: Optional. The GRADSTACK_BUFFER_SIZE, set using
+the \code{-gbs} option of the executable created by ADMB. This can
+be increased to speed up optimisation if \code{gradfil1.tmp} gets
+too large (please ignore, unless you are familiar with ADMB and
+know what you are doing).
+
+  \item \code{exe.type}: Optional. Character string, either
+\code{"old"} or \code{"new"}, depending on which executable is to
+be used (for development purposes only; please ignore).
+
+  \item \code{neld.mead}: Optional. A logical value specifying
+whether or not to use Nelder-Mead optimisation. Defaults to
+\code{FALSE}, which is recommended.
 
 }
 }
