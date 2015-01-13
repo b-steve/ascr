@@ -18,6 +18,7 @@ compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr
 	if [ $(shell hostname) == "heton" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/linux; mv ../../src/secr ./secr; fi
 	if [ $(shell hostname) == "albatross.mcs.st-and.ac.uk" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/mac; rm -rfv secr; mv ../../src/secr ./secr; fi
 	if [ $(shell hostname) == "Zeeba" ]; then export OLDPATH=$$PATH; echo $$OLDPATH; export PATH=/c/admb/bin:/c/MinGW/bin:$$PATH; cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; export PATH=$$OLDPATH; fi
+	if [ $(shell hostname) == "midge" ]; then export OLDPATH=$$PATH; echo $$OLDPATH; export PATH=/c/admb/bin:/c/MinGW/bin:$$PATH; cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; export PATH=$$OLDPATH; fi
 
 prepare:
 	rm -rfv man
@@ -31,8 +32,10 @@ roxygen:
 
 build:
 	if [ $(shell hostname) == "Zeeba" ]; then rm -rfv .Rbuildignore; fi
+	if [ $(shell hostname) == "midge" ]; then rm -rfv .Rbuildignore; fi
 	R CMD build --resave-data .
 	if [ $(shell hostname) == "Zeeba" ]; then mkdir .Rbuildignore; fi
+	if [ $(shell hostname) == "midge" ]; then mkdir .Rbuildignore; fi
 	mv admbsecr_1.1.0.tar.gz .Rbuildignore/
 
 check:
