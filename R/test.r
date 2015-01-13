@@ -11,7 +11,7 @@
 #' @param quick Logical, if \code{TRUE}, only a quick check is carried
 #' out that tests whether or not the AD Model Builder executable is
 #' running correctly.
-#' 
+#'
 #' @export
 test.admbsecr <- function(quick = FALSE){
     dir <- ifelse(quick, "quick", "full")
@@ -31,12 +31,8 @@ test.admbsecr <- function(quick = FALSE){
             }
         }
     } else {
-        if (require(testthat)){
-            dir <- paste(system.file(package = "admbsecr"), "tests", sep = "/")
-            test_dir(dir)
-        } else {
-            stop("Please install package 'testthat' from CRAN.")
-        }
+        dir <- paste(system.file(package = "admbsecr"), "tests", sep = "/")
+        test_dir(dir)
     }
 }
 

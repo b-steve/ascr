@@ -113,27 +113,27 @@
 #'
 #' The argument \code{optim.opts} is a list with up to four components:
 #' \itemize{
-#' 
+#'
 #'   \item \code{cbs}: Optional. The CMPDIF_BUFFER_SIZE, set using the
 #' \code{-cbs} option of the executable created by ADMB. This can be
 #' increased to speed up optimisation if \code{cmpdiff.tmp} gets too
 #' large (please ignore, unless you are familiar with ADMB and know
 #' what you are doing).
-#' 
+#'
 #'   \item \code{gbs}: Optional. The GRADSTACK_BUFFER_SIZE, set using
 #' the \code{-gbs} option of the executable created by ADMB. This can
 #' be increased to speed up optimisation if \code{gradfil1.tmp} gets
 #' too large (please ignore, unless you are familiar with ADMB and
 #' know what you are doing).
-#' 
+#'
 #'   \item \code{exe.type}: Optional. Character string, either
 #' \code{"old"} or \code{"new"}, depending on which executable is to
 #' be used (for development purposes only; please ignore).
-#' 
+#'
 #'   \item \code{neld.mead}: Optional. A logical value specifying
 #' whether or not to use Nelder-Mead optimisation. Defaults to
 #' \code{FALSE}, which is recommended.
-#' 
+#'
 #' }
 #'
 #' @section Fitted parameters:
@@ -637,12 +637,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         het.source.gh <- het.source.method == "GH"
     } else {
         het.source.gh <- FALSE
-    }
-    if (het.source.gh){
-        if (!require(fastGHQuad)){
-            warning("Package fastGHQuad must be installed to use Gauss-Hermite quadrature. Using the rectangle rule instead.")
-            het.source.gh <- FALSE
-        }
     }
     if (fit.het.source & first.calls){
         stop("Models with both first calls and heterogeneity in source signal strengths are not yet implemented.")
@@ -1236,9 +1230,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 #' @export
 #'
 par.admbsecr <- function(n.cores, ..., arg.list = NULL){
-    if (!require(parallel)){
-        stop("The parallel package is required for parallelisation. Please install.")
-    }
     if (n.cores > detectCores()){
         stop("The argument n.cores is greater than the number of available cores.")
     }
@@ -1261,12 +1252,14 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 ## Roxygen code for NAMESPACE and datasets.
 
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import plyr Rcpp R2admb
+#' @import parallel plyr Rcpp R2admb
 #' @importFrom CircStats dvm rvm
+#' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom lattice wireframe
 #' @importFrom matrixStats colProds
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
+#' @importFrom testthat test_dir
 #' @useDynLib admbsecr
 NULL
 

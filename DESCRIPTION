@@ -12,14 +12,13 @@ Depends:
     R2admb
 Imports:
     CircStats,
+    fastGHQuad,
     lattice,
     matrixStats,
     mvtnorm,
-    plyr,
-    secr
-Suggests:
-    fastGHQuad,
     parallel,
+    plyr,
+    secr,
     testthat
 LinkingTo: Rcpp
 Description: This package allows for the fitting of spatially explicit

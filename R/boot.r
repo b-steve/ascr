@@ -206,11 +206,8 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
             if (prog){
                 close(pb)
             }
-        }        
-    } else {
-        if (!require(parallel)){
-            stop("The parallel package is required for n.cores > 1. Please install.")
         }
+    } else {
         if (n.cores > detectCores()){
             stop("The argument n.cores is greater than the number of available cores.")
         }
