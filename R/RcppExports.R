@@ -43,3 +43,16 @@ find_local <- function(capt, dists, buffer) {
     .Call('admbsecr_find_local', PACKAGE = 'admbsecr', capt, dists, buffer)
 }
 
+#' Evaluating the likelihood using C++
+#'
+#' Returns the likelihood for a vector of parameter values.
+#'
+#' @param link_pars Parameter values on link scale.
+#' @param dat Data list.
+#'
+#' @return The value of the negative log-likelihood.
+#'
+secr_nll <- function(link_pars, dat) {
+    .Call('admbsecr_secr_nll', PACKAGE = 'admbsecr', link_pars, dat)
+}
+
