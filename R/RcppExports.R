@@ -28,7 +28,7 @@ distances <- function(a, b) {
 #' @return A matrix with bearings of the points in matrix b from the points in matrix a.
 #'
 #' @examples
-#' bears <- bearings(example$traps, example$mask) 
+#' bears <- bearings(example$traps, example$mask)
 #'
 #' @export
 bearings <- function(a, b) {
@@ -47,13 +47,12 @@ find_local <- function(capt, dists, buffer) {
 #'
 #' Returns the likelihood for a vector of parameter values.
 #'
-#' @param pars Parameter values.
-#' @param objs Various other objects.
+#' @param link_pars Parameter values on link scale.
+#' @param dat Data list.
 #'
 #' @return The value of the negative log-likelihood.
 #'
-#' @export
-secr_nll <- function(pars, dat) {
-    .Call('admbsecr_secr_nll', PACKAGE = 'admbsecr', pars, dat)
+secr_nll <- function(link_pars, dat) {
+    .Call('admbsecr_secr_nll', PACKAGE = 'admbsecr', link_pars, dat)
 }
 

@@ -72,15 +72,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // secr_nll
-double secr_nll(const NumericVector& pars, const List& dat);
-RcppExport SEXP admbsecr_secr_nll(SEXP parsSEXP, SEXP datSEXP) {
+double secr_nll(const NumericVector& link_pars, const List& dat);
+RcppExport SEXP admbsecr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericVector& >::type pars(parsSEXP );
+        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
         Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
-        double __result = secr_nll(pars, dat);
+        double __result = secr_nll(link_pars, dat);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
