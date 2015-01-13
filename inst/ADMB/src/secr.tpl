@@ -586,6 +586,8 @@ PROCEDURE_SECTION
               }
             }
           } else {
+	    // I think this part could be improved by only calculating
+	    // local_log_ss_density for detected traps?
             dvar_matrix local_log_ss_density(1,n_traps,1,n_local);
             for (j = 1; j <= n_traps; j++){
               local_log_ss_density.rowfill(j, log_dnorm(capt_ss(i, j), row((*expected_ss_pointer), j), detpars(5)));
