@@ -28,7 +28,7 @@ distances <- function(a, b) {
 #' @return A matrix with bearings of the points in matrix b from the points in matrix a.
 #'
 #' @examples
-#' bears <- bearings(example$traps, example$mask)
+#' bears <- bearings(example$traps, example$mask) 
 #'
 #' @export
 bearings <- function(a, b) {
