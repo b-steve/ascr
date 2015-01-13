@@ -13,12 +13,11 @@ double log_dnorm (double x, double mu, const double sigma)
 //'
 //' Returns the likelihood for a vector of parameter values.
 //'
-//' @param pars Parameter values.
-//' @param objs Various other objects.
+//' @param link_pars Parameter values on link scale.
+//' @param dat Data list.
 //'
 //' @return The value of the negative log-likelihood.
 //'
-//' @export
 // [[Rcpp::export]]
 double secr_nll(const NumericVector& link_pars, const List& dat){
   double D = exp(link_pars[0]);
