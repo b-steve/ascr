@@ -975,224 +975,230 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         fit.freqs <- FALSE
     }
-    ## Idea of running executable as below taken from glmmADMB.
-    ## Working out correct command to run from command line.
-    if (exe.type == "new"){
-        exe.name <- "secr_new"
-    } else if (exe.type == "old"){
-        exe.name <- "secr"
-    } else if (exe.type == "test"){
-        exe.name <- "secr_test"
+    ## Using optimx() for first call fits.
+    if (first.calls){
+        out <- nmk(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
+                   secr_nll, dat = data.list)
     } else {
-        stop("Argument 'exe.type' must be \"old\" or \"new\".")
-    }
-    prefix.name <- exe.name
-    if (.Platform$OS == "windows"){
-        os.type <- "windows"
-        exe.name <- paste(prefix.name, ".exe", sep = "")
-    } else if (.Platform$OS == "unix"){
-        if (Sys.info()["sysname"] == "Linux"){
-            os.type <- "linux"
-        } else if (Sys.info()["sysname"] == "Darwin"){
-            os.type <- "mac"
+        ## Idea of running executable as below taken from glmmADMB.
+        ## Working out correct command to run from command line.
+        if (exe.type == "new"){
+            exe.name <- "secr_new"
+        } else if (exe.type == "old"){
+            exe.name <- "secr"
+        } else if (exe.type == "test"){
+            exe.name <- "secr_test"
+        } else {
+            stop("Argument 'exe.type' must be \"old\" or \"new\".")
+        }
+        prefix.name <- exe.name
+        if (.Platform$OS == "windows"){
+            os.type <- "windows"
+            exe.name <- paste(prefix.name, ".exe", sep = "")
+        } else if (.Platform$OS == "unix"){
+            if (Sys.info()["sysname"] == "Linux"){
+                os.type <- "linux"
+            } else if (Sys.info()["sysname"] == "Darwin"){
+                os.type <- "mac"
+            } else {
+                stop("Unknown OS type.")
+            }
         } else {
             stop("Unknown OS type.")
         }
-    } else {
-        stop("Unknown OS type.")
-    }
-    ## Finding executable folder (possible permission problems?).
-    exe.dir <- paste(system.file(package = "admbsecr"), "ADMB", "bin", os.type, sep = "/")
-    exe.loc <- paste(exe.dir, exe.name, sep = "/")
-    ## Creating command to run using system().
-    curr.dir <- getwd()
-    ## Creating temporary directory.
-    temp.dir <- tempfile("admbsecr", curr.dir)
-    dir.create(temp.dir)
-    setwd(temp.dir)
-    ## Creating .pin and .dat files.
-    write_pin("secr", sv.link)
-    write_dat("secr", data.list)
-    ## Creating link to executable.
-    if (os.type == "windows"){
-        file.copy(exe.loc, exe.name)
-        dll1.name <- "libstdc++-6.dll"
-        dll2.name <- "libgcc_s_dw2-1.dll"
-        dll1.loc <- paste(exe.dir, dll1.name, sep = "/")
-        dll2.loc <- paste(exe.dir, dll2.name, sep = "/")
-        file.copy(dll1.loc, dll1.name)
-        file.copy(dll2.loc, dll2.name)
-    } else {
-        file.symlink(exe.loc, exe.name)
-    }
-    ## Sorting out -cbs and -gbs.
-    if (!is.null(cbs)){
-        cbs.cmd <- paste(" -cbs", format(cbs, scientific = FALSE))
-    } else {
-        cbs.cmd <- NULL
-    }
-    if (!is.null(gbs)){
-        gbs.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
-    } else {
-        gbs.cmd <- NULL
-    }
-    ## Running ADMB executable.
-    cmd <- paste("./"[os.type != "windows"], exe.name,
-                 " -ind secr.dat -ainp secr.pin", " -neldmead"[neld.mead],
-                 " -nohess"[!hess], cbs.cmd, gbs.cmd, sep = "")
-    cat(cmd, "\n")
-    if (os.type == "windows"){
-        system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
-    } else {
-        system(cmd, ignore.stdout = !trace)
-    }
-    ## Reading in model results.
-    options(warn = -1)
-    if (exe.type == "test"){
-        prefix.name <- strsplit(list.files(), "\\.")[[which(substr(list.files(),
-                                                                   nchar(list.files()) - 3,
-                                                                   nchar(list.files())) == ".par")]][1]
-    }
-    out <- try(read.admbsecr(prefix.name), silent = TRUE)
-    ## Saving esa to prevent recalculation.
-    rep.string <- readLines("secr.rep")
-    esa <- as.numeric(readLines("secr.rep")[1])
-    options(warn = 0)
-    ## Checking truncation for first calls.
-    if (first.calls){
-        first.calls.den <- as.numeric(strsplit(rep.string[3], " ")[[1]])[-1]
-        first.calls.quo <- as.numeric(strsplit(rep.string[4], " ")[[1]])[-1]
-        perc.trunc <- sum(first.calls.quo[first.calls.den < first.calls.trunc])/sum(first.calls.quo)*100
-        if (perc.trunc > 1){
-            warning(paste("Error due to truncation of effective sampling area for subsequent calls is ",
-                          round(perc.trunc, 1), "%. Consider increasing 'cutoff'.", sep = ""))
-        }
-    }
-    setwd(curr.dir)
-    ## Cleaning up files.
-    if (clean){
-        unlink(temp.dir, recursive = TRUE)
-    } else {
-        cat("ADMB files found in:", "\n", temp.dir, "\n")
-    }
-    if (class(out)[1] == "try-error"){
-        stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
-    }
-    ## Warning for non-convergence.
-    if (out$maxgrad < -0.1){
-        warning("Failed convergence -- maximum gradient component is large.")
-    }
-    ## Moving back to original working directory.
-    setwd(curr.dir)
-    ## Removing fixed coefficients from list.
-    if (!hess){
-        out$coeflist[c(D.phase, detpars.phase, suppars.phase) == -1] <- NULL
-    }
-    ## Creating coefficients vector.
-    est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
-    n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + 1)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, "esa")
-    for (i in 1:n.est.pars){
-        out$coefficients[i] <- out$coeflist[[i]]
-    }
-    for (i in 1:n.est.pars){
-        out$coefficients[n.est.pars + i] <-
-            unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
-    }
-    ## Adding extra components to list.
-    if (detfn == "log.ss") detfn <- "ss"
-    ## Putting in updated argument names.
-    args <- vector(mode = "list", length = length(arg.names))
-    names(args) <- arg.names
-    for (i in arg.names){
-        if (!is.null(get(i))){
-            args[[i]] <- get(i)
-        }
-    }
-    out$args <- args
-    out$fit.types <- fit.types
-    out$infotypes <- names(fit.types)[fit.types]
-    out$detpars <- detpar.names
-    out$suppars <- suppar.names
-    out$phases <- phases
-    out$par.links <- par.links
-    out$par.unlinks <- par.unlinks
-    ## Logical value for random effects in the detection function.
-    out$re.detfn <- FALSE
-    if (detfn == "ss"){
-        if (get.par(out, "b2.ss") != 0 | get.par(out, "sigma.b0.ss") != 0){
-            out$re.detfn <- TRUE
-        }
-    }
-    ## Putting in esa estimate.
-    out$coefficients[2*n.est.pars + 1] <- esa
-    ## Putting in call frequency information and correct parameter names.
-    if (fit.freqs){
-        mu.freqs <- mean(call.freqs)
-        Da <- get.par(out, "D")/mu.freqs
-        names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
-        coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
-        names(coefs.updated) <- names.vec
-        out[["coefficients"]] <- coefs.updated
-        ## Removing ses, cor, vcov matrices.
-        cor.updated <- matrix(NA, nrow = length(names.vec),
-                              ncol = length(names.vec))
-        dimnames(cor.updated) <- list(names.vec, names.vec)
-        vcov.updated <- matrix(NA, nrow = length(names.vec),
-                               ncol = length(names.vec))
-        dimnames(vcov.updated) <- list(names.vec, names.vec)
-        if (hess){
-            ses.updated <- c(out[["se"]], rep(NA, 2))
-            max.ind <- length(names.vec) - 2
-            cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
-            vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
+        ## Finding executable folder (possible permission problems?).
+        exe.dir <- paste(system.file(package = "admbsecr"), "ADMB", "bin", os.type, sep = "/")
+        exe.loc <- paste(exe.dir, exe.name, sep = "/")
+        ## Creating command to run using system().
+        curr.dir <- getwd()
+        ## Creating temporary directory.
+        temp.dir <- tempfile("admbsecr", curr.dir)
+        dir.create(temp.dir)
+        setwd(temp.dir)
+        ## Creating .pin and .dat files.
+        write_pin("secr", sv.link)
+        write_dat("secr", data.list)
+        ## Creating link to executable.
+        if (os.type == "windows"){
+            file.copy(exe.loc, exe.name)
+            dll1.name <- "libstdc++-6.dll"
+            dll2.name <- "libgcc_s_dw2-1.dll"
+            dll1.loc <- paste(exe.dir, dll1.name, sep = "/")
+            dll2.loc <- paste(exe.dir, dll2.name, sep = "/")
+            file.copy(dll1.loc, dll1.name)
+            file.copy(dll2.loc, dll2.name)
         } else {
-            ses.updated <- rep(NA, length(names.vec))
+            file.symlink(exe.loc, exe.name)
         }
-        names(ses.updated) <- names.vec
-        out[["se"]] <- ses.updated
-        out[["cor"]] <- cor.updated
-        out[["vcov"]] <- vcov.updated
-        if (trace){
-            if (!hess){
-                cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
-            } else {
-                cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
+        ## Sorting out -cbs and -gbs.
+        if (!is.null(cbs)){
+            cbs.cmd <- paste(" -cbs", format(cbs, scientific = FALSE))
+        } else {
+            cbs.cmd <- NULL
+        }
+        if (!is.null(gbs)){
+            gbs.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
+        } else {
+            gbs.cmd <- NULL
+        }
+        ## Running ADMB executable.
+        cmd <- paste("./"[os.type != "windows"], exe.name,
+                     " -ind secr.dat -ainp secr.pin", " -neldmead"[neld.mead],
+                     " -nohess"[!hess], cbs.cmd, gbs.cmd, sep = "")
+        cat(cmd, "\n")
+        if (os.type == "windows"){
+            system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
+        } else {
+            system(cmd, ignore.stdout = !trace)
+        }
+        ## Reading in model results.
+        options(warn = -1)
+        if (exe.type == "test"){
+            prefix.name <- strsplit(list.files(), "\\.")[[which(substr(list.files(),
+                                                                       nchar(list.files()) - 3,
+                                                                       nchar(list.files())) == ".par")]][1]
+        }
+        out <- try(read.admbsecr(prefix.name), silent = TRUE)
+        ## Saving esa to prevent recalculation.
+        rep.string <- readLines("secr.rep")
+        esa <- as.numeric(readLines("secr.rep")[1])
+        options(warn = 0)
+        ## Checking truncation for first calls.
+        if (first.calls){
+            first.calls.den <- as.numeric(strsplit(rep.string[3], " ")[[1]])[-1]
+            first.calls.quo <- as.numeric(strsplit(rep.string[4], " ")[[1]])[-1]
+            perc.trunc <- sum(first.calls.quo[first.calls.den < first.calls.trunc])/sum(first.calls.quo)*100
+            if (perc.trunc > 1){
+                warning(paste("Error due to truncation of effective sampling area for subsequent calls is ",
+                              round(perc.trunc, 1), "%. Consider increasing 'cutoff'.", sep = ""))
             }
         }
-    } else {
-        if (hess){
-            ## Putting correct parameter names into se, cor, vcov.
-            replace <- substr(names(out$se), 1, 8) == "par_ests"
-            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
-                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                    colnames(out$cor)[replace] <- est.pars
-            replace <- 1:length(est.pars)
-            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
-                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                    colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
+        setwd(curr.dir)
+        ## Cleaning up files.
+        if (clean){
+            unlink(temp.dir, recursive = TRUE)
         } else {
-            ## Filling se, cor, vcov with NAs.
-            names.vec <- names(out[["coefficients"]])
-            ses.updated <- rep(NA, length(names.vec))
-            names(ses.updated) <- names.vec
+            cat("ADMB files found in:", "\n", temp.dir, "\n")
+        }
+        if (class(out)[1] == "try-error"){
+            stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
+        }
+        ## Warning for non-convergence.
+        if (out$maxgrad < -0.1){
+            warning("Failed convergence -- maximum gradient component is large.")
+        }
+        ## Moving back to original working directory.
+        setwd(curr.dir)
+        ## Removing fixed coefficients from list.
+        if (!hess){
+            out$coeflist[c(D.phase, detpars.phase, suppars.phase) == -1] <- NULL
+        }
+        ## Creating coefficients vector.
+        est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
+        n.est.pars <- length(est.pars)
+        out$coefficients <- numeric(2*n.est.pars + 1)
+        names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, "esa")
+        for (i in 1:n.est.pars){
+            out$coefficients[i] <- out$coeflist[[i]]
+        }
+        for (i in 1:n.est.pars){
+            out$coefficients[n.est.pars + i] <-
+                unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
+        }
+        ## Adding extra components to list.
+        if (detfn == "log.ss") detfn <- "ss"
+        ## Putting in updated argument names.
+        args <- vector(mode = "list", length = length(arg.names))
+        names(args) <- arg.names
+        for (i in arg.names){
+            if (!is.null(get(i))){
+                args[[i]] <- get(i)
+            }
+        }
+        out$args <- args
+        out$fit.types <- fit.types
+        out$infotypes <- names(fit.types)[fit.types]
+        out$detpars <- detpar.names
+        out$suppars <- suppar.names
+        out$phases <- phases
+        out$par.links <- par.links
+        out$par.unlinks <- par.unlinks
+        ## Logical value for random effects in the detection function.
+        out$re.detfn <- FALSE
+        if (detfn == "ss"){
+            if (get.par(out, "b2.ss") != 0 | get.par(out, "sigma.b0.ss") != 0){
+                out$re.detfn <- TRUE
+            }
+        }
+        ## Putting in esa estimate.
+        out$coefficients[2*n.est.pars + 1] <- esa
+        ## Putting in call frequency information and correct parameter names.
+        if (fit.freqs){
+            mu.freqs <- mean(call.freqs)
+            Da <- get.par(out, "D")/mu.freqs
+            names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
+            coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
+            names(coefs.updated) <- names.vec
+            out[["coefficients"]] <- coefs.updated
+            ## Removing ses, cor, vcov matrices.
             cor.updated <- matrix(NA, nrow = length(names.vec),
                                   ncol = length(names.vec))
             dimnames(cor.updated) <- list(names.vec, names.vec)
             vcov.updated <- matrix(NA, nrow = length(names.vec),
                                    ncol = length(names.vec))
             dimnames(vcov.updated) <- list(names.vec, names.vec)
+            if (hess){
+                ses.updated <- c(out[["se"]], rep(NA, 2))
+                max.ind <- length(names.vec) - 2
+                cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
+                vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
+            } else {
+                ses.updated <- rep(NA, length(names.vec))
+            }
+            names(ses.updated) <- names.vec
             out[["se"]] <- ses.updated
             out[["cor"]] <- cor.updated
             out[["vcov"]] <- vcov.updated
+            if (trace){
+                if (!hess){
+                    cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+                } else {
+                    cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
+                }
+            }
+        } else {
+            if (hess){
+                ## Putting correct parameter names into se, cor, vcov.
+                replace <- substr(names(out$se), 1, 8) == "par_ests"
+                names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+                    colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                        colnames(out$cor)[replace] <- est.pars
+                replace <- 1:length(est.pars)
+                names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+                    colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                        colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
+            } else {
+                ## Filling se, cor, vcov with NAs.
+                names.vec <- names(out[["coefficients"]])
+                ses.updated <- rep(NA, length(names.vec))
+                names(ses.updated) <- names.vec
+                cor.updated <- matrix(NA, nrow = length(names.vec),
+                                      ncol = length(names.vec))
+                dimnames(cor.updated) <- list(names.vec, names.vec)
+                vcov.updated <- matrix(NA, nrow = length(names.vec),
+                                       ncol = length(names.vec))
+                dimnames(vcov.updated) <- list(names.vec, names.vec)
+                out[["se"]] <- ses.updated
+                out[["cor"]] <- cor.updated
+                out[["vcov"]] <- vcov.updated
+            }
         }
+        out$fit.freqs <- fit.freqs
+        if (out$maxgrad < -0.01){
+            warning("Maximum gradient component is large.")
+        }
+        class(out) <- c("admbsecr", "admb")
     }
-    out$fit.freqs <- fit.freqs
-    if (out$maxgrad < -0.01){
-        warning("Maximum gradient component is large.")
-    }
-    class(out) <- c("admbsecr", "admb")
     out
 }
 
@@ -1254,6 +1260,7 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 ## Package imports for roxygenise to pass to NAMESPACE.
 #' @import parallel plyr Rcpp R2admb
 #' @importFrom CircStats dvm rvm
+#' @importFrom dfoptim nmk
 #' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom lattice wireframe
 #' @importFrom matrixStats colProds
