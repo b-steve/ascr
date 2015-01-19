@@ -12,6 +12,7 @@ Depends:
     R2admb
 Imports:
     CircStats,
+    dfoptim,
     fastGHQuad,
     lattice,
     matrixStats,
