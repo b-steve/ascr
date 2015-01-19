@@ -43,6 +43,10 @@ find_local <- function(capt, dists, buffer) {
     .Call('admbsecr_find_local', PACKAGE = 'admbsecr', capt, dists, buffer)
 }
 
+sim_ss <- function(ss_mean, sigma_ss, cutoff, freqs) {
+    .Call('admbsecr_sim_ss', PACKAGE = 'admbsecr', ss_mean, sigma_ss, cutoff, freqs)
+}
+
 #' Evaluating the likelihood using C++
 #'
 #' Returns the likelihood for a vector of parameter values.

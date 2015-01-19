@@ -1,5 +1,7 @@
 #include <Rcpp.h>
+#include <iostream>
 using namespace Rcpp;
+using namespace std;
 
 //' Calculating distances between two sets of points
 //'
@@ -137,5 +139,41 @@ List find_local(const IntegerMatrix& capt, const NumericMatrix& dists, const dou
     }
     out[i] = which_local;
   }
+  return out;
+}
+
+// [[Rcpp::export]]
+NumericMatrix sim_ss(const NumericMatrix& ss_mean, const double& sigma_ss, const double& cutoff, const NumericVector& freqs)
+{
+  RNGScope scope;
+  int n_a = ss_mean.nrow();
+  int n_traps = ss_mean.ncol();
+  NumericMatrix out(n_a, n_traps);
+  NumericVector ind_ss_capt(n_traps);
+  NumericVector ss_mean_row(n_traps);
+  int i, j, k;
+  bool det;
+  for (i = 0; i < n_a; i++){
+    for (k = 0; k < n_traps; k++){
+      ss_mean_row[k] = ss_mean(i, k);
+    }
+    det = false;
+    j = 0;
+    while (!det & (j < freqs[i])){
+      for (k = 0; k < n_traps; k++){
+	ind_ss_capt[k] = R::rnorm(ss_mean_row[k], sigma_ss);
+	if (ind_ss_capt[k] >= cutoff){
+	  det = true;
+	}
+      }
+      if (det){
+	NumericMatrix::Row replace_row = out(i, _);
+	replace_row = ind_ss_capt;
+      }
+      j++;
+    }
+    //cout << i << " " << j << endl;
+  }
+  cout << n_a << endl;
   return out;
 }

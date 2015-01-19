@@ -71,6 +71,24 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// sim_ss
+NumericMatrix sim_ss(const NumericMatrix& ss_mean, const double& sigma_ss, const double& cutoff, const NumericVector& freqs);
+RcppExport SEXP admbsecr_sim_ss(SEXP ss_meanSEXP, SEXP sigma_ssSEXP, SEXP cutoffSEXP, SEXP freqsSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const NumericMatrix& >::type ss_mean(ss_meanSEXP );
+        Rcpp::traits::input_parameter< const double& >::type sigma_ss(sigma_ssSEXP );
+        Rcpp::traits::input_parameter< const double& >::type cutoff(cutoffSEXP );
+        Rcpp::traits::input_parameter< const NumericVector& >::type freqs(freqsSEXP );
+        NumericMatrix __result = sim_ss(ss_mean, sigma_ss, cutoff, freqs);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // secr_nll
 double secr_nll(const NumericVector& link_pars, const List& dat);
 RcppExport SEXP admbsecr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP) {

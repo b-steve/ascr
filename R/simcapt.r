@@ -157,6 +157,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             detfn <- "ss"
         } else if (ss.link == "log"){
             detfn <- "log.ss"
+        } else if (ss.link == "spherical"){
+            stop("Simulation for spherical spreading models is not yet implemented.")
         } else {
             stop("The argument 'ss.link' must be either \"identity\" or \"log\"")
         }
@@ -210,8 +212,12 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             freqs[i] <- floor(freqs[i]) + rbinom(1, 1, prob)
         }
         ## Indicates which individual is being detected.
-        individual <- rep(1:n.a, times = freqs)
-        popn <- popn[individual, ]
+        if (!first.only){
+            individual <- rep(1:n.a, times = freqs)
+            popn <- popn[individual, ]
+        } else {
+            individual <- 1:n.a
+        }
     }
     n.popn <- nrow(popn)
     if (n.popn == 0) stop("No animals in population.")
@@ -221,8 +227,25 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     ## Calculating detection probabilities and simulating captures.
     if (!sim.ss){
         det.probs <- calc.detfn(dists, detfn, detpars, ss.link)
-        full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
-                                nrow = n.popn, ncol = n.traps)
+        if (first.only){
+            ## If only first calls are required, simulate each call separately.
+            full.bin.capt <- matrix(0, nrow = n.a, ncol = n.traps)
+            for (i in 1:n.a){
+                det <- FALSE
+                j <- 1
+                while (!det & j <= freqs[i]){
+                    ind.bin.capt <- as.numeric(runif(n.traps) < det.probs[i, ])
+                    if (sum(ind.bin.capt) > 0){
+                        full.bin.capt[i, ] <- ind.bin.capt
+                        det <- TRUE
+                    }
+                    j <- j + 1
+                }
+            }
+        } else {
+            full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
+                                    nrow = n.popn, ncol = n.traps)
+        }
         captures <- which(apply(full.bin.capt, 1, sum) > 0)
         bin.capt <- full.bin.capt[captures, ]
         out <- list(bincapt = bin.capt)
@@ -239,6 +262,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         ## Simulating animal directions and calculating orientations
         ## to traps.
         if (pars$b2.ss != 0){
+            if (!is.null(call.freqs) & !first.only){
+                warning("Call directions are being generated independently.")
+            }
             popn.dirs <- runif(n.popn, 0, 2*pi)
             popn.bearings <- t(bearings(traps, popn))
             popn.orientations <- abs(popn.dirs - popn.bearings)
@@ -250,13 +276,23 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         ## Random error at each microphone.
         sigma.mat <- matrix(pars$sigma.b0.ss^2, nrow = n.traps, ncol = n.traps)
         diag(sigma.mat) <- diag(sigma.mat) + pars$sigma.ss^2
-        ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
-        ## Filling ss.error for non-hetergeneity models for consistency with old versions.
-        if (pars$sigma.b0.ss == 0){
-            ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
+        if (first.only){
+            if (pars$sigma.b0.ss > 0){
+                stop("Simulation of first call data for situations with heterogeneity in source signal strengths is not yet implemented.")
+                ## Though note that everything is OK for directional calling.
+            }
+            ## If only first calls are required, simulate each call separately.
+            ## Written in C++ as it was way too slow otherwise.
+            full.ss.capt <- sim_ss(ss.mean, pars$sigma.ss, cutoff, freqs)
+        } else {
+            ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
+            ## Filling ss.error for non-hetergeneity models for consistency with old versions.
+            if (pars$sigma.b0.ss == 0){
+                ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
+            }
+            ## Creating SS capture history.
+            full.ss.capt <- ss.mean + ss.error
         }
-        ## Creating SS capture history.
-        full.ss.capt <- ss.mean + ss.error
         captures <- which(apply(full.ss.capt, 1,
                                 function(x, cutoff) any(x > cutoff),
                                 cutoff = cutoff))
@@ -320,10 +356,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     if (sim.mrds){
         out$mrds <- capt.dists
     }
-    if (first.only){
-        keep <- c(TRUE, capt.individual[-1] != capt.individual[-nrow(bin.capt)])
-        out <- lapply(out, function(x, keep) x[keep, ], keep = keep)
-    }
+    ##if (first.only){
+    ##    keep <- c(TRUE, capt.individual[-1] != capt.individual[-nrow(bin.capt)])
+    ##    out <- lapply(out, function(x, keep) x[keep, ], keep = keep)
+    ##}
     out
 }
 
