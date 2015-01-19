@@ -135,7 +135,7 @@ double secr_nll(const NumericVector& link_pars, const List& dat){
       f -= log(f_ind + dbl_min);
     }
   }
-  cout << "mask_all_det_probs[1]: " << mask_all_det_probs[1] << ", mask_det_probs[1]: " << mask_det_probs[1] << endl;
+  cout << "mask_all_det_probs[905]: " << mask_all_det_probs[905] << ", mask_det_probs[905]: " << mask_det_probs[905] << endl;
   double esa = A*(sum_det_probs + sum_sub_det_probs);
   f -= log_dpois(n, D*esa, dbl_min);
   cout << "lambda: " << D*esa << endl;
