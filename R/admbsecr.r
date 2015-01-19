@@ -969,6 +969,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
         as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
         bearings, toa_ssq = toa.ssq)
+    browser()
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(call.freqs)){
         fit.freqs <- any(call.freqs != 1)
@@ -977,8 +978,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Using optimx() for first call fits.
     if (first.calls){
-        out <- nmk(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
-                   secr_nll, dat = data.list)
+        out <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
+                   secr_nll, dat = data.list, method = "nmkb")
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.

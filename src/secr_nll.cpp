@@ -3,9 +3,16 @@
 using namespace Rcpp;
 using namespace std;
 
-double log_dnorm (double x, double mu, const double sigma)
+double log_dnorm (const double x, const double mu, const double sigma, const double dbl_min)
 {
   return -0.5*log(2*M_PI) - log(sigma) - pow(x - mu, 2)/(2*pow(sigma, 2));
+}
+
+double log_dpois (const double x, const double lambda, const double dbl_min)
+{
+  NumericVector x_vec(1);
+  x_vec[0] = x;
+  return x*log(lambda) - lambda - lfactorial(x_vec)[0];
 }
 
 
@@ -120,7 +127,7 @@ double secr_nll(const NumericVector& link_pars, const List& dat){
 	bincapt_contrib[m] = evade_contrib[m];
 	for (j = 0; j < n_traps; j++){
 	  if (capt_hist[j] == 1){
-	    bincapt_contrib[m] += log_dnorm(capt_ss(i, j), expected_ss(j, m), sigma_ss);
+	    bincapt_contrib[m] += log_dnorm(capt_ss(i, j), expected_ss(j, m), sigma_ss, dbl_min);
 	  }
 	}
       }
@@ -128,10 +135,10 @@ double secr_nll(const NumericVector& link_pars, const List& dat){
       f -= log(f_ind + dbl_min);
     }
   }
+  cout << "mask_all_det_probs[1]: " << mask_all_det_probs[1] << ", mask_det_probs[1]: " << mask_det_probs[1] << endl;
   double esa = A*(sum_det_probs + sum_sub_det_probs);
-  NumericVector n_vec(1);
-  n_vec[0] = n;
-  f -= log(dpois(n_vec, D*esa)[0]);
+  f -= log_dpois(n, D*esa, dbl_min);
+  cout << "lambda: " << D*esa << endl;
   f -= -n*log(sum_det_probs + sum_sub_det_probs);
   if (trace){
     cout << "D: " << D << ", b0.ss: " << b0_ss << ", b1.ss: " << b1_ss << ", sigma.ss: " << sigma_ss << ", LL: " << -f << endl;
