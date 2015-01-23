@@ -16,9 +16,9 @@ values from which to generate capture histories.}
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
 
-\item{mask}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a mask point. The function
-\link{create.mask} will return a suitable object.}
+\item{mask}{A matrix with two columns, providing x- and
+y-coordinates respectively. The extreme x- and y-coordinates define
+the rectangle in which individuals' locations are simulated.}
 
 \item{infotypes}{A character vector indicating the type(s) of
 additional information to be simulated. Elements can be a subset of
@@ -41,8 +41,11 @@ additional information type(s).}
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
 
-\item{call.freqs}{A vector of call frequencies collected
-independently to an acoustic survey.}
+\item{call.freqs}{A vector of call frequencies from which a
+distribution for the number of emitted calls for each individual is
+fitted. If scalar, all individuals make the same number of
+calls. If \code{Inf}, \code{first.only} must be \code{TRUE}, and
+all individuals keep making calls until the first is detected.}
 
 \item{freq.dist}{A character string, either \code{"edf"} or
 \code{"norm"}, which specifies how the distribution function of the
@@ -50,8 +53,9 @@ call frequencies should be estimated. If \code{"edf"}, then the
 distribution of call frequencies is estimated using the empirical
 distribution function. If \code{"norm"}, then a normal distribution
 is fitted to the call frequencies using the sample mean and
-variance. See 'Details' below for information on how call
-frequencies are rounded.}
+variance. If \code{call.freqs} is scalar then this is ignored, and
+all individuals make the same number of calls. See 'Details' below
+for information on how call frequencies are rounded.}
 
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
@@ -93,6 +97,14 @@ then the call frequency is rounded up with probability \eqn{x} and
 rounded down with probability \eqn{1 - x}. For example, a value of
 8.1 will be rounded to 9 with probability 0.1, and rounded to 8
 with probability 0.9.
+
+If \code{call.freqs} is \code{Inf} then all simulated individuals
+will be detected. To generate sensible capture histories then both
+a lower and upper cutoff must be supplied in \code{ss.opts}. In
+this case, individuals continue to emit calls until one is detected
+above the lower cutoff by at least one microphone. This individual
+is then incorporated into the resulting capture history only if the
+loudest received signal strength is also above the upper cutoff.
 }
 \examples{
 ## Simulating based on model fits.

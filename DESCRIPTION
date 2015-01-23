@@ -20,7 +20,8 @@ Imports:
     parallel,
     plyr,
     secr,
-    testthat
+    testthat,
+    truncnorm
 LinkingTo: Rcpp
 Description: This package allows for the fitting of spatially explicit
     capture-recapture (SECR) models. In particular, it is focussed on
