@@ -413,3 +413,63 @@ get.bias <- function(fit, pars = "fitted"){
     out
 }
 
+#' Testing the mask for first call models under a set of parameter values.
+mask.test <- function(mask, traps, pars, cutoff, lower.cutoff){
+    traps.centroid <- matrix(apply(traps, 2, mean), nrow = 1)
+    ss.means <- pars$b0.ss - pars$b1.ss*distances(mask, traps)
+    p.au <- 1 - pnorm(cutoff, ss.means, pars$sigma.ss)
+    p.al <- 1 - pnorm(lower.cutoff, ss.means, pars$sigma.ss)
+    AU <- 1 - apply(1 - p.au, 1, prod)
+    BU <- 1 - AU
+    AL <- 1 - apply(1 - p.al, 1, prod)
+    BL <- 1 - AL
+    s <- AU*BL/AL
+    p <- AU
+    plot(distances(mask, traps.centroid), s + p, cex = 0.5)
+    points(distances(mask, traps.centroid), s, col = "red", cex = 0.5)
+    points(distances(mask, traps.centroid), p, col = "blue", cex = 0.5)
+}
+
+#' Testing the mask for first call models under a set of parameter values.
+mask.test <- function(mask, traps, pars, cutoff, lower.cutoff){
+    traps.centroid <- matrix(apply(traps, 2, mean), nrow = 1)
+    ss.means <- pars$b0.ss - pars$b1.ss*distances(mask, traps)
+    log.p.au <- pnorm(cutoff, ss.means, pars$sigma.ss, lower.tail = FALSE, log = TRUE)
+    log.p.al <- pnorm(lower.cutoff, ss.means, pars$sigma.ss, lower.tail = FALSE, log = TRUE)
+    log.p.bu <- pnorm(cutoff, ss.means, pars$sigma.ss, lower.tail = TRUE, log = TRUE)
+    log.p.bl <- pnorm(lower.cutoff, ss.means, pars$sigma.ss, lower.tail = TRUE, log = TRUE)
+    n.mask <- nrow(mask)
+    n.traps <- nrow(traps)
+    n.combins <- 2^n.traps
+    combins <- matrix(NA, nrow = n.combins, ncol = n.traps)
+    for (i in 1:n.traps){
+        combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
+    }
+    p <- numeric(n.mask)
+    s <- numeric(n.mask)
+    for (i in 1:n.mask){
+        ## Log probabilities of detection and evasion at upper threshold.
+        log.det.u.mat <- matrix(log.p.au[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+        log.evade.u.mat <- matrix(log.p.bu[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+        log.prob.u.mat <- log.det.u.mat
+        log.prob.u.mat[combins == 0] <- log.evade.u.mat[combins == 0]
+        ## Probabilities for each capture history.
+        log.AU <- log(sum(exp(apply(log.prob.u.mat[-1, ], 1, sum))))
+        log.BU <- sum(log.prob.u.mat[1, ])
+        ## Log probabilities of detection and evasion at lower threshold.
+        log.det.l.mat <- matrix(log.p.al[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+        log.evade.l.mat <- matrix(log.p.bl[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+        log.prob.l.mat <- log.det.l.mat
+        log.prob.l.mat[combins == 0] <- log.evade.l.mat[combins == 0]
+        ## Probabilities for each capture history.
+        log.AL <- log(sum(exp(apply(log.prob.l.mat[-1, ], 1, sum))))
+        log.BL <- sum(log.prob.l.mat[1, ])
+        if (i == 15151) cat(log.AU, log.BU, log.AL, log.BL)
+        p[i] <- exp(log.AU)
+        s[i] <- exp(log.AU + log.BL - log.AL)
+    }
+    plot(distances(mask, traps.centroid), s + p, cex = 0.5)
+    points(distances(mask, traps.centroid), s, col = "red", cex = 0.5)
+    points(distances(mask, traps.centroid), p, col = "blue", cex = 0.5)
+}
+
