@@ -172,8 +172,6 @@ NumericMatrix sim_ss(const NumericMatrix& ss_mean, const double& sigma_ss, const
       }
       j++;
     }
-    //cout << i << " " << j << endl;
   }
-  cout << n_a << endl;
   return out;
 }
