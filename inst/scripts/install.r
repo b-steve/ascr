@@ -1,5 +1,5 @@
-pkgs <- c("CircStats", "lattice", "matrixStats", "mvtnorm", "plyr",
-          "Rcpp", "R2admb", "secr", "testthat", "downloader")
+pkgs <- c("CircStats", "dfoptim", "lattice", "matrixStats", "mvtnorm", "plyr",
+          "Rcpp", "R2admb", "secr", "testthat", "truncnorm", "downloader")
 options(warn = -1)
 for (i in pkgs){
     if (!require(i, quietly = TRUE, character.only = TRUE)){
