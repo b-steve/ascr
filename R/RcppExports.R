@@ -60,3 +60,15 @@ secr_nll <- function(link_pars, dat) {
     .Call('admbsecr_secr_nll', PACKAGE = 'admbsecr', link_pars, dat)
 }
 
+secr_s <- function(link_pars, dat) {
+    .Call('admbsecr_secr_s', PACKAGE = 'admbsecr', link_pars, dat)
+}
+
+secr_p <- function(link_pars, dat) {
+    .Call('admbsecr_secr_p', PACKAGE = 'admbsecr', link_pars, dat)
+}
+
+calc_probsurf <- function(link_pars, dat) {
+    .Call('admbsecr_calc_probsurf', PACKAGE = 'admbsecr', link_pars, dat)
+}
+

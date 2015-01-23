@@ -105,3 +105,51 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// secr_s
+NumericVector secr_s(const NumericVector& link_pars, const List& dat);
+RcppExport SEXP admbsecr_secr_s(SEXP link_parsSEXP, SEXP datSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
+        Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
+        NumericVector __result = secr_s(link_pars, dat);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// secr_p
+NumericVector secr_p(const NumericVector& link_pars, const List& dat);
+RcppExport SEXP admbsecr_secr_p(SEXP link_parsSEXP, SEXP datSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
+        Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
+        NumericVector __result = secr_p(link_pars, dat);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// calc_probsurf
+List calc_probsurf(const NumericVector& link_pars, const List& dat);
+RcppExport SEXP admbsecr_calc_probsurf(SEXP link_parsSEXP, SEXP datSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
+        Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
+        List __result = calc_probsurf(link_pars, dat);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
