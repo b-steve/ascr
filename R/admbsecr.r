@@ -969,7 +969,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
         as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
         bearings, toa_ssq = toa.ssq)
-    browser()
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(call.freqs)){
         fit.freqs <- any(call.freqs != 1)
@@ -978,8 +977,19 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Using optimx() for first call fits.
     if (first.calls){
-        out <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
-                   secr_nll, dat = data.list, method = "nmkb")
+        ## All possible capture histories.
+        n.combins <- 2^n.traps
+        combins <- matrix(NA, nrow = n.combins, ncol = n.traps)
+        for (i in 1:n.traps){
+            combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
+        }
+        data.list$combins <- combins
+        ##browser()
+        ##out <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
+        ##              secr_nll, dat = data.list, method = c("nmkb", "BFGS", "CG", "spg", "nlm"))
+        secr_nll(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE), dat = data.list)
+        browser()
+        log("a")
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
@@ -1259,7 +1269,7 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 ## Roxygen code for NAMESPACE and datasets.
 
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import parallel plyr Rcpp R2admb
+#' @import parallel plyr Rcpp R2admb truncnorm
 #' @importFrom CircStats dvm rvm
 #' @importFrom dfoptim nmk
 #' @importFrom fastGHQuad gaussHermiteData
