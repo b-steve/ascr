@@ -21,9 +21,20 @@
 #' 8.1 will be rounded to 9 with probability 0.1, and rounded to 8
 #' with probability 0.9.
 #'
+#' If \code{call.freqs} is \code{Inf} then all simulated individuals
+#' will be detected. To generate sensible capture histories then both
+#' a lower and upper cutoff must be supplied in \code{ss.opts}. In
+#' this case, individuals continue to emit calls until one is detected
+#' above the lower cutoff by at least one microphone. This individual
+#' is then incorporated into the resulting capture history only if the
+#' loudest received signal strength is also above the upper cutoff.
+#'
 #' @param fit A fitted \code{admbsecr} model object which provides the
 #' additional information types, detection function, and parameter
 #' values from which to generate capture histories.
+#' @param mask A matrix with two columns, providing x- and
+#' y-coordinates respectively. The extreme x- and y-coordinates define
+#' the rectangle in which individuals' locations are simulated.
 #' @param infotypes A character vector indicating the type(s) of
 #' additional information to be simulated. Elements can be a subset of
 #' \code{"bearing"}, \code{"dist"}, \code{"toa"}, and \code{"mrds"}
@@ -39,14 +50,20 @@
 #' an acoustic survey) must always be provided, along with values for
 #' parameters associated with the chosen detection function and
 #' additional information type(s).
+#' @param call.freqs A vector of call frequencies from which a
+#' distribution for the number of emitted calls for each individual is
+#' fitted. If scalar, all individuals make the same number of
+#' calls. If \code{Inf}, \code{first.only} must be \code{TRUE}, and
+#' all individuals keep making calls until the first is detected.
 #' @param freq.dist A character string, either \code{"edf"} or
 #' \code{"norm"}, which specifies how the distribution function of the
 #' call frequencies should be estimated. If \code{"edf"}, then the
 #' distribution of call frequencies is estimated using the empirical
 #' distribution function. If \code{"norm"}, then a normal distribution
 #' is fitted to the call frequencies using the sample mean and
-#' variance. See 'Details' below for information on how call
-#' frequencies are rounded.
+#' variance. If \code{call.freqs} is scalar then this is ignored, and
+#' all individuals make the same number of calls. See 'Details' below
+#' for information on how call frequencies are rounded.
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
 #' function to aid debugging.
 #' @param first.only Only keep the first detection for each individual.
@@ -102,9 +119,23 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     sim.mrds <- sim.types["mrds"]
     sim.ss <- ifelse(detfn == "ss", TRUE, FALSE)
     cutoff <- ss.opts$cutoff
+    lower.cutoff <- ss.opts$lower.cutoff
     het.source <- ss.opts$het.source
     directional <- ss.opts$directional
     ss.link <- ss.opts$ss.link
+    ## Sorting out inf calls stuff.
+    if (any(call.freqs == Inf)){
+        if (!first.only){
+            warning("Setting 'first.only' to 'TRUE' as 'call.freqs' is Inf.")
+            first.only <- TRUE
+        }
+        if (is.null(lower.cutoff)){
+            #stop("A lower cutoff must be specified if individuals call until they are detected.")
+        }
+        inf.calls <- TRUE
+    } else {
+        inf.calls <- FALSE
+    }
     ## Sorting out directional calling stuff.
     if (sim.ss){
         if (is.null(cutoff)){
@@ -186,7 +217,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         ## Indicates which individual is being detected.
         individual <- 1:nrow(popn)
     } else {
-        D <- pars$D/mean(call.freqs)
+        D <- pars$D
+        if (!first.only){
+            D <- D/mean(call.freqs)
+        }
         popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
         n.a <- nrow(popn)
         if (freq.dist == "edf"){
@@ -281,13 +315,43 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                 stop("Simulation of first call data for situations with heterogeneity in source signal strengths is not yet implemented.")
                 ## Though note that everything is OK for directional calling.
             }
-            ## If only first calls are required, simulate each call separately.
-            ## Written in C++ as it was way too slow otherwise.
-            full.ss.capt <- sim_ss(ss.mean, pars$sigma.ss, cutoff, freqs)
+            if (inf.calls){
+                log.det.probs <- pnorm(cutoff, ss.mean, pars$sigma.ss, FALSE, TRUE)
+                log.evade.probs <- pnorm(cutoff, ss.mean, pars$sigma.ss, TRUE, TRUE)
+                ## Generating all possible capture histories.
+                n.combins <- 2^n.traps
+                combins <- matrix(NA, nrow = n.combins, ncol = n.traps)
+                for (i in 1:n.traps){
+                    combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
+                }
+                full.bin.capt <- matrix(0, nrow = n.a, ncol = n.traps)
+                for (i in 1:n.a){
+                    #if (sum(det.probs[i, ]) > 0){
+                    log.detprob.mat <- matrix(log.det.probs[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+                    log.evadeprob.mat <- matrix(log.evade.probs[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+                    log.prob.mat <- log.detprob.mat
+                    log.prob.mat[combins == 0] <- log.evadeprob.mat[combins == 0]
+                    ## Probabilities of each possible capture history.
+                    log.d.capt <- apply(log.prob.mat, 1, sum)
+                    d.capt <- exp(log.d.capt)
+                    ## Selecting a capture history.
+                    which.capt <- sample(2:n.combins, size = 1, prob = d.capt[2:n.combins])
+                    full.bin.capt[i, ] <- combins[which.capt, ]
+                                        #}
+                }
+                full.ss.capt <- full.bin.capt
+                full.ss.capt[full.ss.capt == 1] <- rtruncnorm(sum(full.bin.capt, na.rm = TRUE), a = cutoff,
+                                 mean = ss.mean[full.bin.capt == 1], sd = pars$sigma.ss)
+            } else {
+                ## If only first calls are required, simulate each call separately.
+                ## Written in C++ as it was way too slow otherwise.
+                full.ss.capt <- sim_ss(ss.mean, pars$sigma.ss, cutoff, freqs)
+            }
         } else {
             ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
             ## Filling ss.error for non-hetergeneity models for consistency with old versions.
             if (pars$sigma.b0.ss == 0){
+                
                 ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
             }
             ## Creating SS capture history.
@@ -360,6 +424,6 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     ##    keep <- c(TRUE, capt.individual[-1] != capt.individual[-nrow(bin.capt)])
     ##    out <- lapply(out, function(x, keep) x[keep, ], keep = keep)
     ##}
-    out
+    list(capt = out, popn = popn)
 }
 
