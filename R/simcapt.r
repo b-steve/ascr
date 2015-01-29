@@ -420,10 +420,6 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     if (sim.mrds){
         out$mrds <- capt.dists
     }
-    ##if (first.only){
-    ##    keep <- c(TRUE, capt.individual[-1] != capt.individual[-nrow(bin.capt)])
-    ##    out <- lapply(out, function(x, keep) x[keep, ], keep = keep)
-    ##}
-    list(capt = out, popn = popn)
+    out
 }
 
