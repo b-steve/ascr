@@ -984,12 +984,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
         }
         data.list$combins <- combins
-        ##browser()
-        ##out <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
-        ##              secr_nll, dat = data.list, method = c("nmkb", "BFGS", "CG", "spg", "nlm"))
-        secr_nll(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE), dat = data.list)
-        browser()
-        log("a")
+        out <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
+                      secr_nll, dat = data.list, method = "nmkb")
+        ##secr_nll(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE), dat = data.list)
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
@@ -1056,7 +1053,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         cmd <- paste("./"[os.type != "windows"], exe.name,
                      " -ind secr.dat -ainp secr.pin", " -neldmead"[neld.mead],
                      " -nohess"[!hess], cbs.cmd, gbs.cmd, sep = "")
-        cat(cmd, "\n")
+        if (trace){
+            cat(cmd, "\n")
+        }
         if (os.type == "windows"){
             system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
         } else {
@@ -1271,7 +1270,7 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 ## Package imports for roxygenise to pass to NAMESPACE.
 #' @import parallel plyr Rcpp R2admb truncnorm
 #' @importFrom CircStats dvm rvm
-#' @importFrom dfoptim nmk
+#' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom lattice wireframe
 #' @importFrom matrixStats colProds

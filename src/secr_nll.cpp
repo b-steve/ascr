@@ -15,6 +15,8 @@ double log_dpois (const double x, const double lambda, const double dbl_min)
   return x*log(lambda) - lambda - lfactorial(x_vec)[0];
 }
 
+// Prototype for calc_detsurf.
+List calc_probsurf(const NumericVector&, const List&);
 
 //' Evaluating the likelihood using C++
 //'
@@ -37,7 +39,6 @@ double secr_nll(const NumericVector& link_pars, const List& dat){
   int n_mask = as<int>(dat["n_mask"]);
   IntegerMatrix capt_bin_unique = as<IntegerMatrix>(dat["capt_bin_unique"]);
   IntegerVector capt_bin_freqs = as<IntegerVector>(dat["capt_bin_freqs"]);
-  int first_calls = as<int>(dat["first_calls"]);
   double cutoff = as<double>(dat["cutoff"]);
   NumericVector cutoff_vec(1);
   cutoff_vec[0] = cutoff;
@@ -50,50 +51,24 @@ double secr_nll(const NumericVector& link_pars, const List& dat){
   double A = as<double>(dat["A"]);
   double dbl_min = as<double>(dat["DBL_MIN"]);
   int i, j;
-  double mu_ss;
-  double det_prob;
-  double sub_det_prob;
-  double undet_prob;
-  double undet_lower_prob;
   double sum_det_probs = 0;
   double sum_sub_det_probs = 0;
   NumericVector mask_det_probs(n_mask);
+  NumericVector log_mask_det_probs(n_mask);
   NumericVector mask_all_det_probs(n_mask);
+  //NumericVector log_mask_all_det_probs(n_mask);
   NumericMatrix expected_ss(n_traps, n_mask);
   NumericMatrix log_capt_probs(n_traps, n_mask);
   NumericMatrix log_evade_probs(n_traps, n_mask);
-  double capt_prob;
-  for (i = 0; i < n_mask; i++){
-    undet_prob = 1;
-    undet_lower_prob = 1;
-    for (j = 0; j < n_traps; j++){
-      mu_ss = b0_ss - b1_ss*dists(j, i);
-      expected_ss(j, i) = mu_ss;
-      // For some reason first argument to pnorm must be a vector.
-      capt_prob = 1 - pnorm(cutoff_vec, mu_ss, sigma_ss)[0];
-      log_capt_probs(j, i) = log(capt_prob + dbl_min);
-      log_evade_probs(j, i) = log(1 - capt_prob + dbl_min);
-      undet_prob *= 1 - capt_prob;
-      if (first_calls){
-	// As above.
-        undet_lower_prob *= pnorm(lower_cutoff_vec, mu_ss, sigma_ss)[0];
-      }
-    }
-    det_prob = 1 - undet_prob;
-    sum_det_probs += det_prob;
-    if (first_calls){
-      // Saving detection probabilities for first calls, and
-      // detection probabilities for any subsequent calls.
-      mask_det_probs[i] = 0;
-      mask_all_det_probs[i] = 0;
-      if (1 - undet_lower_prob > 1e-30){
-	sum_sub_det_probs += (det_prob*undet_lower_prob)/(1 - undet_lower_prob);
-	sub_det_prob = (det_prob*undet_lower_prob)/(1 - undet_lower_prob);
-	mask_det_probs[i] += det_prob;
-	mask_all_det_probs[i] += det_prob + sub_det_prob;
-      }
-    }
-  }
+  List l_out = calc_probsurf(link_pars, dat);
+  log_mask_det_probs = as<NumericVector>(l_out["log_p"]);
+  mask_det_probs = exp(log_mask_det_probs);
+  mask_all_det_probs = mask_det_probs + exp(as<NumericVector>(l_out["log_s"]));
+  expected_ss = as<NumericMatrix>(l_out["expected_ss"]);
+  log_capt_probs = as<NumericMatrix>(l_out["log_capt_probs"]);
+  log_evade_probs = as<NumericMatrix>(l_out["log_evade_probs"]);
+  sum_det_probs = sum(exp(log_mask_det_probs));
+  sum_sub_det_probs = sum(exp(as<NumericVector>(l_out["log_s"])));
   NumericVector capt_hist(n_traps);
   NumericVector evade_contrib(n_mask);
   NumericVector bincapt_contrib(n_mask);
@@ -137,7 +112,7 @@ double secr_nll(const NumericVector& link_pars, const List& dat){
   }
   double esa = A*(sum_det_probs + sum_sub_det_probs);
   f -= log_dpois(n, D*esa, dbl_min);
-  cout << "lambda: " << D*esa << endl;
+  //cout << "lambda: " << D*esa << endl;
   f -= -n*log(sum_det_probs + sum_sub_det_probs);
   if (trace){
     cout << "D: " << D << ", b0.ss: " << b0_ss << ", b1.ss: " << b1_ss << ", sigma.ss: " << sigma_ss << ", LL: " << -f << endl;
@@ -397,11 +372,11 @@ List calc_probsurf(const NumericVector& link_pars, const List& dat)
   NumericVector cutoff = as<NumericVector>(dat["cutoff"]);
   NumericVector lower_cutoff = as<NumericVector>(dat["lower_cutoff"]);
   NumericMatrix dists = as<NumericMatrix>(dat["dists"]);
-  NumericMatrix expected_ss(n_mask, n_traps);
-  NumericMatrix log_p_au(n_mask, n_traps);
-  NumericMatrix log_p_al(n_mask, n_traps);
-  NumericMatrix log_p_bu(n_mask, n_traps);
-  NumericMatrix log_p_bl(n_mask, n_traps);
+  NumericMatrix expected_ss(n_traps, n_mask);
+  NumericMatrix log_p_au(n_traps, n_mask);
+  NumericMatrix log_p_al(n_traps, n_mask);
+  NumericMatrix log_p_bu(n_traps, n_mask);
+  NumericMatrix log_p_bl(n_traps, n_mask);
   double mu_ss;
   int i, j, k;
   // Calculating detection probabilities at upper and lower cutoff for
@@ -409,11 +384,11 @@ List calc_probsurf(const NumericVector& link_pars, const List& dat)
   for (i = 0; i < n_mask; i++){
     for (j = 0; j < n_traps; j++){
       mu_ss = b0_ss - b1_ss*dists(j, i);
-      expected_ss(i, j) = mu_ss;
-      log_p_au(i, j) = pnorm(cutoff, mu_ss, sigma_ss, false, true)[0];
-      log_p_al(i, j) = pnorm(lower_cutoff, mu_ss, sigma_ss, false, true)[0];
-      log_p_bu(i, j) = pnorm(cutoff, mu_ss, sigma_ss, true, true)[0];
-      log_p_bl(i, j) = pnorm(lower_cutoff, mu_ss, sigma_ss, true, true)[0];
+      expected_ss(j, i) = mu_ss;
+      log_p_au(j, i) = pnorm(cutoff, mu_ss, sigma_ss, false, true)[0];
+      log_p_al(j, i) = pnorm(lower_cutoff, mu_ss, sigma_ss, false, true)[0];
+      log_p_bu(j, i) = pnorm(cutoff, mu_ss, sigma_ss, true, true)[0];
+      log_p_bl(j, i) = pnorm(lower_cutoff, mu_ss, sigma_ss, true, true)[0];
     }
   }
   NumericMatrix combins = as<NumericMatrix>(dat["combins"]);
@@ -435,11 +410,11 @@ List calc_probsurf(const NumericVector& link_pars, const List& dat)
       log_prob_al = 0;
       for (k = 0; k < n_traps; k++){
 	if (combins(j, k) == 1){
-	  log_prob_au += log_p_au(i, k);
-	  log_prob_al += log_p_al(i, k);
+	  log_prob_au += log_p_au(k, i);
+	  log_prob_al += log_p_al(k, i);
 	} else {
-	  log_prob_au += log_p_bu(i, k);
-	  log_prob_al += log_p_bl(i, k);
+	  log_prob_au += log_p_bu(k, i);
+	  log_prob_al += log_p_bl(k, i);
 	}
       }
       AU += exp(log_prob_au);
@@ -450,8 +425,8 @@ List calc_probsurf(const NumericVector& link_pars, const List& dat)
     log_BU(i) = 0;
     log_BL(i) = 0;
     for (k = 0; k < n_traps; k++){
-      log_BU(i) += log_p_bu(i, k);
-      log_BL(i) += log_p_bl(i, k);
+      log_BU(i) += log_p_bu(k, i);
+      log_BL(i) += log_p_bl(k, i);
     }
   }
   NumericVector log_p = log_AU;
@@ -459,6 +434,9 @@ List calc_probsurf(const NumericVector& link_pars, const List& dat)
   List out;
   out["log_p"] = log_p;
   out["log_s"] = log_s;
+  out["expected_ss"] = expected_ss;
+  out["log_capt_probs"] = log_p_au;
+  out["log_evade_probs"] = log_p_bu;
   return out;
 }
 
