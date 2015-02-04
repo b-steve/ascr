@@ -132,7 +132,6 @@ DATA_SECTION
   !!   n_mask_det_probs = 1;
   !! }
   init_number lower_cutoff
-  init_number first_calls_trunc
   init_int linkfn_id
   int nr_ss
   int nc_ss
@@ -226,8 +225,6 @@ DATA_SECTION
   number dir
   number bearing_to_trap
   number orientation
-  vector quo(1,n_mask)
-  vector den(1,n_mask)
 
 PARAMETER_SECTION
   objective_function_value f
@@ -251,14 +248,8 @@ PARAMETER_SECTION
   vector suppars(1,n_suppars)
   // Keep this here, otherwise get an error on Mac.
   vector capt_hist(1,n_traps)
-  // Need to save probabilities of detection and probabilities of subsequent detection for first call models.
-  vector mask_det_probs(1,n_mask_det_probs)
-  vector mask_all_det_probs(1,n_mask_det_probs)
   number det_prob
   number sum_det_probs
-  // Probabilities for a subsequent call appearing in capture history.
-  number sub_det_prob
-  number sum_sub_det_probs
   number undet_prob
   // Probabilities of a call being undetected at the lower cutoff.
   number undet_lower_prob
@@ -306,8 +297,6 @@ PROCEDURE_SECTION
   // Start of likelihood calculation.
   f = 0.0;
   fs = 0.0;
-  // Setting up sum_sub_det_probs for a first call only model.
-  sum_sub_det_probs = 0;
   // Calculating mask detection probabilities and expected signal strengths...
   sum_det_probs = 0;
   // ... for a directional model...
@@ -374,7 +363,6 @@ PROCEDURE_SECTION
       if (!fit_het_source){
         // No heterogeneity in source signal strengths.
         undet_prob = 1;
-	undet_lower_prob = 1;
         for (j = 1; j <= n_traps; j++){
           dist = dists(j, i);
           capt_prob = detfn(dist, detpars, cutoff, orientation);
@@ -382,32 +370,10 @@ PROCEDURE_SECTION
           log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
           log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
           undet_prob *= 1 - capt_prob;
-	  if (first_calls){
-            undet_lower_prob *= 1 - detfn(dist, detpars, lower_cutoff, orientation);
-          }
         }
       }
       det_prob = 1 - undet_prob;
       sum_det_probs += det_prob + DBL_MIN;
-      if (first_calls){
-	// Saving detection probabilities for first calls, and
-	// detection probabilities for any subsequent calls.
-	mask_det_probs(i) = 0;
-	mask_all_det_probs(i) = 0;
-        //num = det_prob*undet_lower_prob;
-	quo(i) = value((det_prob*undet_lower_prob)/(1 - undet_lower_prob + DBL_MIN));
-	den(i) = value(1 - undet_lower_prob);
-	//if (den(i) > first_calls_trunc){
-	if (den(i) > 1e-20){
-          // Will probably find some numerical instability here.
-          sum_sub_det_probs += (det_prob*undet_lower_prob)/(1 - undet_lower_prob);
-	}
-	if (den(i) > 1e-20){
-          sub_det_prob = (det_prob*undet_lower_prob)/(1 - undet_lower_prob);
-	  mask_det_probs(i) += det_prob;
-	  mask_all_det_probs(i) += det_prob + sub_det_prob;
-        }
-      }
     }  
   }
   // Contribution due to capture history.
@@ -627,19 +593,9 @@ PROCEDURE_SECTION
             // Try saving sigma_toa separately.
             supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row((*toa_ssq_pointer), i)/(2*square(suppars(sigma_toa_ind))));
           }
-	  if (first_calls){
-            //f_ind = sum(mfexp(bincapt_contrib + supp_contrib + log_mask_all_det_probs - log_mask_det_probs));
-	    f_ind = sum(mfexp(bincapt_contrib + supp_contrib + log(mask_all_det_probs + DBL_MIN) - log(mask_det_probs + DBL_MIN)));
-          } else {
             f_ind = sum(mfexp(bincapt_contrib + supp_contrib));
-          }
         } else {
-	  if (first_calls){
-            //f_ind = sum(mfexp(bincapt_contrib + log_mask_all_det_probs - log_mask_det_probs));
-	    f_ind = sum(mfexp(bincapt_contrib + log(mask_all_det_probs + DBL_MIN) - log(mask_det_probs + DBL_MIN)));
-          } else {
             f_ind = sum(mfexp(bincapt_contrib));
-          }
         }
         // For directional calling, save components due to each
         // direction for each individual.
@@ -657,11 +613,11 @@ PROCEDURE_SECTION
     f -= sum(log(fs + DBL_MIN));
   }
   // Calculating ESA.
-  esa = A*(sum_det_probs + sum_sub_det_probs);
+  esa = A*(sum_det_probs);
   // Contribution from n.
   f -= log_dpois(n, D*esa);
   // Extra bit that falls out of ll.
-  f -= -n*log(sum_det_probs + sum_sub_det_probs);
+  f -= -n*log(sum_det_probs);
   // Printing trace.
   if (trace){
     cout << "D: " << D << ", ";
@@ -673,17 +629,12 @@ PROCEDURE_SECTION
         cout << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
-    cout << "LL: " << -f << ", ESA: " << esa << ", test" << endl;
+    cout << "LL: " << -f << ", ESA: " << esa << endl;
   }
 
 REPORT_SECTION
   // Writing ESA to report file.
   report << esa << endl;
-  // Writing subsequent calls component of ESA to report file.
-  report << sum_sub_det_probs << endl;
-  // Writing quotients and denominators for first calls to report file.
-  report << den << endl;
-  report << quo << endl;
 
 GLOBALS_SECTION
   #include <detfuns.cpp>
