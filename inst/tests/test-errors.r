@@ -86,7 +86,7 @@ test_that("exe.type argument is correct", {
     test.capt <- example$capt["bincapt"]
     ## Testing error checking for 'sv' type.
     expect_that(admbsecr(capt = test.capt, traps = example$traps,
-                         mask = example$mask, exe.type = "diff"),
+                         mask = example$mask, optim.opts = list(exe.type = "diff")),
                 throws_error("Argument 'exe.type' must be \"old\" or \"new\"."))
 })
 
