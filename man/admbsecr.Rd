@@ -164,10 +164,14 @@ below on fitted parameters). It is therefore only required if
 signal strength information appears in the \code{capt} argument,
 and is ignored (with a warning) otherwise.
 
-The argument \code{ss.opts} is a list with up to four components:
+The argument \code{ss.opts} is a list with up to seven components:
 \itemize{
   \item \code{cutoff}: Compulsory. The signal strength threshold,
         above which sounds are identified as detections.
+  \item \code{lower.cutoff}: Optional. Used for models where only
+        the first detected call is used in the capture history. The lower
+        cutoff is the signal strength value above which calls can be
+        assumed to have been detected with certainty.
   \item \code{het.source}: Optional. Logical, if \code{TRUE} a model with
         heterogeneity in source signal strengths is used. If unspecified,
         it will default to \code{FALSE}.
@@ -189,7 +193,6 @@ The argument \code{ss.opts} is a list with up to four components:
         more directional (i.e., b2.ss parameter is large). A larger number of
         quadrature points leads to more accurate results, but will increase computation
         time.
-
   \item \code{ss.link}: Optional. A character string, either
         \code{"identity"}, \code{"log"}, or \code{"spherical"}, which
         specifies the relationship between the expected received signal

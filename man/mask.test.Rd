@@ -12,9 +12,20 @@ coordinates for the location of a mask point. The function
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
+
+\item{pars}{A named list. Component names are parameter names, and
+components are values of parameters at which the mask is to be
+tested. Parameters must include \code{b0.ss}, \code{b1.ss}, and
+\code{sigma.ss}; see \link{admbsecr} for further details.}
+
+\item{cutoff}{The upper cutoff value; see \code{admbsecr} for
+further details.}
+
+\item{lower.cutoff}{The lower cutoff value; see \code{admbsecr} for
+further details.}
 }
 \description{
 Creates a diagnostic plot that can be used to test the adequacy of
-a plot for a first calls model.
+a mask for a first calls model.
 }
 
