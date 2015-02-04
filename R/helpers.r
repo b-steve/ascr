@@ -416,19 +416,27 @@ get.bias <- function(fit, pars = "fitted"){
 #' Testing the mask object for a first calls model.
 #'
 #' Creates a diagnostic plot that can be used to test the adequacy of
-#' a plot for a first calls model.
+#' a mask for a first calls model.
 #'
 #' @inheritParams admbsecr
+#' @param pars A named list. Component names are parameter names, and
+#' components are values of parameters at which the mask is to be
+#' tested. Parameters must include \code{b0.ss}, \code{b1.ss}, and
+#' \code{sigma.ss}; see \link{admbsecr} for further details.
+#' @param cutoff The upper cutoff value; see \code{admbsecr} for
+#' further details.
+#' @param lower.cutoff The lower cutoff value; see \code{admbsecr} for
+#' further details.
 #'
 #'
 #' @export
 mask.test <- function(mask, traps, pars, cutoff, lower.cutoff){
     traps.centroid <- matrix(apply(traps, 2, mean), nrow = 1)
     ss.means <- pars$b0.ss - pars$b1.ss*distances(mask, traps)
-    log.p.au <- pnorm(cutoff, ss.means, pars$sigma.ss, lower.tail = FALSE, log = TRUE)
-    log.p.al <- pnorm(lower.cutoff, ss.means, pars$sigma.ss, lower.tail = FALSE, log = TRUE)
-    log.p.bu <- pnorm(cutoff, ss.means, pars$sigma.ss, lower.tail = TRUE, log = TRUE)
-    log.p.bl <- pnorm(lower.cutoff, ss.means, pars$sigma.ss, lower.tail = TRUE, log = TRUE)
+    log.p.au <- pnorm(cutoff, ss.means, pars$sigma.ss, lower.tail = FALSE, log.p = TRUE)
+    log.p.al <- pnorm(lower.cutoff, ss.means, pars$sigma.ss, lower.tail = FALSE, log.p = TRUE)
+    log.p.bu <- pnorm(cutoff, ss.means, pars$sigma.ss, lower.tail = TRUE, log.p = TRUE)
+    log.p.bl <- pnorm(lower.cutoff, ss.means, pars$sigma.ss, lower.tail = TRUE, log.p = TRUE)
     n.mask <- nrow(mask)
     n.traps <- nrow(traps)
     n.combins <- 2^n.traps
