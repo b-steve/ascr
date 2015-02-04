@@ -9,7 +9,8 @@ Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Depends:
     R (>= 2.15.1),
     Rcpp (>= 0.10.6),
-    R2admb
+    R2admb,
+    testthat
 Imports:
     CircStats,
     fastGHQuad,
@@ -20,7 +21,6 @@ Imports:
     optimx,
     plyr,
     secr,
-    testthat,
     truncnorm
 LinkingTo: Rcpp
 Description: This package allows for the fitting of spatially explicit
