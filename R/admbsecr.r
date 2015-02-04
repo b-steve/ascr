@@ -964,7 +964,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         het_source_weights = het.source.weights, capt_ang = capt.bearing, fit_dists =
         as.numeric(fit.dists), capt_dist = capt.dist, fit_ss = as.numeric(fit.ss),
         cutoff = cutoff, first_calls = as.numeric(first.calls), lower_cutoff = lower.cutoff,
-        first_calls_trunc = first.calls.trunc,
         linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
         as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
         as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
@@ -986,7 +985,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         data.list$combins <- combins
         out <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
                       secr_nll, dat = data.list, method = "nmkb")
-        ##secr_nll(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE), dat = data.list)
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
@@ -1073,16 +1071,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         rep.string <- readLines("secr.rep")
         esa <- as.numeric(readLines("secr.rep")[1])
         options(warn = 0)
-        ## Checking truncation for first calls.
-        if (first.calls){
-            first.calls.den <- as.numeric(strsplit(rep.string[3], " ")[[1]])[-1]
-            first.calls.quo <- as.numeric(strsplit(rep.string[4], " ")[[1]])[-1]
-            perc.trunc <- sum(first.calls.quo[first.calls.den < first.calls.trunc])/sum(first.calls.quo)*100
-            if (perc.trunc > 1){
-                warning(paste("Error due to truncation of effective sampling area for subsequent calls is ",
-                              round(perc.trunc, 1), "%. Consider increasing 'cutoff'.", sep = ""))
-            }
-        }
         setwd(curr.dir)
         ## Cleaning up files.
         if (clean){
