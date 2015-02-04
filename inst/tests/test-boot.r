@@ -5,27 +5,27 @@ test_that("simple model bootstrapping", {
     ## Carrying out bootstrap.
     boot.fit <- boot.admbsecr(example$fits$simple.hn, N = 5, prog = FALSE)
     ## Mean bootstrap parmeter values.
-    means.test <- c(7.834395656476, 1.676563641196, 2546.07521272036, 
-                    5.3532285309044, 0.0554772512145224)
+    means.test <- c(7.84545538086, 1.645086180732, 2579.83220808339, 
+                    5.19314953374907, 0.0528957)
     boot.means <- apply(boot.fit$boot$boots, 2, mean)
     relative.error <- max(abs((boot.means - means.test)/means.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Coefficients.
     expect_that(coef(boot.fit), is_identical_to(coef(example$fits$simple.hn)))
     ## Standard errors.
-    ses.test <- c(349.407607902095, 0.290013693505804, 0.00500991908310524, 
-                  0.142526039268406, 0.0528612036412651)
+    ses.test <- c(399.379618344681, 0.392493876071427, 0.00651806741181771, 
+                  0.160164821510471, 0.0748244587754581)
     boot.ses <- stdEr(boot.fit, "all")
     relative.error <- max(abs((boot.ses - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Monte Carlo error calculation.
-    se.mces.test <- c(0.0463009660702605, 0.0188408387410946, 108.747094898535, 
-                      0.105149289710528, 0.00184488909656817)
+    se.mces.test <- c(0.042142082322081, 0.0190421611021184, 99.0170655539726, 
+                      0.10204528215025, 0.00173379575479256)
     boot.se.mces <- get.mce(boot.fit, "se")
     relative.error <- max(abs((boot.se.mces - se.mces.test)/se.mces.test))
     expect_that(relative.error < 1e-4, is_true())
-    bias.mces.test <- c(0.0560663040454648, 0.0207958537486876, 137.685386201599, 
-                        0.114050114609312, 0.00196952221997958)
+    bias.mces.test <- c(0.0636401709223068, 0.0298418201304415, 158.490243744029, 
+                        0.156547191920974, 0.00259993989006947)
     boot.bias.mces <- get.mce(boot.fit, "bias")
     relative.error <- max(abs((boot.bias.mces - bias.mces.test)/bias.mces.test))
     expect_that(relative.error < 1e-4, is_true())
@@ -52,31 +52,31 @@ test_that("bootstrapping helpers", {
                 equals(coef(example$fits$boot.simple.hn) - get.bias(example$fits$boot.simple.hn)))
     ## Confidence interval methods.
     ## Default.
-    cis.test <- matrix(c(1613.95919814479, 4.37162348430638, 3245.29373281852, 6.35676252563208),
+    cis.test <- matrix(c(1420.53146733787, 4.3550748265765, 3114.94748365933, 6.42514893964572),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn)
     relative.error <- max(abs((cis - cis.test)/cis.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Default linked, also making sure qqplot works.
-    cis.test <- matrix(c(1724.78300492811, 4.46716749063425, 3422.50865465531, 6.4413449137264),
+    cis.test <- matrix(c(1559.57881942082, 4.45279026517435, 3297.45586737609, 6.52474165237109),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, linked = TRUE, qqplot = TRUE, ask = FALSE)
     relative.error <- max(abs((cis - cis.test)/cis.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Default with bias correction.
-    cis.test <- matrix(c(1594.05673087843, 4.36168282533297, 3225.39126555216, 6.34682186665868),
+    cis.test <- matrix(c(1402.08499580554, 4.33572108417459, 3096.50101212701, 6.40579519724382),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, method = "default.bc")
     relative.error <- max(abs((cis - cis.test)/cis.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Basic.
-    cis.test <- matrix(c(1590.06206614825, 4.24843098809612, 3166.72911351503, 6.22751890142145),
+    cis.test <- matrix(c(1421.96795794811, 4.2850913343052, 3065.72978328319, 6.31246947068946),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, method = "basic")
     relative.error <- max(abs((cis - cis.test)/cis.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Percentile.
-    cis.test <- matrix(c(1692.52381744828, 4.50086710851701, 3269.19086481506, 6.47995502184234),
+    cis.test <- matrix(c(1469.74916771401, 4.46775429553276, 3113.51099304909, 6.49513243191702),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, method = "percentile")
     relative.error <- max(abs((cis - cis.test)/cis.test))
