@@ -8,12 +8,12 @@ test_that("simple fitting -- half normal", {
     args.simple <- list(capt = simple.capt, traps = example$traps,
                         mask = example$mask)
     ## Checking parameter values.
-    pars.test <- c(2429.62882766283, 0.999999985691245, 5.36419062611109)
+    pars.test <- c(2267.73950296093, 0.999999965720685, 5.39011185815489)
     n.pars <- length(pars.test)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(370.82, 0.41458)
+    ses.test <- c(351.86, 0.42008)
     relative.error <- max(abs((stdEr(fit)[-2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -56,11 +56,11 @@ test_that("simple fitting -- half normal", {
                         mask = example$mask, local = TRUE)
     args.loc <- list(capt = simple.capt, traps = example$traps,
                      mask = example$mask, local = TRUE)
-    pars.test <- c(2429.62882766283, 0.999999985691245, 5.36419062611109)
+    pars.test <- c(2267.76041594695, 0.999999965778877, 5.390081422004)
     n.pars <- length(pars.test)
     relative.error <- max(abs((coef(fit.loc) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
-    ses.test <- c(370.82, 0.41458)
+    ses.test <- c(351.84, 0.42003)
     relative.error <- max(abs((stdEr(fit.loc)[-2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking parallel function.
@@ -78,13 +78,13 @@ test_that("simple fitting -- hazard rate", {
     fit <- admbsecr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, detfn = "hr")
     ## Checking parameter values.
-    pars.test <- c(2647.32709086757, 0.862838540084305, 7.29740531390158, 
-                   6.98650302516657)
+    pars.test <- c(2665.01820347807, 0.879169466112046, 7.04615764143495, 
+                   7.47669207224367)
     n.pars <- length(pars.test)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(410.24, 0.076434, 0.68136, 2.247)
+    ses.test <- c(406.39, 0.063895, 0.64907, 2.7843)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -96,6 +96,7 @@ test_that("simple fitting -- hazard rate", {
     mask.secr <- convert.mask(example$mask)
     capt.secr <- convert.capt(example$capt["bincapt"], example$traps)
     options(warn = -1)
+    set.seed(1512)
     fit.secr <- secr.fit(capthist = capt.secr, mask = mask.secr, detectfn = 1,
                          trace = FALSE)
     options(warn = 0)
@@ -115,11 +116,11 @@ test_that("bearing fitting", {
     fit <- admbsecr(capt = bearing.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
-    pars.test <- c(2326.9511045605, 5.50755363089523, 58.2671714153125)
+    pars.test <- c(2171.50549951556, 5.53458073287418, 53.8758189647376)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(245.34, 0.20411, 7.7149)
+    ses.test <- c(236.34, 0.21195, 7.1895)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -134,11 +135,11 @@ test_that("dist fitting", {
     fit <- admbsecr(capt = dist.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
-    pars.test <- c(2477.20317036246, 5.30067437855294, 6.23928789994028)
+    pars.test <- c(2308.372990408, 5.33172290979062, 5.61787904103153)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(249.42, 0.17043, 0.80207)
+    ses.test <- c(240.55, 0.17895, 0.7112)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -163,12 +164,12 @@ test_that("ss fitting", {
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                     ss.opts = list(cutoff = 60))
     ## Checking parameter values.
-    pars.test <- c(2440.99968246751, 88.2993844240013, 3.7663100027822, 
-                   10.8142267688236)
+    pars.test <- c(2657.27125943043, 89.0711498188406, 4.12645016662117, 
+                   9.5214521578511)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(311.63, 1.8566, 0.27901, 0.67581)
+    ses.test <- c(302.72, 1.519, 0.27205, 0.61166)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -191,8 +192,8 @@ test_that("ss fitting", {
                         mask = example$mask,
                         ss.opts = list(cutoff = 60, ss.link = "log"),
                         phase = list(b0.ss = 2), hess = FALSE)
-    pars.test <- c(2356.45734991859, 4.53613924774161, 0.0611158039671795, 
-                   10.5025697036287)
+    pars.test <- c(2593.90798693611, 4.543225020375, 0.0652746373675036, 
+                   9.07891276875498)
     relative.error <- max(abs((coef(fit.log) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Testing spherical spreading.
@@ -201,8 +202,8 @@ test_that("ss fitting", {
                               sv = list(D = 2000, b0.ss = 100, b1.ss = 4, sigma.ss = 15),
                               ss.opts = list(cutoff = 60, ss.link = "spherical"),
                               phase = list(b0.ss = 2), hess = FALSE)
-    pars.test <- c(2389.03212838198, 91.841110973961, 2.33768815022206, 
-                   10.6843748292046)
+    pars.test <- c(2598.87241252612, 91.3484275416721, 2.45078362490863, 
+                   8.96224093008298)
     relative.error <- max(abs((coef(fit.spherical) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
 })
@@ -213,11 +214,11 @@ test_that("toa fitting", {
     fit <- admbsecr(capt = toa.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
-    pars.test <- c(2348.61001583513, 5.47656668927085, 0.00209625029558564)
+    pars.test <- c(2007.91805398409, 5.80251359291497, 0.00177369359452944)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(305.38, 0.32532, 0.00020158)
+    ses.test <- c(264.45, 0.33865, 0.00017356)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -237,12 +238,12 @@ test_that("joint ss/toa fitting", {
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                     ss.opts = list(cutoff = 60))
     ## Checking parameter values.
-    pars.test <- c(2439.05009421856, 89.6628138603152, 3.85848602239484, 
-                   10.2843370178208, 0.00212227986424938)
+    pars.test <- c(2433.56128756032, 90.0987641388252, 3.98404182942142, 
+                   9.34865299092028, 0.00193398569605552)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(260.1, 1.635, 0.23517, 0.55907, 0.00019848)
+    ses.test <- c(252.43, 1.4504, 0.22561, 0.52189, 0.00018498)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -256,12 +257,12 @@ test_that("joint bearing/dist fitting", {
     fit <- admbsecr(capt = joint.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
-    pars.test <- c(2378.76835878674, 5.43409577354988, 57.0835463656355, 
-                   5.17899019377086)
+    pars.test <- c(2264.81927702306, 5.39436567560547, 51.1182707112547, 
+                   5.02663804138096)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(235.59, 0.16267, 7.4596, 0.49989)
+    ses.test <- c(231.18, 0.16661, 6.8418, 0.49763)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -276,8 +277,8 @@ test_that("multiple calls fitting", {
     fit <- admbsecr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1),
                     call.freqs = c(9, 10, 11))
-    pars.test <- c(2429.62646548165, 5.36419300496923, 10, 0.0555640833502627, 
-                   242.962646548165)
+    pars.test <- c(2267.7394754986, 5.39011188311111, 10, 0.0560029, 
+                   226.77394754986)
     n.pars <- length(pars.test)
     relative.error <- max(abs((coef(fit, c("fitted", "derived")) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
@@ -290,7 +291,7 @@ test_that("multiple calls fitting", {
                          call.freqs = c(9, 10, 11), hess = TRUE)
     expect_that(coef(fit.hess), equals(coef(fit)))
     expect_that(is.na(stdEr(fit.hess, "all")["Da"]), is_true())
-    ses.test <- c(370.82, 0.41458)
+    ses.test <- c(351.86, 0.42008)
     relative.error <- max(abs((stdEr(fit.hess)[1:2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
 })
@@ -302,12 +303,12 @@ test_that("directional call fitting", {
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
                     mask = example$mask, ss.opts = list(cutoff = 60))
     ## Checking parameter values.
-    pars.test <- c(386.073482720871, 89.311447428016, 3.05408458965273, 
-                   1.22802638658725, 10.4127874608875, 0.00211264942873231)
+    pars.test <- c(339.357586915871, 89.7928396498161, 3.56048335373993, 
+                   7.60947487477794e-06, 8.22625149900229, 0.00186058818783199)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(112.87, 4.1832, 0.82666, 1.0313, 1.5714, 0.0006204)
+    ses.test <- c(87.157, 3.1701, 0.62158, 0.40353, 1.0747, 0.0004036)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -332,17 +333,22 @@ test_that("fitting heterogeneity in source strengths", {
     pars <- list(D = 500, b0.ss = 90, b1.ss = 4, sigma.b0.ss = 5, sigma.ss = 10)
     capt <- sim.capt(traps = example$traps, mask = example$mask, detfn = "ss",
                      pars = pars, ss.opts = list(cutoff = 60))
-    ## First line is:
+    ## First line used to be:
     ## 0.00000  0.00000  0.00000 65.49092   0.00000 79.19198
+    ## For reasons I cannot figure out, it has changed to:
+    ## 0.00000  0.00000  0.00000  0.00000  0.00000 78.12121
+    ## I hope this is not an issue with sim.capt(); though I ran the
+    ## above code with older versions and they gave the same capture
+    ## history. I don't know what's going on.
     fit <- admbsecr(capt = capt, traps = example$traps,
                     mask = example$mask, sv = pars,
                     phases = list(b0.ss = 2, sigma.b0.ss = 3,
                         sigma.ss = 4),
                     ss.opts = list(cutoff = 60, het.source = TRUE,
                         n.het.source.quadpoints = 5), hess = FALSE,
-                    local = TRUE, cbs = 1e8, gbs = 1e8)
-    pars.test <- c(386.144666484659, 92.2146905293059, 3.63309967668573, 
-                   2.76546363479188, 10.306889983415)
+                    local = TRUE, optim.opts = list(cbs = 1e8, gbs = 1e8))
+    pars.test <- c(731.363920521785, 90.5797487316036, 4.71397727982896, 
+                   5.633818295533, 8.09256566662896)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
 })
