@@ -105,6 +105,9 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             stop("The locations() function has not yet been implemented for heterogeneous source strength model fits.")
         }
     }
+    if (fit$first.calls){
+        stop("The locations() function has not yet been implemented for first-call models.")
+    }
     ## Setting up plotting area.
     if (!add){
         plot.new()
