@@ -994,7 +994,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out$coeflist <- coeflist
         out$se <- rep(NA, length(coeflist))
         out$loglik <- -fit$value
-        out$maxgrad <- NA
+        out$maxgrad <- c(fit$kkt1, fit$kkt2)
         out$cor <- matrix(NA, nrow = length(c), ncol = length(c))
         out$vcov <- matrix(NA, nrow = length(c), ncol = length(c))
         out$npar <- length(c)
@@ -1216,6 +1216,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (out$fn == "secr"){
         if (out$maxgrad < -0.01){
             warning("Maximum gradient component is large.")
+        }
+    }
+    if (out$fn == "optimx"){
+        if (any(!out$maxgrad)){
+            warning("Nelder-Mead algorithm has not converged.")
         }
     }
     class(out) <- c("admbsecr", "admb")
