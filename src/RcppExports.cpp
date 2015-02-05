@@ -90,47 +90,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // secr_nll
-double secr_nll(const NumericVector& link_pars, const List& dat);
-RcppExport SEXP admbsecr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP) {
+double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get_esa);
+RcppExport SEXP admbsecr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
         Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
-        double __result = secr_nll(link_pars, dat);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// secr_s
-NumericVector secr_s(const NumericVector& link_pars, const List& dat);
-RcppExport SEXP admbsecr_secr_s(SEXP link_parsSEXP, SEXP datSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
-        Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
-        NumericVector __result = secr_s(link_pars, dat);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// secr_p
-NumericVector secr_p(const NumericVector& link_pars, const List& dat);
-RcppExport SEXP admbsecr_secr_p(SEXP link_parsSEXP, SEXP datSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
-        Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
-        NumericVector __result = secr_p(link_pars, dat);
+        Rcpp::traits::input_parameter< const bool& >::type get_esa(get_esaSEXP );
+        double __result = secr_nll(link_pars, dat, get_esa);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

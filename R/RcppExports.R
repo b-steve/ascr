@@ -53,19 +53,13 @@ sim_ss <- function(ss_mean, sigma_ss, cutoff, freqs) {
 #'
 #' @param link_pars Parameter values on link scale.
 #' @param dat Data list.
+#' @param get_esa Logical. If \code{TRUE} the effective sampling area is returned,
+#'        otherwise the negative log-likelihood is returned.
 #'
 #' @return The value of the negative log-likelihood.
 #'
-secr_nll <- function(link_pars, dat) {
-    .Call('admbsecr_secr_nll', PACKAGE = 'admbsecr', link_pars, dat)
-}
-
-secr_s <- function(link_pars, dat) {
-    .Call('admbsecr_secr_s', PACKAGE = 'admbsecr', link_pars, dat)
-}
-
-secr_p <- function(link_pars, dat) {
-    .Call('admbsecr_secr_p', PACKAGE = 'admbsecr', link_pars, dat)
+secr_nll <- function(link_pars, dat, get_esa) {
+    .Call('admbsecr_secr_nll', PACKAGE = 'admbsecr', link_pars, dat, get_esa)
 }
 
 calc_probsurf <- function(link_pars, dat) {
