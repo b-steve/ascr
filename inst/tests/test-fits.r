@@ -352,3 +352,25 @@ test_that("fitting heterogeneity in source strengths", {
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
 })
+
+test_that("first-call signal strength models", {
+    set.seed(8298)
+    traps <- cbind(c(0, 0, 21, 21, 42, 42), c(0, 42, 0, 42, 0, 42))
+    mask <- create.mask(traps, buffer = 1250, spacing = 25)
+    pars <- list(D = 5, b0.ss = 60, b1.ss = 0.1, sigma.ss = 5)
+    lower.cutoff <- 52.5
+    cutoff <- 55
+    capt <- sim.capt(traps = traps, mask = mask, detfn = "ss",
+                     infotypes = NULL, pars = pars,
+                     ss.opts = list(cutoff = lower.cutoff,
+                         ss.link = "identity"),
+                     call.freqs = Inf, first.only = TRUE)
+    fit <-  admbsecr(capt = capt, traps = traps, mask = mask,
+                     ss.opts = list(cutoff = cutoff,
+                         lower.cutoff = lower.cutoff), trace = FALSE,
+                     hess = FALSE)
+    pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
+                   6.24489981755584)
+    relative.error <- max(abs((exp(coef(fit)) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+})
