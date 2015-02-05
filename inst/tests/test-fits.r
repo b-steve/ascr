@@ -371,6 +371,6 @@ test_that("first-call signal strength models", {
                      hess = FALSE)
     pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
                    6.24489981755584)
-    relative.error <- max(abs((exp(coef(fit)) - pars.test)/pars.test))
-    expect_that(relative.error < 1e-4, is_true())
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-3, is_true())
 })
