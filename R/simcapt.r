@@ -108,6 +108,11 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         ss.opts <- fit$args$ss.opts
         call.freqs <- fit$args$call.freqs
         sound.speed <- fit$args$sound.speed
+        ## Setting up correct arguments for a simulating from a first-call model.
+        if (!is.null(ss.opts$lower.cutoff)){
+            call.freqs <- Inf
+            first.only <- TRUE
+        }
     }
     ## Setting up logical indicators for additional information types.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
