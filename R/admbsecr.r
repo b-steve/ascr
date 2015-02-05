@@ -465,7 +465,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Setting up first.calls indicator.
     first.calls <- FALSE
-    first.calls.trunc <- 1e-5
     if (fit.ss){
         if (missing(ss.opts)){
             ## Error if ss.opts not provided for signal strength model.
@@ -646,13 +645,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (fit.dir & first.calls){
         stop("Models with both first calls and directional calling are not yet implemented.")
-    }
-    ## Setting neld.mead to TRUE if first.calls used.
-    if (first.calls & !neld.mead.force){
-        neld.mead <- TRUE
-        if (hess){
-            hess <- FALSE
-        }
     }
     ## Generating ordered binary capture history.
     capt.bin.order <- do.call(order, as.data.frame(capt.bin))
@@ -986,8 +978,32 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
         }
         data.list$combins <- combins
-        out <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
-                      secr_nll, dat = data.list, method = "nmkb")
+        fit <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
+                      secr_nll, dat = data.list, get_esa = FALSE, method = "nmkb")
+        out <- vector("list", 15)
+        names(out) <- c("fn", "coefficients", "coeflist", "se", "loglik", "maxgrad", 
+                        "cor", "vcov", "npar", "npar_re", "npar_sdrpt", "npar_rep",
+                        "npar_total", "hes", "eratio")
+        out$fn <- "optimx"
+        c <- as.vector(coef(fit))
+        coeflist <- list()
+        for (i in 1:length(c)){
+            coeflist[[i]] <- c[i]
+        }
+        names(coeflist) <- paste(colnames(coef(fit)), "_link", sep = "")
+        out$coeflist <- coeflist
+        out$se <- rep(NA, length(coeflist))
+        out$loglik <- -fit$value
+        out$maxgrad <- NA
+        out$cor <- matrix(NA, nrow = length(c), ncol = length(c))
+        out$vcov <- matrix(NA, nrow = length(c), ncol = length(c))
+        out$npar <- length(c)
+        out$npar_re <- 0
+        out$npar_sdrpt <- 0
+        out$npar_rep <- 0
+        out$npar_total <- out$npar + out$npar_re + out$npar_sdrpt + out$npar_rep
+        out$eratio <- as.logical(NA)
+        esa <- secr_nll(coef(fit), data.list, TRUE)
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
@@ -1094,112 +1110,115 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (!hess){
             out$coeflist[c(D.phase, detpars.phase, suppars.phase) == -1] <- NULL
         }
-        ## Creating coefficients vector.
-        est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
-        n.est.pars <- length(est.pars)
-        out$coefficients <- numeric(2*n.est.pars + 1)
-        names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, "esa")
-        for (i in 1:n.est.pars){
-            out$coefficients[i] <- out$coeflist[[i]]
+    }
+    ## Creating coefficients vector.
+    est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
+    n.est.pars <- length(est.pars)
+    out$coefficients <- numeric(2*n.est.pars + 1)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, "esa")
+    for (i in 1:n.est.pars){
+        out$coefficients[i] <- out$coeflist[[i]]
+    }
+    for (i in 1:n.est.pars){
+        out$coefficients[n.est.pars + i] <-
+            unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
+    }
+    ## Adding extra components to list.
+    if (detfn == "log.ss") detfn <- "ss"
+    ## Putting in updated argument names.
+    args <- vector(mode = "list", length = length(arg.names))
+    names(args) <- arg.names
+    for (i in arg.names){
+        if (!is.null(get(i))){
+            args[[i]] <- get(i)
         }
-        for (i in 1:n.est.pars){
-            out$coefficients[n.est.pars + i] <-
-                unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
+    }
+    out$args <- args
+    out$fit.types <- fit.types
+    out$infotypes <- names(fit.types)[fit.types]
+    out$detpars <- detpar.names
+    out$suppars <- suppar.names
+    out$phases <- phases
+    out$par.links <- par.links
+    out$par.unlinks <- par.unlinks
+    ## Logical value for random effects in the detection function.
+    out$re.detfn <- FALSE
+    if (detfn == "ss"){
+        if (get.par(out, "b2.ss") != 0 | get.par(out, "sigma.b0.ss") != 0){
+            out$re.detfn <- TRUE
         }
-        ## Adding extra components to list.
-        if (detfn == "log.ss") detfn <- "ss"
-        ## Putting in updated argument names.
-        args <- vector(mode = "list", length = length(arg.names))
-        names(args) <- arg.names
-        for (i in arg.names){
-            if (!is.null(get(i))){
-                args[[i]] <- get(i)
+    }
+    ## Putting in esa estimate.
+    out$coefficients[2*n.est.pars + 1] <- esa
+    ## Putting in call frequency information and correct parameter names.
+    if (fit.freqs){
+        mu.freqs <- mean(call.freqs)
+        Da <- get.par(out, "D")/mu.freqs
+        names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
+        coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
+        names(coefs.updated) <- names.vec
+        out[["coefficients"]] <- coefs.updated
+        ## Removing ses, cor, vcov matrices.
+        cor.updated <- matrix(NA, nrow = length(names.vec),
+                              ncol = length(names.vec))
+        dimnames(cor.updated) <- list(names.vec, names.vec)
+        vcov.updated <- matrix(NA, nrow = length(names.vec),
+                               ncol = length(names.vec))
+        dimnames(vcov.updated) <- list(names.vec, names.vec)
+        if (hess){
+            ses.updated <- c(out[["se"]], rep(NA, 2))
+            max.ind <- length(names.vec) - 2
+            cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
+            vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
+        } else {
+            ses.updated <- rep(NA, length(names.vec))
+        }
+        names(ses.updated) <- names.vec
+        out[["se"]] <- ses.updated
+        out[["cor"]] <- cor.updated
+        out[["vcov"]] <- vcov.updated
+        if (trace){
+            if (!hess){
+                cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+            } else {
+                cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
             }
         }
-        out$args <- args
-        out$fit.types <- fit.types
-        out$infotypes <- names(fit.types)[fit.types]
-        out$detpars <- detpar.names
-        out$suppars <- suppar.names
-        out$phases <- phases
-        out$par.links <- par.links
-        out$par.unlinks <- par.unlinks
-        ## Logical value for random effects in the detection function.
-        out$re.detfn <- FALSE
-        if (detfn == "ss"){
-            if (get.par(out, "b2.ss") != 0 | get.par(out, "sigma.b0.ss") != 0){
-                out$re.detfn <- TRUE
-            }
-        }
-        ## Putting in esa estimate.
-        out$coefficients[2*n.est.pars + 1] <- esa
-        ## Putting in call frequency information and correct parameter names.
-        if (fit.freqs){
-            mu.freqs <- mean(call.freqs)
-            Da <- get.par(out, "D")/mu.freqs
-            names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
-            coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
-            names(coefs.updated) <- names.vec
-            out[["coefficients"]] <- coefs.updated
-            ## Removing ses, cor, vcov matrices.
+    } else {
+        if (hess){
+            ## Putting correct parameter names into se, cor, vcov.
+            replace <- substr(names(out$se), 1, 8) == "par_ests"
+            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                    colnames(out$cor)[replace] <- est.pars
+            replace <- 1:length(est.pars)
+            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
+                    colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
+        } else {
+            ## Filling se, cor, vcov with NAs.
+            names.vec <- names(out[["coefficients"]])
+            ses.updated <- rep(NA, length(names.vec))
+            names(ses.updated) <- names.vec
             cor.updated <- matrix(NA, nrow = length(names.vec),
                                   ncol = length(names.vec))
             dimnames(cor.updated) <- list(names.vec, names.vec)
             vcov.updated <- matrix(NA, nrow = length(names.vec),
                                    ncol = length(names.vec))
             dimnames(vcov.updated) <- list(names.vec, names.vec)
-            if (hess){
-                ses.updated <- c(out[["se"]], rep(NA, 2))
-                max.ind <- length(names.vec) - 2
-                cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
-                vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
-            } else {
-                ses.updated <- rep(NA, length(names.vec))
-            }
-            names(ses.updated) <- names.vec
             out[["se"]] <- ses.updated
             out[["cor"]] <- cor.updated
             out[["vcov"]] <- vcov.updated
-            if (trace){
-                if (!hess){
-                    cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
-                } else {
-                    cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
-                }
-            }
-        } else {
-            if (hess){
-                ## Putting correct parameter names into se, cor, vcov.
-                replace <- substr(names(out$se), 1, 8) == "par_ests"
-                names(out$se)[replace] <- rownames(out$vcov)[replace] <-
-                    colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                        colnames(out$cor)[replace] <- est.pars
-                replace <- 1:length(est.pars)
-                names(out$se)[replace] <- rownames(out$vcov)[replace] <-
-                    colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                        colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
-            } else {
-                ## Filling se, cor, vcov with NAs.
-                names.vec <- names(out[["coefficients"]])
-                ses.updated <- rep(NA, length(names.vec))
-                names(ses.updated) <- names.vec
-                cor.updated <- matrix(NA, nrow = length(names.vec),
-                                      ncol = length(names.vec))
-                dimnames(cor.updated) <- list(names.vec, names.vec)
-                vcov.updated <- matrix(NA, nrow = length(names.vec),
-                                       ncol = length(names.vec))
-                dimnames(vcov.updated) <- list(names.vec, names.vec)
-                out[["se"]] <- ses.updated
-                out[["cor"]] <- cor.updated
-                out[["vcov"]] <- vcov.updated
-            }
         }
-        out$fit.freqs <- fit.freqs
+    }
+    out$fit.freqs <- fit.freqs
+    out$first.calls <- first.calls
+    if (out$fn == "secr"){
         if (out$maxgrad < -0.01){
             warning("Maximum gradient component is large.")
         }
-        class(out) <- c("admbsecr", "admb")
     }
+    class(out) <- c("admbsecr", "admb")
     out
 }
 
