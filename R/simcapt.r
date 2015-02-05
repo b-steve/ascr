@@ -368,6 +368,14 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     }
     ## Plot to test correct detection simulation.
     if (test.detfn){
+        if (!is.null(het.source)){
+            if (het.source){
+                warning("Detection function testing for models with heterogeity in source strengths is not yet implemented.")
+                test.detfn <- FALSE
+            }
+        }
+    }
+    if (test.detfn){
         capt.dists <- dists[full.bin.capt == 1]
         evade.dists <- dists[full.bin.capt == 0]
         all.dists <- c(capt.dists, evade.dists)
