@@ -979,25 +979,49 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         data.list$combins <- combins
         fit <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
-                      secr_nll, dat = data.list, get_esa = FALSE, method = "nmkb")
+                      secr_nll, dat = data.list, get_esa = FALSE, method = "nmkb",
+                      hessian = hess)
         out <- vector("list", 15)
         names(out) <- c("fn", "coefficients", "coeflist", "se", "loglik", "maxgrad", 
                         "cor", "vcov", "npar", "npar_re", "npar_sdrpt", "npar_rep",
                         "npar_total", "hes", "eratio")
         out$fn <- "optimx"
         c <- as.vector(coef(fit))
+        n.opars <- length(c)
         coeflist <- list()
-        for (i in 1:length(c)){
+        for (i in 1:n.opars){
             coeflist[[i]] <- c[i]
         }
         names(coeflist) <- paste(colnames(coef(fit)), "_link", sep = "")
         out$coeflist <- coeflist
-        out$se <- rep(NA, length(coeflist))
+        ## Delta method for unlinked paramters.
+        if (hess){
+            vcov.link <- solve(attr(fit, "details")[1, "nhatend"][[1]])
+            jacobian <- matrix(0, nrow = 2*n.opars, ncol = n.opars)
+            jacobian[1:n.opars, ] <- diag(n.opars)
+            jacobian[(n.opars + 1):(2*n.opars), ] <- diag(exp(c))
+            vcov.all <- jacobian %*% vcov.link %*% t(jacobian)
+            cor.all <- cov2cor(vcov.all)
+            vcov.all <- rbind(vcov.all, NA)
+            vcov.all <- cbind(vcov.all, NA)
+            cor.all <- rbind(cor.all, NA)
+            cor.all <- cbind(cor.all, NA)
+            se.all <- sqrt(diag(vcov.all))
+        } else {
+            vcov.all <- matrix(NA, nrow = n.opars + 1, ncol = n.opars + 1)
+            se.all <- rep(NA, length(coeflist))
+            cor.all <- matrix(NA, nrow = 2*n.opars + 1, ncol = 2*n.opars + 1)
+        }
+        rownames(vcov.all) <- colnames(vcov.all) <- rownames(cor.all) <-
+            colnames(cor.all) <- names(se.all) <- c(paste("pars_link", 1:n.opars, sep = "."),
+                                                    paste("par_ests", 1:n.opars, sep = "."),
+                                                    "esa")
+        out$se <- se.all
         out$loglik <- -fit$value
         out$maxgrad <- c(fit$kkt1, fit$kkt2)
-        out$cor <- matrix(NA, nrow = length(c), ncol = length(c))
-        out$vcov <- matrix(NA, nrow = length(c), ncol = length(c))
-        out$npar <- length(c)
+        out$cor <- cor.all
+        out$vcov <- vcov.all
+        out$npar <- n.opars
         out$npar_re <- 0
         out$npar_sdrpt <- 0
         out$npar_rep <- 0
