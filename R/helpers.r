@@ -419,6 +419,7 @@ get.bias <- function(fit, pars = "fitted"){
 #' a mask for a first calls model.
 #'
 #' @inheritParams admbsecr
+#' @inheritParams locations
 #' @param pars A named list. Component names are parameter names, and
 #' components are values of parameters at which the mask is to be
 #' tested. Parameters must include \code{b0.ss}, \code{b1.ss}, and
@@ -427,10 +428,19 @@ get.bias <- function(fit, pars = "fitted"){
 #' further details.
 #' @param lower.cutoff The lower cutoff value; see \code{admbsecr} for
 #' further details.
-#'
-#'
+#' @param surface Logical, if \code{TRUE} a 3D detection surface is
+#' plotted over the mask point locations.
+#' @param ... Arguments to be passed to \link{plot}.
+#' 
 #' @export
-mask.test <- function(mask, traps, pars, cutoff, lower.cutoff){
+mask.test <- function(fit = NULL, mask, traps, pars, cutoff, lower.cutoff, surface = FALSE, ...){
+    if (!is.null(fit)){
+        mask <- fit$args$mask
+        traps <- fit$args$traps
+        pars <- get.par(fit, pars = "fitted", as.list = TRUE)
+        cutoff <- fit$args$ss.opts$cutoff
+        lower.cutoff <- fit$args$ss.opts$lower.cutoff
+    }
     traps.centroid <- matrix(apply(traps, 2, mean), nrow = 1)
     ss.means <- pars$b0.ss - pars$b1.ss*distances(mask, traps)
     log.p.au <- pnorm(cutoff, ss.means, pars$sigma.ss, lower.tail = FALSE, log.p = TRUE)
@@ -466,8 +476,34 @@ mask.test <- function(mask, traps, pars, cutoff, lower.cutoff){
         p[i] <- exp(log.AU)
         s[i] <- exp(log.AU + log.BL - log.AL)
     }
-    plot(distances(mask, traps.centroid), s + p, cex = 0.5, ylim = c(0, 1))
-    points(distances(mask, traps.centroid), s, col = "red", cex = 0.5)
-    points(distances(mask, traps.centroid), p, col = "blue", cex = 0.5)
+    if (surface){
+        unique.x <- sort(unique(mask[, 1]))
+        unique.y <- sort(unique(mask[, 2]))
+        z <- matrix(NA, nrow = length(unique.x), ncol = length(unique.y))
+        n.mask <- nrow(mask)
+        for (i in 1:n.mask){
+            x <- mask[i, 1]
+            y <- mask[i, 2]
+            index.x <- which(x == unique.x)
+            index.y <- which(y == unique.y)
+            z[index.x, index.y] <- s[i]
+        }
+        perspmat <- persp(x = unique.x, y = unique.y, z = z, zlim = c(0, 1),
+                          zlab = list("", rot = 95),
+                          xlab = "", ylab = "", shade = 0.75, col = "lightblue",
+                          theta = 30, phi = 30, border = NA, ...)
+        for (i in 1:n.traps){
+            lines(trans3d(x = rep(traps[i, 1], 2), y = rep(traps[i, 2], 2), z = c(0, 0.1),
+                          pmat = perspmat))
+            points(trans3d(x = traps[i, 1], y = traps[i, 2], z = 0.1,
+                          pmat = perspmat), pch = 16, col = "red", cex = 0.5)
+        }
+    } else {
+        plot(distances(mask, traps.centroid), s + p, type = "n", ylim = c(0, 1), ...)
+        abline(h = c(0, 1), col = "lightgrey")
+        points(distances(mask, traps.centroid), s, col = "red", cex = 0.5)
+        points(distances(mask, traps.centroid), p, col = "blue", cex = 0.5)
+        points(distances(mask, traps.centroid), s + p, cex = 0.5)
+    }
 }
 
