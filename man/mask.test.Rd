@@ -3,9 +3,12 @@
 \alias{mask.test}
 \title{Testing the mask object for a first calls model.}
 \usage{
-mask.test(mask, traps, pars, cutoff, lower.cutoff)
+mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
+  surface = FALSE, ...)
 }
 \arguments{
+\item{fit}{A fitted model from \link{admbsecr}.}
+
 \item{mask}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a mask point. The function
 \link{create.mask} will return a suitable object.}
@@ -23,6 +26,11 @@ further details.}
 
 \item{lower.cutoff}{The lower cutoff value; see \code{admbsecr} for
 further details.}
+
+\item{surface}{Logical, if \code{TRUE} a 3D detection surface is
+plotted over the mask point locations.}
+
+\item{...}{Arguments to be passed to \link{plot}.}
 }
 \description{
 Creates a diagnostic plot that can be used to test the adequacy of
