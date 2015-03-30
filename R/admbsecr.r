@@ -1008,8 +1008,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             cor.all <- cbind(cor.all, NA)
             se.all <- sqrt(diag(vcov.all))
         } else {
-            vcov.all <- matrix(NA, nrow = n.opars + 1, ncol = n.opars + 1)
-            se.all <- rep(NA, length(coeflist))
+            vcov.all <- matrix(NA, nrow = 2*n.opars + 1, ncol = 2*n.opars + 1)
+            se.all <- rep(NA, 2*length(coeflist) + 1)
             cor.all <- matrix(NA, nrow = 2*n.opars + 1, ncol = 2*n.opars + 1)
         }
         rownames(vcov.all) <- colnames(vcov.all) <- rownames(cor.all) <-
