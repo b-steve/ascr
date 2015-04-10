@@ -9,116 +9,88 @@ using namespace Rcpp;
 NumericMatrix distances(const NumericMatrix& a, const NumericMatrix& b);
 RcppExport SEXP admbsecr_distances(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type a(aSEXP );
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type b(bSEXP );
-        NumericMatrix __result = distances(a, b);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type a(aSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type b(bSEXP);
+    __result = Rcpp::wrap(distances(a, b));
+    return __result;
 END_RCPP
 }
 // bearings
 NumericMatrix bearings(const NumericMatrix& a, const NumericMatrix& b);
 RcppExport SEXP admbsecr_bearings(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type a(aSEXP );
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type b(bSEXP );
-        NumericMatrix __result = bearings(a, b);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type a(aSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type b(bSEXP);
+    __result = Rcpp::wrap(bearings(a, b));
+    return __result;
 END_RCPP
 }
 // make_toa_ssq
 NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists, const double& sound_speed);
 RcppExport SEXP admbsecr_make_toa_ssq(SEXP captSEXP, SEXP distsSEXP, SEXP sound_speedSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type capt(captSEXP );
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type dists(distsSEXP );
-        Rcpp::traits::input_parameter< const double& >::type sound_speed(sound_speedSEXP );
-        NumericMatrix __result = make_toa_ssq(capt, dists, sound_speed);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type capt(captSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type dists(distsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type sound_speed(sound_speedSEXP);
+    __result = Rcpp::wrap(make_toa_ssq(capt, dists, sound_speed));
+    return __result;
 END_RCPP
 }
 // find_local
 List find_local(const IntegerMatrix& capt, const NumericMatrix& dists, const double& buffer);
 RcppExport SEXP admbsecr_find_local(SEXP captSEXP, SEXP distsSEXP, SEXP bufferSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const IntegerMatrix& >::type capt(captSEXP );
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type dists(distsSEXP );
-        Rcpp::traits::input_parameter< const double& >::type buffer(bufferSEXP );
-        List __result = find_local(capt, dists, buffer);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type capt(captSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type dists(distsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type buffer(bufferSEXP);
+    __result = Rcpp::wrap(find_local(capt, dists, buffer));
+    return __result;
 END_RCPP
 }
 // sim_ss
 NumericMatrix sim_ss(const NumericMatrix& ss_mean, const double& sigma_ss, const double& cutoff, const NumericVector& freqs);
 RcppExport SEXP admbsecr_sim_ss(SEXP ss_meanSEXP, SEXP sigma_ssSEXP, SEXP cutoffSEXP, SEXP freqsSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericMatrix& >::type ss_mean(ss_meanSEXP );
-        Rcpp::traits::input_parameter< const double& >::type sigma_ss(sigma_ssSEXP );
-        Rcpp::traits::input_parameter< const double& >::type cutoff(cutoffSEXP );
-        Rcpp::traits::input_parameter< const NumericVector& >::type freqs(freqsSEXP );
-        NumericMatrix __result = sim_ss(ss_mean, sigma_ss, cutoff, freqs);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type ss_mean(ss_meanSEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma_ss(sigma_ssSEXP);
+    Rcpp::traits::input_parameter< const double& >::type cutoff(cutoffSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type freqs(freqsSEXP);
+    __result = Rcpp::wrap(sim_ss(ss_mean, sigma_ss, cutoff, freqs));
+    return __result;
 END_RCPP
 }
 // secr_nll
 double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get_esa);
 RcppExport SEXP admbsecr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
-        Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
-        Rcpp::traits::input_parameter< const bool& >::type get_esa(get_esaSEXP );
-        double __result = secr_nll(link_pars, dat, get_esa);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP);
+    Rcpp::traits::input_parameter< const List& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type get_esa(get_esaSEXP);
+    __result = Rcpp::wrap(secr_nll(link_pars, dat, get_esa));
+    return __result;
 END_RCPP
 }
 // calc_probsurf
 List calc_probsurf(const NumericVector& link_pars, const List& dat);
 RcppExport SEXP admbsecr_calc_probsurf(SEXP link_parsSEXP, SEXP datSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP );
-        Rcpp::traits::input_parameter< const List& >::type dat(datSEXP );
-        List __result = calc_probsurf(link_pars, dat);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP);
+    Rcpp::traits::input_parameter< const List& >::type dat(datSEXP);
+    __result = Rcpp::wrap(calc_probsurf(link_pars, dat));
+    return __result;
 END_RCPP
 }
