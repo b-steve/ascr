@@ -61,10 +61,12 @@ autokappa <- function(args){
 }
 
 autob0.ss <- function(args){
+    spherical <- identity
     do.call(args$ss.opts$ss.link, list(max(args$capt$ss)))
 }
 
 autosigma.b0.ss <- function(args){
+    spherical <- identity
     0.01*do.call(args$ss.opts$ss.link, list(max(args$capt$ss)))
 }
 
