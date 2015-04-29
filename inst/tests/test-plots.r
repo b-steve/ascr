@@ -27,7 +27,7 @@ test_that("survey plotting", {
 })
 
 test_that("detection surface plotting", {
-    expect_that(show.detsurf(example$fits$simple.hn), is_true())
-    expect_that(show.detsurf(example$fits$simple.hr), is_true())
-    expect_that(show.detsurf(example$fits$bearing.hn), is_true())
+    expect_that(show.detsurf(example$fits$simple.hn), is_null())
+    expect_that(show.detsurf(example$fits$simple.hr), is_null())
+    expect_that(show.detsurf(example$fits$bearing.hn), is_null())
 })
