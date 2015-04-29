@@ -1311,7 +1311,6 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 #' @importFrom CircStats dvm rvm
 #' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
-#' @importFrom lattice wireframe
 #' @importFrom matrixStats colProds
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
