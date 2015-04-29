@@ -4,10 +4,12 @@
 \alias{show.detsurf}
 \title{Plotting the detection probability surface}
 \usage{
-show.detsurf(fit)
+show.detsurf(fit, ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
+
+\item{...}{Arguments to be passed to \link{plot}.}
 }
 \description{
 Plots the detection probability surface, based on trap locations
