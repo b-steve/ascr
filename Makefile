@@ -36,13 +36,13 @@ build:
 	R CMD build --resave-data .
 	if [ $(shell hostname) == "Zeeba" ]; then mkdir .Rbuildignore; fi
 	if [ $(shell hostname) == "midge" ]; then mkdir .Rbuildignore; fi
-	mv admbsecr_1.1.0.tar.gz .Rbuildignore/
+	mv admbsecr_1.1.1.tar.gz .Rbuildignore/
 
 check:
-	R CMD check .Rbuildignore/admbsecr_1.1.0.tar.gz --no-tests
+	R CMD check .Rbuildignore/admbsecr_1.1.1.tar.gz --no-tests
 
 install:
-	R CMD INSTALL .Rbuildignore/admbsecr_1.1.0.tar.gz --install-tests
+	R CMD INSTALL .Rbuildignore/admbsecr_1.1.1.tar.gz --install-tests
 
 pdf:
 	R CMD Rd2pdf --pdf . &

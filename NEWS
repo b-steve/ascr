@@ -1,3 +1,10 @@
+admbsecr 1.1.1
+--------------
+
+* Implemented first-call acoustic models.
+
+* Added detector locations to show.detsurf().
+
 admbsecr 1.0.8
 --------------
 

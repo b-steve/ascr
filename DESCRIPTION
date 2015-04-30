@@ -1,8 +1,8 @@
 Package: admbsecr
 Type: Package
 Title: SECR models with supplementary location information
-Version: 1.1.0
-Date: 2014-10-30
+Version: 1.1.1
+Date: 2014-04-30
 Author: Ben Stevenson <bcs5@st-andrews.ac.uk>,
     David Borchers <dlb@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
@@ -25,7 +25,7 @@ LinkingTo: Rcpp
 Description: This package allows for the fitting of spatially explicit
     capture-recapture (SECR) models. In particular, it is focussed on
     a class of SECR model which makes use of supplementary information
-    which is informative on animal location.
+    that is informative on animal location.
 License: GPL
 URL: https://github.com/b-steve/admbsecr
 LazyData: true
