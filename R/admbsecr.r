@@ -493,7 +493,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         capt <- lapply(capt, function(x, keep) x[keep, ], keep = keep)
         n.removed <- sum(!keep)
         if (trace & n.removed > 0){
-            cat(n.removed, " capture history entries have no received signal strengths above the cutoff and have therefore been removed.\n", sep = "")
+            message(n.removed, " capture history entries have no received signal strengths above the cutoff and have therefore been removed.\n", sep = "")
         }
     }
     capt.bin <- capt$bincapt
@@ -1095,7 +1095,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      " -ind secr.dat -ainp secr.pin", " -neldmead"[neld.mead],
                      " -nohess"[!hess], cbs.cmd, gbs.cmd, sep = "")
         if (trace){
-            cat(cmd, "\n")
+            message(cmd, "\n")
         }
         if (os.type == "windows"){
             system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
@@ -1119,7 +1119,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (clean){
             unlink(temp.dir, recursive = TRUE)
         } else {
-            cat("ADMB files found in:", "\n", temp.dir, "\n")
+            message("ADMB files found in:", "\n", temp.dir, "\n")
         }
         if (class(out)[1] == "try-error"){
             stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
@@ -1203,9 +1203,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out[["vcov"]] <- vcov.updated
         if (trace){
             if (!hess){
-                cat("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+                message("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
             } else {
-                cat("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
+                message("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
             }
         }
     } else {

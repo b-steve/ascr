@@ -21,13 +21,13 @@ test.admbsecr <- function(quick = FALSE){
                             mask = example$mask, fix = list(g0 = 1)),
                    silent = TRUE)
         if (class(fit)[1] == "try-error"){
-            cat("ADMB executable test: FAIL\n")
+            message("ADMB executable test: FAIL\n")
         } else {
-            relative.error <- coef(fit, "D")/2429.626 - 1
+            relative.error <- coef(fit, "D")/2267.7395 - 1
             if (abs(relative.error) < 1e-4){
-                cat("ADMB executable check: PASS\n")
+                message("ADMB executable check: PASS\n")
             } else {
-                cat("ADMB executable check: INCONCLUSIVE\n Executable has run successfully but results may not be correct.\n")
+                message("ADMB executable check: INCONCLUSIVE\n Executable has run successfully but results may not be correct.\n")
             }
         }
     } else {
