@@ -17,7 +17,7 @@ docs:
 compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr.tpl
 	if [ $(shell hostname) == "heton" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/linux; mv ../../src/secr ./secr; fi
 	if [ $(shell hostname) == "albatross.mcs.st-and.ac.uk" ]; then cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/mac; rm -rfv secr; mv ../../src/secr ./secr; fi
-	if [ $(shell hostname) == "morten" ]; then export OLDPATH=$$PATH; export PATH=/c/"Program Files (x86)"/ADMB/bin:/c/"Program Files (x86)"/ADMB/utilities:/c/"Program Files (x86)"/ADMB/utilities/mingw64/bin:/c/admb/bin:$$PATH; echo $$PATH; cd inst/ADMB/src; cmd //c admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; export PATH=$$OLDPATH; fi
+	if [ $(shell hostname) == "morten-win" ]; then export OLDPATH=$$PATH; export PATH=/c/"Program Files (x86)"/ADMB/bin:/c/"Program Files (x86)"/ADMB/utilities:/c/"Program Files (x86)"/ADMB/utilities/mingw64/bin:/c/admb/bin:$$PATH; echo $$PATH; cd inst/ADMB/src; cmd //c admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; export PATH=$$OLDPATH; fi
 	if [ $(shell hostname) == "midge" ]; then export OLDPATH=$$PATH; echo $$OLDPATH; export PATH=/c/admb/bin:/c/MinGW/bin:$$PATH; cd inst/ADMB/src; admb -O secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; export PATH=$$OLDPATH; fi
 
 prepare:
@@ -31,10 +31,10 @@ roxygen:
 	R --slave -e "library(roxygen2); roxygenise('.')"
 
 build:
-	if [ $(shell hostname) == "morten" ]; then rm -rfv .Rbuildignore; fi
+	if [ $(shell hostname) == "morten-win" ]; then rm -rfv .Rbuildignore; fi
 	if [ $(shell hostname) == "midge" ]; then rm -rfv .Rbuildignore; fi
 	R CMD build --resave-data .
-	if [ $(shell hostname) == "morten" ]; then mkdir .Rbuildignore; fi
+	if [ $(shell hostname) == "morten-win" ]; then mkdir .Rbuildignore; fi
 	if [ $(shell hostname) == "midge" ]; then mkdir .Rbuildignore; fi
 	mv admbsecr_1.1.1.tar.gz .Rbuildignore/
 
