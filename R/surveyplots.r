@@ -44,10 +44,24 @@ show.detsurf <- function(fit, ...){
         index.y <- which(y == unique.y)
         z[index.x, index.y] <- p.det[i]
     }
+    ## Plotting surface.
     perspmat <- persp(x = unique.x, y = unique.y, z = z, zlim = c(0, 1),
-                      zlab = list("Detection probability", rot = 95),
-                      xlab = "", ylab = "", shade = 0.75, col = "lightblue",
-                      theta = 30, phi = 30, border = NA, ...)
+                      zlab = "", xlab = "", ylab = "", shade = 0.75,
+                      col = "lightblue", theta = 30, phi = 30, border = NA,
+                      box = TRUE, axes = FALSE, ticktype = "detailed", ...)
+    ## Plotting z-axis.
+    y.range <- diff(range(mask[, 2]))
+    tick.start <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2),
+                          z = c(0, 1), pmat = perspmat)
+    tick.end <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.025*y.range,
+                        z = c(0, 1), pmat = perspmat)
+    segments(x0 = tick.start$x, y0 = tick.start$y, x1 = tick.end$x, y1 = tick.end$y)
+    label.pos <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.05*y.range,
+                         z = c(0, 1), pmat = perspmat)
+    text(x = label.pos$x, y = label.pos$y, labels = c(0, 1), srt = 15)
+    title.pos <- label.pos <- trans3d(x = min(mask[, 1]), y = min(mask[, 2]) - 0.1*y.range,
+                                      z = c(0.6), pmat = perspmat)
+    text(x = title.pos$x, y = title.pos$y, labels = "Detection probability", srt = 105)
     for (i in 1:n.traps){
         ds <- distances(traps[i, , drop = FALSE], mask)
         nearest.mpoint <- which(ds == min(ds))[1]
@@ -133,9 +147,22 @@ mask.test <- function(fit = NULL, mask, traps, pars, cutoff, lower.cutoff, surfa
             z[index.x, index.y] <- s[i]
         }
         perspmat <- persp(x = unique.x, y = unique.y, z = z, zlim = c(0, 1),
-                          zlab = list("", rot = 95),
-                          xlab = "", ylab = "", shade = 0.75, col = "lightblue",
-                          theta = 30, phi = 30, border = NA, ...)
+                          zlab = "", xlab = "", ylab = "", shade = 0.75,
+                          col = "lightblue", theta = 30, phi = 30, border = NA,
+                          box = TRUE, axes = FALSE, ticktype = "detailed", ...)
+        ## Plotting z-axis.
+        y.range <- diff(range(mask[, 2]))
+        tick.start <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2),
+                              z = c(0, 1), pmat = perspmat)
+        tick.end <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.025*y.range,
+                            z = c(0, 1), pmat = perspmat)
+        segments(x0 = tick.start$x, y0 = tick.start$y, x1 = tick.end$x, y1 = tick.end$y)
+        label.pos <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.05*y.range,
+                             z = c(0, 1), pmat = perspmat)
+        text(x = label.pos$x, y = label.pos$y, labels = c(0, 1), srt = 15)
+        title.pos <- label.pos <- trans3d(x = min(mask[, 1]), y = min(mask[, 2]) - 0.1*y.range,
+                                          z = c(0.6), pmat = perspmat)
+        text(x = title.pos$x, y = title.pos$y, labels = "", srt = 105)
         for (i in 1:n.traps){
             lines(trans3d(x = rep(traps[i, 1], 2), y = rep(traps[i, 2], 2), z = c(0, 0.1),
                           pmat = perspmat))
