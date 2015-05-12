@@ -1,4 +1,4 @@
-pkgs <- c("CircStats", "matrixStats", "mvtnorm", "optimx", "plyr",
+pkgs <- c("CircStats", "fastGHQuad", "matrixStats", "mvtnorm", "optimx", "plyr",
           "Rcpp", "R2admb", "secr", "testthat", "truncnorm", "downloader")
 options(warn = -1)
 for (i in pkgs){
