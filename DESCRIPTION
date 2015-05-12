@@ -7,8 +7,8 @@ Author: Ben Stevenson <bcs5@st-andrews.ac.uk>,
     David Borchers <dlb@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
 Depends:
-    R (>= 2.15.1),
-    Rcpp (>= 0.10.6),
+    R (>= 3.2.0),
+    Rcpp (>= 0.11.5),
     R2admb,
     testthat
 Imports:
