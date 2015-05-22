@@ -2,15 +2,18 @@
 % Please edit documentation in R/convert.r
 \name{convert.capt}
 \alias{convert.capt}
-\title{Convert capture history object}
+\alias{convert.capt.admbsecr}
+\alias{convert.capt.secr}
+\title{Capture history conversion.}
 \usage{
-convert.capt(capt, traps, capthist = TRUE, cutoff = NULL)
+convert.capt.admbsecr(capt)
+
+convert.capt.secr(capt, traps, capthist = TRUE, cutoff = NULL)
 }
 \arguments{
-\item{capt}{A list with named components, containing the capture
-history and supplementary information. The function
-\link{create.capt} will return a suitable object. See 'Details'
-below.}
+\item{capt}{A \code{secr} capture history object for
+\code{convert.capt.admbsecr}, or an \code{admbsecr} capture history
+object for \code{convert.capt.secr}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
@@ -25,17 +28,15 @@ function.}
 strength detection function.}
 }
 \value{
-An object of class \link{capthist}.
+A capture history object appropriate for analysis using
+either the \code{admbsecr} or the \code{secr} package.
 }
 \description{
-Converts an \code{admbsecr} capture history list to a \code{secr}
-capthist object.
-}
-\details{
-The returned object is suitable for use as the \code{capthist}
-argument of the function \link{secr.fit}.
+These functions convert a capture history object between the
+structures required for the \code{admbsecr} and \code{secr}
+packages.
 }
 \examples{
-capt <- convert.capt(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
+capt <- convert.capt.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 }
 
