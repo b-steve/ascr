@@ -33,20 +33,15 @@ roxygen:
 	R --slave -e "library(roxygen2); roxygenise('.')"
 
 build:
-	if [ $(shell hostname) == "morten" ]; then rm -rfv .Rbuildignore; fi
-	if [ $(shell hostname) == "morten-win" ]; then rm -rfv .Rbuildignore; fi
-	if [ $(shell hostname) == "midge" ]; then rm -rfv .Rbuildignore; fi
 	R CMD build --resave-data .
-	if [ $(shell hostname) == "morten" ]; then mkdir .Rbuildignore; fi
-	if [ $(shell hostname) == "morten-win" ]; then mkdir .Rbuildignore; fi
-	if [ $(shell hostname) == "midge" ]; then mkdir .Rbuildignore; fi
-	mv admbsecr_1.1.2.tar.gz .Rbuildignore/
+	mkdir -p package-build
+	mv admbsecr_1.1.2.tar.gz package-build/
 
 check:
-	R CMD check .Rbuildignore/admbsecr_1.1.2.tar.gz --no-tests
+	R CMD check package-build/admbsecr_1.1.2.tar.gz --no-tests
 
 install:
-	R CMD INSTALL .Rbuildignore/admbsecr_1.1.2.tar.gz --install-tests
+	R CMD INSTALL package-build/admbsecr_1.1.2.tar.gz --install-tests
 
 pdf:
 	R CMD Rd2pdf --pdf . &
