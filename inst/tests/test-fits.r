@@ -333,6 +333,8 @@ test_that("fitting heterogeneity in source strengths", {
     pars <- list(D = 500, b0.ss = 90, b1.ss = 4, sigma.b0.ss = 5, sigma.ss = 10)
     capt <- sim.capt(traps = example$traps, mask = example$mask, detfn = "ss",
                      pars = pars, ss.opts = list(cutoff = 60))
+    ## Using only the first ten observations.
+    capt <- lapply(capt, function(x) x[1:10, ])
     ## First line used to be:
     ## 0.00000  0.00000  0.00000 65.49092   0.00000 79.19198
     ## For reasons I cannot figure out, it has changed to:
@@ -346,9 +348,9 @@ test_that("fitting heterogeneity in source strengths", {
                         sigma.ss = 4),
                     ss.opts = list(cutoff = 60, het.source = TRUE,
                         n.het.source.quadpoints = 5), hess = FALSE,
-                    local = TRUE, optim.opts = list(cbs = 1e8, gbs = 1e8))
-    pars.test <- c(731.363920521785, 90.5797487316036, 4.71397727982896, 
-                   5.633818295533, 8.09256566662896)
+                    local = TRUE)
+    pars.test <- c(221.900466410203, 88.8289943264761, 4.07833236335682, 
+                   7.11871056989856, 6.09904893903392)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
 })
@@ -367,7 +369,7 @@ test_that("first-call signal strength models", {
                      call.freqs = Inf, first.only = TRUE)
     fit <-  admbsecr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
-                         lower.cutoff = lower.cutoff), trace = FALSE,
+                         lower.cutoff = lower.cutoff), trace = TRUE,
                      hess = FALSE)
     pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
                    6.24489981755584)
