@@ -116,7 +116,7 @@ double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get
   f -= log_dpois(n, D*esa, dbl_min);
   f -= -n*log(sum_det_probs + sum_sub_det_probs);
   if (trace){
-    cout << "D: " << D << ", b0.ss: " << b0_ss << ", b1.ss: " << b1_ss << ", sigma.ss: " << sigma_ss << ", LL: " << -f << endl;
+    Rcout << "D: " << D << ", b0.ss: " << b0_ss << ", b1.ss: " << b1_ss << ", sigma.ss: " << sigma_ss << ", LL: " << -f << endl;
   }
   if (get_esa){
     return esa;
