@@ -318,14 +318,6 @@ test_that("directional call fitting", {
     expect_that(relative.error < 1e-4, is_true())
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
-    ## Checking fitting with local integration.
-    fit <- admbsecr(capt = joint.capt, traps = example$traps,
-                    sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
-                    mask = example$mask, ss.opts = list(cutoff = 60), local = TRUE)
-    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
-    expect_that(relative.error < 1e-4, is_true())
-    relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
-    expect_that(relative.error < 1e-4, is_true())
 })
 
 test_that("fitting heterogeneity in source strengths", {
@@ -369,8 +361,7 @@ test_that("first-call signal strength models", {
                      call.freqs = Inf, first.only = TRUE)
     fit <-  admbsecr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
-                         lower.cutoff = lower.cutoff), trace = TRUE,
-                     hess = FALSE)
+                         lower.cutoff = lower.cutoff), hess = FALSE)
     pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
                    6.24489981755584)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
