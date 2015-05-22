@@ -1,6 +1,6 @@
 context("Testing conversion functions")
 
-## Note convert.mask() and convert.capt() are tested in test-fits.r.
+## Note convert.mask() and convert.capt.secr() are tested in test-fits.r.
 
 test_that("Converting/creating capture histories", {
     dets <- lightfooti$dets
