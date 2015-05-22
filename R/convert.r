@@ -157,14 +157,15 @@ convert.mask <- function(mask){
     read.mask(data = as.data.frame(mask))
 }
 
-#' Convert capture history object
+#' Capture history conversion.
 #'
-#' Converts an \code{admbsecr} capture history list to a \code{secr}
-#' capthist object.
+#' These functions convert a capture history object between the
+#' structures required for the \code{admbsecr} and \code{secr}
+#' packages.
 #'
-#' The returned object is suitable for use as the \code{capthist}
-#' argument of the function \link{secr.fit}.
-#'
+#' @param capt A \code{secr} capture history object for
+#' \code{convert.capt.admbsecr}, or an \code{admbsecr} capture history
+#' object for \code{convert.capt.secr}.
 #' @param capthist Logical, if \code{TRUE}, a \code{capthist} object
 #' is returned. Otherwise a data frame is returned, which is suitable
 #' for the \code{captures} argument to the \link{make.capthist}
@@ -174,13 +175,29 @@ convert.mask <- function(mask){
 #' strength detection function.
 #' @inheritParams admbsecr
 #'
-#' @return An object of class \link{capthist}.
-#'
-#' @examples
-#' capt <- convert.capt(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
-#'
+#' @return A capture history object appropriate for analysis using
+#' either the \code{admbsecr} or the \code{secr} package.
+#' @examples capt <- convert.capt.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
+#' 
+#' @name convert.capt
+NULL
+
+#' @rdname convert.capt
 #' @export
-convert.capt <- function(capt, traps, capthist = TRUE, cutoff = NULL){
+convert.capt.admbsecr <- function(capt){
+    bincapt <- capt[, 1, ]
+    nr <- nrow(bincapt)
+    nc <- ncol(bincapt)
+    if (!is.null(attr(capt, "signalframe"))){
+        ss.capt <- matrix(attr(capt, "signalframe")[, 1],
+                          nrow = nr, ncol = nc)
+    }
+    list(bincapt = bincapt, ss = ss.capt)
+}
+
+#' @rdname convert.capt
+#' @export
+convert.capt.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
     n <- nrow(capt$bincapt)
     n.dets <- sum(capt$bincapt)
     session <- rep(1, n.dets)
@@ -241,3 +258,6 @@ convert.pamguard <- function(dets, mics, time.range = NULL,
     captures <- make.acoustic.captures(mics, clicks, sound.speed)
     create.capt(captures)
 }
+
+
+
