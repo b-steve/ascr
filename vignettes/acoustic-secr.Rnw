@@ -1,0 +1,245 @@
+\documentclass{article}
+
+%\VignetteIndexEntry{Acoustic SECR}
+%\VignetteEngine{knitr::knitr}
+
+\usepackage{amsmath}
+\usepackage[left = 3.5cm, right = 3.5cm, top = 3.0cm, bottom = 4.5cm]{geometry}
+\usepackage[natbibapa]{apacite}
+\usepackage{bm}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{xparse}
+\DeclareDocumentCommand{\sct}{ O{} O{} m }{\shortcites{#3}\citet[#1][#2]{#3}}
+\DeclareDocumentCommand{\scp}{ O{} O{} m }{\shortcites{#3}\citep[#1][#2]{#3}}
+
+\title{Acoustic SECR models with \texttt{admbsecr}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+A range of spatially explicity capture-recapture (SECR) models for
+acoustic detection data are implemented in the \texttt{admbsecr}
+package. These are outlined in this document, along with information
+on how they can be fitted.
+
+The \texttt{capt} argument to the \texttt{admbsecr()} contains the
+detection data collected during an acoustic survey. For information on
+getting your data in the correct format for analysis with
+\texttt{admbsecr}, see the \emph{Data input for \texttt{admbsecr}}
+vignette. To view, run \texttt{vignette("data-structure")}.
+
+Detectors that are deployed for acoustic surveys are typically capable
+of collecting two types of auxiliary information: Signal strengths and
+times of arrival. The \texttt{admbsecr} package allows for these data
+to be incorporated into SECR models.
+
+The \texttt{capt} argument is a list with a mandatory component
+\texttt{bincapt} (the binary capture histories), and a range of
+optional components, each corresponding to an auxiliary data type
+(e.g., component \texttt{ss} for signal strengths and \texttt{toa} for
+times of arrival).
+
+The exact contents of the \texttt{capt} argument depends on what the
+unit of detection is defined to be for analysis. There are three
+options:
+\begin{itemize}
+\item Individuals \scp[e.g.,][]{Kidney2015}.
+\item Calls \scp[e.g.,][]{Stevenson2015}.
+\item First detected calls \scp[e.g.,][]{Dawson2009, StevensonIP}.
+\end{itemize}
+
+For example, assume that individuals can be recognised from their
+calls, and that, for the first three detected individuals, the capture
+histories shown in Table \ref{tab:capthist-tabs}(a) were observed
+(sorted by individual ID). In this case, the $j^\mathrm{th}$ element
+of the $i^\mathrm{th}$ row is $1$ if the $j^\mathrm{th}$ detector
+detected the $i^\mathrm{th}$ call, and $0$ otherwise.
+
+Rather than using this capture history for analysis, one may elect to
+collapse these across calls within individuals, so that the
+$j^\mathrm{th}$ element of the $i^\mathrm{th}$ row is $1$ if the
+$j^\mathrm{th}$ detector detected at least one call made by the
+$i^\mathrm{th}$ individual, and $0$ otherwise, giving rise to Table
+\ref{tab:capthist-tabs}(b).
+
+A third option is to only include the first detected call from each
+individual in the analysis. The corresponding capture history under
+this inclusion protocol is shown in in Table
+\ref{tab:capthist-tabs}(c).
+
+The advantages and disadvantages of each choice are discussed below,
+along with guidelines on how to carry out each analysis using the
+\texttt{admbsecr} package.
+
+<<capthist-tabs, echo = FALSE, results = "asis">>=
+library(xtable)
+capt <- matrix(c(1, 0, 1, 0,
+                 0, 0, 1, 0,
+                 1, 1, 0, 0,
+                 0, 0, 0, 1,
+                 0, 1, 1, 0,
+                 0, 0, 0, 1), byrow = TRUE, nrow = 6)
+call.id <- 1:nrow(capt)
+individual.id <- c(1, 1, 1, 2, 3, 3)
+x.call <- data.frame(call.id, individual.id, capt)
+names(x.call) <- c("Call", "ID", "A", "B", "C", "D")
+table.call <- xtable(x.call, label = "tab:capthist-tabs", digits = 0)
+print(table.call, type = "latex", include.rownames = FALSE,
+      only.contents = TRUE, booktabs = TRUE, file = "capthist-tabs1.tex")
+capt.individual <- matrix(c(1, 1, 1, 0,
+                            0, 0, 0, 1,
+                            0, 1, 1, 1), byrow = TRUE, nrow = 3)
+individual.id <- 1:3
+x.individual <- data.frame(individual.id, capt.individual)
+names(x.individual) <- c("ID", "A", "B", "C", "D")
+table.individual <- xtable(x.individual, digits = 0)
+print(table.individual, type = "latex", include.rownames = FALSE,
+      only.contents = TRUE, booktabs = TRUE, file = "capthist-tabs2.tex")
+x.first <- data.frame(c(1, 4, 5), unique(individual.id), capt[c(1, 4, 5), ])
+names(x.first) <- names(x.call)
+table.first <- xtable(x.first, digits = 0)
+print(table.first, type = "latex", include.rownames = FALSE,
+      only.contents = TRUE, booktabs = TRUE, file = "capthist-tabs3.tex")
+@
+\begin{table}[ht]
+\centering
+\caption{Examples of capture histories with various units of detection.}
+\label{tab:capthist-tabs}
+\subcaption{Calls as units of detection.}
+\begin{tabular}{rrrrrr}
+  \toprule
+  & & \multicolumn{4}{c}{Detector} \\
+  \cmidrule(lr){3-6}
+  \input{capthist-tabs1}
+\end{tabular}
+\bigskip
+\bigskip
+
+\subcaption{Individuals as units of detection.}
+\begin{tabular}{rrrrr}
+  \toprule
+  & \multicolumn{4}{c}{Detector} \\
+  \cmidrule(lr){2-5}
+  \input{capthist-tabs2}
+\end{tabular}
+\bigskip
+\bigskip
+
+\subcaption{First calls as units of detection.}
+\begin{tabular}{rrrrrr}
+  \toprule
+  & & \multicolumn{4}{c}{Detector} \\
+  \cmidrule(lr){3-6}
+  \input{capthist-tabs3}
+\end{tabular}
+\end{table}
+
+
+\section{Individuals as detection units}
+
+There are two main disadvantages of defining individuals at the unit
+of detection. First, it must be possible to attribute every call to a
+particular animal, and, for some species, individuals cannot be
+recognised from their calls. Second, this typically precludes the use
+of auxiliary data: These data (e.g., signal strengths and times of
+arrival) are usually call-specific, but analysis of individual-based
+capture histories does not deal with call-level data.
+
+The analysis of \sct{Kidney2015} is an exception. Human observers
+detected calls of northern yellow-cheeked gibbon \emph{Nomascus
+  annamensis} groups in northeastern Cambodia. Gibbon groups do not
+move over the course of the survey period, and each observer estimates
+the bearing to each group they detected at least once. The auxiliary
+data, bearings, therefore apply to groups, not particular calls.
+
+In this case, let \texttt{gibbons.capt} be the appropriate capture
+histories object (including components \texttt{bincapt} and
+\texttt{bearing}), \texttt{gibbons.traps} be the appropriate trap
+locations object, and \texttt{gibbons.mask} be the appropriate mask
+object (which can be generated using \texttt{create.mask()}).
+
+The model can be fitted using the code
+<<gibbons.code, eval = FALSE, tidy = FALSE>>=
+gibbons.fit <- admbsecr(capt = gibbons.capt, traps = gibbons.capt, mask = gibbons.mask)
+@
+
+Unfortunately the above data cannot be made available.
+
+The halfnormal detection function will be selected by default, but
+this can be changed using the \texttt{detfn} argument.
+
+\section{Calls as detection units}
+
+Capture histories with individuals as the unit of detection cannot be
+constructed unless individuals are recognisable from their calls. When
+this is not the case, calls must be defined as the unit of
+detection. This also allows the use of call-level auxiliary data, and
+so it may be beneficial to use this approach even when individuals are
+identifiable.
+
+When received signal strengths have been recorded by the detectors,
+they are incorporated into the density estimator via the signal
+strength detection function. This comprises three components: One to
+explain how the expected received signal strength decreases as the
+distance between a call source and a detector increases, one to
+incorporate stochasticity into received signal strengths, and one
+defining what consitutes a detection. When first proposed by
+\sct{Efford2009}, the first component simply assumed a linear distance
+between expected received signal strength and distance, i.e.,
+\begin{equation*}
+  E(Y) = \beta_{s0} - \beta_{s1}d,
+\end{equation*}
+where $Y$ is the received signal strength of a call emitted from a
+location distance $d$ from the detector. The second component assumed
+\begin{equation*}
+  Y \sim \mathrm{N}(E(Y), \sigma_s).
+\end{equation*}
+The third component defined a detection as a received signal strength
+above some threshold, $c$, where $c$ is set at a level higher than any
+background noise, such that any call received at a strength above $c$
+is detected with certainty. Therefore, the probability of detection of
+the $i^\mathrm{th}$ detected individual at the $j^\mathrm{th}$
+detector is $1 - \Phi\left((c - E(Y))/\sigma_s\right)$, where
+$\Phi(\cdot)$ is the cumulative distribution function of the standard
+normal distribution.
+
+Two alternatives for the first component were proposed by
+\sct{Dawson2009}: A log-linear relationship,
+\begin{equation}
+  E(Y) = \exp(\beta_{s0} - \beta_{s1}\,d_j(\bm{x}_i)),
+\end{equation}
+and a relationship due to spherical spreading of sound energy,
+\begin{equation}
+  E(Y) = \beta_{s0} - 10 \, \log_{10}(d^2) + \beta_{s1}(d - 1).
+\end{equation}
+  
+A considerable disadvantage is that analysing call-based capture
+histories results in an estimate of \emph{call} density (i.e., calls
+per unit time, per unit area), while it is usually \emph{animal}
+density that is of interest. The methodology of \sct{Stevenson2015}
+can be used to obtain point and variance estimates of animal density,
+however it is necessary to collect call rate data independently of the
+acoustic survey. Not only does this increase the amount of fieldwork
+required, but to avoid bias these call rate data must be collected at
+the same time and location as the acoustic survey in case there is any
+spatial or temporal heterogeneity in call rates.
+
+\sct{Stevenson2015} estimated density of the Cape Peninsula moss frog
+\emph{Arthroleptella lightfooti} using this approach. The data can be
+found in the exported data object \texttt{lightfooti}. This is a list,
+including the components \texttt{capt}, \texttt{traps}, and
+\texttt{mask}, appropriate as capture histories, trap location, and
+mask arguments for the \texttt{admbsecr()} function. Additionally, the
+component \texttt{freqs} is a vector of call rates from eight frogs,
+collected independently of the detector array.
+
+\bibliographystyle{apacite}
+\bibliography{refs}
+
+\end{document}
