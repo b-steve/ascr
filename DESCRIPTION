@@ -21,7 +21,11 @@ Imports:
     plyr,
     secr,
     truncnorm
+Suggests:
+    knitr,
+    xtable
 LinkingTo: Rcpp
+VignetteBuilder: knitr
 Description: This package allows for the fitting of spatially explicit
     capture-recapture (SECR) models. In particular, it is focussed on
     a class of SECR model which makes use of supplementary information
