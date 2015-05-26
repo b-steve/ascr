@@ -1,3 +1,11 @@
+admbsecr 1.1.3
+--------------
+
+* Bug fix to sim.capt(), also affecting boot.admbsecr(), for signal
+  strength models with call.freqs specified as an argument.
+
+* Added the acoustic-secr vignette.
+
 admbsecr 1.1.2
 --------------
 
