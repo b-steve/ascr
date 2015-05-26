@@ -75,7 +75,11 @@ this inclusion protocol is shown in in Table
 
 The advantages and disadvantages of each choice are discussed below,
 along with guidelines on how to carry out each analysis using the
-\texttt{admbsecr} package.
+\texttt{admbsecr} package. This document also covers the fitting of
+acoustic SECR models where detection not only depends on the distance
+from detector, but also either due to the source strength or the
+direction of the call. Brief discussion about the movement of animals
+during an acoustic survey is presented in the final section.
 
 <<capthist-tabs, echo = FALSE, results = "asis">>=
 library(xtable)
@@ -166,7 +170,8 @@ object (which can be generated using \texttt{create.mask()}).
 
 The model can be fitted using the code
 <<gibbons.code, eval = FALSE, tidy = FALSE>>=
-gibbons.fit <- admbsecr(capt = gibbons.capt, traps = gibbons.capt, mask = gibbons.mask)
+gibbons.fit <- admbsecr(capt = gibbons.capt, traps = gibbons.capt, 
+                        mask = gibbons.mask)
 @
 
 Unfortunately the above data cannot be made available.
@@ -193,7 +198,7 @@ defining what consitutes a detection. When first proposed by
 \sct{Efford2009}, the first component simply assumed a linear distance
 between expected received signal strength and distance, i.e.,
 \begin{equation*}
-  E(Y) = \beta_{s0} - \beta_{s1}d,
+  E(Y) = \beta_0 - \beta_1d, \label{eq:ss-link-identity}
 \end{equation*}
 where $Y$ is the received signal strength of a call emitted from a
 location distance $d$ from the detector. The second component assumed
@@ -212,11 +217,11 @@ normal distribution.
 Two alternatives for the first component were proposed by
 \sct{Dawson2009}: A log-linear relationship,
 \begin{equation}
-  E(Y) = \exp(\beta_{s0} - \beta_{s1}\,d_j(\bm{x}_i)),
+  E(Y) = \exp(\beta_0 - \beta_1\,d), \label{eq:ss-link-log}
 \end{equation}
 and a relationship due to spherical spreading of sound energy,
 \begin{equation}
-  E(Y) = \beta_{s0} - 10 \, \log_{10}(d^2) + \beta_{s1}(d - 1).
+  E(Y) = \beta_0 - 10 \, \log_{10}(d^2) + \beta_1(d - 1). \label{eq:ss-link-spherical}
 \end{equation}
   
 A considerable disadvantage is that analysing call-based capture
@@ -237,7 +242,205 @@ including the components \texttt{capt}, \texttt{traps}, and
 \texttt{mask}, appropriate as capture histories, trap location, and
 mask arguments for the \texttt{admbsecr()} function. Additionally, the
 component \texttt{freqs} is a vector of call rates from eight frogs,
-collected independently of the detector array.
+collected independently of the detector array. The component
+\texttt{cutoff} contains an appropriate threshold level for
+detection. Individuals were not identifiable from their calls, so each
+capture history corresponds to a call. Both signal strengths and times
+of arrival were collected.
+
+The data can be analysed with the code
+<<lightfooti-code-1, eval = FALSE, tidy = FALSE>>=
+lightfooti.opts <- list(cutoff = lightfooti$cutoff, ss.link = "identity")
+lightfooti.fit <- admbsecr(capt = lightfooti$capt, traps = lightfooti$traps,
+                           mask = lightfooti$mask, detfn = "ss",
+                           ss.opts = lightfooti.opts, 
+                           call.freqs = lightfooti$freqs)
+@
+%$
+This generates point estimates of the parameters. The \texttt{ss.opts}
+argument sets various options relating to the signal strength
+detection function. In particular, the \texttt{cutoff} component sets
+the threshold level for detection, $c$,
+and the \texttt{ss.link} component sets the link function of the
+linear prediction for the expected signal strength. Therefore, this
+should be set as \texttt{"identity"} use the relationship in Equation
+\eqref{eq:ss-link-identity}, and \texttt{"log"} to use the
+relationship in Equation \eqref{eq:ss-link-log}. Equation
+\eqref{eq:ss-link-spherical} does not use a linear predictor, but can
+be used by setting \texttt{ss.link = "spherical"}. By default a linear
+relationship (\eqref{eq:ss-link-identity}) is used.
+
+A simulation approach is currently the only appropriate way of
+obtaining variance estimates for these data \scp{Stevenson2015}, and
+this can be carried out using the \texttt{boot.admbsecr()}
+function. For example,
+<<lightfooti-code-2, eval = FALSE, tidy = FALSE>>=
+lightfooti.boot <- boot.admbsecr(lightfooti.fit, N = 10, n.cores = 4)
+@ 
+
+The parameter \texttt{N} sets the number of bootstrap resamples to
+take. It is set to $10$ in the above code to ensure a short processing
+time for this example, however in practice this should be set to a
+much larger value. Also note that the \texttt{n.cores} argument can be
+set to allow parallel processing, specifying how many cores should be
+used.
+
+Call rate and animal density parameters are potentially estimable from
+the acoustic survey alone (i.e., without having to collect independent
+call rate data) as long as individuals are identifiable from their
+calls. The development of methodology to achieve this is ongoing, and
+may be implemented in a future version of \texttt{admbsecr}.
+
+\section{First calls as detection units}
+
+In the absence of existing methodology capable of estimating animal
+density for call-based capture histories, one may instead elect to
+define first calls as detected units. In their analysis of the
+ovenbird \emph{Seiurus aurocapilla}, \sct{Dawson2009} used the
+following protocol to decide which calls to include in analysis:
+\begin{enumerate}
+\item Carry out an acoustic survey.
+\item Manually allocate calls to individuals.
+\item Ignore all but the first call allocated to each individual.
+\item Include first calls for analysis if they were received at a
+  strength above some cutoff, $c$.
+\end{enumerate}
+Note that a detected animal may not be included for analysis if it's
+first call was not receieved with a strong enough signal, even if one
+of its subsequent calls was.
+
+These data were then analysed as if they were individual-based capture
+histories, giving rise to an animal density estimate. Signal strength
+information (incorporated via the signal strength detection function,
+above) could be incorporated as each capture history corresponded to a
+particular call.
+
+The ovenbird data are available as exported data from the
+\texttt{secr} package. See the \emph{Data structure for
+  \texttt{admbsecr}} vignette (run \texttt{vignette("data-structure")}
+for information on how to convert the object from \texttt{secr} into
+an appropriate object for analysis with \texttt{admbsecr}. The models
+used by \sct{Dawson2009} can then be fitted with \texttt{admbsecr},
+for example,
+<<ovenbird-code, eval = FALSE, tidy = FALSE>>=
+ovenbird.fit <- admbsecr(capt = ovenbird.capt, traps = ovenbird.traps, 
+                         mask = ovenbird.mask, ss.opts = list(cutoff = 52.5))
+@ 
+
+However, \sct{StevensonIP} showed that treating first-call capture
+histories as capture histories with individuals as the unit of
+detection implicitly assumes that each included call is the first call
+an individual made during the acoustic survey. This is not generally
+the case, as the first call an animal emits is not necessarily
+detected. Violating this assumption can potentially result in
+substantial bias in parameter estimates.
+
+\sct{StevensonIP} proposed new methodology for first-call capture
+histories that results in appropriate estimators that have negligible
+bias. It requires the setting of two thresholds:
+\begin{enumerate}
+\item The lower threshold, $c_l$, for detection. This can be thought
+  of as a practical lower threshold; received signals weaker than this
+  are not detectable.
+\item The upper threshold, $c_u$, for inclusion. A call that is
+  detected is included for analysis if it is the first call attributed
+  to an individual, and at least one detector has received the signal
+  stronger than $c_u$.
+\end{enumerate}
+
+Fitting a model using this methodology is straightforward in
+\texttt{secr}: Simply specify the component \texttt{lower.cutoff} of
+\texttt{ss.opts} to be $c_l$. The upper threshold, $c_u$, is still set
+using the \texttt{cutoff} component. Note that, at present, these
+first-call models can only be fitted assuming a linear relationship
+between expected received signal strength and distance (Equation
+\eqref{eq:ss-link-identity}).
+
+\section{Other features}
+
+The signal strength detection function outlined above assumes that
+detection probability only depends on the distance between the sound's
+source location and the detector. Additional features may affect
+detection, and two of these are the source signal strength and the
+source signal direction.
+
+The signal strength detection function assumes that all signals are
+emitted with a source strength of $\beta_0$, however it may be more
+appropriate to assume heterogeneity across signal sources such that a
+signal's source strength, $S$, is not constant, but rather
+\begin{equation*}
+  S \sim \mathrm{N}(\beta_0, \sigma_{\beta_0}).
+\end{equation*}
+This can be achieved by setting the \texttt{het.source} component of
+\texttt{ss.opts} to \texttt{TRUE}.
+
+The signal strength detection function assumes that an acoutic signal
+is equally detectable in all directions from its source, however if a
+call is emitted in a particular direction than this may not be the
+case. Let the difference between the bearing of the direction the call
+is emitted and the bearing from the call source location to the
+detector be $B$, measured in radians. It may be more appropriate to
+assume that the signal is most detectable if the call is emitted in
+the direction of the detector (i.e., if $B = 0$ or $B = 2\pi$) and
+least detectable if the call is emitted in the opposite direction
+(i.e., if $B = \pi$). The \texttt{admbsecr} package supports the
+fitting of models with directional calls, and this is incorporated
+into the signal strength detection function by allowing the loss of
+signal strength over space, $\alpha_{s}$, to vary depending on $B$,
+\begin{equation*}
+  \alpha_{s} = \beta_1 - (\beta_2 \, (\cos(B) - 1)),
+\end{equation*}
+and so $\beta_1$ is the value of $\alpha_{s}$ in the direction the
+call was emitted, and $\beta_{s2}$ estimates the directionality of the
+call. If $\beta_2 = 0$ then the call is equally detectable in all
+directions, $\alpha_s = \beta_1$, and the situation collapses into the
+signal strength detection function described above. As $\beta_2$
+increases the call becomes less and less detectable when $B \ne 0$,
+and in particular when $B \approx \pi$.
+
+Note that the model does not require knowledge of the directions calls
+were emitted in. These directions can be estimated from the data,
+though this performs best when either:
+\begin{itemize}
+\item The detector array contains a dense grid of detectors, or
+\item Both signal strengths and times of arrival have been collected.
+\end{itemize}
+
+Fitting a model with call directionality can be achieved by setting
+the \texttt{directional} component of \texttt{ss.opts} to
+\texttt{TRUE}.
+
+Further components of \texttt{ss.opts} can be set to tune the fitting
+of models with either heterogeneity in source signal strengths, or
+with directional calling. See the documentation for the
+\texttt{admbsecr()} function for further details. 
+
+Note that these models are fairly computationally demanding and can
+therefore take a long time to fit. Additionally, they assume that
+source strengths and directions are independent across calls, and this
+is unlikely to hold across calls made by the same
+individual. Parameter estimates are likely to remain negligibly biased
+despite this, and variance estimates could potentially be obtained
+using the simulation approach of \sct{Stevenson2015}, but neither of
+these claims have been rigorously investigated. Furthermore, models
+with heterogeneity in source strength and call directionality have not
+yet been implemented in conjunction with the first-call methodology of
+\sct{StevensonIP}.
+
+\section{Animal movement}
+
+So far there has been no development of acoustic SECR methodology that
+explicitly models the movement of individuals over the course of the
+survey. The methods discussed above that analyse capture histories
+where calls or first calls are the unit of detection all assume that
+individuals remain stationary throughout the survey. For analysis of
+data where this cannot be assumed, capture histories must define
+individuals as the unit of detection. The detection function then
+returns the probability of detection at a detector given some distance
+from its activity centre, rather than physical location at the time of
+the call. This incorporates both animal movement and detectability of
+calls over space into detection probabilities. This approach precludes
+the use of any auxiliary data.
 
 \bibliographystyle{apacite}
 \bibliography{refs}

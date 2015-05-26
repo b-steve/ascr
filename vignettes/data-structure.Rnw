@@ -5,7 +5,7 @@
 
 \usepackage[left = 3.5cm, right = 3.5cm, top = 3.0cm, bottom = 4.5cm]{geometry}
 
-\title{Data input for \texttt{admbsecr}}
+\title{Data structure for \texttt{admbsecr}}
 \date{}
 
 \begin{document}
@@ -37,14 +37,14 @@ and vice versa. For example, \texttt{signalCH} is an exported data
 object from the \texttt{secr} package. Appropriate \texttt{capt} and
 \texttt{traps} objects can be generated using
 <<convert, eval = FALSE, tidy = FALSE>>=
-capt <- convert.capt.admbsecr(signalCH)
-traps <- traps(signalCH)
+ovenbird.capt <- convert.capt.admbsecr(signalCH)
+ovenbird.traps <- traps(signalCH)
 @ 
 
 An appropriate \texttt{mask} object can be generated using the
 \texttt{create.mask} object, for example
 <<convert-mask, eval = FALSE, tidy = FALSE>>=
-mask <- create.mask(traps = traps, buffer = 200)
+ovenbird.mask <- create.mask(traps = traps, buffer = 200)
 @ 
 
 \section{Capture data format}
