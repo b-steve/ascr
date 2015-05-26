@@ -557,6 +557,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else if (!(ss.link %in% c("identity", "log", "spherical"))){
             stop("Component 'ss.link' in 'ss.opts' must be \"identity\", \"log\", or \"spherical\".")
         }
+        if (first.calls & ss.link != "identity"){
+            stop("First-call models are only implemented for ss.link = \"identity\".")
+        }
         ## By default, directional calling model is only used if b2.ss appears in sv or fix.
         if (is.null(directional)){
             if (is.null(sv$b2.ss) & is.null(fix$b2.ss)){
@@ -626,7 +629,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             }
             fix$sigma.b0.ss <- 0
         }
-
     } else {
         if (!is.null(ss.opts)){
             warning("Argument 'ss.opts' is being ignored as a signal strength model is not being fitted.")
