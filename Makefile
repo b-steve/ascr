@@ -1,6 +1,9 @@
-SHELL := /bin/bash
+#SHELL := /bin/bash
 ALL:
 	make compile
+	make nocompile
+
+nocompile:
 	make prepare
 	make rcpp
 	make roxygen
