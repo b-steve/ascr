@@ -1,4 +1,4 @@
-#SHELL := /bin/bash
+SHELL := /bin/bash
 ALL:
 	make compile
 	make nocompile
