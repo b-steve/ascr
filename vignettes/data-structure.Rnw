@@ -1,10 +1,11 @@
 \documentclass{article}
 
 %\VignetteIndexEntry{Data structures}
+%\VignetteEngine{knitr::knitr}
 
 \usepackage[left = 3.5cm, right = 3.5cm, top = 3.0cm, bottom = 4.5cm]{geometry}
 
-\title{Data input for \texttt{admbsecr}}
+\title{Data structure for \texttt{admbsecr}}
 \date{}
 
 \begin{document}
@@ -25,14 +26,26 @@ In order to carry out analysis with \texttt{admbsecr}, three objects are require
   occurs (see Section \ref{sec:mask}).
 \end{itemize}
 
+\section{Compatability with \texttt{secr}}
+
 Data input for the \texttt{admbsecr} package is designed to work
-similarly to the procedures used by the \texttt{secr}
-package. Currently (as of Version 1.1.0) functions exist to convert
-data objects used by \texttt{admbsecr} to objects suitable for
-analysis with \texttt{secr} (e.g., \texttt{convert.capt()},
-\texttt{convert.mask()}, and \texttt{convert.traps()}), and
-implementation of functions to perform the conversion in the other
-direction are planned.
+similarly to the procedures used by the \texttt{secr} package. The
+functions \texttt{convert.capt.admbsecr()} and
+\texttt{convert.capt.secr()} convert capture history objects used by
+\texttt{secr} to objects suitable for analysis with \texttt{admbsecr},
+and vice versa. For example, \texttt{signalCH} is an exported data
+object from the \texttt{secr} package. Appropriate \texttt{capt} and
+\texttt{traps} objects can be generated using
+<<convert, eval = FALSE, tidy = FALSE>>=
+ovenbird.capt <- convert.capt.admbsecr(signalCH)
+ovenbird.traps <- traps(signalCH)
+@ 
+
+An appropriate \texttt{mask} object can be generated using the
+\texttt{create.mask} object, for example
+<<convert-mask, eval = FALSE, tidy = FALSE>>=
+ovenbird.mask <- create.mask(traps = traps, buffer = 200)
+@ 
 
 \section{Capture data format}
 \label{sec:capt}

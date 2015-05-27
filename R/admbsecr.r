@@ -480,8 +480,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                 stop("The 'lower.cutoff' component of 'ss.opts' must be lower than the 'cutoff' component.")
             }
         } else {
-            ss.opts$lower.cutoff <- 0
-            lower.cutoff <- 0
+            ss.opts["lower.cutoff"] <- list(NULL)
+            lower.cutoff <- NULL
         }
         ## Removing detections below the cutoff.
         rem <- capt$ss < cutoff
@@ -557,6 +557,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else if (!(ss.link %in% c("identity", "log", "spherical"))){
             stop("Component 'ss.link' in 'ss.opts' must be \"identity\", \"log\", or \"spherical\".")
         }
+        if (first.calls & ss.link != "identity"){
+            stop("First-call models are only implemented for ss.link = \"identity\".")
+        }
         ## By default, directional calling model is only used if b2.ss appears in sv or fix.
         if (is.null(directional)){
             if (is.null(sv$b2.ss) & is.null(fix$b2.ss)){
@@ -569,10 +572,21 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         ## Fixing b2.ss to 0 if a directional calling model is not being used.
         if (!directional){
-            if (!is.null(sv$b2.ss) | !is.null(fix$b2.ss)){
-                warning("As the 'directional' component of 'ss.opts' is FALSE, the values of parameter b2.ss in 'sv' and 'fix' are being ignored")
+            warn.directional <- FALSE
+            if (!is.null(sv$b2.ss)){
+                if (sv$b2.ss != 0){
+                    warn.directional <- TRUE
+                }
                 sv$b2.ss <- NULL
+            }
+            if (!is.null(fix$b2.ss)){
+                if (fix$b2.ss != 0){
+                    warn.directional <- TRUE
+                }
                 fix$b2.ss <- NULL
+            }
+            if (warn.directional){
+                warning("As the 'directional' component of 'ss.opts' is FALSE, the values of parameter b2.ss in 'sv' and 'fix' are being ignored")
             }
             fix$b2.ss <- 0
         }
@@ -597,20 +611,30 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else {
             ## Fixing sigma.b0.ss to 0 if a heterogeneous source
             ## strength model is not being used.
-            if (!is.null(sv$sigma.b0.ss) | !is.null(sv$sigma.b0.ss)){
-                warning("As the 'het.source' component of 'ss.opts' is FALSE, the values of the parameter sigma.b0.ss in 'sv' and 'fix' are being ignored")
+            warn.het <- FALSE
+            if (!is.null(sv$sigma.b0.ss)){
+                if (sv$sigma.b0.ss != 0){
+                    warn.het <- TRUE
+                }
                 sv$sigma.b0.ss <- NULL
+            }
+            if (!is.null(fix$sigma.b0.ss)){
+                if (fix$sigma.b0.ss != 0){
+                    warn.het <- TRUE
+                }
                 fix$sigma.b0.ss <- NULL
+            }
+            if (warn.het){
+                warning("As the 'het.source' component of 'ss.opts' is FALSE, the values of the parameter sigma.b0.ss in 'sv' and 'fix' are being ignored")      
             }
             fix$sigma.b0.ss <- 0
         }
-
     } else {
         if (!is.null(ss.opts)){
             warning("Argument 'ss.opts' is being ignored as a signal strength model is not being fitted.")
         }
-        ss.opts$lower.cutoff <- NULL
-        lower.cutoff <- 0
+        ss.opts <- NULL
+        lower.cutoff <- NULL
     }
     ## Setting fit.dir.
     if (fit.ss){
@@ -958,7 +982,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         n.het.source.quadpoints, het_source_nodes = het.source.nodes,
         het_source_weights = het.source.weights, capt_ang = capt.bearing, fit_dists =
         as.numeric(fit.dists), capt_dist = capt.dist, fit_ss = as.numeric(fit.ss),
-        cutoff = cutoff, first_calls = as.numeric(first.calls), lower_cutoff = lower.cutoff,
+        cutoff = cutoff, first_calls = as.numeric(first.calls),
+        lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
         linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
         as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
         as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
