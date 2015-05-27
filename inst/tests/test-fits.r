@@ -366,4 +366,9 @@ test_that("first-call signal strength models", {
                    6.24489981755584)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
+    ## Testing for an error if identity ss.link is not used.
+    expect_that(fit <-  admbsecr(capt = capt, traps = traps, mask = mask,
+                     ss.opts = list(cutoff = cutoff,
+                         lower.cutoff = lower.cutoff, ss.link = "log"), hess = FALSE),
+                throws_error("First-call models are only implemented for ss.link = \"identity\"."))
 })
