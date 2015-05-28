@@ -36,8 +36,10 @@ vignette. To view, run \texttt{vignette("data-structure")}.
 
 Detectors that are deployed for acoustic surveys are typically capable
 of collecting two types of auxiliary information: Signal strengths and
-times of arrival. The \texttt{admbsecr} package allows for these data
-to be incorporated into SECR models.
+times of arrival. In some situations, estimated distances and
+directions to sound sources may be collected as well. The
+\texttt{admbsecr} package allows for these data to be incorporated
+into SECR models.
 
 The \texttt{capt} argument is a list with a mandatory component
 \texttt{bincapt} (the binary capture histories), and a range of
@@ -147,7 +149,7 @@ print(table.first, type = "latex", include.rownames = FALSE,
 
 \section{Individuals as detection units}
 
-There are two main disadvantages of defining individuals at the unit
+There are two main disadvantages of defining individuals as the unit
 of detection. First, it must be possible to attribute every call to a
 particular animal, and, for some species, individuals cannot be
 recognised from their calls. Second, this typically precludes the use
@@ -224,16 +226,17 @@ and a relationship due to spherical spreading of sound energy,
   E(Y) = \beta_0 - 10 \, \log_{10}(d^2) + \beta_1(d - 1). \label{eq:ss-link-spherical}
 \end{equation}
   
-A considerable disadvantage is that analysing call-based capture
-histories results in an estimate of \emph{call} density (i.e., calls
-per unit time, per unit area), while it is usually \emph{animal}
-density that is of interest. The methodology of \sct{Stevenson2015}
-can be used to obtain point and variance estimates of animal density,
-however it is necessary to collect call rate data independently of the
-acoustic survey. Not only does this increase the amount of fieldwork
-required, but to avoid bias these call rate data must be collected at
-the same time and location as the acoustic survey in case there is any
-spatial or temporal heterogeneity in call rates.
+A considerable disadvantage of using calls as detection units is that
+analysing call-based capture histories results in an estimate of
+\emph{call} density (i.e., calls per unit time, per unit area), while
+it is usually \emph{animal} density that is of interest. The
+methodology of \sct{Stevenson2015} can be used to obtain point and
+variance estimates of animal density, however it is necessary to
+collect call rate data independently of the acoustic survey. Not only
+does this increase the amount of fieldwork required, but to avoid bias
+these call rate data must be collected at the same time and location
+as the acoustic survey in case there is any spatial or temporal
+heterogeneity in call rates.
 
 \sct{Stevenson2015} estimated density of the Cape Peninsula moss frog
 \emph{Arthroleptella lightfooti} using this approach. The data can be
@@ -270,10 +273,11 @@ relationship in Equation \eqref{eq:ss-link-log}. Equation
 be used by setting \texttt{ss.link = "spherical"}. By default a linear
 relationship (\eqref{eq:ss-link-identity}) is used.
 
-A simulation approach is currently the only appropriate way of
-obtaining variance estimates for these data \scp{Stevenson2015}, and
-this can be carried out using the \texttt{boot.admbsecr()}
-function. For example,
+Because multiple calls from the same individual may be heard, call
+source locations are not all indpendent, and as a result a simulation
+approach is currently the only appropriate way of obtaining variance
+estimates for these data \scp{Stevenson2015}, and this can be carried
+out using the \texttt{boot.admbsecr()} function. For example,
 <<lightfooti-code-2, eval = FALSE, tidy = FALSE>>=
 lightfooti.boot <- boot.admbsecr(lightfooti.fit, N = 10, n.cores = 4)
 @ 
@@ -294,10 +298,13 @@ may be implemented in a future version of \texttt{admbsecr}.
 \section{First calls as detection units}
 
 In the absence of existing methodology capable of estimating animal
-density for call-based capture histories, one may instead elect to
-define first calls as detected units. In their analysis of the
-ovenbird \emph{Seiurus aurocapilla}, \sct{Dawson2009} used the
-following protocol to decide which calls to include in analysis:
+density for call-based capture histories alone, one may instead elect
+to define first calls as detected units. This allows one to use
+call-level auxiliary data of the sort discussed above, without the
+need for estimates of call rate to estimate individual abundance and
+density. In their analysis of the ovenbird \emph{Seiurus aurocapilla},
+\sct{Dawson2009} used the following protocol to decide which calls to
+include in analysis:
 \begin{enumerate}
 \item Carry out an acoustic survey.
 \item Manually allocate calls to individuals.
@@ -398,9 +405,9 @@ signal strength detection function described above. As $\beta_2$
 increases the call becomes less and less detectable when $B \ne 0$,
 and in particular when $B \approx \pi$.
 
-Note that the model does not require knowledge of the directions calls
-were emitted in. These directions can be estimated from the data,
-though this performs best when either:
+Note that the model does not require knowledge of the directions in
+which calls were emitted. These directions can be estimated from the
+data, though this performs best when either:
 \begin{itemize}
 \item The detector array contains a dense grid of detectors, or
 \item Both signal strengths and times of arrival have been collected.
