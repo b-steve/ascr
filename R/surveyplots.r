@@ -34,7 +34,7 @@ show.survey <- function(fit, ...){
 #' show.detsurf(example$fits$simple.hn)
 #'
 #' @export
-show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show.labels = TRUE, ...){
+show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show.labels = TRUE, add = FALSE, ...){
     p.det <- p.dot(fit)
     mask <- get.mask(fit)
     traps <- get.traps(fit)
@@ -77,8 +77,10 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show
                            pmat = perspmat), pch = 16, col = "red")
         }
     } else {
-        plot(fit$args$mask, type = "n")
-        points(fit$args$traps, col = "red", pch = 4, lwd = 2)
+        if (!add){
+            plot(fit$args$mask, type = "n")
+            points(fit$args$traps, col = "red", pch = 4, lwd = 2)
+        }
         if (is.null(levels)){
             levels <- pretty(range(z, finite = TRUE), 10)
         }
