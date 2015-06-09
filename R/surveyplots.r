@@ -22,13 +22,19 @@ show.survey <- function(fit, ...){
 #' \link{admbsecr}.
 #'
 #' @inheritParams locations
-#' @param ... Arguments to be passed to \link{plot}.
+#' @param surface Logical, if \code{TRUE} a 3D detection surface is
+#' plotted over the mask point locations, otherwise a contour plot is
+#' shown.
+#' @param col The colour of the plotted contours.
+#' @param show.labels Logical, if \code{TRUE}, contours are labelled
+#' with the appropriate probability.
+#' @param ... Arguments to be passed to \link{persp}.
 #'
 #' @examples
 #' show.detsurf(example$fits$simple.hn)
 #'
 #' @export
-show.detsurf <- function(fit, ...){
+show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show.labels = TRUE, ...){
     p.det <- p.dot(fit)
     mask <- get.mask(fit)
     traps <- get.traps(fit)
@@ -45,29 +51,39 @@ show.detsurf <- function(fit, ...){
         z[index.x, index.y] <- p.det[i]
     }
     ## Plotting surface.
-    perspmat <- persp(x = unique.x, y = unique.y, z = z, zlim = c(0, 1),
-                      zlab = "", xlab = "", ylab = "", shade = 0.75,
-                      col = "lightblue", theta = 30, phi = 30, border = NA,
-                      box = TRUE, axes = FALSE, ticktype = "detailed", ...)
-    ## Plotting z-axis.
-    y.range <- diff(range(mask[, 2]))
-    tick.start <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2),
-                          z = c(0, 1), pmat = perspmat)
-    tick.end <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.025*y.range,
-                        z = c(0, 1), pmat = perspmat)
-    segments(x0 = tick.start$x, y0 = tick.start$y, x1 = tick.end$x, y1 = tick.end$y)
-    label.pos <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.05*y.range,
-                         z = c(0, 1), pmat = perspmat)
-    text(x = label.pos$x, y = label.pos$y, labels = c(0, 1), srt = 15)
-    title.pos <- label.pos <- trans3d(x = min(mask[, 1]), y = min(mask[, 2]) - 0.1*y.range,
-                                      z = c(0.6), pmat = perspmat)
-    text(x = title.pos$x, y = title.pos$y, labels = "Detection probability", srt = 105)
-    for (i in 1:n.traps){
-        ds <- distances(traps[i, , drop = FALSE], mask)
-        nearest.mpoint <- which(ds == min(ds))[1]
-        nearest.z <- p.det[nearest.mpoint]
-        points(trans3d(x = traps[i, 1], y = traps[i, 2], z = nearest.z,
-                       pmat = perspmat), pch = 16, col = "red")
+    if (surface){
+        perspmat <- persp(x = unique.x, y = unique.y, z = z, zlim = c(0, 1),
+                          zlab = "", xlab = "", ylab = "", shade = 0.75,
+                          col = "lightblue", theta = 30, phi = 30, border = NA,
+                          box = TRUE, axes = FALSE, ticktype = "detailed", ...)
+        ## Plotting z-axis.
+        y.range <- diff(range(mask[, 2]))
+        tick.start <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2),
+                              z = c(0, 1), pmat = perspmat)
+        tick.end <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.025*y.range,
+                            z = c(0, 1), pmat = perspmat)
+        segments(x0 = tick.start$x, y0 = tick.start$y, x1 = tick.end$x, y1 = tick.end$y)
+        label.pos <- trans3d(x = rep(min(mask[, 1]), 2), y = rep(min(mask[, 2]), 2) - 0.05*y.range,
+                             z = c(0, 1), pmat = perspmat)
+        text(x = label.pos$x, y = label.pos$y, labels = c(0, 1), srt = 15)
+        title.pos <- label.pos <- trans3d(x = min(mask[, 1]), y = min(mask[, 2]) - 0.1*y.range,
+                                          z = c(0.6), pmat = perspmat)
+        text(x = title.pos$x, y = title.pos$y, labels = "Detection probability", srt = 105)
+        for (i in 1:n.traps){
+            ds <- distances(traps[i, , drop = FALSE], mask)
+            nearest.mpoint <- which(ds == min(ds))[1]
+            nearest.z <- p.det[nearest.mpoint]
+            points(trans3d(x = traps[i, 1], y = traps[i, 2], z = nearest.z,
+                           pmat = perspmat), pch = 16, col = "red")
+        }
+    } else {
+        plot(fit$args$mask, type = "n")
+        points(fit$args$traps, col = "red", pch = 4, lwd = 2)
+        if (is.null(levels)){
+            levels <- pretty(range(z, finite = TRUE), 10)
+        }
+        contour(x = unique.x, y = unique.y, z = z, levels = levels,
+                col = col, drawlabels = show.labels, add = TRUE)
     }
 }
 
