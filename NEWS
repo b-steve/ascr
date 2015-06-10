@@ -1,3 +1,10 @@
+admbsecr 1.1.4
+--------------
+
+* Added contours argument to show.detprob, allowing the detection
+  probability surface to be plotted as contours rather than a 3D
+  surface.
+
 admbsecr 1.1.3
 --------------
 
