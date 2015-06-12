@@ -12,13 +12,6 @@ The aim of admbsecr is to bridge both of these gaps. Using the R function `admbs
 
 * Run the script found [here](https://raw.githubusercontent.com/b-steve/admbsecr/master/inst/scripts/install.r).
 
-* Alternatively, for the development version (i.e., this repository; not necessarily stable), install the devtools package and run: 
-```
-library(devtools)
-install_github("b-steve/admbsecr") 
-```
-The tools required to build R packages locally need to be installed for this option. For example, Windows users will need [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
-
 * Load the package by running
 ```
 library(admbsecr)
