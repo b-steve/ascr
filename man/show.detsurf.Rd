@@ -4,12 +4,28 @@
 \alias{show.detsurf}
 \title{Plotting the detection probability surface}
 \usage{
-show.detsurf(fit, ...)
+show.detsurf(fit, surface = TRUE, col = "black", levels = NULL,
+  show.labels = TRUE, add = FALSE, ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
 
-\item{...}{Arguments to be passed to \link{plot}.}
+\item{surface}{Logical, if \code{TRUE} a 3D detection surface is
+plotted over the mask point locations, otherwise a contour plot is
+shown.}
+
+\item{col}{The colour of the plotted contours.}
+
+\item{levels}{A numeric vector giving the values to be associated
+with the plotted contours.}
+
+\item{show.labels}{Logical, if \code{TRUE}, contours are labelled
+with the appropriate probability.}
+
+\item{add}{Logical, if \code{TRUE}, contours will be added to an
+existing plot.}
+
+\item{...}{Arguments to be passed to \link{persp}.}
 }
 \description{
 Plots the detection probability surface, based on trap locations

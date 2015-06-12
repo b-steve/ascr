@@ -7,7 +7,7 @@
 sim.capt(fit = NULL, traps = NULL, mask = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
   call.freqs = NULL, freq.dist = "edf", sound.speed = 330,
-  test.detfn = FALSE, first.only = FALSE)
+  test.detfn = FALSE, first.only = FALSE, keep.locs = FALSE)
 }
 \arguments{
 \item{fit}{A fitted \code{admbsecr} model object which provides the
@@ -66,6 +66,14 @@ defaults to 330 (the speed of sound in air). Only used when
 function to aid debugging.}
 
 \item{first.only}{Only keep the first detection for each individual.}
+
+\item{keep.locs}{Logical, if \code{TRUE}, the locations of
+individuals in the simulated population are retained. In this case,
+the capture histories and auxiliary information are kept in a
+component \code{capt} of the returned list, locations of detected
+individuals are kept in a component \code{capt.locs}, and locations
+of all individuals in the population are kept in a component
+\code{popn.locs}.}
 }
 \value{
 A list with named components, each corresponding to a data
