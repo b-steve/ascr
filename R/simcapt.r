@@ -67,6 +67,13 @@
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
 #' function to aid debugging.
 #' @param first.only Only keep the first detection for each individual.
+#' @param keep.locs Logical, if \code{TRUE}, the locations of
+#' individuals in the simulated population are retained. In this case,
+#' the capture histories and auxiliary information are kept in a
+#' component \code{capt} of the returned list, locations of detected
+#' individuals are kept in a component \code{capt.locs}, and locations
+#' of all individuals in the population are kept in a component
+#' \code{popn.locs}.
 #' @inheritParams admbsecr
 #'
 #' @return A list with named components, each corresponding to a data
@@ -90,7 +97,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
                      pars = NULL, ss.opts = NULL, call.freqs = NULL,
                      freq.dist = "edf", sound.speed = 330, test.detfn = FALSE,
-                     first.only = FALSE){
+                     first.only = FALSE, keep.locs = FALSE){
     ## Some error checking.
     if (any(infotypes == "ss")){
         stop("Signal strength information is simulated by setting argument 'detfn' to \"ss\".")
@@ -151,6 +158,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                 directional <- TRUE
             } else {
                 directional <- FALSE
+                pars$b2.ss <- 0
             }
         } else if (directional & !("b2.ss" %in% names(pars))){
             stop("Parameter 'b2.ss' must be specified for a directional calling model.")
@@ -165,6 +173,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                 het.source <- TRUE
             } else {
                 het.source <- FALSE
+                pars$sigma.b0.ss <- 0
             }
         } else if (het.source & !("sigma.b0.ss" %in% names(pars))){
             stop("Parameter 'sigma.b0.ss' must be specified for a model with heterogeneity in source strengths'.")
@@ -432,6 +441,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     }
     if (sim.mrds){
         out$mrds <- capt.dists
+    }
+    if (keep.locs){
+        out <- list(capt = out, capt.locs = capt.popn, popn.locs = popn)
     }
     out
 }
