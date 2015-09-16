@@ -185,7 +185,7 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
 
 #' Extract standard errors from a bootstrapped admbsecr model object
 #'
-#' Extracts standard errors for parameters in a model fitted using
+#' Extracts standard errors for parameters of a model fitted using
 #' \link[admbsecr]{admbsecr}, with a bootstrap procedure carried out
 #' using \link[admbsecr]{boot.admbsecr}.
 #'
