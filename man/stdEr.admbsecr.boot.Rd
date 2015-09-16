@@ -21,7 +21,7 @@ likelihood over.}
 \item{...}{Other parameters (for S3 generic compatibility).}
 }
 \description{
-Extracts standard errors for parameters in a model fitted using
+Extracts standard errors for parameters of a model fitted using
 \link[admbsecr]{admbsecr}, with a bootstrap procedure carried out
 using \link[admbsecr]{boot.admbsecr}.
 }
