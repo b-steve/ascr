@@ -283,7 +283,7 @@ print.summary.admbsecr <- function(x, ...){
     cat("Detection function:", detfn, "\n")
     cat("Information types: ")
     cat(infotypes, sep = ", ")
-    cat("\n", "\n", "Coefficients:", "\n")
+    cat("\n", "\n", "Parameters:", "\n")
     printCoefmat(mat, na.print = "")
 }
 
