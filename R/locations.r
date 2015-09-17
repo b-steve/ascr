@@ -211,7 +211,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                 f.combined <- f.combined*f.bearing
             }
             if (plot.arrows){
-                show.arrows(fit, i, arrow.length)
+                show.arrows(fit, i, arrow.length, trap.col)
             }
         }
         ## Contour due to estimated distances.
@@ -227,7 +227,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                 f.combined <- f.combined*f.dist
             }
             if (plot.circles){
-                show.circles(fit, i)
+                show.circles(fit, i, trap.col)
             }
         }
         ## Contour due to measured times of arrival.
@@ -383,7 +383,7 @@ toa.density <- function(fit, id, mask, dists){
 }
 
 ## Plots arrows on traps where a detection was made, showing estimated bearing.
-show.arrows <- function(fit, id, arrow.length = NULL){
+show.arrows <- function(fit, id, arrow.length = NULL, trap.col){
     xlim <- par("usr")[c(1, 2)]
     ylim <- par("usr")[c(3, 4)]
     if (is.null(arrow.length)){
@@ -399,7 +399,7 @@ show.arrows <- function(fit, id, arrow.length = NULL){
 }
 
 ## Plots circles around traps where a detection was made, showing estimated distance.
-show.circles <- function(fit, id){
+show.circles <- function(fit, id, trap.col){
     capt <- fit$args$capt$bincapt[id, ]
     dist.capt <- fit$args$capt$dist[id, capt == 1]
     trappos <- get.traps(fit)[which(capt == 1), , drop = FALSE]
