@@ -30,14 +30,14 @@ In order to carry out analysis with \texttt{admbsecr}, three objects are require
 
 Data input for the \texttt{admbsecr} package is designed to work
 similarly to the procedures used by the \texttt{secr} package. The
-functions \texttt{convert.capt.admbsecr()} and
-\texttt{convert.capt.secr()} convert capture history objects used by
+functions \texttt{convert.capt.to.admbsecr()} and
+\texttt{convert.capt.to.secr()} convert capture history objects used by
 \texttt{secr} to objects suitable for analysis with \texttt{admbsecr},
 and vice versa. For example, \texttt{signalCH} is an exported data
 object from the \texttt{secr} package. Appropriate \texttt{capt} and
 \texttt{traps} objects can be generated using
 <<convert, eval = FALSE, tidy = FALSE>>=
-ovenbird.capt <- convert.capt.admbsecr(signalCH)
+ovenbird.capt <- convert.capt.to.admbsecr(signalCH)
 ovenbird.traps <- traps(signalCH)
 @ 
 

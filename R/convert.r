@@ -164,27 +164,26 @@ convert.mask <- function(mask){
 #' packages.
 #'
 #' @param capt A \code{secr} capture history object for
-#' \code{convert.capt.admbsecr}, or an \code{admbsecr} capture history
-#' object for \code{convert.capt.secr}.
+#' \code{convert.capt.to.admbsecr}, or an \code{admbsecr} capture history
+#' object for \code{convert.capt.to.secr}.
 #' @param capthist Logical, if \code{TRUE}, a \code{capthist} object
 #' is returned. Otherwise a data frame is returned, which is suitable
 #' for the \code{captures} argument to the \link{make.capthist}
 #' function.
-#' @param cutoff A character string, either \code{"identity"} or
-#' \code{"log"}, which specifies the link function for the signal
-#' strength detection function.
+#' @param cutoff The signal strength threshold for detection, if
+#' required.
 #' @inheritParams admbsecr
 #'
 #' @return A capture history object appropriate for analysis using
 #' either the \code{admbsecr} or the \code{secr} package.
-#' @examples capt <- convert.capt.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
+#' @examples capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 #' 
 #' @name convert.capt
 NULL
 
 #' @rdname convert.capt
 #' @export
-convert.capt.admbsecr <- function(capt){
+convert.capt.to.admbsecr <- function(capt){
     bincapt <- capt[, 1, ]
     nr <- nrow(bincapt)
     nc <- ncol(bincapt)
@@ -197,7 +196,7 @@ convert.capt.admbsecr <- function(capt){
 
 #' @rdname convert.capt
 #' @export
-convert.capt.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
+convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
     n <- nrow(capt$bincapt)
     n.dets <- sum(capt$bincapt)
     session <- rep(1, n.dets)
