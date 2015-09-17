@@ -189,12 +189,14 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
 #' \link[admbsecr]{admbsecr}, with a bootstrap procedure carried out
 #' using \link[admbsecr]{boot.admbsecr}.
 #'
+#' @param mce Logical, if \code{TRUE} Monte Carlo error for the
+#' standard errors is also returned.
 #' @inheritParams coef.admbsecr
 #'
 #' @method stdEr admbsecr.boot
 #'
 #' @export
-stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
+stdEr.admbsecr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
@@ -202,6 +204,7 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
     if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
+    mces <- get.mce(object, estimate = "se")
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$boot$se[which.linked]
@@ -213,6 +216,12 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", ...){
         out <- c(out, recursive = TRUE)
     } else {
         out <- object$boot$se[pars]
+    }
+    if (mce){
+        out.vec <- out
+        out <- cbind(out.vec, mces[names(out)])
+        rownames(out) <- names(out.vec)
+        colnames(out) <- c("Std. Error", "MCE")
     }
     out
 }

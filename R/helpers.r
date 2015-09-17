@@ -365,7 +365,7 @@ scaled.log.link <- function(x){
 #' @seealso \link{stdEr.admbsecr.boot} for standard errors.
 #' @seealso \link{get.bias} for estimated biases.
 #'
-#' @export
+#' 
 get.mce <- function(fit, estimate){
     if (estimate == "bias"){
         out <- fit$boot$bias.mce
@@ -384,13 +384,14 @@ get.mce <- function(fit, estimate){
 #'
 #' @inheritParams locations
 #' @inheritParams coef.admbsecr
+#' @inheritParams stdEr.admbsecr.boot
 #'
 #' @seealso \link{boot.admbsecr} for the bootstrap procedure.
 #' @seealso \link{get.mce} for Monte Carlo error the biases are
 #' subject to.
 #'
 #' @export
-get.bias <- function(fit, pars = "fitted"){
+get.bias <- function(fit, pars = "fitted", mce = FALSE){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
@@ -398,6 +399,7 @@ get.bias <- function(fit, pars = "fitted"){
     if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
+    mces <- get.mce(fit, estimate = "bias")
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- fit$boot$bias[which.linked]
@@ -409,6 +411,12 @@ get.bias <- function(fit, pars = "fitted"){
         out <- c(out, recursive = TRUE)
     } else {
         out <- fit$boot$bias[pars]
+    }
+    if (mce){
+        out.vec <- out
+        out <- cbind(out.vec, mces[names(out)])
+        rownames(out) <- names(out.vec)
+        colnames(out) <- c("Std. Error", "MCE")
     }
     out
 }
