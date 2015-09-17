@@ -2,18 +2,18 @@
 % Please edit documentation in R/convert.r
 \name{convert.capt}
 \alias{convert.capt}
-\alias{convert.capt.admbsecr}
-\alias{convert.capt.secr}
+\alias{convert.capt.to.admbsecr}
+\alias{convert.capt.to.secr}
 \title{Capture history conversion.}
 \usage{
-convert.capt.admbsecr(capt)
+convert.capt.to.admbsecr(capt)
 
-convert.capt.secr(capt, traps, capthist = TRUE, cutoff = NULL)
+convert.capt.to.secr(capt, traps, capthist = TRUE, cutoff = NULL)
 }
 \arguments{
 \item{capt}{A \code{secr} capture history object for
-\code{convert.capt.admbsecr}, or an \code{admbsecr} capture history
-object for \code{convert.capt.secr}.}
+\code{convert.capt.to.admbsecr}, or an \code{admbsecr} capture history
+object for \code{convert.capt.to.secr}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or detector).}
@@ -23,9 +23,8 @@ is returned. Otherwise a data frame is returned, which is suitable
 for the \code{captures} argument to the \link{make.capthist}
 function.}
 
-\item{cutoff}{A character string, either \code{"identity"} or
-\code{"log"}, which specifies the link function for the signal
-strength detection function.}
+\item{cutoff}{The signal strength threshold for detection, if
+required.}
 }
 \value{
 A capture history object appropriate for analysis using
@@ -37,6 +36,6 @@ structures required for the \code{admbsecr} and \code{secr}
 packages.
 }
 \examples{
-capt <- convert.capt.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
+capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 }
 
