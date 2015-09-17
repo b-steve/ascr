@@ -279,7 +279,7 @@ print.summary.admbsecr <- function(x, ...){
     detfn <- c(hn = "Halfnormal", hr = "Hazard rate", th = "Threshold",
                lth = "Log-link threshold", ss = "Signal strength")[x$detfn]
     infotypes <- c(bearing = "Bearings", dist = "Distances", ss = "Signal strengths",
-                   toa = "Time of arrival")[x$infotypes]
+                   toa = "Times of arrival")[x$infotypes]
     cat("Detection function:", detfn, "\n")
     cat("Information types: ")
     cat(infotypes, sep = ", ")
