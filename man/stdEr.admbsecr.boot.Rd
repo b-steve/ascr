@@ -4,7 +4,7 @@
 \alias{stdEr.admbsecr.boot}
 \title{Extract standard errors from a bootstrapped admbsecr model object}
 \usage{
-\method{stdEr}{admbsecr.boot}(object, pars = "fitted", ...)
+\method{stdEr}{admbsecr.boot}(object, pars = "fitted", mce = FALSE, ...)
 }
 \arguments{
 \item{object}{A fitted model from \link[admbsecr]{admbsecr}.}
@@ -17,6 +17,9 @@ functions of these parameters (e.g., the effective survey area or
 animal density from an acoustic survey), and \code{"linked"}
 corresponds to the parameters AD Model Builder has maximised the
 likelihood over.}
+
+\item{mce}{Logical, if \code{TRUE} Monte Carlo error for the
+standard errors is also returned.}
 
 \item{...}{Other parameters (for S3 generic compatibility).}
 }
