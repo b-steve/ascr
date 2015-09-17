@@ -416,7 +416,7 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
         out.vec <- out
         out <- cbind(out.vec, mces[names(out)])
         rownames(out) <- names(out.vec)
-        colnames(out) <- c("Std. Error", "MCE")
+        colnames(out) <- c("Bias", "MCE")
     }
     out
 }
