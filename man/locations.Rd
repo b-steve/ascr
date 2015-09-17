@@ -7,11 +7,11 @@
 locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
   nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
-  "purple", bearing = "green", dist = "brown", toa = "blue"), lty = 1,
-  show.labels = TRUE, plot.contours = TRUE, plot.estlocs = FALSE,
-  plot.arrows = "bearing" \%in\% fit$infotypes, plot.circles = "dist" \%in\%
-  fit$infotypes, arrow.length = NULL, show.legend = !add,
-  show.axes = TRUE, add = FALSE)
+  "purple", ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
+  lty = 1, trap.col = "red", show.labels = TRUE, plot.contours = TRUE,
+  plot.estlocs = FALSE, plot.arrows = "bearing" \%in\% fit$infotypes,
+  plot.circles = "dist" \%in\% fit$infotypes, arrow.length = NULL,
+  show.legend = !add, show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
@@ -67,6 +67,9 @@ character string such as \code{"red"}, or a call to the function
 plotted, it will be plotted in black.}
 
 \item{lty}{The line type of the contours; see \link{par}.}
+
+\item{trap.col}{The colour of the points representing detector
+locations.}
 
 \item{show.labels}{Logical, if \code{TRUE}, contours are labelled
 with the appropriate probability density (if \code{density} is

@@ -89,7 +89,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                       ylim = range(mask[, 2]), mask = get.mask(fit),
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
-                          bearing = "green", dist = "brown", toa = "blue"),
+                          ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
                       lty = 1, trap.col = "red",
                       show.labels = TRUE, plot.contours = TRUE,
                       plot.estlocs = FALSE,
@@ -144,8 +144,8 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     if ("all" %in% infotypes){
         infotypes <- c(fit$infotypes, "capt", "combined"[any.infotypes])
     }
-    ## If "ss" is an infotype, set to "capt".
-    infotypes[infotypes == "ss"] <- "capt"
+    ## If "ss" is an infotype, set to "capt". OR NOT.
+    ##infotypes[infotypes == "ss"] <- "capt"
     infotypes <- unique(infotypes)
     ## Setting colour to "black" if there is only one contour to be plotted.
     if (missing(cols)){
@@ -153,8 +153,8 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             cols[infotypes] <- "black"
         }
     }
-    plot.types <- c("combined", "capt", "bearing", "dist", "toa") %in% infotypes
-    names(plot.types) <- c("combined", "capt", "bearing", "dist", "toa")
+    plot.types <- c("combined", "capt", "ss", "bearing", "dist", "toa") %in% infotypes
+    names(plot.types) <- c("combined", "capt", "ss", "bearing", "dist", "toa")
     ## Setting all to TRUE if combined is used.
     ## Some error catching.
     for (i in c("bearing", "dist", "toa")){
@@ -180,19 +180,30 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
         }
         capt <- fit$args$capt$bincapt[i, ]
         ## Contour due to capture history.
-        if (plot.types["capt"] | plot.types["combined"]){
+        if (plot.types["capt"] | plot.types["combined"] | plot.types["ss"]){
+            det.pars <- get.par(fit, fit$detpars, as.list = TRUE)
             if (fit$fit.types["ss"]){
-                f.capt <- ss.density(fit, i, mask, dists)
-            } else {
-                det.pars <- get.par(fit, fit$detpars, as.list = TRUE)
-                det.probs <- calc.detfn(dists, detfn, det.pars, ss.link)
-                f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
+                det.pars$cutoff <- fit$args$ss.opts$cutoff
             }
+            det.probs <- calc.detfn(dists, detfn, det.pars, ss.link)
+            f.capt <- colProds(det.probs*capt + (1 - det.probs)*(1 - capt))
             if (plot.types["capt"]){
                 show.contour(mask = mask, dens = f.x*f.capt, levels = levels,
                              nlevels = nlevels, prob = !density, col = cols$capt,
                              lty = lty, show.labels = show.labels,
                              plot.contours = plot.contours)
+            }
+            if (fit$fit.types["ss"]){
+                f.ss.capt <- ss.density(fit, i, mask, dists)
+                f.ss <- f.ss.capt/f.capt
+                ## Such a hack, sorry, this keeps f.combined correct, below.
+                f.capt <- f.ss.capt
+                if (plot.types["ss"]){
+                    show.contour(mask = mask, dens = f.x*f.ss, levels = levels,
+                                 nlevels = nlevels, prob = !density, col = cols$ss,
+                                 lty = lty, show.labels = show.labels,
+                                 plot.contours = plot.contours)
+                }
             }
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.capt
