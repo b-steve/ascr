@@ -261,9 +261,11 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
         }
     }
     ## Plotting traps, and circles around them.
-    points(traps, col = trap.col, pch = 4, lwd = 2)
-    if (length(id) == 1){
-        points(traps[capt == 1, , drop = FALSE], col = trap.col, cex = 2, lwd = 2)
+    if (!add){
+        points(traps, col = trap.col, pch = 4, lwd = 2)
+        if (length(id) == 1){
+            points(traps[capt == 1, , drop = FALSE], col = trap.col, cex = 2, lwd = 2)
+        }
     }
     ## Making legend.
     if (show.legend){
