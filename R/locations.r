@@ -46,6 +46,8 @@
 #' \link[grDevices]{rgb}). By default, if only one contour is to be
 #' plotted, it will be plotted in black.
 #' @param lty The line type of the contours; see \link{par}.
+#' @param trap.col The colour of the points representing detector
+#' locations.
 #' @param show.labels Logical, if \code{TRUE}, contours are labelled
 #' with the appropriate probability density (if \code{density} is
 #' \code{TRUE}), or the corresponding probability of the individual
@@ -88,7 +90,8 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
                           bearing = "green", dist = "brown", toa = "blue"),
-                      lty = 1, show.labels = TRUE, plot.contours = TRUE,
+                      lty = 1, trap.col = "red",
+                      show.labels = TRUE, plot.contours = TRUE,
                       plot.estlocs = FALSE,
                       plot.arrows = "bearing" %in% fit$infotypes,
                       plot.circles = "dist" %in% fit$infotypes,
@@ -258,9 +261,9 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
         }
     }
     ## Plotting traps, and circles around them.
-    points(traps, col = "red", pch = 4, lwd = 2)
+    points(traps, col = trap.col, pch = 4, lwd = 2)
     if (length(id) == 1){
-        points(traps[capt == 1, , drop = FALSE], col = "red", cex = 2, lwd = 2)
+        points(traps[capt == 1, , drop = FALSE], col = trap.col, cex = 2, lwd = 2)
     }
     ## Making legend.
     if (show.legend){
@@ -392,7 +395,7 @@ show.arrows <- function(fit, id, arrow.length = NULL){
     sinb <- sin(bearing.capt)*arrow.length
     cosb <- cos(bearing.capt)*arrow.length
     arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
-           length = 0.1, col = "red", lwd = 2)
+           length = 0.1, col = trap.col, lwd = 2)
 }
 
 ## Plots circles around traps where a detection was made, showing estimated distance.
@@ -403,7 +406,7 @@ show.circles <- function(fit, id){
     for (i in 1:nrow(trappos)){
         centre <- trappos[i, ]
         radius <- dist.capt[i]
-        circles(centre, radius, col = "red", lwd = 2)
+        circles(centre, radius, col = trap.col, lwd = 2)
     }
 }
 
