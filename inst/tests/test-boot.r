@@ -21,12 +21,12 @@ test_that("simple model bootstrapping", {
     ## Monte Carlo error calculation.
     se.mces.test <- c(0.042142082322081, 0.0190421611021184, 99.0170655539726, 
                       0.10204528215025, 0.00173379575479256)
-    boot.se.mces <- get.mce(boot.fit, "se")
+    boot.se.mces <- admbsecr:::get.mce(boot.fit, "se")
     relative.error <- max(abs((boot.se.mces - se.mces.test)/se.mces.test))
     expect_that(relative.error < 1e-4, is_true())
     bias.mces.test <- c(0.0636401709223068, 0.0298418201304415, 158.490243744029, 
                         0.156547191920974, 0.00259993989006947)
-    boot.bias.mces <- get.mce(boot.fit, "bias")
+    boot.bias.mces <- admbsecr:::get.mce(boot.fit, "bias")
     relative.error <- max(abs((boot.bias.mces - bias.mces.test)/bias.mces.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Testing parallel bootstrap.
@@ -39,7 +39,7 @@ test_that("simple model bootstrapping", {
 
 test_that("bootstrapping helpers", {
     ## MCE extraction.
-    expect_that(get.mce(example$fits$boot.simple.hn, "se"),
+    expect_that(admbsecr:::get.mce(example$fits$boot.simple.hn, "se"),
                 equals(example$fits$boot.simple.hn$boot$se.mce))
     ## Variance-covariance matrix extraction.
     expect_that(sort(vcov(example$fits$boot.simple.hn, "all")),
