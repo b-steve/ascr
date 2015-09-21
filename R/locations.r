@@ -44,8 +44,10 @@
 #' provides the colour of the associated contour type (e.g., using a
 #' character string such as \code{"red"}, or a call to the function
 #' \link[grDevices]{rgb}). By default, if only one contour is to be
-#' plotted, it will be plotted in black.
-#' @param lty The line type of the contours; see \link{par}.
+#' plotted, it will be plotted in black. Alternatively, a vector with
+#' a single element, specifying the colour for all contours.
+#' @param ltys The line type of the contours, with the same required
+#' syntax as \code{cols}; see \link{par}.
 #' @param trap.col The colour of the points representing detector
 #' locations.
 #' @param show.labels Logical, if \code{TRUE}, contours are labelled
@@ -90,7 +92,9 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
                           ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
-                      lty = 1, trap.col = "red",
+                      ltys = list(combined = "solid", capt = "solid",
+                          ss = "solid", bearing = "solid", dist = "solid", toa = "solid"),
+                      trap.col = "red",
                       show.labels = TRUE, plot.contours = TRUE,
                       plot.estlocs = FALSE,
                       plot.arrows = "bearing" %in% fit$infotypes,
@@ -150,8 +154,25 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     ## Setting colour to "black" if there is only one contour to be plotted.
     if (missing(cols)){
         if (length(infotypes) == 1){
-            cols[infotypes] <- "black"
+            cols <- "black"
         }
+    }
+    if (missing(ltys)){
+        if (length(infotypes) == 1){
+            ltys <- "solid"
+        }
+    }
+    if (length(cols) == 1){
+        cols.save <- cols
+        cols <- vector(mode = "list", length = length(infotypes))
+        names(cols) <- infotypes
+        cols[infotypes] <- cols.save
+    }
+    if (length(ltys) == 1){
+        ltys.save <- ltys
+        ltys <- vector(mode = "list", length = length(infotypes))
+        names(ltys) <- infotypes
+        ltys[infotypes] <- ltys.save
     }
     plot.types <- c("combined", "capt", "ss", "bearing", "dist", "toa") %in% infotypes
     names(plot.types) <- c("combined", "capt", "ss", "bearing", "dist", "toa")
@@ -190,7 +211,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             if (plot.types["capt"]){
                 show.contour(mask = mask, dens = f.x*f.capt, levels = levels,
                              nlevels = nlevels, prob = !density, col = cols$capt,
-                             lty = lty, show.labels = show.labels,
+                             lty = ltys$capt, show.labels = show.labels,
                              plot.contours = plot.contours)
             }
             if (fit$fit.types["ss"]){
@@ -201,7 +222,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                 if (plot.types["ss"]){
                     show.contour(mask = mask, dens = f.x*f.ss, levels = levels,
                                  nlevels = nlevels, prob = !density, col = cols$ss,
-                                 lty = lty, show.labels = show.labels,
+                                 lty = ltys$ss, show.labels = show.labels,
                                  plot.contours = plot.contours)
                 }
             }
@@ -215,7 +236,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             if (plot.types["bearing"]){
                 show.contour(mask = mask, dens = f.x*f.bearing, levels = levels,
                              nlevels = nlevels, prob = !density, col = cols$bearing,
-                             lty = lty, show.labels = show.labels,
+                             lty = ltys$bearing, show.labels = show.labels,
                              plot.contours = plot.contours)
             }
             if (plot.types["combined"]){
@@ -231,7 +252,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             if (plot.types["dist"]){
                 show.contour(mask = mask, dens = f.x*f.dist, levels = levels,
                              nlevels = nlevels, prob = !density, col = cols$dist,
-                             lty = lty, show.labels = show.labels,
+                             lty = ltys$dist, show.labels = show.labels,
                              plot.contours = plot.contours)
             }
             if (plot.types["combined"]){
@@ -248,7 +269,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             if (plot.types["toa"]){
                 show.contour(mask = mask, dens = f.x*f.toa, levels = levels,
                              nlevels = nlevels, prob = !density, col = cols$toa,
-                             lty = lty, show.labels = show.labels,
+                             lty = ltys$toa, show.labels = show.labels,
                              plot.contours = plot.contours)
             }
             if (plot.types["combined"]){
@@ -259,7 +280,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
         if (plot.types["combined"]){
             show.contour(mask = mask, dens = f.combined, levels = levels,
                          nlevels = nlevels, prob = !density, col = cols$combined,
-                         lty = lty, show.labels = show.labels,
+                         lty = ltys$combined, show.labels = show.labels,
                          plot.contours = plot.contours)
         }
         if (plot.estlocs){
@@ -282,7 +303,8 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     if (show.legend){
         legend.labels <- infotypes
         legend.cols <- c(cols[infotypes], recursive = TRUE)
-        legend("topright", legend = infotypes, lty = lty, col = legend.cols, bg = "white")
+        legend.ltys <- c(ltys[infotypes], recursive = TRUE)
+        legend("topright", legend = infotypes, lty = legend.ltys, col = legend.cols, bg = "white")
     }
     invisible(TRUE)
 }
