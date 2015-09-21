@@ -776,6 +776,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     sv.link[names(fix)] <- fix
     auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
+    same.traplocs <- all(distances(traps, traps) == 0)
     ## Done in reverse so that D is calculated last (requires detfn parameters).
     ## D not moved to front as it should appear as the first parameter in any output.
     for (i in rev(seq(1, length(auto.names), length.out = length(auto.names)))){
@@ -784,7 +785,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                             detpar.names = detpar.names,
                                             mask = mask, traps = traps,
                                             sv = sv.link, ss.opts = ss.opts,
-                                            A = A)))
+                                            A = A, same.traplocs = same.traplocs)))
     }
     ## Converting start values to link scale.
     sv <- sv.link

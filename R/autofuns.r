@@ -3,25 +3,30 @@
 ## Not lifted from the secr package.
 ## Grabs the average recapture distance, or something.
 autosigma <- function(args){
-    capt <- args$capt
-    traps <- args$traps
-    bincapt <- capt$bincapt
-    ave.rc.dist <- function(x){
-        trap.ids <- which(x == 1)
-        if (length(trap.ids) > 1){
-            rc.locs <- traps[trap.ids, ]
-            rc.dists <- distances(rc.locs, rc.locs)
-            w <- length(rc.dists[rc.dists > 0])
-            out <- mean(rc.dists[rc.dists > 0])
-        } else {
-            out <- NA
-            w <- NA
+    if (args$same.traplocs){
+        out <- attr(args$mask, "buffer")/4
+    } else {
+        capt <- args$capt
+        traps <- args$traps
+        bincapt <- capt$bincapt
+        ave.rc.dist <- function(x){
+            trap.ids <- which(x == 1)
+            if (length(trap.ids) > 1){
+                rc.locs <- traps[trap.ids, ]
+                rc.dists <- distances(rc.locs, rc.locs)
+                w <- length(rc.dists[rc.dists > 0])
+                out <- mean(rc.dists[rc.dists > 0])
+            } else {
+                out <- NA
+                w <- NA
+            }
+            c(out, w)
         }
-        c(out, w)
+        mean.dists <- apply(bincapt, 1, ave.rc.dist)
+        mean.dists <- mean.dists[, !is.na(mean.dists[1, ])]
+        out <- sum(mean.dists[1, ]*mean.dists[2, ])/sum(mean.dists[2, ])
     }
-    mean.dists <- apply(bincapt, 1, ave.rc.dist)
-    mean.dists <- mean.dists[, !is.na(mean.dists[1, ])]
-    sum(mean.dists[1, ]*mean.dists[2, ])/sum(mean.dists[2, ])
+    out
 }
 
 ## Write own pdot function.
