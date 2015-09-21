@@ -8,10 +8,12 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
   nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
   "purple", ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
-  lty = 1, trap.col = "red", show.labels = TRUE, plot.contours = TRUE,
-  plot.estlocs = FALSE, plot.arrows = "bearing" \%in\% fit$infotypes,
-  plot.circles = "dist" \%in\% fit$infotypes, arrow.length = NULL,
-  show.legend = !add, show.axes = TRUE, add = FALSE)
+  ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing =
+  "solid", dist = "solid", toa = "solid"), trap.col = "red",
+  show.labels = TRUE, plot.contours = TRUE, plot.estlocs = FALSE,
+  plot.arrows = "bearing" \%in\% fit$infotypes, plot.circles = "dist" \%in\%
+  fit$infotypes, arrow.length = NULL, show.legend = !add,
+  show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
@@ -64,9 +66,11 @@ contour type (i.e., a subset of \code{"capt"}, \code{"bearing"},
 provides the colour of the associated contour type (e.g., using a
 character string such as \code{"red"}, or a call to the function
 \link[grDevices]{rgb}). By default, if only one contour is to be
-plotted, it will be plotted in black.}
+plotted, it will be plotted in black. Alternatively, a vector with
+a single element, specifying the colour for all contours.}
 
-\item{lty}{The line type of the contours; see \link{par}.}
+\item{ltys}{The line type of the contours, with the same required
+syntax as \code{cols}; see \link{par}.}
 
 \item{trap.col}{The colour of the points representing detector
 locations.}
