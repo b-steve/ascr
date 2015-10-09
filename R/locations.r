@@ -50,6 +50,8 @@
 #' syntax as \code{cols}; see \link{par}.
 #' @param trap.col The colour of the points representing detector
 #' locations.
+#' @param circle.traps Logical, if \code{TRUE} circles are plotted
+#' around traps that made a detection of the individual in question.
 #' @param show.labels Logical, if \code{TRUE}, contours are labelled
 #' with the appropriate probability density (if \code{density} is
 #' \code{TRUE}), or the corresponding probability of the individual
@@ -94,7 +96,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                           ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
                       ltys = list(combined = "solid", capt = "solid",
                           ss = "solid", bearing = "solid", dist = "solid", toa = "solid"),
-                      trap.col = "red",
+                      trap.col = "red", circle.traps = TRUE,
                       show.labels = TRUE, plot.contours = TRUE,
                       plot.estlocs = FALSE,
                       plot.arrows = "bearing" %in% fit$infotypes,
@@ -219,6 +221,8 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                 f.ss <- f.ss.capt/f.capt
                 ## Such a hack, sorry, this keeps f.combined correct, below.
                 f.capt <- f.ss.capt
+                ## Ughhhh sorry about this one.
+                f.ss[f.ss == Inf] <- 0
                 if (plot.types["ss"]){
                     show.contour(mask = mask, dens = f.x*f.ss, levels = levels,
                                  nlevels = nlevels, prob = !density, col = cols$ss,
@@ -241,9 +245,6 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
             }
             if (plot.types["combined"]){
                 f.combined <- f.combined*f.bearing
-            }
-            if (plot.arrows){
-                show.arrows(fit, i, arrow.length, trap.col)
             }
         }
         ## Contour due to estimated distances.
@@ -295,8 +296,16 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     ## Plotting traps, and circles around them.
     if (!add){
         points(traps, col = trap.col, pch = 4, lwd = 2)
-        if (length(id) == 1){
-            points(traps[capt == 1, , drop = FALSE], col = trap.col, cex = 2, lwd = 2)
+        if (circle.traps){
+            if (length(id) == 1){
+                points(traps[capt == 1, , drop = FALSE], col = trap.col, cex = 2, lwd = 2)
+            }
+        }
+    }
+    ## Plotting arrows for estimated bearings.
+    if (fit$fit.types["bearing"]){
+        if (plot.arrows){
+            show.arrows(fit, i, arrow.length, trap.col)
         }
     }
     ## Making legend.
