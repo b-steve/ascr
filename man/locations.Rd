@@ -10,10 +10,10 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   "purple", ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
   ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing =
   "solid", dist = "solid", toa = "solid"), trap.col = "red",
-  show.labels = TRUE, plot.contours = TRUE, plot.estlocs = FALSE,
-  plot.arrows = "bearing" \%in\% fit$infotypes, plot.circles = "dist" \%in\%
-  fit$infotypes, arrow.length = NULL, show.legend = !add,
-  show.axes = TRUE, add = FALSE)
+  circle.traps = TRUE, show.labels = TRUE, plot.contours = TRUE,
+  plot.estlocs = FALSE, plot.arrows = "bearing" \%in\% fit$infotypes,
+  plot.circles = "dist" \%in\% fit$infotypes, arrow.length = NULL,
+  show.legend = !add, show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
@@ -74,6 +74,9 @@ syntax as \code{cols}; see \link{par}.}
 
 \item{trap.col}{The colour of the points representing detector
 locations.}
+
+\item{circle.traps}{Logical, if \code{TRUE} circles are plotted
+around traps that made a detection of the individual in question.}
 
 \item{show.labels}{Logical, if \code{TRUE}, contours are labelled
 with the appropriate probability density (if \code{density} is
