@@ -423,7 +423,6 @@
 #' }
 #'
 #' @export
-#'
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      call.freqs = NULL, sound.speed = 330, local = FALSE,
@@ -1309,7 +1308,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 #' }
 #'
 #' @export
-#'
 par.admbsecr <- function(n.cores, ..., arg.list = NULL){
     if (n.cores > detectCores()){
         stop("The argument n.cores is greater than the number of available cores.")
