@@ -133,7 +133,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
     }
     ## Logical value for whether or not any additional information was
     ## used in model fit.
-    any.infotypes <- length(fit$infotypes[fit$infotypes != "ss"]) > 0
+    any.infotypes <- length(fit$infotypes) > 0
     ## Setting default infotypes.
     if (is.null(infotypes)){
         if (any.infotypes){
@@ -230,7 +230,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                                  plot.contours = plot.contours)
                 }
             }
-            if (plot.types["combined"]){
+            if (plot.types["combined"]){   
                 f.combined <- f.combined*f.capt
             }
         }
