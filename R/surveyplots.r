@@ -23,11 +23,16 @@ show.survey <- function(fit, ...){
 #'
 #' @inheritParams locations
 #' @param surface Logical, if \code{TRUE} a 3D detection surface is
-#' plotted over the mask point locations, otherwise a contour plot is
-#' shown.
+#'     plotted over the mask point locations, otherwise a contour plot
+#'     is shown.
 #' @param col The colour of the plotted contours.
+#' @param levels A numeric vector giving the values to be associated
+#'     with the plotted contours. Alternatively, this can be the
+#'     character string "esa", which results in a contour
+#'     encapsulating an area equal to the estimates effective sampling
+#'     area.
 #' @param show.labels Logical, if \code{TRUE}, contours are labelled
-#' with the appropriate probability.
+#'     with the appropriate probability.
 #' @param ... Arguments to be passed to \link{persp}.
 #'
 #' @examples
@@ -35,6 +40,16 @@ show.survey <- function(fit, ...){
 #'
 #' @export
 show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show.labels = TRUE, add = FALSE, ...){
+    match.esa <- FALSE
+    if (!surface){
+        if (is.character(levels)){
+            if (levels == "esa"){
+                match.esa <- TRUE
+            }
+        } else {
+            stop("If argument 'levels' is a character string, it must be \"esa\"")
+        }
+    }
     p.det <- p.dot(fit)
     mask <- get.mask(fit)
     traps <- get.traps(fit)
@@ -81,7 +96,12 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show
             plot(fit$args$mask, type = "n")
             points(fit$args$traps, col = "red", pch = 4, lwd = 2)
         }
-        if (is.null(levels)){
+        if (match.esa){
+            mask.area <- attr(get.mask(fit), "area")
+            esa <- coef(fit, "esa")
+            n.inside <- round(esa/mask.area)
+            levels <- sort(z, decreasing = TRUE)[n.inside]
+        } else if (is.null(levels)){
             levels <- pretty(range(z, finite = TRUE), 10)
         }
         contour(x = unique.x, y = unique.y, z = z, levels = levels,
