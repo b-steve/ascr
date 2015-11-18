@@ -39,7 +39,7 @@ show.survey <- function(fit, ...){
 #' show.detsurf(example$fits$simple.hn)
 #'
 #' @export
-show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show.labels = TRUE, add = FALSE, xlim = NULL, ylim = NULL, ...){
+show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show.labels = TRUE, add = FALSE, xlim = NULL, ylim = NULL, trap.col = "red", ...){
     match.esa <- FALSE
     if (!surface){
         if (!is.null(levels)){
@@ -91,12 +91,12 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show
             nearest.mpoint <- which(ds == min(ds))[1]
             nearest.z <- p.det[nearest.mpoint]
             points(trans3d(x = traps[i, 1], y = traps[i, 2], z = nearest.z,
-                           pmat = perspmat), pch = 16, col = "red")
+                           pmat = perspmat), pch = 16, col = trap.col)
         }
     } else {
         if (!add){
             plot(fit$args$mask, type = "n", xlim = xlim, ylim = ylim, asp = 1)
-            points(fit$args$traps, col = "red", pch = 4, lwd = 2)
+            points(fit$args$traps, col = trap.col, pch = 4, lwd = 2)
         }
         if (match.esa){
             mask.area <- attr(get.mask(fit), "area")
