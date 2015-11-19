@@ -94,12 +94,8 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, xlim
         }
     } else {
         if (!add){
-<<<<<<< HEAD
-            plot(fit$args$mask, type = "n", xlim = xlim, ylim = ylim, asp = 1)
-=======
             plot(fit$args$mask, type = "n", xlim = xlim, ylim = ylim, asp = 1,
                  xlab = "", ylab = "")
->>>>>>> 50e190b741d8800843ffc1859d64f311697d596a
             points(fit$args$traps, col = trap.col, pch = 4, lwd = 2)
         }
         if (match.esa){
