@@ -39,16 +39,15 @@ show.survey <- function(fit, ...){
 #' show.detsurf(example$fits$simple.hn)
 #'
 #' @export
-show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show.labels = TRUE, add = FALSE, xlim = NULL, ylim = NULL, trap.col = "red", ...){
+show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, xlim = NULL, ylim = NULL,
+                         show.labels = TRUE, trap.col = "red", add = FALSE, ...){
     match.esa <- FALSE
     if (!surface){
-        if (!is.null(levels)){
-            if (is.character(levels)){
-                if (levels == "esa"){
-                    match.esa <- TRUE
-                } else {
-                    stop("If argument 'levels' is a character string, it must be \"esa\"")
-                }
+        if (is.character(levels)){
+            if (levels == "esa"){
+                match.esa <- TRUE
+            } else {
+                stop("If argument 'levels' is a character string, it must be \"esa\"")
             }
         }
     }
@@ -95,7 +94,12 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, show
         }
     } else {
         if (!add){
+<<<<<<< HEAD
             plot(fit$args$mask, type = "n", xlim = xlim, ylim = ylim, asp = 1)
+=======
+            plot(fit$args$mask, type = "n", xlim = xlim, ylim = ylim, asp = 1,
+                 xlab = "", ylab = "")
+>>>>>>> 50e190b741d8800843ffc1859d64f311697d596a
             points(fit$args$traps, col = trap.col, pch = 4, lwd = 2)
         }
         if (match.esa){
