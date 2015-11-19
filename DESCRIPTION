@@ -33,4 +33,4 @@ Description: This package allows for the fitting of spatially explicit
 License: GPL
 URL: https://github.com/b-steve/admbsecr
 LazyData: true
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1
