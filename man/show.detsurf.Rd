@@ -5,22 +5,33 @@
 \title{Plotting the detection probability surface}
 \usage{
 show.detsurf(fit, surface = TRUE, col = "black", levels = NULL,
-  show.labels = TRUE, add = FALSE, ...)
+  xlim = NULL, ylim = NULL, show.labels = TRUE, trap.col = "red",
+  add = FALSE, ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
 
 \item{surface}{Logical, if \code{TRUE} a 3D detection surface is
-plotted over the mask point locations, otherwise a contour plot is
-shown.}
+plotted over the mask point locations, otherwise a contour plot
+is shown.}
 
 \item{col}{The colour of the plotted contours.}
 
 \item{levels}{A numeric vector giving the values to be associated
-with the plotted contours.}
+with the plotted contours. Alternatively, this can be the
+character string "esa", which results in a contour
+encapsulating an area equal to the estimates effective sampling
+area.}
+
+\item{xlim}{A numeric vector of length 2, giving the x coordinate range.}
+
+\item{ylim}{A numeric vector of length 2, giving the y coordinate range.}
 
 \item{show.labels}{Logical, if \code{TRUE}, contours are labelled
 with the appropriate probability.}
+
+\item{trap.col}{The colour of the points representing detector
+locations.}
 
 \item{add}{Logical, if \code{TRUE}, contours will be added to an
 existing plot.}
