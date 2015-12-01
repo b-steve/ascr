@@ -119,19 +119,24 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, xlim
 #' @inheritParams admbsecr
 #' @inheritParams locations
 #' @param pars A named list. Component names are parameter names, and
-#' components are values of parameters at which the mask is to be
-#' tested. Parameters must include \code{b0.ss}, \code{b1.ss}, and
-#' \code{sigma.ss}; see \link{admbsecr} for further details.
+#'     components are values of parameters at which the mask is to be
+#'     tested. Parameters must include \code{b0.ss}, \code{b1.ss}, and
+#'     \code{sigma.ss}; see \link{admbsecr} for further details.
 #' @param cutoff The upper cutoff value; see \code{admbsecr} for
-#' further details.
+#'     further details.
 #' @param lower.cutoff The lower cutoff value; see \code{admbsecr} for
-#' further details.
+#'     further details.
 #' @param surface Logical, if \code{TRUE} a 3D detection surface is
-#' plotted over the mask point locations.
+#'     plotted over the mask point locations.
+#' @param col Colours of points. Three colours are required if
+#'     \code{surface} is \code{FALSE}; otherwise, just one is
+#'     required.
+#' @param pincol Colour of pins when \code{surface} is \code{TRUE}.
 #' @param ... Arguments to be passed to \link{plot}.
 #'
 #' @export
-mask.test <- function(fit = NULL, mask, traps, pars, cutoff, lower.cutoff, surface = FALSE, ...){
+mask.test <- function(fit = NULL, mask, traps, pars, cutoff, lower.cutoff, surface = FALSE,
+                      col = c("black", "blue", "red"), pincol = "red", ...){
     if (!is.null(fit)){
         mask <- fit$args$mask
         traps <- fit$args$traps
@@ -186,9 +191,12 @@ mask.test <- function(fit = NULL, mask, traps, pars, cutoff, lower.cutoff, surfa
             index.y <- which(y == unique.y)
             z[index.x, index.y] <- s[i]
         }
+        if (missing(col)){
+            col = "lightblue"
+        }
         perspmat <- persp(x = unique.x, y = unique.y, z = z, zlim = c(0, 1),
                           zlab = "", xlab = "", ylab = "", shade = 0.75,
-                          col = "lightblue", theta = 30, phi = 30, border = NA,
+                          col = col, theta = 30, phi = 30, border = NA,
                           box = TRUE, axes = FALSE, ticktype = "detailed", ...)
         ## Plotting z-axis.
         y.range <- diff(range(mask[, 2]))
@@ -207,14 +215,14 @@ mask.test <- function(fit = NULL, mask, traps, pars, cutoff, lower.cutoff, surfa
             lines(trans3d(x = rep(traps[i, 1], 2), y = rep(traps[i, 2], 2), z = c(0, 0.1),
                           pmat = perspmat))
             points(trans3d(x = traps[i, 1], y = traps[i, 2], z = 0.1,
-                          pmat = perspmat), pch = 16, col = "red", cex = 0.5)
+                          pmat = perspmat), pch = 16, col = pincol, cex = 0.5)
         }
     } else {
         plot(distances(mask, traps.centroid), s + p, type = "n", ylim = c(0, 1), ...)
         abline(h = c(0, 1), col = "lightgrey")
-        points(distances(mask, traps.centroid), s, col = "red", cex = 0.5)
-        points(distances(mask, traps.centroid), p, col = "blue", cex = 0.5)
-        points(distances(mask, traps.centroid), s + p, cex = 0.5)
+        points(distances(mask, traps.centroid), s, col = col[3], cex = 0.5)
+        points(distances(mask, traps.centroid), p, col = col[2], cex = 0.5)
+        points(distances(mask, traps.centroid), s + p, col = col[1], cex = 0.5)
     }
 }
 
