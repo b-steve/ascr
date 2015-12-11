@@ -5,7 +5,7 @@
 \title{Testing the mask object for a first calls model.}
 \usage{
 mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
-  surface = FALSE, ...)
+  surface = FALSE, col = c("black", "blue", "red"), pincol = "red", ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
@@ -30,6 +30,12 @@ further details.}
 
 \item{surface}{Logical, if \code{TRUE} a 3D detection surface is
 plotted over the mask point locations.}
+
+\item{col}{Colours of points. Three colours are required if
+\code{surface} is \code{FALSE}; otherwise, just one is
+required.}
+
+\item{pincol}{Colour of pins when \code{surface} is \code{TRUE}.}
 
 \item{...}{Arguments to be passed to \link{plot}.}
 }
