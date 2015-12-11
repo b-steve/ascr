@@ -304,11 +304,11 @@ test_that("directional call fitting", {
                     mask = example$mask, ss.opts = list(cutoff = 60))
     ## Checking parameter values.
     pars.test <- c(339.357586915871, 89.7928396498161, 3.56048335373993, 
-                   7.60947487477794e-06, 8.22625149900229, 0.00186058818783199)
+                   1.368912e-05, 8.22625149900229, 0.00186058818783199)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(87.157, 3.1701, 0.62158, 0.40353, 1.0747, 0.0004036)
+    ses.test <- c(87.157, 3.1701, 0.6173900, 0.7940900, 1.0747, 0.0004036)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
