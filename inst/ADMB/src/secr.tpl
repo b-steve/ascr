@@ -324,9 +324,9 @@ PROCEDURE_SECTION
           point_evade *= 1 - capt_prob;
           if (fit_ss){
             if (linkfn_id == 3){
-              expected_ss(b, j, i) = detpars(1) - 10*log10(square(dist)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)))*(dist - 1.0);
+              expected_ss(b, j, i) = detpars(1) - 10*log10(square(dist)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)/2))*(dist - 1.0);
             } else {
-              expected_ss(b, j, i) = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)/2))*dist;
+              expected_ss(b, j, i) = detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)/2))*dist;
               if (linkfn_id == 2){
                 expected_ss(b, j, i) = mfexp(expected_ss(b, j, i));
               }

@@ -320,7 +320,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             popn.orientations <- 0
         }
         ## Expected received strength at each microphone for each call.
-        ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1))*dists)
+        ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1)/2)*dists)
         ## Random error at each microphone.
         sigma.mat <- matrix(pars$sigma.b0.ss^2, nrow = n.traps, ncol = n.traps)
         diag(sigma.mat) <- diag(sigma.mat) + pars$sigma.ss^2
