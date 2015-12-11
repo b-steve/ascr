@@ -34,21 +34,21 @@ dvariable detfn_logth (double x, const dvar_vector &detpars, double cutoff, doub
 // Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
 dvariable detfn_ss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm((cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*x))/detpars(5));
+  return 1 - cumd_norm((cutoff - (detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)/2))*x))/detpars(5));
 }
 
 // Log-link signal strength.
 // Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
 dvariable detfn_logss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm((cutoff - mfexp(detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1)))*x))/detpars(5));
+  return 1 - cumd_norm((cutoff - mfexp(detpars(1) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)/2))*x))/detpars(5));
 }
 
 // Spherical spreading signal strength.
 // Order of detpars: b0ss, b1ss, b2ss, sigmab0ss, sigmass.
 dvariable detfn_sphericalss (double x, const dvar_vector &detpars, double cutoff, double orientation)
 {
-  return 1 - cumd_norm((cutoff - (detpars(1) - 10*log10(square(x)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)))*(x - 1.0)))/detpars(5));
+  return 1 - cumd_norm((cutoff - (detpars(1) - 10*log10(square(x)) - (detpars(2) - (detpars(3)*(cos(orientation) - 1.0)/2))*(x - 1.0)))/detpars(5));
 }
 
 detfn_pointer get_detfn(int detfn_id)
