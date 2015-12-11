@@ -84,9 +84,7 @@ calc.ss <- function(d, pars, ss.link, orientation){
     } else {
         stop("Link function not recognised.")
     }
-    if (sigma.b0.ss == 0){
-        out <- 1 - pnorm(cutoff, mean = mean, sd = sigma.ss)
-    }
+    out <- 1 - pnorm(cutoff, mean = mean, sd = sigma.ss)
     out
 }
 
@@ -129,6 +127,16 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
     pars <- get.par(fit, pars = fit$detpars, cutoff = fit$fit.types["ss"],
                     as.list = TRUE)
     dists <- seq(xlim[1], xlim[2], length.out = 1000)
+    if (any(names(pars) == "sigma.b0.ss")){
+        if (pars$sigma.b0.ss != 0){
+            warning("Detection probabilities only shown for the average emitted cue strength.")
+        }
+    }
+    if (any(names(pars) == "b2.ss")){
+        if (pars$b2.ss != 0){
+            warning("Detection probabilities only shown for a detector directly in line with the direction of the cue.")
+        }
+    }
     probs <- calc.detfn(dists, detfn = detfn, pars = pars,
                         ss.link = fit$args$ss.opts$ss.link)
     if (!add){
