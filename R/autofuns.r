@@ -39,6 +39,9 @@ autoD <- function(args){
     detpar.names <- args$detpar.names
     ss.link <- args$ss.opts$ss.link
     pars <- sv[detpar.names]
+    if (b2.ss %in% detpar.names){
+        pars$b2.ss <- 0
+    }
     cutoff <- args$ss.opts$cutoff
     if (!is.null(cutoff)){
         pars$cutoff <- cutoff
