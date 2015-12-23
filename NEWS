@@ -1,9 +1,15 @@
-admbsecr 1.1.4
+admbsecr 1.2.0
 --------------
 
 * Added contours argument to show.detprob, allowing the detection
   probability surface to be plotted as contours rather than a 3D
   surface.
+
+* Fixing signal strength contours so they are considered separate to
+  detection locations. This allows them to be compared to contours
+  from other auxiliary information types.
+
+* Cleaner code for extracting Monte Carlo error.
 
 admbsecr 1.1.3
 --------------

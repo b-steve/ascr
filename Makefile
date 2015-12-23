@@ -38,13 +38,13 @@ roxygen:
 build:
 	R CMD build --resave-data .
 	mkdir -p package-build
-	mv admbsecr_1.1.3.tar.gz package-build/
+	mv admbsecr_1.2.0.tar.gz package-build/
 
 check:
-	R CMD check package-build/admbsecr_1.1.3.tar.gz --no-tests
+	R CMD check package-build/admbsecr_1.2.0.tar.gz --no-tests
 
 install:
-	R CMD INSTALL package-build/admbsecr_1.1.3.tar.gz --install-tests
+	R CMD INSTALL package-build/admbsecr_1.2.0.tar.gz --install-tests
 
 pdf:
 	R CMD Rd2pdf --pdf . &
