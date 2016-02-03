@@ -73,7 +73,12 @@
 #' component \code{capt} of the returned list, locations of detected
 #' individuals are kept in a component \code{capt.locs}, and locations
 #' of all individuals in the population are kept in a component
-#' \code{popn.locs}.
+#' \code{popn.locs}. In this case, the capture histories and auxiliary
+#' information are kept in a component \code{capt} of the returned
+#' list, and ID numbers of detected individuals are kept in a
+#' component \code{capt.ids}
+#' @param keep.ids Logical, if \code{TRUE}, the ID number of detected
+#' individuals are retained. 
 #' @inheritParams admbsecr
 #'
 #' @return A list with named components, each corresponding to a data
@@ -97,13 +102,42 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
                      pars = NULL, ss.opts = NULL, call.freqs = NULL,
                      freq.dist = "edf", sound.speed = 330, test.detfn = FALSE,
-                     first.only = FALSE, keep.locs = FALSE){
+                     first.only = FALSE, keep.locs = FALSE, keep.ids = FALSE){
     ## Some error checking.
     if (any(infotypes == "ss")){
         stop("Signal strength information is simulated by setting argument 'detfn' to \"ss\".")
     }
     if (!missing(ss.opts) & detfn != "ss"){
         warning("The argument 'ss.opts' is being ignored, as 'detfn' is not \"ss\".")
+    }
+    if (keep.ids & is.null(call.freqs)){
+        warning("IDs are necessarily different as only one call is simulated from each individual.")
+    }
+    ## Warnings for ignored parameters. Is there a neater way of doing
+    ## this? The 'missing()' function is annoying.
+    if (!missing(mask) & !missing(fit)){
+        warning("Argument 'mask' is being ignored as 'fit' was provided.")
+    }
+    if (!missing(infotypes) & !missing(fit)){
+        warning("Argument 'infotypes' is being ignored as 'fit' was provided.")
+    }
+    if (!missing(detfn) & !missing(fit)){
+        warning("Argument 'detfn' is being ignored as 'fit' was provided.")
+    }
+    if (!missing(traps) & !missing(fit)){
+        warning("Argument 'traps' is being ignored as 'fit' was provided.")
+    }
+    if (!missing(pars) & !missing(fit)){
+        warning("Argument 'pars' is being ignored as 'fit' was provided.")
+    }
+    if (!missing(ss.opts) & !missing(fit)){
+        warning("Argument 'ss.opts' is being ignored as 'fit' was provided.")
+    }
+    if (!missing(call.freqs) & !missing(fit)){
+        warning("Argument 'call.freqs' is being ignored as 'fit' was provided.")
+    }
+    if (!missing(sound.speed) & !missing(fit)){
+        warning("Argument 'sound.speed' is being ignored as 'fit' was provided.")
     }
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
@@ -233,6 +267,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     } else {
         D <- pars$D
         if (!first.only){
+            ## This is super messy, but it's scaling D from call
+            ## density to animal density.
             D <- D/mean(call.freqs)
         }
         popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
@@ -409,9 +445,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     ## Total number of detections.
     n.dets <- sum(bin.capt)
     ## Keeping identities of captured individuals.
-    capt.individual <- individual[captures]
+    capt.ids <- individual[captures]
     ## Locations of captured individuals.
     capt.popn <- popn[captures, ]
+    ## IDs of captured individuals.
     ## Capture distances.
     capt.dists <- dists[captures, ]
     ## Simulating additional information.
@@ -442,8 +479,15 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     if (sim.mrds){
         out$mrds <- capt.dists
     }
-    if (keep.locs){
-        out <- list(capt = out, capt.locs = capt.popn, popn.locs = popn)
+    if (keep.locs | keep.ids){
+        out <- list(capt = out)
+        if (keep.locs){
+            out[["capt.locs"]] <- capt.popn
+            out[["popn.locs"]] <- popn
+        }
+        if (keep.ids){
+            out[["capt.ids"]] <- capt.ids
+        }
     }
     out
 }
