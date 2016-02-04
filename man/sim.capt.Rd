@@ -7,7 +7,8 @@
 sim.capt(fit = NULL, traps = NULL, mask = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
   call.freqs = NULL, freq.dist = "edf", sound.speed = 330,
-  test.detfn = FALSE, first.only = FALSE, keep.locs = FALSE)
+  test.detfn = FALSE, first.only = FALSE, keep.locs = FALSE,
+  keep.ids = FALSE)
 }
 \arguments{
 \item{fit}{A fitted \code{admbsecr} model object which provides the
@@ -73,7 +74,13 @@ the capture histories and auxiliary information are kept in a
 component \code{capt} of the returned list, locations of detected
 individuals are kept in a component \code{capt.locs}, and locations
 of all individuals in the population are kept in a component
-\code{popn.locs}.}
+\code{popn.locs}. In this case, the capture histories and auxiliary
+information are kept in a component \code{capt} of the returned
+list, and ID numbers of detected individuals are kept in a
+component \code{capt.ids}}
+
+\item{keep.ids}{Logical, if \code{TRUE}, the ID number of detected
+individuals are retained.}
 }
 \value{
 A list with named components, each corresponding to a data
