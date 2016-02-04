@@ -289,7 +289,7 @@ locations <- function(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
                 f.estlocs <- if (any.infotypes) f.combined else f.capt*f.x
                 mode.points <- which(f.estlocs == max(f.estlocs))
                 points(mask[mode.points, 1], mask[mode.points, 2],
-                       pch = 16, col = "blue")
+                       pch = 16, col = "black")
             }
         }
     }
