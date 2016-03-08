@@ -374,12 +374,12 @@
 #' @param ss.opts Options for models using the signal strength
 #' detection function. See 'Details' below.
 #' @param call.freqs A vector of call frequencies collected
-#' independently of the main acoustic survey. These must be scaled so
-#' that they represent a unit of time equal to the length of this
-#' original survey. For example, if the \code{capt} data come from
-#' fifteen minutes' worth of data, then \code{call.freqs} should give
-#' the number of calls made per fifteen-minute period for each of the
-#' independently monitored individuals.
+#' independently of the main acoustic survey. This must be measured in
+#' calls per unit time, where the time units are equivalent to those
+#' used by \code{survey.length}.
+#' @param survey.length The length of a cue-based survey. If provided,
+#' the estimated density \code{D} is measured in cues per unit time
+#' (using the same units as \code{survey.length}).
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{"toa"} is a component name of \code{capt}.
@@ -430,9 +430,9 @@
 #' @export
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
-                     call.freqs = NULL, sound.speed = 330, local = FALSE,
-                     hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
-                     optim.opts = NULL){
+                     call.freqs = NULL, survey.length = NULL, sound.speed = 330,
+                     local = FALSE, hess = !any(call.freqs > 1), trace = FALSE,
+                     clean = TRUE, optim.opts = NULL){
     arg.names <- names(as.list(environment()))
     ## TODO: Sort out how to determine supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
@@ -444,6 +444,17 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
+    ## Warning from call.freqs without survey.length.
+    if (missing(survey.length)){
+        if (!missing(call.freqs)){
+            warning("The use of `call.freqs' without `survey.length' is deprecated. Please provide `survey.length', and ensure `call.freqs' is measured in the same time units.")
+        }
+        survey.length <- 1
+    } else {
+        if (length(survey.length) != 1){
+            stop("The argument `survey.length' must be scalar.")
+        }
+    }
     ## Storing objects from ss.opts.
     cutoff <- ss.opts$cutoff
     ss.link <- ss.opts$ss.link
