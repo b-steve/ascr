@@ -374,7 +374,12 @@
 #' @param ss.opts Options for models using the signal strength
 #' detection function. See 'Details' below.
 #' @param call.freqs A vector of call frequencies collected
-#' independently to an acoustic survey.
+#' independently of the main acoustic survey. These must be scaled so
+#' that they represent a unit of time equal to the length of this
+#' original survey. For example, if the \code{capt} data come from
+#' fifteen minutes' worth of data, then \code{call.freqs} should give
+#' the number of calls made per fifteen-minute period for each of the
+#' independently monitored individuals.
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
 #' \code{"toa"} is a component name of \code{capt}.
