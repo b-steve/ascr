@@ -61,7 +61,7 @@ test_that("simulation produces correct output", {
                      infotypes = NULL, pars = pars,
                      ss.opts = list(cutoff = lower.cutoff,
                          ss.link = "identity"),
-                     call.freqs = Inf, first.only = TRUE)
+                     cue.rates = Inf, first.only = TRUE)
     test.ss <- c(0, 58.6358978925394, 53.0558496057121, 53.9825023770212, 0, 
                  65.2750802998676)
     expect_that(test.capt$ss[1103, ], equals(test.ss))

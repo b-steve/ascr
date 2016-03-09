@@ -276,7 +276,7 @@ test_that("multiple calls fitting", {
     simple.capt <- example$capt["bincapt"]
     fit <- admbsecr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1),
-                    call.freqs = c(9, 10, 11))
+                    cue.rates = c(9, 10, 11))
     pars.test <- c(2267.7394754986, 5.39011188311111, 10, 0.0560029, 
                    226.77394754986)
     n.pars <- length(pars.test)
@@ -288,7 +288,7 @@ test_that("multiple calls fitting", {
     ## Checking hess argument.
     fit.hess <- admbsecr(capt = simple.capt, traps = example$traps,
                          mask = example$mask, fix = list(g0 = 1),
-                         call.freqs = c(9, 10, 11), hess = TRUE)
+                         cue.rates = c(9, 10, 11), hess = TRUE)
     expect_that(coef(fit.hess), equals(coef(fit)))
     expect_that(is.na(stdEr(fit.hess, "all")["Da"]), is_true())
     ses.test <- c(351.86, 0.42008)
@@ -358,7 +358,7 @@ test_that("first-call signal strength models", {
                      infotypes = NULL, pars = pars,
                      ss.opts = list(cutoff = lower.cutoff,
                          ss.link = "identity"),
-                     call.freqs = Inf, first.only = TRUE)
+                     cue.rates = Inf, first.only = TRUE)
     fit <-  admbsecr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
                          lower.cutoff = lower.cutoff), hess = FALSE)
