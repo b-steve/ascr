@@ -78,7 +78,7 @@ will bootstrap without any additional information types.
 
 
 For fits based on acoustic surveys where the argument
-\code{call.freqs} is provided to the \code{admbsecr} function, the
+\code{cue.rates} is provided to the \code{admbsecr} function, the
 simulated data allocates multiple calls to the same location based
 on an estimated distribution of the call frequencies. Using a
 parametric bootstrap is currently the only way parameter
