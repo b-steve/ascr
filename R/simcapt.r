@@ -21,7 +21,7 @@
 #' 8.1 will be rounded to 9 with probability 0.1, and rounded to 8
 #' with probability 0.9.
 #'
-#' If \code{call.freqs} is \code{Inf} then all simulated individuals
+#' If \code{cue.rates} is \code{Inf} then all simulated individuals
 #' will be detected. To generate sensible capture histories then both
 #' a lower and upper cutoff must be supplied in \code{ss.opts}. In
 #' this case, individuals continue to emit calls until one is detected
@@ -50,7 +50,7 @@
 #' an acoustic survey) must always be provided, along with values for
 #' parameters associated with the chosen detection function and
 #' additional information type(s).
-#' @param call.freqs A vector of call frequencies from which a
+#' @param cue.rates A vector of call frequencies from which a
 #' distribution for the number of emitted calls for each individual is
 #' fitted. If scalar, all individuals make the same number of
 #' calls. If \code{Inf}, \code{first.only} must be \code{TRUE}, and
@@ -61,7 +61,7 @@
 #' distribution of call frequencies is estimated using the empirical
 #' distribution function. If \code{"norm"}, then a normal distribution
 #' is fitted to the call frequencies using the sample mean and
-#' variance. If \code{call.freqs} is scalar then this is ignored, and
+#' variance. If \code{cue.rates} is scalar then this is ignored, and
 #' all individuals make the same number of calls. See 'Details' below
 #' for information on how call frequencies are rounded.
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
@@ -100,7 +100,7 @@
 #' @export
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
-                     pars = NULL, ss.opts = NULL, call.freqs = NULL,
+                     pars = NULL, ss.opts = NULL, cue.rates = NULL,
                      freq.dist = "edf", sound.speed = 330, test.detfn = FALSE,
                      first.only = FALSE, keep.locs = FALSE, keep.ids = FALSE){
     ## Some error checking.
@@ -110,7 +110,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     if (!missing(ss.opts) & detfn != "ss"){
         warning("The argument 'ss.opts' is being ignored, as 'detfn' is not \"ss\".")
     }
-    if (keep.ids & is.null(call.freqs)){
+    if (keep.ids & is.null(cue.rates)){
         warning("IDs are necessarily different as only one call is simulated from each individual.")
     }
     ## Warnings for ignored parameters. Is there a neater way of doing
@@ -133,8 +133,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     if (!missing(ss.opts) & !missing(fit)){
         warning("Argument 'ss.opts' is being ignored as 'fit' was provided.")
     }
-    if (!missing(call.freqs) & !missing(fit)){
-        warning("Argument 'call.freqs' is being ignored as 'fit' was provided.")
+    if (!missing(cue.rates) & !missing(fit)){
+        warning("Argument 'cue.rates' is being ignored as 'fit' was provided.")
     }
     if (!missing(sound.speed) & !missing(fit)){
         warning("Argument 'sound.speed' is being ignored as 'fit' was provided.")
@@ -147,11 +147,11 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         detfn <- fit$args$detfn
         pars <- get.par(fit, "fitted", as.list = TRUE)
         ss.opts <- fit$args$ss.opts
-        call.freqs <- fit$args$call.freqs
+        cue.rates <- fit$args$cue.rates
         sound.speed <- fit$args$sound.speed
         ## Setting up correct arguments for a simulating from a first-call model.
         if (!is.null(ss.opts$lower.cutoff)){
-            call.freqs <- Inf
+            cue.rates <- Inf
             first.only <- TRUE
         }
     }
@@ -170,9 +170,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     directional <- ss.opts$directional
     ss.link <- ss.opts$ss.link
     ## Sorting out inf calls stuff.
-    if (any(call.freqs == Inf)){
+    if (any(cue.rates == Inf)){
         if (!first.only){
-            warning("Setting 'first.only' to 'TRUE' as 'call.freqs' is Inf.")
+            warning("Setting 'first.only' to 'TRUE' as 'cue.rates' is Inf.")
             first.only <- TRUE
         }
         if (is.null(lower.cutoff)){
@@ -260,7 +260,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
     ## Specifies the area in which animal locations can be generated.
     core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
     ## Simulating population.
-    if (is.null(call.freqs)){
+    if (is.null(cue.rates)){
         popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
         ## Indicates which individual is being detected.
         individual <- 1:nrow(popn)
@@ -269,21 +269,21 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         if (!first.only){
             ## This is super messy, but it's scaling D from call
             ## density to animal density.
-            D <- D/mean(call.freqs)
+            D <- D/mean(cue.rates)
         }
         popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
         n.a <- nrow(popn)
         if (freq.dist == "edf"){
-            if (length(call.freqs) == 1){
-                freqs <- rep(call.freqs, n.a)
+            if (length(cue.rates) == 1){
+                freqs <- rep(cue.rates, n.a)
             } else {
-                freqs <- sample(call.freqs, size = n.a, replace = TRUE)
+                freqs <- sample(cue.rates, size = n.a, replace = TRUE)
             }
         } else if (freq.dist == "norm"){
-            if (diff(range(call.freqs)) == 0){
-                freqs <- rep(unique(call.freqs), n.a)
+            if (diff(range(cue.rates)) == 0){
+                freqs <- rep(unique(cue.rates), n.a)
             } else {
-                freqs <- rnorm(n.a, mean(call.freqs), sd(call.freqs))
+                freqs <- rnorm(n.a, mean(cue.rates), sd(cue.rates))
             }
         } else {
             stop("The argument 'freq.dist' must be either \"edf\" or \"norm\"")
@@ -346,7 +346,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         ## Simulating animal directions and calculating orientations
         ## to traps.
         if (pars$b2.ss != 0){
-            if (!is.null(call.freqs) & !first.only){
+            if (!is.null(cue.rates) & !first.only){
                 warning("Call directions are being generated independently.")
             }
             popn.dirs <- runif(n.popn, 0, 2*pi)

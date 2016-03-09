@@ -430,10 +430,19 @@
 #' @export
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
-                     call.freqs = NULL, survey.length = NULL, sound.speed = 330,
-                     local = FALSE, hess = !any(call.freqs > 1), trace = FALSE,
-                     clean = TRUE, optim.opts = NULL){
+                     cue.rates = NULL, survey.length = NULL, sound.speed = 330,
+                     local = FALSE, hess = !any(cue.rates > 1), trace = FALSE,
+                     clean = TRUE, optim.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
+    extra.args <- list(...)
+    if (any(names(extra.args) == "call.freqs")){
+        if (!missing(cue.rates)){
+            stop("The argument `cue.rates' has replaced has replaced `call.freqs'; use only the former.")
+        }
+        warning("The argument `call.freqs' is deprecated; please rename to `cue.rates' instead.")
+        cue.rates <- extra.args[["call.freqs"]]
+        hess <- !any(cue.rates > 1)
+    }
     ## TODO: Sort out how to determine supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
     fit.types <- supp.types %in% names(capt)
@@ -446,8 +455,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.mrds <- fit.types["mrds"]
     ## Warning from call.freqs without survey.length.
     if (missing(survey.length)){
-        if (!missing(call.freqs)){
-            warning("The use of `call.freqs' without `survey.length' is deprecated. Please provide `survey.length', and ensure `call.freqs' is measured in the same time units.")
+        if (!is.null(cue.rates)){
+            warning("The use of `cue.rates' without `survey.length' is deprecated. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
         }
         survey.length <- 1
     } else {
@@ -1005,8 +1014,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
         bearings, toa_ssq = toa.ssq)
     ## Determining whether or not standard errors should be calculated.
-    if (!is.null(call.freqs)){
-        fit.freqs <- any(call.freqs != 1)
+    if (!is.null(cue.rates)){
+        fit.freqs <- any(cue.rates != 1)
     } else {
         fit.freqs <- FALSE
     }
@@ -1217,7 +1226,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$coefficients[2*n.est.pars + 1] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
-        mu.freqs <- mean(call.freqs)
+        mu.freqs <- mean(cue.rates)
         Da <- get.par(out, "D")/mu.freqs
         names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
         coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
