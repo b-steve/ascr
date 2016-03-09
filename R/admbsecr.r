@@ -17,7 +17,7 @@
 #' practitioners looking to implement these methods.
 #'
 #' If the data are from an acoustic survey where individuals call more
-#' than once (i.e., the argument \code{call.freqs} contains values
+#' than once (i.e., the argument \code{cue.rates} contains values
 #' that are not 1), then standard errors calculated from the inverse
 #' of the negative Hessian are not correct. They are therefore not
 #' provided in this case. The method used by the function
@@ -373,7 +373,7 @@
 #' parameter start values. See the section on convergence below.
 #' @param ss.opts Options for models using the signal strength
 #' detection function. See 'Details' below.
-#' @param call.freqs A vector of call frequencies collected
+#' @param cue.rates A vector of call frequencies collected
 #' independently of the main acoustic survey. This must be measured in
 #' calls per unit time, where the time units are equivalent to those
 #' used by \code{survey.length}.
@@ -401,6 +401,7 @@
 #' the location of which is reported after the model is fitted.
 #' @param optim.opts Optimisation options. See 'Details' for further
 #' information.
+#' @param ... Other arguments (mostly for back-compatibility).
 #'
 #' @seealso \link{boot.admbsecr} to calculate standard errors and
 #' estimate bias using a parametric bootstrap.
@@ -453,7 +454,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
-    ## Warning from call.freqs without survey.length.
+    ## Warning from cue.rates without survey.length.
     if (missing(survey.length)){
         if (!is.null(cue.rates)){
             warning("The use of `cue.rates' without `survey.length' is deprecated. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
