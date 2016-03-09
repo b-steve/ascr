@@ -38,11 +38,10 @@ test_that("simple model bootstrapping", {
 })
 
 test_that("cue-rate model bootstrapping", {
-    ## Finding point estimates.
     set.seed(6324)          
     fit <- admbsecr(capt = lapply(lightfooti$capt, function(x) x[1:20, ]),
                     traps = lightfooti$traps, mask = lightfooti$mask,
-                    cue.rates = lightfooti$freqs/5,
+                    call.freqs = lightfooti$freqs/5,
                     ss.opts = list(cutoff = lightfooti$cutoff))
     boot.fit <- boot.admbsecr(fit = fit, N = 10)
     ses.test <- c(61.0933446423395, 5.03346486642733, 0.861437539078998, 
