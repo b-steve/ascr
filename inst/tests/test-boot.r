@@ -43,7 +43,7 @@ test_that("cue-rate model bootstrapping", {
                     traps = lightfooti$traps, mask = lightfooti$mask,
                     call.freqs = lightfooti$freqs/5,
                     ss.opts = list(cutoff = lightfooti$cutoff))
-    boot.fit <- boot.admbsecr(fit = fit, N = 10)
+    boot.fit <- boot.admbsecr(fit = fit, N = 10, prog = FALSE)
     ses.test <- c(61.0933446423395, 5.03346486642733, 0.861437539078998, 
                       1.2439428882348, 0.000288758114691158, 0.0196418550329597)
     ses <- stdEr(boot.fit)
