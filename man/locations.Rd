@@ -4,8 +4,8 @@
 \alias{locations}
 \title{Plotting estimated locations}
 \usage{
-locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
-  ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
+locations(fit, id, infotypes = NULL, combine = FALSE, xlim = range(mask[,
+  1]), ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
   nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
   "purple", ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
   ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing =
@@ -13,7 +13,7 @@ locations(fit, id, infotypes = NULL, xlim = range(mask[, 1]),
   circle.traps = TRUE, show.labels = TRUE, plot.contours = TRUE,
   plot.estlocs = FALSE, plot.arrows = "bearing" \%in\% fit$infotypes,
   plot.circles = "dist" \%in\% fit$infotypes, arrow.length = NULL,
-  show.legend = !add, show.axes = TRUE, add = FALSE)
+  show.legend = FALSE, show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
@@ -34,6 +34,11 @@ are equivalent as the signal strength information is built into the
 detection function. By default, only the most informative contour
 is plotted, i.e., \code{"capt"} if the model was fitted with no
 additional information, and \code{"combined"} otherwise.}
+
+\item{combine}{Logical, if \code{TRUE} then the information types
+specified in \code{infotypes} are combined into a single
+contour. If \code{FALSE} then separate contours are plotted for
+each information type.}
 
 \item{xlim}{A numeric vector of length 2, giving the x coordinate range.}
 
