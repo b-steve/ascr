@@ -4,85 +4,94 @@
 #' variables in SECR models.
 #'
 #' @param fit A fitted model from \link{admbsecr}.
-#' @param id A numeric vector with row numbers from \code{fit$args$capt},
-#' indicating which individuals' locations are to be plotted.
+#' @param id A numeric vector with row numbers from
+#'     \code{fit$args$capt}, indicating which individuals' locations
+#'     are to be plotted.
 #' @param infotypes A character vector indicating the type(s) of
-#' information to be used when plotting the estimated density of
-#' location.  Elements can be a subset of \code{"capt"},
-#' \code{"bearing"}, \code{"dist"}, \code{"ss"}, \code{"toa"},
-#' \code{"combined"}, and \code{"all"}, where \code{"capt"} shows
-#' estimated location only using detection locations,
-#' \code{"combined"} combines all information types together, and
-#' \code{"all"} plots all possible contour types. When signal strength
-#' information is used in the model fit, \code{"capt"} and \code{"ss"}
-#' are equivalent as the signal strength information is built into the
-#' detection function. By default, only the most informative contour
-#' is plotted, i.e., \code{"capt"} if the model was fitted with no
-#' additional information, and \code{"combined"} otherwise.
+#'     information to be used when plotting the estimated density of
+#'     location.  Elements can be a subset of \code{"capt"},
+#'     \code{"bearing"}, \code{"dist"}, \code{"ss"}, \code{"toa"},
+#'     \code{"combined"}, and \code{"all"}, where \code{"capt"} shows
+#'     estimated location only using detection locations,
+#'     \code{"combined"} combines all information types together, and
+#'     \code{"all"} plots all possible contour types. When signal
+#'     strength information is used in the model fit, \code{"capt"}
+#'     and \code{"ss"} are equivalent as the signal strength
+#'     information is built into the detection function. By default,
+#'     only the most informative contour is plotted, i.e.,
+#'     \code{"capt"} if the model was fitted with no additional
+#'     information, and \code{"combined"} otherwise.
 #' @param combine Logical, if \code{TRUE} then the information types
-#' specified in \code{infotypes} are combined into a single
-#' contour. If \code{FALSE} then separate contours are plotted for
-#' each information type.
-#' @param xlim A numeric vector of length 2, giving the x coordinate range.
-#' @param ylim A numeric vector of length 2, giving the y coordinate range.
+#'     specified in \code{infotypes} are combined into a single
+#'     contour. If \code{FALSE} then separate contours are plotted for
+#'     each information type.
+#' @param xlim A numeric vector of length 2, giving the x coordinate
+#'     range.
+#' @param ylim A numeric vector of length 2, giving the y coordinate
+#'     range.
 #' @param mask A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a mask point. The function
-#' \link[admbsecr]{create.mask} will return a suitable object. The
-#' mask used to fit the model \code{fit} will be used by default; this
-#' argument is usually used when estimated location contours need to
-#' be plotted to a higher resolution than this.
+#'     coordinates for the location of a mask point. The function
+#'     \link[admbsecr]{create.mask} will return a suitable object. The
+#'     mask used to fit the model \code{fit} will be used by default;
+#'     this argument is usually used when estimated location contours
+#'     need to be plotted to a higher resolution than this.
 #' @param levels A numeric vector giving the values to be associated
-#' with the plotted contours.
+#'     with the plotted contours.
 #' @param nlevels The number of contour levels desired. Ignored if
-#' \code{levels} is provided.
+#'     \code{levels} is provided.
 #' @param density Logical, if \code{TRUE}, the labels on contours (and
-#' the levels specified by \code{levels}) refer to the density of the
-#' estimated distribution of the individual's location. If
-#' \code{FALSE}, the labels on contours (and the levels specified by
-#' \code{levels}) refer to the probability of the individual being
-#' located within the associated contour under the estimated
-#' distribution of the individual's location.
+#'     the levels specified by \code{levels}) refer to the density of
+#'     the estimated distribution of the individual's location. If
+#'     \code{FALSE}, the labels on contours (and the levels specified
+#'     by \code{levels}) refer to the probability of the individual
+#'     being located within the associated contour under the estimated
+#'     distribution of the individual's location.
 #' @param cols A list with named components corresponding to each
-#' contour type (i.e., a subset of \code{"capt"}, \code{"bearing"},
-#' \code{"dist"}, \code{"toa"}, and \code{"combined"}). Each component
-#' provides the colour of the associated contour type (e.g., using a
-#' character string such as \code{"red"}, or a call to the function
-#' \link[grDevices]{rgb}). By default, if only one contour is to be
-#' plotted, it will be plotted in black. Alternatively, a vector with
-#' a single element, specifying the colour for all contours.
+#'     contour type (i.e., a subset of \code{"capt"},
+#'     \code{"bearing"}, \code{"dist"}, \code{"toa"}, and
+#'     \code{"combined"}). Each component provides the colour of the
+#'     associated contour type (e.g., using a character string such as
+#'     \code{"red"}, or a call to the function
+#'     \link[grDevices]{rgb}). By default, if only one contour is to
+#'     be plotted, it will be plotted in black. Alternatively, a
+#'     vector with a single element, specifying the colour for all
+#'     contours.
 #' @param ltys The line type of the contours, with the same required
-#' syntax as \code{cols}; see \link{par}.
+#'     syntax as \code{cols}; see \link{par}.
 #' @param trap.col The colour of the points representing detector
-#' locations.
+#'     locations.
 #' @param circle.traps Logical, if \code{TRUE} circles are plotted
-#' around traps that made a detection of the individual in question.
+#'     around traps that made a detection of the individual in
+#'     question.
 #' @param show.labels Logical, if \code{TRUE}, contours are labelled
-#' with the appropriate probability density (if \code{density} is
-#' \code{TRUE}), or the corresponding probability of the individual
-#' being within the associated contour, under the estimated density
-#' (if \code{density} is \code{FALSE}).
+#'     with the appropriate probability density (if \code{density} is
+#'     \code{TRUE}), or the corresponding probability of the
+#'     individual being within the associated contour, under the
+#'     estimated density (if \code{density} is \code{FALSE}).
 #' @param plot.contours Logical, if \code{TRUE}, contours are
-#' plotted. Note that, if \code{FALSE}, nothing corresponding to the
-#' density of the individuals' locations is plotted unless
-#' \code{plot.estlocs} is \code{TRUE}.
+#'     plotted. Note that, if \code{FALSE}, nothing corresponding to
+#'     the density of the individuals' locations is plotted unless
+#'     \code{plot.estlocs} is \code{TRUE}.
 #' @param plot.estlocs Logical, if \code{TRUE}, dots are plotted at
-#' the mode of the combined densities. If a density has more than a
-#' single mode (and the modes have the same density value) then a dot
-#' will be plotted for each.
+#'     the mode of the combined densities. If a density has more than
+#'     a single mode (and the modes have the same density value) then
+#'     a dot will be plotted for each.
+#' @param keep.estlocs Logical, if \code{TRUE}, the locations of the
+#'     estimated locations are returned.
 #' @param plot.arrows Logical, if \code{TRUE}, arrows indicating the
-#' estimated bearing to the individual are plotted from detectors at
-#' which detections were made.
+#'     estimated bearing to the individual are plotted from detectors
+#'     at which detections were made.
 #' @param plot.circles Logical, if \code{TRUE}, circles indicating the
-#' estimated distance to the individual are plotted around detectors
-#' at which detections were made.
+#'     estimated distance to the individual are plotted around
+#'     detectors at which detections were made.
 #' @param arrow.length Numeric, providing the length of the arrows
-#' (only used if \code{plot.arrows} is \code{TRUE}).
-#' @param show.legend Logical, if \code{TRUE}, a legend will be added to
-#' the plot.
+#'     (only used if \code{plot.arrows} is \code{TRUE}).
+#' @param show.legend Logical, if \code{TRUE}, a legend will be added
+#'     to the plot.
 #' @param show.axes Logical, if \code{TRUE}, axes will be added to the
-#' plot.
+#'     plot.
 #' @param add Logical, if \code{TRUE}, contours will be added to an
-#' existing plot.
+#'     existing plot.
 #'
 #' @examples
 #' locations(example$fits$simple.hn, 1)
@@ -104,6 +113,7 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                       trap.col = "red", circle.traps = TRUE,
                       show.labels = TRUE, plot.contours = TRUE,
                       plot.estlocs = FALSE,
+                      keep.estlocs = FALSE,
                       plot.arrows = "bearing" %in% fit$infotypes,
                       plot.circles = "dist" %in% fit$infotypes,
                       arrow.length = NULL,
@@ -125,6 +135,11 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
     ## Error if combine specified without infotypes.
     if (missing(infotypes) & combine){
         stop("Argument `combine' is only useful if `infotypes' is provided.")
+    }
+    ## Saving estimated locations.
+    if (keep.estlocs){
+        estlocs <- matrix(0, nrow = length(id), ncol = 2)
+        j <- 1
     }
     ## Setting up plotting area.
     if (!add){
@@ -340,6 +355,8 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                 mode.points <- which(f.estlocs == max(f.estlocs))
                 points(mask[mode.points, 1], mask[mode.points, 2],
                        pch = 16, col = "black")
+                estlocs[j, ] <- c(mask[mode.points, 1], mask[mode.points, 2])
+                j <- j + 1
             }
         }
     }
@@ -366,6 +383,12 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
         legend("topright", legend = infotypes, lty = legend.ltys, col = legend.cols, bg = "white")
     }
     invisible(TRUE)
+    if (keep.estlocs){
+        out <- list(estlocs = estlocs)
+    } else {
+        out <- invisible(TRUE)
+    }
+    out
 }
 
 ## Helper to get stuff in the right form for contour().
