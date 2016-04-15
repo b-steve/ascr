@@ -53,7 +53,7 @@
 #' There will be some error in esimates based on the parametric
 #' bootstrap (e.g., standard errors and estimates of bias) because the
 #' number of bootstrap simulations is not infinite. By default, this
-#' function calculates Monte Carlo error using a bootstrap of the
+#' function calculatesMonte Carlo error using a bootstrap of the
 #' estimates obtained from the initial bootstrap procedure; see
 #' Equation (9) in Koehler, Brown and Haneuse (2009). Note that this
 #' secondary bootstrap does not require the fitting of any further
@@ -64,34 +64,35 @@
 #' extracted using the function \link{get.mce}.
 #'
 #' @references Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009)
-#' On the assessment of Monte Carlo error in sumulation-based
-#' statistical analyses. \emph{The American Statistician},
-#' \strong{63}: 155--162.
+#'     On the assessment of Monte Carlo error in sumulation-based
+#'     statistical analyses. \emph{The American Statistician},
+#'     \strong{63}: 155--162.
 #'
 #' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
-#' G. J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
-#' framework for animal density estimation from acoustic detection
-#' data.
+#'     G. J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
+#'     framework for animal density estimation from acoustic detection
+#'     data.
 #'
 #' @return A list of class \code{"admbsecr.boot"}. Components contain
-#' information such as estimated parameters and standard errors. The
-#' best way to access such information, however, is through the
-#' variety of helper functions provided by the admbsecr package. S3
-#' methods \link{stdEr.admbsecr.boot} and \link{vcov.admbsecr.boot}
-#' can be used to return standard errors and the variance-covariance
-#' matrix of estimated parameters based on the bootstrap procedure.
+#'     information such as estimated parameters and standard
+#'     errors. The best way to access such information, however, is
+#'     through the variety of helper functions provided by the
+#'     admbsecr package. S3 methods \link{stdEr.admbsecr.boot} and
+#'     \link{vcov.admbsecr.boot} can be used to return standard errors
+#'     and the variance-covariance matrix of estimated parameters
+#'     based on the bootstrap procedure.
 #'
 #' @param fit A fitted \code{admbsecr} model object.
 #' @param N The number of bootstrap resamples.
 #' @param prog Logical, if \code{TRUE}, a progress bar is shown. Only
-#' available if \code{n.cores} is 1.
+#'     available if \code{n.cores} is 1.
 #' @param n.cores A positive integer representing the number of cores
-#' to use for parallel processing.
+#'     to use for parallel processing.
 #' @param M The number of bootstrap resamples for the secondary
-#' bootstrap used to calculate Monte Carlo error. See 'Details'
-#' below. If M = 0, then this is skipped.
+#'     bootstrap used to calculate Monte Carlo error. See 'Details'
+#'     below. If M = 0, then this is skipped.
 #' @param infotypes A list, where each component contains information
-#' types for subsequent bootstrap procedures. See 'Details'.
+#'     types for subsequent bootstrap procedures. See 'Details'.
 #'
 #'
 #'

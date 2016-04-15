@@ -23,9 +23,11 @@ character string "esa", which results in a contour
 encapsulating an area equal to the estimates effective sampling
 area.}
 
-\item{xlim}{A numeric vector of length 2, giving the x coordinate range.}
+\item{xlim}{A numeric vector of length 2, giving the x coordinate
+range.}
 
-\item{ylim}{A numeric vector of length 2, giving the y coordinate range.}
+\item{ylim}{A numeric vector of length 2, giving the y coordinate
+range.}
 
 \item{show.labels}{Logical, if \code{TRUE}, contours are labelled
 with the appropriate probability.}

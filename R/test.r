@@ -9,8 +9,8 @@
 #' the AD model builder executable.
 #'
 #' @param quick Logical, if \code{TRUE}, only a quick check is carried
-#' out that tests whether or not the AD Model Builder executable is
-#' running correctly.
+#'     out that tests whether or not the AD Model Builder executable
+#'     is running correctly.
 #'
 #' @export
 test.admbsecr <- function(quick = FALSE){

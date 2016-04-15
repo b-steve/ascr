@@ -27,12 +27,13 @@ types for subsequent bootstrap procedures. See 'Details'.}
 }
 \value{
 A list of class \code{"admbsecr.boot"}. Components contain
-information such as estimated parameters and standard errors. The
-best way to access such information, however, is through the
-variety of helper functions provided by the admbsecr package. S3
-methods \link{stdEr.admbsecr.boot} and \link{vcov.admbsecr.boot}
-can be used to return standard errors and the variance-covariance
-matrix of estimated parameters based on the bootstrap procedure.
+    information such as estimated parameters and standard
+    errors. The best way to access such information, however, is
+    through the variety of helper functions provided by the
+    admbsecr package. S3 methods \link{stdEr.admbsecr.boot} and
+    \link{vcov.admbsecr.boot} can be used to return standard errors
+    and the variance-covariance matrix of estimated parameters
+    based on the bootstrap procedure.
 }
 \description{
 Carries out a parametric bootstrap, based on a model fitted using
@@ -92,7 +93,7 @@ in prep., for details).
 There will be some error in esimates based on the parametric
 bootstrap (e.g., standard errors and estimates of bias) because the
 number of bootstrap simulations is not infinite. By default, this
-function calculates Monte Carlo error using a bootstrap of the
+function calculatesMonte Carlo error using a bootstrap of the
 estimates obtained from the initial bootstrap procedure; see
 Equation (9) in Koehler, Brown and Haneuse (2009). Note that this
 secondary bootstrap does not require the fitting of any further
@@ -111,13 +112,13 @@ boot.fit <- boot.admbsecr(fit = example$fits$simple.hn, N = 100)
 }
 \references{
 Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009)
-On the assessment of Monte Carlo error in sumulation-based
-statistical analyses. \emph{The American Statistician},
-\strong{63}: 155--162.
+    On the assessment of Monte Carlo error in sumulation-based
+    statistical analyses. \emph{The American Statistician},
+    \strong{63}: 155--162.
 
 Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
-G. J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
-framework for animal density estimation from acoustic detection
-data.
+    G. J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
+    framework for animal density estimation from acoustic detection
+    data.
 }
 

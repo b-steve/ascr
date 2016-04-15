@@ -26,12 +26,13 @@ coordinates for the location of a mask point. The function
 \item{detfn}{A character string specifying the detection function
 to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
 (threshold), "lth" (log-link threshold), or "ss" (signal
-strength). If the latter is used, signal strength information must
-be provided in \code{capt}.}
+strength). If the latter is used, signal strength information
+must be provided in \code{capt}.}
 
 \item{sv}{A named list. Component names are parameter names, and
-each component is a start value for the associated parameter. See
-'Details' for further information on the parameters to be fitted.}
+each component is a start value for the associated
+parameter. See 'Details' for further information on the
+parameters to be fitted.}
 
 \item{bounds}{A named list. Component names are parameter names,
 and each components is a vector of length two, specifying the
@@ -42,57 +43,61 @@ fixed, and each component is the fixed value for the associated
 parameter.}
 
 \item{phases}{A named list. Component names are parameter names,
-and each component is a phase for the associated parameter. See the
-section on convergence below for information on parameter phases.}
+and each component is a phase for the associated parameter. See
+the section on convergence below for information on parameter
+phases.}
 
 \item{sf}{A named list. Component names are parameter names, and
-each component is a scalefactor for the associated parameter. The
-default behaviour is to automatically select scalefactors based on
-parameter start values. See the section on convergence below.}
+each component is a scalefactor for the associated
+parameter. The default behaviour is to automatically select
+scalefactors based on parameter start values. See the section
+on convergence below.}
 
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
 
 \item{call.freqs}{A vector of call frequencies collected
-independently of the main acoustic survey. These must be scaled so
-that they represent a unit of time equal to the length of this
-original survey. For example, if the \code{capt} data come from
-fifteen minutes' worth of data, then \code{call.freqs} should give
-the number of calls made per fifteen-minute period for each of the
-independently monitored individuals.}
+independently of the main acoustic survey. These must be scaled
+so that they represent a unit of time equal to the length of
+this original survey. For example, if the \code{capt} data come
+from fifteen minutes' worth of data, then \code{call.freqs}
+should give the number of calls made per fifteen-minute period
+for each of the independently monitored individuals.}
 
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
 \code{"toa"} is a component name of \code{capt}.}
 
 \item{local}{Logical, if \code{TRUE} integration over unobserved
-animal activity centres is only carried out in a region local to
-detectors that detected individuals. See 'Details'.}
+animal activity centres is only carried out in a region local
+to detectors that detected individuals. See 'Details'.}
 
 \item{hess}{Logical, if \code{TRUE} the Hessian is estimated,
 allowing for calculation of standard errors, the
 variance-covariance matrix, and the correlation matrix, at the
-expense of a little processing time. If \code{FALSE}, the Hessian
-is not estimated. Note that if individuals are detectable more than
-once (e.g., by calling more than once on an acoustic survey) then
-parameter uncertainty is not properly represented by these
-calculations.}
+expense of a little processing time. If \code{FALSE}, the
+Hessian is not estimated. Note that if individuals are
+detectable more than once (e.g., by calling more than once on
+an acoustic survey) then parameter uncertainty is not properly
+represented by these calculations.}
 
 \item{trace}{Logical, if \code{TRUE} parameter values at each step
 of the optimisation algorithm are printed to the R console.}
 
 \item{clean}{Logical, if \code{TRUE} ADMB output files are
-removed. Otherwise, ADMB output file will remain in a directory,
-the location of which is reported after the model is fitted.}
+removed. Otherwise, ADMB output file will remain in a
+directory, the location of which is reported after the model is
+fitted.}
 
 \item{optim.opts}{Optimisation options. See 'Details' for further
 information.}
 }
 \value{
 A list of class \code{"admbsecr"}. Components contain
-information such as estimated parameters and standard errors. The
-best way to access such information, however, is through the
-variety of helper functions provided by the admbsecr package.
+    information such as estimated parameters and standard
+    errors. The best way to access such information, however, is
+    through the variety of helper functions provided by the
+    admbsecr package.
 }
 \description{
 Fits an SECR model, with our without supplementary information
@@ -440,41 +445,41 @@ bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example$traps,
 }
 \references{
 Borchers, D. L., and Efford, M. G. (2008) Spatially
-explicit maximum likelihood methods for capture-recapture
-studies. \emph{Biometrics}, \strong{64}: 377--385.
+    explicit maximum likelihood methods for capture-recapture
+    studies. \emph{Biometrics}, \strong{64}: 377--385.
 
 Borchers, D. L. (2012) A non-technical overview of
-spatially explicit capture-recapture models. \emph{Journal of
-Ornithology}, \strong{152}: 435--444.
+    spatially explicit capture-recapture models. \emph{Journal of
+    Ornithology}, \strong{152}: 435--444.
 
 Borchers, D. L., Stevenson, B. C., Kidney, D., Thomas,
-L., and Marques, T. A. (in press) A unifying model for
-capture-recapture and distance sampling surveys of wildlife
-populations. \emph{Journal of the American Statistical
-Association}.
+    L., and Marques, T. A. (in press) A unifying model for
+    capture-recapture and distance sampling surveys of wildlife
+    populations. \emph{Journal of the American Statistical
+    Association}.
 
 Stevenson, B. C., Borchers, D. L., Altwegg, R., Swift,
-R. J., Gillespie, D. M., and Measey, G. J. (submitted) A general
-framework for animal density estimation from acoustic detections
-across a fixed microphone array.
+    R. J., Gillespie, D. M., and Measey, G. J. (submitted) A
+    general framework for animal density estimation from acoustic
+    detections across a fixed microphone array.
 }
 \seealso{
 \link{boot.admbsecr} to calculate standard errors and
-estimate bias using a parametric bootstrap.
+    estimate bias using a parametric bootstrap.
 
 \link{coef.admbsecr}, \link{stdEr.admbsecr}, and
-\link{vcov.admbsecr} to extract estimated parameters, standard
-errors, and the variance-covariance matrix, respectively.
+    \link{vcov.admbsecr} to extract estimated parameters, standard
+    errors, and the variance-covariance matrix, respectively.
 
 \link{confint.admbsecr} to calculate confidence intervals.
 
 \link{summary.admbsecr} to get a summary of estimates and
-standard errors.
+    standard errors.
 
 \link{show.detfn} to plot the estimated detection
-function.
+    function.
 
 \link{locations} to plot estimated locations of particular
-individuals or calls.
+    individuals or calls.
 }
 

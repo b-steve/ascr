@@ -22,11 +22,11 @@ animalIDvec <- function(capthist){
 #'
 #' @param mics a matrix containing the coordinates of trap locations.
 #' @param dets a data frame containing (at least): (i) \code{$toa},
-#' the precise time of arrival of the received sound, and (ii)
-#' \code{$trap} the trap at which the sound was recorded.
+#'     the precise time of arrival of the received sound, and (ii)
+#'     \code{$trap} the trap at which the sound was recorded.
 #' @param sound.speed the speed of sound in metres per second.
-#' @return A data frame. Specifically, the \code{dets} dataframe,
-#' now with a new variable, \code{ID}.
+#' @return A data frame. Specifically, the \code{dets} dataframe, now
+#'     with a new variable, \code{ID}.
 #' @author David Borchers
 #'
 #' @export
@@ -102,27 +102,28 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' been fixed using \code{admbsecr}'s \code{fix} argument.
 #'
 #' @param pars A character vector containing names of parameter values
-#' to be extracted. Alternatively, the character string \code{"all"}
-#' will extract all parameters, fixed or otherwise, and the character
-#' string \code{"fitted"} extracts only fitted parameters (i.e., not
-#' the effective survey area). See the 'Details' section for the
-#' \link{admbsecr} function's documentation for information on the
-#' parameters that are fitted.
+#'     to be extracted. Alternatively, the character string
+#'     \code{"all"} will extract all parameters, fixed or otherwise,
+#'     and the character string \code{"fitted"} extracts only fitted
+#'     parameters (i.e., not the effective survey area). See the
+#'     'Details' section for the \link{admbsecr} function's
+#'     documentation for information on the parameters that are
+#'     fitted.
 #' @param cutoff Logical, if \code{TRUE}, the cutoff value for an
-#' acoustic fit is included.
+#'     acoustic fit is included.
 #' @param as.list Logical, if \code{TRUE}, each parameter value is
-#' returned as the component of a list, where component names give the
-#' parameter names. In this case, the returned object is suitable as
-#' the argument of a variety of functions (e.g., \code{sv} or
-#' \code{fix} for the \link{admbsecr} function, or \code{pars} for the
-#' \link{sim.capt} function). If \code{FALSE}, parameter values are
-#' returned as part of a named vector.
+#'     returned as the component of a list, where component names give
+#'     the parameter names. In this case, the returned object is
+#'     suitable as the argument of a variety of functions (e.g.,
+#'     \code{sv} or \code{fix} for the \link{admbsecr} function, or
+#'     \code{pars} for the \link{sim.capt} function). If \code{FALSE},
+#'     parameter values are returned as part of a named vector.
 #' @inheritParams locations
 #'
 #' @return See above information about the argument \code{as.list}. If
-#' \code{as.list} is \code{TRUE}, then a list is returned. If
-#' \code{as.list} is \code{FALSE}, then a named character vector is
-#' returned.
+#'     \code{as.list} is \code{TRUE}, then a list is returned. If
+#'     \code{as.list} is \code{FALSE}, then a named character vector
+#'     is returned.
 #'
 #' @examples
 #' get.par(fit = example$fits$simple.hn, pars = "all")
@@ -232,32 +233,32 @@ erf <- function(x){
 #'
 #' @param fit A fitted model from \link{admbsecr}.
 #' @param esa Logical, if \code{TRUE} the effective sampling area is
-#' returned instead of capture probabilities.
+#'     returned instead of capture probabilities.
 #' @param points A matrix with two columns. Each row provides
-#' Cartesian coordinates for the location of a point at which a
-#' capture probability should be returned.
+#'     Cartesian coordinates for the location of a point at which a
+#'     capture probability should be returned.
 #' @param traps A matrix with two columns. Each row provides Cartesian
-#' coordinates for the location of a trap (or detector). Ignored if
-#' \code{fit} is not \code{NULL}.
+#'     coordinates for the location of a trap (or detector). Ignored
+#'     if \code{fit} is not \code{NULL}.
 #' @param detfn A character string specifying the detection function
-#' to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
-#' (threshold), "lth" (log-link threshold), or "ss" (signal
-#' strength). Ignored if \code{fit} is not \code{NULL}.
+#'     to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
+#'     (threshold), "lth" (log-link threshold), or "ss" (signal
+#'     strength). Ignored if \code{fit} is not \code{NULL}.
 #' @param ss.link A character string, either \code{"identity"},
-#' \code{"log"}, or \code{"spherical"}, which specifies the
-#' relationship between the expected received signal strength and
-#' distance from the microphone. See the documentation for
-#' \link{admbsecr} for further details. Ignored if \code{fit} is not
-#' \code{NULL}.
+#'     \code{"log"}, or \code{"spherical"}, which specifies the
+#'     relationship between the expected received signal strength and
+#'     distance from the microphone. See the documentation for
+#'     \link{admbsecr} for further details. Ignored if \code{fit} is
+#'     not \code{NULL}.
 #' @param pars A named list. Component names are parameter names, and
-#' each component is a value for the associated parameter. Ignored if
-#' \code{fit} is not \code{NULL}.
+#'     each component is a value for the associated parameter. Ignored
+#'     if \code{fit} is not \code{NULL}.
 #' @param n.quadpoints An integer, giving the number of quadrature
-#' points used for numerical integration over the possible call
-#' directions.
+#'     points used for numerical integration over the possible call
+#'     directions.
 #'
 #' @return A vector containing detection probabilities for each
-#' location in \code{points}.
+#'     location in \code{points}.
 #'
 #' @export
 p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
@@ -357,8 +358,8 @@ scaled.log.link <- function(x){
 #' carried out by \link{boot.admbsecr}.
 #'
 #' @param estimate A character string, either \code{"bias"} or
-#' \code{"se"}, which determines whether Monte Carlo errors for bias
-#' estimates or standard errors are reported.
+#'     \code{"se"}, which determines whether Monte Carlo errors for
+#'     bias estimates or standard errors are reported.
 #' @inheritParams locations
 #'
 #' @seealso \link{boot.admbsecr} for the bootstrap procedure.
@@ -388,7 +389,7 @@ get.mce <- function(fit, estimate){
 #'
 #' @seealso \link{boot.admbsecr} for the bootstrap procedure.
 #' @seealso \link{get.mce} for Monte Carlo error the biases are
-#' subject to.
+#'     subject to.
 #'
 #' @export
 get.bias <- function(fit, pars = "fitted", mce = FALSE){

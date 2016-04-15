@@ -11,15 +11,17 @@ locations(fit, id, infotypes = NULL, combine = FALSE, xlim = range(mask[,
   ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing =
   "solid", dist = "solid", toa = "solid"), trap.col = "red",
   circle.traps = TRUE, show.labels = TRUE, plot.contours = TRUE,
-  plot.estlocs = FALSE, plot.arrows = "bearing" \%in\% fit$infotypes,
-  plot.circles = "dist" \%in\% fit$infotypes, arrow.length = NULL,
-  show.legend = FALSE, show.axes = TRUE, add = FALSE)
+  plot.estlocs = FALSE, keep.estlocs = FALSE, plot.arrows = "bearing"
+  \%in\% fit$infotypes, plot.circles = "dist" \%in\% fit$infotypes,
+  arrow.length = NULL, show.legend = FALSE, show.axes = TRUE,
+  add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{admbsecr}.}
 
-\item{id}{A numeric vector with row numbers from \code{fit$args$capt},
-indicating which individuals' locations are to be plotted.}
+\item{id}{A numeric vector with row numbers from
+\code{fit$args$capt}, indicating which individuals' locations
+are to be plotted.}
 
 \item{infotypes}{A character vector indicating the type(s) of
 information to be used when plotting the estimated density of
@@ -28,28 +30,31 @@ location.  Elements can be a subset of \code{"capt"},
 \code{"combined"}, and \code{"all"}, where \code{"capt"} shows
 estimated location only using detection locations,
 \code{"combined"} combines all information types together, and
-\code{"all"} plots all possible contour types. When signal strength
-information is used in the model fit, \code{"capt"} and \code{"ss"}
-are equivalent as the signal strength information is built into the
-detection function. By default, only the most informative contour
-is plotted, i.e., \code{"capt"} if the model was fitted with no
-additional information, and \code{"combined"} otherwise.}
+\code{"all"} plots all possible contour types. When signal
+strength information is used in the model fit, \code{"capt"}
+and \code{"ss"} are equivalent as the signal strength
+information is built into the detection function. By default,
+only the most informative contour is plotted, i.e.,
+\code{"capt"} if the model was fitted with no additional
+information, and \code{"combined"} otherwise.}
 
 \item{combine}{Logical, if \code{TRUE} then the information types
 specified in \code{infotypes} are combined into a single
 contour. If \code{FALSE} then separate contours are plotted for
 each information type.}
 
-\item{xlim}{A numeric vector of length 2, giving the x coordinate range.}
+\item{xlim}{A numeric vector of length 2, giving the x coordinate
+range.}
 
-\item{ylim}{A numeric vector of length 2, giving the y coordinate range.}
+\item{ylim}{A numeric vector of length 2, giving the y coordinate
+range.}
 
 \item{mask}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a mask point. The function
 \link[admbsecr]{create.mask} will return a suitable object. The
-mask used to fit the model \code{fit} will be used by default; this
-argument is usually used when estimated location contours need to
-be plotted to a higher resolution than this.}
+mask used to fit the model \code{fit} will be used by default;
+this argument is usually used when estimated location contours
+need to be plotted to a higher resolution than this.}
 
 \item{levels}{A numeric vector giving the values to be associated
 with the plotted contours.}
@@ -58,21 +63,23 @@ with the plotted contours.}
 \code{levels} is provided.}
 
 \item{density}{Logical, if \code{TRUE}, the labels on contours (and
-the levels specified by \code{levels}) refer to the density of the
-estimated distribution of the individual's location. If
-\code{FALSE}, the labels on contours (and the levels specified by
-\code{levels}) refer to the probability of the individual being
-located within the associated contour under the estimated
+the levels specified by \code{levels}) refer to the density of
+the estimated distribution of the individual's location. If
+\code{FALSE}, the labels on contours (and the levels specified
+by \code{levels}) refer to the probability of the individual
+being located within the associated contour under the estimated
 distribution of the individual's location.}
 
 \item{cols}{A list with named components corresponding to each
-contour type (i.e., a subset of \code{"capt"}, \code{"bearing"},
-\code{"dist"}, \code{"toa"}, and \code{"combined"}). Each component
-provides the colour of the associated contour type (e.g., using a
-character string such as \code{"red"}, or a call to the function
-\link[grDevices]{rgb}). By default, if only one contour is to be
-plotted, it will be plotted in black. Alternatively, a vector with
-a single element, specifying the colour for all contours.}
+contour type (i.e., a subset of \code{"capt"},
+\code{"bearing"}, \code{"dist"}, \code{"toa"}, and
+\code{"combined"}). Each component provides the colour of the
+associated contour type (e.g., using a character string such as
+\code{"red"}, or a call to the function
+\link[grDevices]{rgb}). By default, if only one contour is to
+be plotted, it will be plotted in black. Alternatively, a
+vector with a single element, specifying the colour for all
+contours.}
 
 \item{ltys}{The line type of the contours, with the same required
 syntax as \code{cols}; see \link{par}.}
@@ -81,37 +88,41 @@ syntax as \code{cols}; see \link{par}.}
 locations.}
 
 \item{circle.traps}{Logical, if \code{TRUE} circles are plotted
-around traps that made a detection of the individual in question.}
+around traps that made a detection of the individual in
+question.}
 
 \item{show.labels}{Logical, if \code{TRUE}, contours are labelled
 with the appropriate probability density (if \code{density} is
-\code{TRUE}), or the corresponding probability of the individual
-being within the associated contour, under the estimated density
-(if \code{density} is \code{FALSE}).}
+\code{TRUE}), or the corresponding probability of the
+individual being within the associated contour, under the
+estimated density (if \code{density} is \code{FALSE}).}
 
 \item{plot.contours}{Logical, if \code{TRUE}, contours are
-plotted. Note that, if \code{FALSE}, nothing corresponding to the
-density of the individuals' locations is plotted unless
+plotted. Note that, if \code{FALSE}, nothing corresponding to
+the density of the individuals' locations is plotted unless
 \code{plot.estlocs} is \code{TRUE}.}
 
 \item{plot.estlocs}{Logical, if \code{TRUE}, dots are plotted at
-the mode of the combined densities. If a density has more than a
-single mode (and the modes have the same density value) then a dot
-will be plotted for each.}
+the mode of the combined densities. If a density has more than
+a single mode (and the modes have the same density value) then
+a dot will be plotted for each.}
+
+\item{keep.estlocs}{Logical, if \code{TRUE}, the locations of the
+estimated locations are returned.}
 
 \item{plot.arrows}{Logical, if \code{TRUE}, arrows indicating the
-estimated bearing to the individual are plotted from detectors at
-which detections were made.}
+estimated bearing to the individual are plotted from detectors
+at which detections were made.}
 
 \item{plot.circles}{Logical, if \code{TRUE}, circles indicating the
-estimated distance to the individual are plotted around detectors
-at which detections were made.}
+estimated distance to the individual are plotted around
+detectors at which detections were made.}
 
 \item{arrow.length}{Numeric, providing the length of the arrows
 (only used if \code{plot.arrows} is \code{TRUE}).}
 
-\item{show.legend}{Logical, if \code{TRUE}, a legend will be added to
-the plot.}
+\item{show.legend}{Logical, if \code{TRUE}, a legend will be added
+to the plot.}
 
 \item{show.axes}{Logical, if \code{TRUE}, axes will be added to the
 plot.}

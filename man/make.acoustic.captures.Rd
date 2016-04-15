@@ -16,8 +16,8 @@ the precise time of arrival of the received sound, and (ii)
 \item{sound.speed}{the speed of sound in metres per second.}
 }
 \value{
-A data frame. Specifically, the \code{dets} dataframe,
-now with a new variable, \code{ID}.
+A data frame. Specifically, the \code{dets} dataframe, now
+    with a new variable, \code{ID}.
 }
 \description{
 Identifies recaptures and assigns ID numbers to sounds recorded for

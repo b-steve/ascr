@@ -5,13 +5,13 @@
 #'
 #' @param object A fitted model from \link[admbsecr]{admbsecr}.
 #' @param pars A character vector containing either parameter names,
-#' or a subset of \code{"all"}, \code{"derived"}, \code{"fitted"}, and
-#' \code{"linked"}; \code{"fitted"} corresponds to the parameters of
-#' interest, \code{"derived"} corresponds to quantities that are
-#' functions of these parameters (e.g., the effective survey area or
-#' animal density from an acoustic survey), and \code{"linked"}
-#' corresponds to the parameters AD Model Builder has maximised the
-#' likelihood over.
+#'     or a subset of \code{"all"}, \code{"derived"}, \code{"fitted"},
+#'     and \code{"linked"}; \code{"fitted"} corresponds to the
+#'     parameters of interest, \code{"derived"} corresponds to
+#'     quantities that are functions of these parameters (e.g., the
+#'     effective survey area or animal density from an acoustic
+#'     survey), and \code{"linked"} corresponds to the parameters AD
+#'     Model Builder has maximised the likelihood over.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @examples
@@ -48,7 +48,7 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
 #' @rdname coef.admbsecr
 #'
 #' @param correct.bias Logical, if \code{TRUE}, estimated biases are
-#' subtracted from estimated parameter values.
+#'     subtracted from estimated parameter values.
 #'
 #' @method coef admbsecr.boot
 #'
@@ -190,7 +190,7 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
 #' using \link[admbsecr]{boot.admbsecr}.
 #'
 #' @param mce Logical, if \code{TRUE} Monte Carlo error for the
-#' standard errors is also returned.
+#'     standard errors is also returned.
 #' @inheritParams coef.admbsecr
 #'
 #' @method stdEr admbsecr.boot

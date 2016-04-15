@@ -15,9 +15,9 @@ detection function is to be used.}
 }
 \value{
 An object of class \code{traps} comprising a data frame of
-x- and y-coordinates, the detector type ('single', 'multi',
-'proximity', 'count', 'polygon' etc.), and possibly other
-attributes.
+    x- and y-coordinates, the detector type ('single', 'multi',
+    'proximity', 'count', 'polygon' etc.), and possibly other
+    attributes.
 }
 \description{
 Converts an \code{admbsecr} traps matrix to a \code{secr} traps

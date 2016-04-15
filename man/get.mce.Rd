@@ -10,8 +10,8 @@ get.mce(fit, estimate)
 \item{fit}{A fitted model from \link{admbsecr}.}
 
 \item{estimate}{A character string, either \code{"bias"} or
-\code{"se"}, which determines whether Monte Carlo errors for bias
-estimates or standard errors are reported.}
+\code{"se"}, which determines whether Monte Carlo errors for
+bias estimates or standard errors are reported.}
 }
 \description{
 Extracts calculated Monte Carlo errors from a bootstrap procedure

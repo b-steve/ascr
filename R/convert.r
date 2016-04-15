@@ -4,14 +4,14 @@
 #' \code{\link{admbsecr}}.
 #'
 #' @param buffer The minimum distance between trap locations and the
-#' edge of the generated mask.
+#'     edge of the generated mask.
 #' @param ... Arguments to be passed to \link{make.mask}.
 #' @inheritParams admbsecr
 #'
 #' @return An object of class \code{mask}.
 #'
 #' @seealso \link{convert.mask} to convert a mask compatible with the
-#' \link{secr} package.
+#'     \link{secr} package.
 #'
 #' @examples
 #' mask <- create.mask(traps = example$traps, buffer = 20)
@@ -69,10 +69,10 @@ create.mask <- function(traps, buffer, ...){
 #' }
 #'
 #' @param captures A data frame of capture records, see 'Details' for
-#' the correct format.
+#'     the correct format.
 #' @param n.traps The total number of traps. If \code{NULL} then the
-#' number of traps is assumed to be the largest value in the
-#' \code{traps} column of the \code{captures} argument.
+#'     number of traps is assumed to be the largest value in the
+#'     \code{traps} column of the \code{captures} argument.
 #'
 #' @export
 create.capt <- function(captures, n.traps = NULL){
@@ -117,13 +117,13 @@ create.capt <- function(captures, n.traps = NULL){
 #' argument of the function \link{make.capthist}.
 #'
 #' @param ss Logical, set to \code{TRUE} if a signal strength
-#' detection function is to be used.
+#'     detection function is to be used.
 #' @inheritParams admbsecr
 #'
 #' @return An object of class \code{traps} comprising a data frame of
-#' x- and y-coordinates, the detector type ('single', 'multi',
-#' 'proximity', 'count', 'polygon' etc.), and possibly other
-#' attributes.
+#'     x- and y-coordinates, the detector type ('single', 'multi',
+#'     'proximity', 'count', 'polygon' etc.), and possibly other
+#'     attributes.
 #'
 #' @examples
 #' traps <- convert.traps(traps = example$traps)
@@ -149,8 +149,7 @@ convert.traps <- function(traps, ss = FALSE){
 #'
 #' @return An object of class \code{mask}.
 #'
-#' @examples
-#' mask <- convert.mask(mask = example$mask)
+#' @examples mask <- convert.mask(mask = example$mask)
 #'
 #' @export
 convert.mask <- function(mask){
@@ -164,18 +163,18 @@ convert.mask <- function(mask){
 #' packages.
 #'
 #' @param capt A \code{secr} capture history object for
-#' \code{convert.capt.to.admbsecr}, or an \code{admbsecr} capture history
-#' object for \code{convert.capt.to.secr}.
+#'     \code{convert.capt.to.admbsecr}, or an \code{admbsecr} capture
+#'     history object for \code{convert.capt.to.secr}.
 #' @param capthist Logical, if \code{TRUE}, a \code{capthist} object
-#' is returned. Otherwise a data frame is returned, which is suitable
-#' for the \code{captures} argument to the \link{make.capthist}
-#' function.
+#'     is returned. Otherwise a data frame is returned, which is
+#'     suitable for the \code{captures} argument to the
+#'     \link{make.capthist} function.
 #' @param cutoff The signal strength threshold for detection, if
-#' required.
+#'     required.
 #' @inheritParams admbsecr
 #'
 #' @return A capture history object appropriate for analysis using
-#' either the \code{admbsecr} or the \code{secr} package.
+#'     either the \code{admbsecr} or the \code{secr} package.
 #' @examples capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 #' 
 #' @name convert.capt
@@ -232,10 +231,10 @@ convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
 #'
 #' @param dets Detection output dataframe from PAMGuard.
 #' @param mics A matrix containing the coordinates of microphone
-#' locations.
+#'     locations.
 #' @param time.range A vector of length two, providing a range of
-#' times for which a subset should be taken to create the capture
-#' history.
+#'     times for which a subset should be taken to create the capture
+#'     history.
 #' @param sound.speed The speed of sound in metres per second.
 #' @export
 convert.pamguard <- function(dets, mics, time.range = NULL,

@@ -18,8 +18,8 @@ Cartesian coordinates for the location of a point at which a
 capture probability should be returned.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or detector). Ignored if
-\code{fit} is not \code{NULL}.}
+coordinates for the location of a trap (or detector). Ignored
+if \code{fit} is not \code{NULL}.}
 
 \item{detfn}{A character string specifying the detection function
 to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
@@ -30,12 +30,12 @@ strength). Ignored if \code{fit} is not \code{NULL}.}
 \code{"log"}, or \code{"spherical"}, which specifies the
 relationship between the expected received signal strength and
 distance from the microphone. See the documentation for
-\link{admbsecr} for further details. Ignored if \code{fit} is not
-\code{NULL}.}
+\link{admbsecr} for further details. Ignored if \code{fit} is
+not \code{NULL}.}
 
 \item{pars}{A named list. Component names are parameter names, and
-each component is a value for the associated parameter. Ignored if
-\code{fit} is not \code{NULL}.}
+each component is a value for the associated parameter. Ignored
+if \code{fit} is not \code{NULL}.}
 
 \item{n.quadpoints}{An integer, giving the number of quadrature
 points used for numerical integration over the possible call
@@ -43,7 +43,7 @@ directions.}
 }
 \value{
 A vector containing detection probabilities for each
-location in \code{points}.
+    location in \code{points}.
 }
 \description{
 Calculates the probability of detection by at least one detector
