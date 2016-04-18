@@ -33,7 +33,7 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$coefficients[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.derived <- which(par.names == "esa" | par.names == "Da" | par.names == "Dc")
         derived <- object$coefficients[which.derived]
         fitted <- object$coefficients[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -171,7 +171,7 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$se[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.derived <- which(par.names == "esa" | par.names == "Da" | par.names == "Dc")
         derived <- object$se[which.derived]
         fitted <- object$se[-c(which.linked, which.derived)]
         out <- mget(pars)

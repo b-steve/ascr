@@ -432,7 +432,7 @@
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-                     local = FALSE, hess = !any(cue.rates > 1), trace = FALSE,
+                     local = FALSE, hess = NULL, trace = FALSE,
                      clean = TRUE, optim.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
@@ -442,7 +442,6 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         warning("The argument `call.freqs' is deprecated; please rename to `cue.rates' instead.")
         cue.rates <- extra.args[["call.freqs"]]
-        hess <- !any(cue.rates > 1)
     }
     ## TODO: Sort out how to determine supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
@@ -464,6 +463,10 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (length(survey.length) != 1){
             stop("The argument `survey.length' must be scalar.")
         }
+    }
+    ## Sorting out cues per survey.
+    if (!is.null(cue.rates)){
+        cue.freqs <- cue.rates*survey.length
     }
     ## Storing objects from ss.opts.
     cutoff <- ss.opts$cutoff
@@ -1016,9 +1019,13 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         bearings, toa_ssq = toa.ssq)
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
-        fit.freqs <- any(cue.rates != 1)
+        fit.freqs <- any(cue.freqs != 1)
     } else {
         fit.freqs <- FALSE
+    }
+    ## Setting hess.
+    if (is.null(hess)){
+        hess <- !fit.freqs
     }
     ## Using optimx() for first call fits.
     if (first.calls){
@@ -1227,10 +1234,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$coefficients[2*n.est.pars + 1] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
-        mu.freqs <- mean(cue.rates)
+        mu.freqs <- mean(cue.freqs)
         Da <- get.par(out, "D")/mu.freqs
-        names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
-        coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
+        Dc <- get.par(out, "D")/survey.length
+        names.vec <- c(names(out[["coefficients"]]), "Da", "Dc", "mu.freqs")
+        coefs.updated <- c(out[["coefficients"]], Da, Dc, mu.freqs)
         names(coefs.updated) <- names.vec
         out[["coefficients"]] <- coefs.updated
         ## Removing ses, cor, vcov matrices.
