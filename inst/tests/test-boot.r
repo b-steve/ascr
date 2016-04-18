@@ -37,6 +37,8 @@ test_that("simple model bootstrapping", {
     expect_that(boot.fit.par, is_identical_to(boot.fit))
 })
 
+## Note bootstrapping of multiple-cue models is in test-fits.r
+
 test_that("cue-rate model bootstrapping", {
     set.seed(6324)          
     fit <- admbsecr(capt = lapply(lightfooti$capt, function(x) x[1:20, ]),

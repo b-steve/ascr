@@ -67,6 +67,8 @@ test_that("simulation produces correct output", {
     expect_that(test.capt$ss[1103, ], equals(test.ss))
 })
 
+## Note simulation tests for mulitple-cue models is in test-fit.r
+
 test_that("simulation errors", {
     ## Specifying incorrect SS link.
     expect_that(sim.capt(traps = example$traps, mask = example$mask, detfn = "ss",

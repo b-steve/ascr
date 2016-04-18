@@ -294,6 +294,18 @@ test_that("multiple calls fitting", {
     ses.test <- c(351.86, 0.42008)
     relative.error <- max(abs((stdEr(fit.hess)[1:2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
+    ## Checking simulation generates multiple cues per location.
+    set.seed(2125)
+    test.capt <- sim.capt(fit, keep.locs = TRUE)
+    expect_that(nrow(test.capt$popn.locs), equals(917))
+    expect_that(length(unique(test.capt$popn.locs[, 1])), equals(92))
+    expect_that(nrow(test.capt$capt.locs), equals(134))
+    expect_that(length(unique(test.capt$capt.locs[, 1])), equals(24))
+    set.seed(3429)
+    fit.boot <- boot.admbsecr(fit = fit, N = 10, prog = FALSE)
+    ses.test <- c(886.9398, 1.1567)
+    relative.error <- max(abs((stdEr(fit.boot)[1:2] - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
 })
 
 test_that("directional call fitting", {
