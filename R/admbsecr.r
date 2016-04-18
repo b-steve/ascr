@@ -438,7 +438,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     extra.args <- list(...)
     if (any(names(extra.args) == "call.freqs")){
         if (!missing(cue.rates)){
-            stop("The argument `cue.rates' has replaced has replaced `call.freqs'; use only the former.")
+            stop("The argument `cue.rates' has replaced `call.freqs'; use only the former.")
         }
         warning("The argument `call.freqs' is deprecated; please rename to `cue.rates' instead.")
         cue.rates <- extra.args[["call.freqs"]]
