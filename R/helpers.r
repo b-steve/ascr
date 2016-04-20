@@ -73,6 +73,35 @@ make.acoustic.captures <- function(mics, dets, sound.speed){
     captures
 }
 
+make.acoustic.captures <- function(mics, dets, sound.speed){
+    sound.speed <- 325
+    mics <- as.matrix(mics)
+    trap.dists <- distances(mics, mics)
+    n.traps <- nrow(mics)
+    n.dets <- nrow(dets)
+    dist.mat <- matrix(0, nrow = n.dets, ncol = n.dets)
+    timediff.mat <- matrix(0, nrow = n.dets, ncol = n.dets)
+    for (i in 1:n.dets){
+        for (j in i:n.dets){
+            dist.mat[i, j] <- dist.mat[j, i] <-
+                trap.dists[dets$trap[i], dets$trap[j]]
+            timediff.mat[i, j] <- timediff.mat[j, i] <-
+                abs(dets$toa[i] - dets$toa[j])
+        }
+    }
+    maxtime.mat <- dist.mat/sound.speed
+    match.mat <- timediff.mat <= maxtime.mat
+    probs <- NULL
+    for (i in 1:n.dets){
+        matches <- which(match.mat[i, ])
+        if (!all(match.mat[matches, matches])){
+            probs <- c(probs, i)
+        }
+    }
+    browser()
+    match.mat
+}
+
 ## Adapted from R2admb.
 read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
     if (verbose)
