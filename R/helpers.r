@@ -74,7 +74,6 @@ make.acoustic.captures <- function(mics, dets, sound.speed){
 }
 
 match.calls <- function(mics, dets, sound.speed){
-    sound.speed <- 325
     mics <- as.matrix(mics)
     trap.dists <- distances(mics, mics)
     n.traps <- nrow(mics)
