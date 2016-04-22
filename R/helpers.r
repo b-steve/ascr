@@ -73,31 +73,35 @@ make.acoustic.captures <- function(mics, dets, sound.speed){
     captures
 }
 
-match.calls <- function(mics, dets, sound.speed){
+allocate.calls <- function(mics, dets, sound.speed){
     mics <- as.matrix(mics)
     trap.dists <- distances(mics, mics)
-    n.traps <- nrow(mics)
     n.dets <- nrow(dets)
-    dist.mat <- matrix(0, nrow = n.dets, ncol = n.dets)
-    timediff.mat <- matrix(0, nrow = n.dets, ncol = n.dets)
-    for (i in 1:n.dets){
-        for (j in i:n.dets){
-            dist.mat[i, j] <- dist.mat[j, i] <-
-                trap.dists[dets$trap[i], dets$trap[j]]
-            timediff.mat[i, j] <- timediff.mat[j, i] <-
-                abs(dets$toa[i] - dets$toa[j])
-        }
-    }
+    ## Allocating pairwise plausibility of common cue sources.
+    dist.mat <- detection_dists(trap.dists, dets$trap)
+    timediff.mat <- detection_timediffs(dets$toa, dets$trap)
     maxtime.mat <- dist.mat/sound.speed
     match.mat <- timediff.mat <= maxtime.mat
-    probs <- NULL
-    for (i in 1:n.dets){
-        matches <- which(match.mat[i, ])
-        if (!all(match.mat[matches, matches])){
-            probs <- c(probs, i)
+    ## Finding blocks of multiple cues with possible common sources.
+    incomplete.blocks <- find_incomplete_blocks(match.mat)
+    n.blocks <- max(incomplete.blocks)
+    complete.block <- logical(n.blocks)
+    final.mat <- matrix(FALSE, nrow = n.dets, ncol = n.dets)
+    ## Allocating possible common cues to sources.
+    reqss.mat <- dist.mat/timediff.mat
+    for (i in 1:max(incomplete.blocks)){
+        ## Grabbing a block.
+        block <- match.mat[incomplete.blocks == i, incomplete.blocks == i]
+        reqss <- reqss.mat[incomplete.blocks == i, incomplete.blocks == i]
+        ## Working out if there is any possible ambiguity.
+        is.complete <- all(block)
+        ## If ambiguity, resolve it.
+        if (!is.complete){  
+            block <- blockify(block, reqss)
         }
+        final.mat[incomplete.blocks == i, incomplete.blocks == i] <- block
     }
-    match.mat
+    final.mat
 }
 
 ## Adapted from R2admb.
