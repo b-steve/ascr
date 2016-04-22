@@ -5,6 +5,64 @@
 
 using namespace Rcpp;
 
+// find_incomplete_blocks
+IntegerVector find_incomplete_blocks(const LogicalMatrix& mat);
+RcppExport SEXP admbsecr_find_incomplete_blocks(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const LogicalMatrix& >::type mat(matSEXP);
+    __result = Rcpp::wrap(find_incomplete_blocks(mat));
+    return __result;
+END_RCPP
+}
+// blockify
+LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss);
+RcppExport SEXP admbsecr_blockify(SEXP blockSEXP, SEXP reqssSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const LogicalMatrix& >::type block(blockSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type reqss(reqssSEXP);
+    __result = Rcpp::wrap(blockify(block, reqss));
+    return __result;
+END_RCPP
+}
+// detection_dists
+NumericMatrix detection_dists(const NumericMatrix& trap_dists, const NumericVector& traps);
+RcppExport SEXP admbsecr_detection_dists(SEXP trap_distsSEXP, SEXP trapsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type trap_dists(trap_distsSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type traps(trapsSEXP);
+    __result = Rcpp::wrap(detection_dists(trap_dists, traps));
+    return __result;
+END_RCPP
+}
+// detection_timediffs
+NumericMatrix detection_timediffs(const NumericVector& times, const NumericVector& traps);
+RcppExport SEXP admbsecr_detection_timediffs(SEXP timesSEXP, SEXP trapsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericVector& >::type times(timesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type traps(trapsSEXP);
+    __result = Rcpp::wrap(detection_timediffs(times, traps));
+    return __result;
+END_RCPP
+}
+// min_matrix
+int min_matrix(const IntegerMatrix& mat);
+RcppExport SEXP admbsecr_min_matrix(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type mat(matSEXP);
+    __result = Rcpp::wrap(min_matrix(mat));
+    return __result;
+END_RCPP
+}
 // distances
 NumericMatrix distances(const NumericMatrix& a, const NumericMatrix& b);
 RcppExport SEXP admbsecr_distances(SEXP aSEXP, SEXP bSEXP) {
