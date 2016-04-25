@@ -52,14 +52,15 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// min_matrix
-int min_matrix(const IntegerMatrix& mat);
-RcppExport SEXP admbsecr_min_matrix(SEXP matSEXP) {
+// min_skip_matrix
+int min_skip_matrix(const IntegerMatrix& skip, const LogicalMatrix& allocated);
+RcppExport SEXP admbsecr_min_skip_matrix(SEXP skipSEXP, SEXP allocatedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const IntegerMatrix& >::type mat(matSEXP);
-    __result = Rcpp::wrap(min_matrix(mat));
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type skip(skipSEXP);
+    Rcpp::traits::input_parameter< const LogicalMatrix& >::type allocated(allocatedSEXP);
+    __result = Rcpp::wrap(min_skip_matrix(skip, allocated));
     return __result;
 END_RCPP
 }

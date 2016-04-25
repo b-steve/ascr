@@ -17,8 +17,8 @@ detection_timediffs <- function(times, traps) {
     .Call('admbsecr_detection_timediffs', PACKAGE = 'admbsecr', times, traps)
 }
 
-min_matrix <- function(mat) {
-    .Call('admbsecr_min_matrix', PACKAGE = 'admbsecr', mat)
+min_skip_matrix <- function(skip, allocated) {
+    .Call('admbsecr_min_skip_matrix', PACKAGE = 'admbsecr', skip, allocated)
 }
 
 #' Calculating distances between two sets of points
