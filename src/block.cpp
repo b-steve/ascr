@@ -3,12 +3,17 @@
 using namespace Rcpp;
 using namespace std;
 
+// Hard coding sound speed limits.
+const double lower_limit = 275;
+const double mid_limit = 310;
+const double sound_speed = 330;
+
 // Some prototypes.
 int min_unallocated(const LogicalVector& allocated);
 void add_to_block(const int& i, LogicalVector& in_block, const LogicalMatrix& mat);
 void reset_in_block(LogicalVector& in_block);
 NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& allocated, IntegerMatrix& skip);
-int min_matrix(const IntegerMatrix& mat);
+int min_skip_matrix(const IntegerMatrix& mat, const LogicalMatrix& allocated);
 void copy_matrix(const NumericMatrix& from, NumericMatrix& to);
 void copy_matrix(const LogicalMatrix& from, LogicalMatrix& to);
 void reset_matrix(IntegerMatrix& mat);
@@ -53,11 +58,25 @@ void set_value(const int& i, const int& j, const bool& value, LogicalMatrix& out
   }
 }
 
-void set_true(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& allocated, const NumericMatrix& reqss, bool& abort){
-  int n = out.nrow();
-  // Set candidate to true.
-  set_value(a, b, true, out, allocated);
+void set_false(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& allocated, const NumericMatrix& reqss, bool& abort, const int& orig_a, const int& orig_b, const int& skip_val, IntegerMatrix& score_true, IntegerMatrix& score_false){
+  int n = out.nrow();;
+  // Abort if setting to false when > sound_speed.
+  if (reqss(a, b) > sound_speed){
+    abort = true;
+    if (skip_val == 2){
+      score_false(orig_a, orig_b) += 1;
+      score_false(orig_b, orig_a) += 1;
+    }
+  } else {
+    if (skip_val == 2){
+      score_true(orig_a, orig_b) += 1;
+      score_true(orig_b, orig_a) += 1;
+    }
+  }
+  // Set to false.
+  set_value(a, b, false, out, allocated);
   int i, k, fixed, unfixed;
+  // Need to set all matches with each to false.
   for (k = 0; k < 2; k++){
     if (k == 0){
       fixed = a;
@@ -67,20 +86,60 @@ void set_true(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& all
       unfixed = a;
     }
     for (i = 0; i < n; i++){
-      // Figure out which other elements associated with each a and b must be true.
+      if (allocated(i, unfixed) & !allocated(fixed, i)){
+	// Checking if match.
+	if (out(i, unfixed)){
+	  // If so, set all comparisons between the matches to false.
+	  set_false(fixed, i, out, allocated, reqss, abort, orig_a, orig_b, skip_val, score_true, score_false);
+	}
+      }
+    }
+  }
+}
+
+void set_true(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& allocated, const NumericMatrix& reqss, bool& abort, const int& orig_a, const int& orig_b, const int& skip_val, IntegerMatrix& score_true, IntegerMatrix& score_false){
+  int n = out.nrow();
+  double limit;
+  // Limit is sound_speed at first stage, mid_limit at second stage.
+  if (skip_val == 0){
+    limit = sound_speed;
+  } else if (skip_val >= 1){
+    limit = mid_limit;
+  }
+  // Abort if setting to true when < sound_speed (first
+  // stage), or if setting to true when < mid_limit (second
+  // stage).
+  if (reqss(a, b) < limit){
+    abort = true;
+    if (skip_val == 2){
+      score_false(orig_a, orig_b) += 1;
+      score_false(orig_b, orig_a) += 1;
+    }
+  } else {
+    if (skip_val == 2){
+      score_true(orig_a, orig_b) += 1;
+      score_true(orig_b, orig_a) += 1;
+    }
+  }
+  // Set to true.
+  set_value(a, b, true, out, allocated);
+  int i, k, fixed, unfixed;
+  // Need all other comparisons to match.
+  for (k = 0; k < 2; k++){
+    if (k == 0){
+      fixed = a;
+      unfixed = b;
+    } else {
+      fixed = b;
+      unfixed = a;
+    }
+    for (i = 0; i < n; i++){
+      // Match grouping elements between two cues.
       if (allocated(i, unfixed) & !allocated(fixed, i)){
 	if (out(i, unfixed)){
-	  // Abort if setting to true when < 330.
-	  if (reqss(fixed, i) < 330){
-	    abort = true;
-	  }
-	  set_true(fixed, i, out, allocated, reqss, abort);
+	  set_true(fixed, i, out, allocated, reqss, abort, orig_a, orig_b, skip_val, score_true, score_false);
 	} else {
-	  // Abort if setting to false when > 330.
-	  if (abort = reqss(fixed, i) > 330){
-	    abort = true;
-	  }
-	  set_value(fixed, i, false, out, allocated);
+	  set_false(fixed, i, out, allocated, reqss, abort, orig_a, orig_b, skip_val, score_true, score_false);
 	}
       }
     }
@@ -88,20 +147,50 @@ void set_true(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& all
 }
 
 // Considers setting candidate element to true. Basically creates a copy of things and sees if things play out.
-void consider_set_true(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& allocated, const NumericMatrix& reqss, IntegerMatrix& skip){
+void consider(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& allocated, const NumericMatrix& reqss, IntegerMatrix& skip, IntegerMatrix& score_true, IntegerMatrix& score_false){
   int n = out.nrow();
   LogicalMatrix out_copy(n, n);
   LogicalMatrix allocated_copy(n, n);
   copy_matrix(out, out_copy);
   copy_matrix(allocated, allocated_copy);
   bool abort = false;
-  set_true(a, b, out_copy, allocated_copy, reqss, abort);
+  // If up to fourth skip make a decision based on true/false scores.
+  if (skip(a, b) == 4 & score_true(a, b) <= score_false(a, b)){
+    set_false(a, b, out_copy, allocated_copy, reqss, abort, a, b, skip(a, b), score_true, score_false);
+    abort = false;
+  } else {
+    // Otherwise do as usual.
+    set_true(a, b, out_copy, allocated_copy, reqss, abort, a, b, skip(a, b), score_true, score_false);
+    // If up to third skip, overwrite abort if winning on score.
+    if (skip(a, b) == 3 & score_true(a, b) > score_false(a, b)){
+      abort = false;
+    }
+  }
   if (!abort){
     copy_matrix(out_copy, out);
     copy_matrix(allocated_copy, allocated);
     reset_matrix(skip);
+    reset_matrix(score_true);
+    reset_matrix(score_false);
   } else {
     skip(a, b) = skip(a, b) + 1;
+    skip(b, a) = skip(b, a) + 1;
+  }
+}
+
+void print_out(const LogicalMatrix& out){
+  int n = out.nrow();
+  int i, j;
+  cout << "Out:" << endl;
+  for (i = 0; i < n; i++){
+    for (j = 0; j < n; j++){
+      if (out(i, j) == true | out(i, j) == false){
+	cout << out(i, j) << " ";
+      } else {
+	cout << "? ";
+      }
+    }
+    cout << endl;
   }
 }
 
@@ -113,22 +202,18 @@ LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
   LogicalMatrix out(n, n);
   LogicalMatrix allocated(n, n);
   IntegerMatrix skip(n, n);
+  IntegerMatrix score_true(n, n);
+  IntegerMatrix score_false(n, n);
   NumericVector candidate(2);
   bool set_to;
   int i, j;
-  // Hard-coded absolute minimum speed.
-  double min_ss = 275;
-  // Hard-coded lower acceptable speed.
-  double acc_ss = 310;
-  // Hard-coded ideal acceptable speed.
-  double ideal_ss = 330;
-  // Allocating diagonal to TRUE and reqss < min_ss as FALSE.
+  // Allocating diagonal to TRUE and reqss < lower_limit as FALSE.
   for (i = 0; i < n; i++){
     for (j = i; j < n; j++){
       if (i == j){
 	set_value(i, j, true, out, allocated);
       } else {
-	if (reqss(i, j) < min_ss){
+	if (reqss(i, j) < lower_limit){
 	  set_value(i, j, false, out, allocated);
 	} else {
 	  out(i, j) = NA_LOGICAL;
@@ -138,20 +223,27 @@ LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
     }
   }
   bool cont = true;
-  cout << "Out:" << endl << out << endl;
-  cout << "Allocated:" << endl << allocated << endl;
-  cout << "Skip:" << endl << skip << endl;
+  bool print = false;
+  if (print){
+    print_out(out);
+    cout << "Allocated:" << endl << allocated << endl;
+    cout << "Skip:" << endl << skip << endl;
+  }
   while(cont){
     candidate = which_max_reqss(reqss, allocated, skip);
     int a, b;
     a = candidate(0);
     b = candidate(1);
-    consider_set_true(a, b, out, allocated, reqss, skip);
+    consider(a, b, out, allocated, reqss, skip, score_true, score_false);
     cont = is_false(all(allocated));
-    cout << "Candidate: " << candidate << endl;
-    cout << "Out:" << endl << out << endl;
-    cout << "Allocated:" << endl << allocated << endl;
-    cout << "Skip:" << endl << skip << endl;
+    if (print){
+      cout << "Candidate: " << candidate << endl;
+      print_out(out);
+      cout << "Allocated:" << endl << allocated << endl;
+      cout << "Skip:" << endl << skip << endl;
+      cout << "Score: True" << endl << score_true << endl;
+      cout << "Score: False" << endl << score_false << endl;
+    }
   }
   return out;
 }
@@ -220,12 +312,13 @@ NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& a
   int n = reqss.nrow();
   NumericVector out(2);
   int i, j;
-  double current_max = 330;
   bool complete = false;
-  int min_skip = min_matrix(skip);
+  int min_skip = min_skip_matrix(skip, allocated);
+  double current_max = 0;
+  // If not up to fourth skip, choose largest reqss.
   for (i = 0; i < n - 1; i++){
     for (j = i + 1; j < n; j++){
-      if (reqss(i, j) > current_max & skip(i, j) == min_skip & !allocated(i, j)){
+      if (reqss(i, j) >= current_max & skip(i, j) == min_skip & !allocated(i, j)){
 	out(0) = i;
 	out(1) = j;
 	current_max = reqss(i, j);
@@ -234,8 +327,22 @@ NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& a
     }
   }
   if (!complete){
-    cout << "Error: no allocations left above 330 ms." << endl;
-    exit(1234);
+    cout << "Error: No reqss found." << endl;
+  }
+  // Otherwise choose smallest largest reqss.
+  if (min_skip == 4){
+    complete = false;
+    double current_min = current_max;
+    for (i = 0; i < n - 1; i++){
+      for (j = i + 1; j < n; j++){
+	if (reqss(i, j) <= current_min & skip(i, j) == min_skip & !allocated(i, j)){
+	  out(0) = i;
+	  out(1) = j;
+	  current_min = reqss(i, j);
+	  complete = true;
+	}
+      }
+    }
   }
   return out;
 }
@@ -261,14 +368,22 @@ void copy_matrix(const LogicalMatrix& from, LogicalMatrix& to){
 }
 
 // [[Rcpp::export]]
-int min_matrix(const IntegerMatrix& mat){
-  int n = mat.nrow();
+int min_skip_matrix(const IntegerMatrix& skip, const LogicalMatrix& allocated){
+  int n = skip.nrow();
   int i, j;
-  int out = mat(0, 0);
+  int out;
+  bool initial_found = false;
   for (i = 0; i < n - 1; i++){
-   for (j = i + 1; j < n; j++){
-      if (mat(i, j) < out){
-	out = mat(i, j);
+    for (j = i + 1; j < n; j++){
+      if (initial_found){
+	if (skip(i, j) < out & !allocated(i, j)){
+	  out = skip(i, j);
+	}
+      } else {
+	if (!allocated(i, j)){
+	  out = skip(i, j);
+	  initial_found = true;
+	}
       }
     }
   }

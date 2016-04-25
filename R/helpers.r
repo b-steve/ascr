@@ -101,7 +101,7 @@ allocate.calls <- function(mics, dets, sound.speed){
         }
         final.mat[incomplete.blocks == i, incomplete.blocks == i] <- block
     }
-    final.mat
+    find_incomplete_blocks(final.mat)
 }
 
 ## Adapted from R2admb.

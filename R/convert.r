@@ -253,10 +253,11 @@ convert.pamguard <- function(dets, mics, time.range = NULL,
     ord <- order(clicks$toa)
     clicks <- clicks[ord, ]
     clicks$toa <- clicks$toa - clicks$toa[1] + 1
-    captures <- make.acoustic.captures(mics, clicks, sound.speed)
-    match.mat <- match.calls(mics, clicks, sound.speed)
+    ## Old and new way to allocate IDs below.
+    ##captures <- make.acoustic.captures(mics, clicks, sound.speed)
+    captures <- clicks
+    captures[, 2] <- allocate.calls(mics, clicks, sound.speed)
     create.capt(captures)
-    match.mat
 }
 
 
