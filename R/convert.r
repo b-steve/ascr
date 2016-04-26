@@ -236,9 +236,12 @@ convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
 #'     times for which a subset should be taken to create the capture
 #'     history.
 #' @param sound.speed The speed of sound in metres per second.
+#' @param new.allocation Logical, if \code{TRUE}, an improved
+#'     call-allocation method is used. The old version is retained so
+#'     that older analyses can be replicated.
 #' @export
 convert.pamguard <- function(dets, mics, time.range = NULL,
-                             sound.speed = 330){
+                             sound.speed = 330, new.allocation = TRUE){
     toa.info <- dets$startSeconds
     mic.id <- log2(dets$channelMap) + 1
     ss.info <- dets$amplitude
@@ -252,11 +255,14 @@ convert.pamguard <- function(dets, mics, time.range = NULL,
     }
     ord <- order(clicks$toa)
     clicks <- clicks[ord, ]
-    clicks$toa <- clicks$toa - clicks$toa[1] + 1
+    ##clicks$toa <- clicks$toa - clicks$toa[1] + 1
     ## Old and new way to allocate IDs below.
-    ##captures <- make.acoustic.captures(mics, clicks, sound.speed)
-    captures <- clicks
-    captures[, 2] <- allocate.calls(mics, clicks, sound.speed)
+    if (new.allocation){
+        captures <- clicks
+        captures[, 2] <- allocate.calls(mics, clicks, sound.speed)
+    } else {
+        captures <- make.acoustic.captures(mics, clicks, sound.speed)
+    }
     create.capt(captures)
 }
 

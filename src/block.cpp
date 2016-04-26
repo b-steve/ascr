@@ -4,7 +4,7 @@ using namespace Rcpp;
 using namespace std;
 
 // Hard coding sound speed limits.
-const double lower_limit = 275;
+const double lower_limit = 150;
 const double mid_limit = 310;
 const double sound_speed = 330;
 
