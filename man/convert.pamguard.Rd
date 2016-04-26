@@ -4,7 +4,8 @@
 \alias{convert.pamguard}
 \title{Create a capture history object from a PAMGuard output file}
 \usage{
-convert.pamguard(dets, mics, time.range = NULL, sound.speed = 330)
+convert.pamguard(dets, mics, time.range = NULL, sound.speed = 330,
+  new.allocation = TRUE)
 }
 \arguments{
 \item{dets}{Detection output dataframe from PAMGuard.}
@@ -17,6 +18,10 @@ times for which a subset should be taken to create the capture
 history.}
 
 \item{sound.speed}{The speed of sound in metres per second.}
+
+\item{new.allocation}{Logical, if \code{TRUE}, an improved
+call-allocation method is used. The old version is retained so
+that older analyses can be replicated.}
 }
 \description{
 Converts a PAMGuard output file to a capture history object
