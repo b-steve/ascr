@@ -6,9 +6,9 @@
 \usage{
 sim.capt(fit = NULL, traps = NULL, mask = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
-  cue.rates = NULL, freq.dist = "edf", sound.speed = 330,
-  test.detfn = FALSE, first.only = FALSE, keep.locs = FALSE,
-  keep.ids = FALSE)
+  cue.rates = NULL, survey.length = NULL, freq.dist = "edf",
+  sound.speed = 330, test.detfn = FALSE, first.only = FALSE,
+  keep.locs = FALSE, keep.ids = FALSE)
 }
 \arguments{
 \item{fit}{A fitted \code{admbsecr} model object which provides the
@@ -19,45 +19,51 @@ values from which to generate capture histories.}
 coordinates for the location of a trap (or detector).}
 
 \item{mask}{A matrix with two columns, providing x- and
-y-coordinates respectively. The extreme x- and y-coordinates define
-the rectangle in which individuals' locations are simulated.}
+y-coordinates respectively. The extreme x- and y-coordinates
+define the rectangle in which individuals' locations are
+simulated.}
 
 \item{infotypes}{A character vector indicating the type(s) of
-additional information to be simulated. Elements can be a subset of
-\code{"bearing"}, \code{"dist"}, \code{"toa"}, and \code{"mrds"}
-(NOTE: \code{"mrds"} not yet implemented). If signal strength
-information is required, specify \code{detfn} as \code{"ss"} rather
-than including it here.}
+additional information to be simulated. Elements can be a
+subset of \code{"bearing"}, \code{"dist"}, \code{"toa"}, and
+\code{"mrds"} (NOTE: \code{"mrds"} not yet implemented). If
+signal strength information is required, specify \code{detfn}
+as \code{"ss"} rather than including it here.}
 
 \item{detfn}{A character string specifying the detection function
-to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
-(threshold), "lth" (log-link threshold), or "ss" (signal strength).}
+to be used. Options are "hn" (halfnormal), "hr" (hazard rate),
+"th" (threshold), "lth" (log-link threshold), or "ss" (signal
+strength).}
 
 \item{pars}{A named list. Component names are parameter names, and
-each component is the value of the associated parameter. A value
-for the parameter \code{D}, animal density (or call density, if it
-an acoustic survey) must always be provided, along with values for
-parameters associated with the chosen detection function and
-additional information type(s).}
+each component is the value of the associated parameter. A
+value for the parameter \code{D}, animal density (or call
+density, if it an acoustic survey) must always be provided,
+along with values for parameters associated with the chosen
+detection function and additional information type(s).}
 
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
 
 \item{cue.rates}{A vector of call frequencies from which a
-distribution for the number of emitted calls for each individual is
-fitted. If scalar, all individuals make the same number of
-calls. If \code{Inf}, \code{first.only} must be \code{TRUE}, and
-all individuals keep making calls until the first is detected.}
+distribution for the number of emitted calls for each
+individual is fitted. If scalar, all individuals make the same
+number of calls. If \code{Inf}, \code{first.only} must be
+\code{TRUE}, and all individuals keep making calls until the
+first is detected.}
+
+\item{survey.length}{The length of a cue-based survey.}
 
 \item{freq.dist}{A character string, either \code{"edf"} or
-\code{"norm"}, which specifies how the distribution function of the
-call frequencies should be estimated. If \code{"edf"}, then the
-distribution of call frequencies is estimated using the empirical
-distribution function. If \code{"norm"}, then a normal distribution
-is fitted to the call frequencies using the sample mean and
-variance. If \code{cue.rates} is scalar then this is ignored, and
-all individuals make the same number of calls. See 'Details' below
-for information on how call frequencies are rounded.}
+\code{"norm"}, which specifies how the distribution function of
+the call frequencies should be estimated. If \code{"edf"}, then
+the distribution of call frequencies is estimated using the
+empirical distribution function. If \code{"norm"}, then a
+normal distribution is fitted to the call frequencies using the
+sample mean and variance. If \code{cue.rates} is scalar then
+this is ignored, and all individuals make the same number of
+calls. See 'Details' below for information on how call
+frequencies are rounded.}
 
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
@@ -66,18 +72,19 @@ defaults to 330 (the speed of sound in air). Only used when
 \item{test.detfn}{Logical value, if \code{TRUE}, tests detection
 function to aid debugging.}
 
-\item{first.only}{Only keep the first detection for each individual.}
+\item{first.only}{Only keep the first detection for each
+individual.}
 
 \item{keep.locs}{Logical, if \code{TRUE}, the locations of
-individuals in the simulated population are retained. In this case,
-the capture histories and auxiliary information are kept in a
-component \code{capt} of the returned list, locations of detected
-individuals are kept in a component \code{capt.locs}, and locations
-of all individuals in the population are kept in a component
-\code{popn.locs}. In this case, the capture histories and auxiliary
-information are kept in a component \code{capt} of the returned
-list, and ID numbers of detected individuals are kept in a
-component \code{capt.ids}}
+individuals in the simulated population are retained. In this
+case, the capture histories and auxiliary information are kept
+in a component \code{capt} of the returned list, locations of
+detected individuals are kept in a component \code{capt.locs},
+and locations of all individuals in the population are kept in
+a component \code{popn.locs}. In this case, the capture
+histories and auxiliary information are kept in a component
+\code{capt} of the returned list, and ID numbers of detected
+individuals are kept in a component \code{capt.ids}}
 
 \item{keep.ids}{Logical, if \code{TRUE}, the ID number of detected
 individuals are retained.}
