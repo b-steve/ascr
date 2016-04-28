@@ -208,7 +208,7 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$boot$se[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.derived <- which(par.names == "esa" | par.names == "Da" | par.names == "Dc")
         derived <- object$boot$se[which.derived]
         fitted <- object$boot$se[-c(which.linked, which.derived)]
         out <- mget(pars)
