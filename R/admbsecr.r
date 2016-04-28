@@ -1161,17 +1161,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             system(cmd, ignore.stdout = !trace)
         }
         ## Reading in model results.
-        options(warn = -1)
         if (exe.type == "test"){
             prefix.name <- strsplit(list.files(), "\\.")[[which(substr(list.files(),
                                                                        nchar(list.files()) - 3,
                                                                        nchar(list.files())) == ".par")]][1]
         }
-        out <- try(read.admbsecr(prefix.name), silent = TRUE)
+        out <- suppressWarnings(try(read.admbsecr(prefix.name), silent = TRUE))
         ## Saving esa to prevent recalculation.
         rep.string <- readLines("secr.rep")
         esa <- as.numeric(readLines("secr.rep")[1])
-        options(warn = 0)
         setwd(curr.dir)
         ## Cleaning up files.
         if (clean){

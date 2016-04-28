@@ -179,9 +179,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
         for (i in seq(from = 1, by = 1, along.with = infotypes)){
             new.args <- args
             new.args$capt <- args$capt[c("bincapt", infotypes[[i]])]
-            options(warn = -1)
-            new.fit <- do.call("admbsecr", new.args)
-            options(warn = 1)
+            new.fit <- suppressWarnings(do.call("admbsecr", new.args))
             new.n.pars <- length(new.fit$coefficients)
             new.par.names <- names(new.fit$coefficients)
             extra.res[[i]] <- matrix(0, nrow = N, ncol = new.n.pars + 1)
@@ -191,12 +189,10 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
                 pb <- txtProgressBar(min = 0, max = N, style = 3)
             }
             for (j in 1:N){
-                options(warn = -1)
-                extra.res[[i]][j, ] <- FUN(j, fit = fit, args = args,
-                                           cue.rates = cue.rates,
-                                           infotypes = infotypes[[i]],
-                                           seeds = seeds, prog = FALSE)
-                options(warn = 1)
+                extra.res[[i]][j, ] <- suppressWarnings(FUN(j, fit = fit, args = args,
+                                                            cue.rates = cue.rates,
+                                                            infotypes = infotypes[[i]],
+                                                            seeds = seeds, prog = FALSE))
                 ## Updating progress bar.
                 if (prog){
                     setTxtProgressBar(pb, j)

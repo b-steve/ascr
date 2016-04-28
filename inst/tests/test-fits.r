@@ -40,9 +40,7 @@ test_that("simple fitting -- half normal", {
     suppressPackageStartupMessages(library(secr))
     mask.secr <- convert.mask(example$mask)
     capt.secr <- convert.capt.to.secr(example$capt["bincapt"], example$traps)
-    options(warn = -1)
-    fit.secr <- secr.fit(capthist = capt.secr, mask = mask.secr, trace = FALSE)
-    options(warn = 0)
+    fit.secr <- suppressWarnings(secr.fit(capthist = capt.secr, mask = mask.secr, trace = FALSE))
     coefs.secr <- numeric(n.pars)
     invlog <- function(x) exp(x)
     for (i in 1:n.pars){
@@ -95,11 +93,9 @@ test_that("simple fitting -- hazard rate", {
     library(secr)
     mask.secr <- convert.mask(example$mask)
     capt.secr <- convert.capt.to.secr(example$capt["bincapt"], example$traps)
-    options(warn = -1)
     set.seed(1512)
-    fit.secr <- secr.fit(capthist = capt.secr, mask = mask.secr, detectfn = 1,
-                         trace = FALSE)
-    options(warn = 0)
+    fit.secr <- suppressWarnings(secr.fit(capthist = capt.secr, mask = mask.secr, detectfn = 1,
+                                          trace = FALSE))
     coefs.secr <- numeric(n.pars)
     invlog <- function(x) exp(x)
     for (i in 1:n.pars){
