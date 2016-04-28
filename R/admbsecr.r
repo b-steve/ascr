@@ -378,7 +378,7 @@
 #' calls per unit time, where the time units are equivalent to those
 #' used by \code{survey.length}.
 #' @param survey.length The length of a cue-based survey. If provided,
-#' the estimated density \code{D} is measured in cues per unit time
+#' the estimated density \code{Dc} is measured in cues per unit time
 #' (using the same units as \code{survey.length}).
 #' @param sound.speed The speed of sound in metres per second,
 #' defaults to 330 (the speed of sound in air). Only used when
