@@ -30,55 +30,61 @@
 #' loudest received signal strength is also above the upper cutoff.
 #'
 #' @param fit A fitted \code{admbsecr} model object which provides the
-#' additional information types, detection function, and parameter
-#' values from which to generate capture histories.
+#'     additional information types, detection function, and parameter
+#'     values from which to generate capture histories.
 #' @param mask A matrix with two columns, providing x- and
-#' y-coordinates respectively. The extreme x- and y-coordinates define
-#' the rectangle in which individuals' locations are simulated.
+#'     y-coordinates respectively. The extreme x- and y-coordinates
+#'     define the rectangle in which individuals' locations are
+#'     simulated.
 #' @param infotypes A character vector indicating the type(s) of
-#' additional information to be simulated. Elements can be a subset of
-#' \code{"bearing"}, \code{"dist"}, \code{"toa"}, and \code{"mrds"}
-#' (NOTE: \code{"mrds"} not yet implemented). If signal strength
-#' information is required, specify \code{detfn} as \code{"ss"} rather
-#' than including it here.
+#'     additional information to be simulated. Elements can be a
+#'     subset of \code{"bearing"}, \code{"dist"}, \code{"toa"}, and
+#'     \code{"mrds"} (NOTE: \code{"mrds"} not yet implemented). If
+#'     signal strength information is required, specify \code{detfn}
+#'     as \code{"ss"} rather than including it here.
 #' @param detfn A character string specifying the detection function
-#' to be used. Options are "hn" (halfnormal), "hr" (hazard rate), "th"
-#' (threshold), "lth" (log-link threshold), or "ss" (signal strength).
+#'     to be used. Options are "hn" (halfnormal), "hr" (hazard rate),
+#'     "th" (threshold), "lth" (log-link threshold), or "ss" (signal
+#'     strength).
 #' @param pars A named list. Component names are parameter names, and
-#' each component is the value of the associated parameter. A value
-#' for the parameter \code{D}, animal density (or call density, if it
-#' an acoustic survey) must always be provided, along with values for
-#' parameters associated with the chosen detection function and
-#' additional information type(s).
+#'     each component is the value of the associated parameter. A
+#'     value for the parameter \code{D}, animal density (or call
+#'     density, if it an acoustic survey) must always be provided,
+#'     along with values for parameters associated with the chosen
+#'     detection function and additional information type(s).
 #' @param cue.rates A vector of call frequencies from which a
-#' distribution for the number of emitted calls for each individual is
-#' fitted. If scalar, all individuals make the same number of
-#' calls. If \code{Inf}, \code{first.only} must be \code{TRUE}, and
-#' all individuals keep making calls until the first is detected.
+#'     distribution for the number of emitted calls for each
+#'     individual is fitted. If scalar, all individuals make the same
+#'     number of calls. If \code{Inf}, \code{first.only} must be
+#'     \code{TRUE}, and all individuals keep making calls until the
+#'     first is detected.
+#' @param survey.length The length of a cue-based survey.
 #' @param freq.dist A character string, either \code{"edf"} or
-#' \code{"norm"}, which specifies how the distribution function of the
-#' call frequencies should be estimated. If \code{"edf"}, then the
-#' distribution of call frequencies is estimated using the empirical
-#' distribution function. If \code{"norm"}, then a normal distribution
-#' is fitted to the call frequencies using the sample mean and
-#' variance. If \code{cue.rates} is scalar then this is ignored, and
-#' all individuals make the same number of calls. See 'Details' below
-#' for information on how call frequencies are rounded.
+#'     \code{"norm"}, which specifies how the distribution function of
+#'     the call frequencies should be estimated. If \code{"edf"}, then
+#'     the distribution of call frequencies is estimated using the
+#'     empirical distribution function. If \code{"norm"}, then a
+#'     normal distribution is fitted to the call frequencies using the
+#'     sample mean and variance. If \code{cue.rates} is scalar then
+#'     this is ignored, and all individuals make the same number of
+#'     calls. See 'Details' below for information on how call
+#'     frequencies are rounded.
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
-#' function to aid debugging.
-#' @param first.only Only keep the first detection for each individual.
+#'     function to aid debugging.
+#' @param first.only Only keep the first detection for each
+#'     individual.
 #' @param keep.locs Logical, if \code{TRUE}, the locations of
-#' individuals in the simulated population are retained. In this case,
-#' the capture histories and auxiliary information are kept in a
-#' component \code{capt} of the returned list, locations of detected
-#' individuals are kept in a component \code{capt.locs}, and locations
-#' of all individuals in the population are kept in a component
-#' \code{popn.locs}. In this case, the capture histories and auxiliary
-#' information are kept in a component \code{capt} of the returned
-#' list, and ID numbers of detected individuals are kept in a
-#' component \code{capt.ids}
+#'     individuals in the simulated population are retained. In this
+#'     case, the capture histories and auxiliary information are kept
+#'     in a component \code{capt} of the returned list, locations of
+#'     detected individuals are kept in a component \code{capt.locs},
+#'     and locations of all individuals in the population are kept in
+#'     a component \code{popn.locs}. In this case, the capture
+#'     histories and auxiliary information are kept in a component
+#'     \code{capt} of the returned list, and ID numbers of detected
+#'     individuals are kept in a component \code{capt.ids}
 #' @param keep.ids Logical, if \code{TRUE}, the ID number of detected
-#' individuals are retained. 
+#'     individuals are retained.
 #' @inheritParams admbsecr
 #'
 #' @return A list with named components, each corresponding to a data
@@ -100,7 +106,7 @@
 #' @export
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                      infotypes = character(0), detfn = "hn",
-                     pars = NULL, ss.opts = NULL, cue.rates = NULL,
+                     pars = NULL, ss.opts = NULL, cue.rates = NULL, survey.length = NULL,
                      freq.dist = "edf", sound.speed = 330, test.detfn = FALSE,
                      first.only = FALSE, keep.locs = FALSE, keep.ids = FALSE){
     ## Some error checking.
@@ -148,6 +154,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         pars <- get.par(fit, "fitted", as.list = TRUE)
         ss.opts <- fit$args$ss.opts
         cue.rates <- fit$args$cue.rates
+        survey.length <- fit$args$survey.length
         sound.speed <- fit$args$sound.speed
         ## Setting up correct arguments for a simulating from a first-call model.
         if (!is.null(ss.opts$lower.cutoff)){
@@ -269,21 +276,21 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
         if (!first.only){
             ## This is super messy, but it's scaling D from call
             ## density to animal density.
-            D <- D/mean(cue.rates)
+            D <- D/(mean(cue.rates)*survey.length)
         }
         popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
         n.a <- nrow(popn)
         if (freq.dist == "edf"){
             if (length(cue.rates) == 1){
-                freqs <- rep(cue.rates, n.a)
+                freqs <- rep(cue.rates*survey.length, n.a)
             } else {
-                freqs <- sample(cue.rates, size = n.a, replace = TRUE)
+                freqs <- sample(cue.rates*survey.length, size = n.a, replace = TRUE)
             }
         } else if (freq.dist == "norm"){
             if (diff(range(cue.rates)) == 0){
-                freqs <- rep(unique(cue.rates), n.a)
+                freqs <- rep(unique(cue.rates)*survey.length, n.a)
             } else {
-                freqs <- rnorm(n.a, mean(cue.rates), sd(cue.rates))
+                freqs <- rnorm(n.a, mean(cue.rates)*survey.length, sd(cue.rates)*survey.length)
             }
         } else {
             stop("The argument 'freq.dist' must be either \"edf\" or \"norm\"")
