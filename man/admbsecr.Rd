@@ -7,8 +7,8 @@
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
   cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-  local = FALSE, hess = !any(cue.rates > 1), trace = FALSE,
-  clean = TRUE, optim.opts = NULL, ...)
+  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
+  optim.opts = NULL, ...)
 }
 \arguments{
 \item{capt}{A list with named components, containing the capture
