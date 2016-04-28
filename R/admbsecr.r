@@ -1247,8 +1247,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                ncol = length(names.vec))
         dimnames(vcov.updated) <- list(names.vec, names.vec)
         if (hess){
-            ses.updated <- c(out[["se"]], rep(NA, 2))
-            max.ind <- length(names.vec) - 2
+            ses.updated <- c(out[["se"]], rep(NA, 3))
+            max.ind <- length(names.vec) - 3
             cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
             vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
         } else {
