@@ -73,6 +73,37 @@ make.acoustic.captures <- function(mics, dets, sound.speed){
     captures
 }
 
+allocate.calls <- function(mics, dets, sound.speed){
+    mics <- as.matrix(mics)
+    trap.dists <- distances(mics, mics)
+    n.dets <- nrow(dets)
+    ## Allocating pairwise plausibility of common cue sources.
+    dist.mat <- detection_dists(trap.dists, dets$trap)
+    timediff.mat <- detection_timediffs(dets$toa, dets$trap)
+    maxtime.mat <- dist.mat/sound.speed
+    match.mat <- timediff.mat <= maxtime.mat
+    ## Finding blocks of multiple cues with possible common sources.
+    incomplete.blocks <- find_incomplete_blocks(match.mat)
+    n.blocks <- max(incomplete.blocks)
+    complete.block <- logical(n.blocks)
+    final.mat <- matrix(FALSE, nrow = n.dets, ncol = n.dets)
+    ## Allocating possible common cues to sources.
+    reqss.mat <- dist.mat/timediff.mat
+    for (i in 1:max(incomplete.blocks)){
+        ## Grabbing a block.
+        block <- match.mat[incomplete.blocks == i, incomplete.blocks == i]
+        reqss <- reqss.mat[incomplete.blocks == i, incomplete.blocks == i]
+        ## Working out if there is any possible ambiguity.
+        is.complete <- all(block)
+        ## If ambiguity, resolve it.
+        if (!is.complete){  
+            block <- blockify(block, reqss)
+        }
+        final.mat[incomplete.blocks == i, incomplete.blocks == i] <- block
+    }
+    find_incomplete_blocks(final.mat)
+}
+
 ## Adapted from R2admb.
 read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
     if (verbose)

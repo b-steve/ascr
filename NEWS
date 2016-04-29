@@ -6,6 +6,9 @@ admbsecr 1.2.1
 * Added `survey.length' parameter to admbsecr(). Cue and animal
   densities are now both explicitly provided.
 
+* Improved detection-to-cue matching algorithm.
+
+
 admbsecr 1.2.0
 --------------
 
