@@ -17,7 +17,7 @@
 #' practitioners looking to implement these methods.
 #'
 #' If the data are from an acoustic survey where individuals call more
-#' than once (i.e., the argument \code{call.freqs} contains values
+#' than once (i.e., the argument \code{cue.rates} contains values
 #' that are not 1), then standard errors calculated from the inverse
 #' of the negative Hessian are not correct. They are therefore not
 #' provided in this case. The method used by the function
@@ -377,13 +377,13 @@
 #'     on convergence below.
 #' @param ss.opts Options for models using the signal strength
 #'     detection function. See 'Details' below.
-#' @param call.freqs A vector of call frequencies collected
-#'     independently of the main acoustic survey. These must be scaled
-#'     so that they represent a unit of time equal to the length of
-#'     this original survey. For example, if the \code{capt} data come
-#'     from fifteen minutes' worth of data, then \code{call.freqs}
-#'     should give the number of calls made per fifteen-minute period
-#'     for each of the independently monitored individuals.
+#' @param cue.rates A vector of call frequencies collected
+#'     independently of the main acoustic survey. This must be
+#'     measured in calls per unit time, where the time units are
+#'     equivalent to those used by \code{survey.length}.
+#' @param survey.length The length of a cue-based survey. If provided,
+#'     the estimated density \code{Dc} is measured in cues per unit
+#'     time (using the same units as \code{survey.length}).
 #' @param sound.speed The speed of sound in metres per second,
 #'     defaults to 330 (the speed of sound in air). Only used when
 #'     \code{"toa"} is a component name of \code{capt}.
@@ -406,6 +406,7 @@
 #'     fitted.
 #' @param optim.opts Optimisation options. See 'Details' for further
 #'     information.
+#' @param ... Other arguments (mostly for back-compatibility).
 #'
 #' @seealso \link{boot.admbsecr} to calculate standard errors and
 #'     estimate bias using a parametric bootstrap.
@@ -435,10 +436,18 @@
 #' @export
 admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
-                     call.freqs = NULL, sound.speed = 330, local = FALSE,
-                     hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
-                     optim.opts = NULL){
+                     cue.rates = NULL, survey.length = NULL, sound.speed = 330,
+                     local = FALSE, hess = NULL, trace = FALSE,
+                     clean = TRUE, optim.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
+    extra.args <- list(...)
+    if (any(names(extra.args) == "call.freqs")){
+        if (!missing(cue.rates)){
+            stop("The argument `cue.rates' has replaced `call.freqs'; use only the former.")
+        }
+        warning("The argument `call.freqs' is deprecated; please rename to `cue.rates' instead.")
+        cue.rates <- extra.args[["call.freqs"]]
+    }
     ## TODO: Sort out how to determine supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
     fit.types <- supp.types %in% names(capt)
@@ -449,6 +458,21 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
+    ## Warning from cue.rates without survey.length.
+    if (missing(survey.length)){
+        if (!is.null(cue.rates)){
+            warning("The use of `cue.rates' without `survey.length' is deprecated. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
+        }
+        survey.length <- 1
+    } else {
+        if (length(survey.length) != 1){
+            stop("The argument `survey.length' must be scalar.")
+        }
+    }
+    ## Sorting out cues per survey.
+    if (!is.null(cue.rates)){
+        cue.freqs <- cue.rates*survey.length
+    }
     ## Storing objects from ss.opts.
     cutoff <- ss.opts$cutoff
     ss.link <- ss.opts$ss.link
@@ -999,10 +1023,14 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
         bearings, toa_ssq = toa.ssq)
     ## Determining whether or not standard errors should be calculated.
-    if (!is.null(call.freqs)){
-        fit.freqs <- any(call.freqs != 1)
+    if (!is.null(cue.rates)){
+        fit.freqs <- any(cue.freqs != 1)
     } else {
         fit.freqs <- FALSE
+    }
+    ## Setting hess.
+    if (is.null(hess)){
+        hess <- !fit.freqs
     }
     ## Using optimx() for first call fits.
     if (first.calls){
@@ -1138,17 +1166,15 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             system(cmd, ignore.stdout = !trace)
         }
         ## Reading in model results.
-        options(warn = -1)
         if (exe.type == "test"){
             prefix.name <- strsplit(list.files(), "\\.")[[which(substr(list.files(),
                                                                        nchar(list.files()) - 3,
                                                                        nchar(list.files())) == ".par")]][1]
         }
-        out <- try(read.admbsecr(prefix.name), silent = TRUE)
+        out <- suppressWarnings(try(read.admbsecr(prefix.name), silent = TRUE))
         ## Saving esa to prevent recalculation.
         rep.string <- readLines("secr.rep")
         esa <- as.numeric(readLines("secr.rep")[1])
-        options(warn = 0)
         setwd(curr.dir)
         ## Cleaning up files.
         if (clean){
@@ -1211,10 +1237,11 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$coefficients[2*n.est.pars + 1] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
-        mu.freqs <- mean(call.freqs)
+        mu.freqs <- mean(cue.freqs)
         Da <- get.par(out, "D")/mu.freqs
-        names.vec <- c(names(out[["coefficients"]]), "Da", "mu.freqs")
-        coefs.updated <- c(out[["coefficients"]], Da, mu.freqs)
+        Dc <- get.par(out, "D")/survey.length
+        names.vec <- c(names(out[["coefficients"]]), "Da", "Dc", "mu.freqs")
+        coefs.updated <- c(out[["coefficients"]], Da, Dc, mu.freqs)
         names(coefs.updated) <- names.vec
         out[["coefficients"]] <- coefs.updated
         ## Removing ses, cor, vcov matrices.
@@ -1225,8 +1252,8 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                ncol = length(names.vec))
         dimnames(vcov.updated) <- list(names.vec, names.vec)
         if (hess){
-            ses.updated <- c(out[["se"]], rep(NA, 2))
-            max.ind <- length(names.vec) - 2
+            ses.updated <- c(out[["se"]], rep(NA, 3))
+            max.ind <- length(names.vec) - 3
             cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
             vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
         } else {

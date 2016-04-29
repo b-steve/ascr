@@ -41,7 +41,7 @@
 #' @section Bootstrapping for acoustic surveys:
 #'
 #' For fits based on acoustic surveys where the argument
-#' \code{call.freqs} is provided to the \code{admbsecr} function, the
+#' \code{cue.rates} is provided to the \code{admbsecr} function, the
 #' simulated data allocates multiple calls to the same location based
 #' on an estimated distribution of the call frequencies. Using a
 #' parametric bootstrap is currently the only way parameter
@@ -118,21 +118,21 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
     if ("g0" %in% names(args$sv)){
         args$sv[["g0"]] <- min(c(0.95, args$sv[["g0"]]))
     }
-    call.freqs <- args$call.freqs
+    cue.rates <- args$cue.rates
     coefs <- fit$coefficients
     par.names <- names(coefs)
     n.pars <- length(coefs)
     seeds <- sample(1:1e8, size = N)
     seed.mce <- sample(1:1e8, size = 1)
     ## Function to get fit.boot.
-    FUN <- function(i, fit, args, call.freqs, infotypes, seeds, prog){
+    FUN <- function(i, fit, args, cue.rates, infotypes, seeds, prog){
         set.seed(seeds[i])
         ## Simulating capture history.
         args$capt <- sim.capt(fit)[c("bincapt", infotypes)]
         ## Simulating calling frequencies (if required).
         if (fit$fit.freqs){
-            if (length(call.freqs) > 1){
-                args$call.freqs <- sample(call.freqs, replace = TRUE)
+            if (length(cue.rates) > 1){
+                args$cue.rates <- sample(cue.rates, replace = TRUE)
             }
         }
         ## Fitting model.
@@ -163,7 +163,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
             pb <- txtProgressBar(min = 0, max = N, style = 3)
         }
         for (i in 1:N){
-            res[i, ] <- FUN(i, fit = fit, args = args, call.freqs = call.freqs,
+            res[i, ] <- FUN(i, fit = fit, args = args, cue.rates = cue.rates,
                             infotypes = fit$infotypes, seeds = seeds, prog = FALSE)
             ## Updating progress bar.
             if (prog){
@@ -180,9 +180,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
         for (i in seq(from = 1, by = 1, along.with = infotypes)){
             new.args <- args
             new.args$capt <- args$capt[c("bincapt", infotypes[[i]])]
-            options(warn = -1)
-            new.fit <- do.call("admbsecr", new.args)
-            options(warn = 1)
+            new.fit <- suppressWarnings(do.call("admbsecr", new.args))
             new.n.pars <- length(new.fit$coefficients)
             new.par.names <- names(new.fit$coefficients)
             extra.res[[i]] <- matrix(0, nrow = N, ncol = new.n.pars + 1)
@@ -192,12 +190,10 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
                 pb <- txtProgressBar(min = 0, max = N, style = 3)
             }
             for (j in 1:N){
-                options(warn = -1)
-                extra.res[[i]][j, ] <- FUN(j, fit = fit, args = args,
-                                           call.freqs = call.freqs,
-                                           infotypes = infotypes[[i]],
-                                           seeds = seeds, prog = FALSE)
-                options(warn = 1)
+                extra.res[[i]][j, ] <- suppressWarnings(FUN(j, fit = fit, args = args,
+                                                            cue.rates = cue.rates,
+                                                            infotypes = infotypes[[i]],
+                                                            seeds = seeds, prog = FALSE))
                 ## Updating progress bar.
                 if (prog){
                     setTxtProgressBar(pb, j)
@@ -223,7 +219,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
         ## IF THERE'S AN ERROR HERE YOU NEED TO REBUILD THE PACKAGE
         ## DUE TO library() CALL ABOVE.
         res <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit, args = args,
-                             call.freqs = call.freqs, infotypes = fit$infotypes,
+                             cue.rates = cue.rates, infotypes = fit$infotypes,
                              seeds = seeds, prog = prog))
         if (prog){
             unlink("prog.txt")
@@ -236,7 +232,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
                 file.create("prog.txt")
             }
             extra.res[[i]] <- t(parSapplyLB(cluster, 1:N, FUN, fit = fit,
-                                            args = args, call.freqs = call.freqs,
+                                            args = args, cue.rates = cue.rates,
                                             infotypes = infotypes[[i]],
                                             seeds = seeds, prog = prog))
             ## Removing maximum gradient component.

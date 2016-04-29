@@ -6,9 +6,9 @@
 \usage{
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
-  call.freqs = NULL, sound.speed = 330, local = FALSE,
-  hess = !any(call.freqs > 1), trace = FALSE, clean = TRUE,
-  optim.opts = NULL)
+  cue.rates = NULL, survey.length = NULL, sound.speed = 330,
+  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
+  optim.opts = NULL, ...)
 }
 \arguments{
 \item{capt}{A list with named components, containing the capture
@@ -56,13 +56,14 @@ on convergence below.}
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
 
-\item{call.freqs}{A vector of call frequencies collected
-independently of the main acoustic survey. These must be scaled
-so that they represent a unit of time equal to the length of
-this original survey. For example, if the \code{capt} data come
-from fifteen minutes' worth of data, then \code{call.freqs}
-should give the number of calls made per fifteen-minute period
-for each of the independently monitored individuals.}
+\item{cue.rates}{A vector of call frequencies collected
+independently of the main acoustic survey. This must be
+measured in calls per unit time, where the time units are
+equivalent to those used by \code{survey.length}.}
+
+\item{survey.length}{The length of a cue-based survey. If provided,
+the estimated density \code{Dc} is measured in cues per unit
+time (using the same units as \code{survey.length}).}
 
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
@@ -91,6 +92,8 @@ fitted.}
 
 \item{optim.opts}{Optimisation options. See 'Details' for further
 information.}
+
+\item{...}{Other arguments (mostly for back-compatibility).}
 }
 \value{
 A list of class \code{"admbsecr"}. Components contain
@@ -118,7 +121,7 @@ al. (in press); this reference is a good starting point for
 practitioners looking to implement these methods.
 
 If the data are from an acoustic survey where individuals call more
-than once (i.e., the argument \code{call.freqs} contains values
+than once (i.e., the argument \code{cue.rates} contains values
 that are not 1), then standard errors calculated from the inverse
 of the negative Hessian are not correct. They are therefore not
 provided in this case. The method used by the function

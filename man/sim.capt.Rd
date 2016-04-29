@@ -6,9 +6,9 @@
 \usage{
 sim.capt(fit = NULL, traps = NULL, mask = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
-  call.freqs = NULL, freq.dist = "edf", sound.speed = 330,
-  test.detfn = FALSE, first.only = FALSE, keep.locs = FALSE,
-  keep.ids = FALSE)
+  cue.rates = NULL, survey.length = NULL, freq.dist = "edf",
+  sound.speed = 330, test.detfn = FALSE, first.only = FALSE,
+  keep.locs = FALSE, keep.ids = FALSE, ...)
 }
 \arguments{
 \item{fit}{A fitted \code{admbsecr} model object which provides the
@@ -45,12 +45,14 @@ detection function and additional information type(s).}
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
 
-\item{call.freqs}{A vector of call frequencies from which a
+\item{cue.rates}{A vector of call frequencies from which a
 distribution for the number of emitted calls for each
 individual is fitted. If scalar, all individuals make the same
 number of calls. If \code{Inf}, \code{first.only} must be
 \code{TRUE}, and all individuals keep making calls until the
 first is detected.}
+
+\item{survey.length}{The length of a cue-based survey.}
 
 \item{freq.dist}{A character string, either \code{"edf"} or
 \code{"norm"}, which specifies how the distribution function of
@@ -58,7 +60,7 @@ the call frequencies should be estimated. If \code{"edf"}, then
 the distribution of call frequencies is estimated using the
 empirical distribution function. If \code{"norm"}, then a
 normal distribution is fitted to the call frequencies using the
-sample mean and variance. If \code{call.freqs} is scalar then
+sample mean and variance. If \code{cue.rates} is scalar then
 this is ignored, and all individuals make the same number of
 calls. See 'Details' below for information on how call
 frequencies are rounded.}
@@ -86,6 +88,8 @@ individuals are kept in a component \code{capt.ids}}
 
 \item{keep.ids}{Logical, if \code{TRUE}, the ID number of detected
 individuals are retained.}
+
+\item{...}{Other arguments (mostly for back-compatibility).}
 }
 \value{
 A list with named components, each corresponding to a data
@@ -120,7 +124,7 @@ rounded down with probability \eqn{1 - x}. For example, a value of
 8.1 will be rounded to 9 with probability 0.1, and rounded to 8
 with probability 0.9.
 
-If \code{call.freqs} is \code{Inf} then all simulated individuals
+If \code{cue.rates} is \code{Inf} then all simulated individuals
 will be detected. To generate sensible capture histories then both
 a lower and upper cutoff must be supplied in \code{ss.opts}. In
 this case, individuals continue to emit calls until one is detected
