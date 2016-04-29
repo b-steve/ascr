@@ -255,7 +255,6 @@ convert.pamguard <- function(dets, mics, time.range = NULL,
     }
     ord <- order(clicks$toa)
     clicks <- clicks[ord, ]
-    ##clicks$toa <- clicks$toa - clicks$toa[1] + 1
     ## Old and new way to allocate IDs below.
     if (new.allocation){
         captures <- clicks
