@@ -3,6 +3,9 @@ admbsecr 1.2.1
 
 * Changed parameter `call.freqs' to `cue.rates' for accuracy.
 
+* Added `survey.length' parameter to admbsecr(). Cue and animal
+  densities are now both explicitly provided.
+
 admbsecr 1.2.0
 --------------
 
