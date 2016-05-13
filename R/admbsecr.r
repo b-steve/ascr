@@ -22,7 +22,7 @@
 #' of the negative Hessian are not correct. They are therefore not
 #' provided in this case. The method used by the function
 #' \link{boot.admbsecr} is currently the only way to calculate these
-#' reliably (see Stevenson et al., in prep., for details).
+#' reliably (see Stevenson et al., in prep., for details)
 #'
 #' @section The \code{capt} argument:
 #'
@@ -1368,13 +1368,14 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 ## Roxygen code for NAMESPACE and datasets.
 
 ## Package imports for roxygenise to pass to NAMESPACE.
-#' @import parallel plyr Rcpp R2admb testthat truncnorm
+#' @import graphics grDevices parallel plyr Rcpp R2admb stats testthat truncnorm
 #' @importFrom CircStats dvm rvm
 #' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom matrixStats colProds
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
+#' @importFrom utils example setTxtProgressBar txtProgressBar
 #' @useDynLib admbsecr
 NULL
 
