@@ -15,12 +15,11 @@ limits. If \code{NULL}, this is set to the buffer of the mask.}
 
 \item{ylim}{A vector with two elements, giving the y-axis limits.}
 
-\item{main}{The main title (on top) using font and size (character
-    expansion) \code{par("font.main")} and color
-    \code{par("col.main")}.}
+\item{main}{The main title (on top) using font, size (character
+    expansion) and color \code{par(c("font.main", "cex.main", "col.main"))}.}
 
-\item{xlab}{X axis label using font and character expansion
-    \code{par("font.lab")} and color \code{par("col.lab")}.}
+\item{xlab}{X axis label using font, size and color 
+    \code{par(c("font.lab", "cex.lab", "col.lab"))}.}
 
 \item{ylab}{Y axis label, same font attributes as \code{xlab}.}
 
