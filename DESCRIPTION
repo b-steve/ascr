@@ -14,13 +14,17 @@ Depends:
 Imports:
     CircStats,
     fastGHQuad,
+    graphics,
+    grDevices,
     matrixStats,
     mvtnorm,
     parallel,
     optimx,
     plyr,
     secr,
-    truncnorm
+    stats,
+    truncnorm,
+    utils
 Suggests:
     knitr,
     xtable

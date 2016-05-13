@@ -126,7 +126,7 @@ that are not 1), then standard errors calculated from the inverse
 of the negative Hessian are not correct. They are therefore not
 provided in this case. The method used by the function
 \link{boot.admbsecr} is currently the only way to calculate these
-reliably (see Stevenson et al., in prep., for details).
+reliably (see Stevenson et al., in prep., for details)
 }
 \section{The \code{capt} argument}{
 
