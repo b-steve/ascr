@@ -178,23 +178,6 @@ void consider(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& all
   }
 }
 
-void print_out(const LogicalMatrix& out){
-  int n = out.nrow();
-  int i, j;
-  cout << "Out:" << endl;
-  for (i = 0; i < n; i++){
-    for (j = 0; j < n; j++){
-      if (out(i, j) == true | out(i, j) == false){
-	cout << out(i, j) << " ";
-      } else {
-	cout << "? ";
-      }
-    }
-    cout << endl;
-  }
-}
-
-
 // Algorithm to resolve incomplete blocks.
 // [[Rcpp::export]]
 LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
@@ -224,11 +207,6 @@ LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
   }
   bool cont = true;
   bool print = false;
-  if (print){
-    print_out(out);
-    cout << "Allocated:" << endl << allocated << endl;
-    cout << "Skip:" << endl << skip << endl;
-  }
   while(cont){
     candidate = which_max_reqss(reqss, allocated, skip);
     int a, b;
@@ -236,14 +214,6 @@ LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
     b = candidate(1);
     consider(a, b, out, allocated, reqss, skip, score_true, score_false);
     cont = is_false(all(allocated));
-    if (print){
-      cout << "Candidate: " << candidate << endl;
-      print_out(out);
-      cout << "Allocated:" << endl << allocated << endl;
-      cout << "Skip:" << endl << skip << endl;
-      cout << "Score: True" << endl << score_true << endl;
-      cout << "Score: False" << endl << score_false << endl;
-    }
   }
   return out;
 }
@@ -325,9 +295,6 @@ NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& a
 	complete = true;
       }
     }
-  }
-  if (!complete){
-    cout << "Error: No reqss found." << endl;
   }
   // Otherwise choose smallest largest reqss.
   if (min_skip == 4){
