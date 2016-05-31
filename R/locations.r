@@ -355,8 +355,10 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                 mode.points <- which(f.estlocs == max(f.estlocs))
                 points(mask[mode.points, 1], mask[mode.points, 2],
                        pch = 16, col = "black")
-                estlocs[j, ] <- c(mask[mode.points, 1], mask[mode.points, 2])
-                j <- j + 1
+                if (keep.estlocs){
+                    estlocs[j, ] <- c(mask[mode.points, 1], mask[mode.points, 2])
+                    j <- j + 1
+                }
             }
         }
     }
