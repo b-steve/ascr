@@ -16,6 +16,7 @@
 test.admbsecr <- function(quick = FALSE){
     dir <- ifelse(quick, "quick", "full")
     if (quick){
+        example <- admbsecr::example
         simple.capt <- example$capt["bincapt"]
         fit <- try(admbsecr(capt = simple.capt, traps = example$traps,
                             mask = example$mask, fix = list(g0 = 1)),
