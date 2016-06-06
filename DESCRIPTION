@@ -1,8 +1,8 @@
 Package: admbsecr
 Type: Package
 Title: SECR models with supplementary location information
-Version: 1.2.1
-Date: 2016-05-16
+Version: 1.2.2
+Date: 2016-06-06
 Author: Ben Stevenson <bcs5@st-andrews.ac.uk>,
     David Borchers <dlb@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
