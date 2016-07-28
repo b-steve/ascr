@@ -96,7 +96,7 @@ allocate.calls <- function(mics, dets, sound.speed){
         ## Working out if there is any possible ambiguity.
         is.complete <- all(block)
         ## If ambiguity, resolve it.
-        if (!is.complete){  
+        if (!is.complete){
             block <- blockify(block, reqss)
         }
         final.mat[incomplete.blocks == i, incomplete.blocks == i] <- block
@@ -252,6 +252,19 @@ get.traps <- function(fit){
     fit$args$traps
 }
 
+#' Extracting capture history object
+#'
+#' Extracts the capture history object used in an admbsecr fit.
+#'
+#' @inheritParams locations
+#'
+#' @return A capture history object.
+#'
+#' @export
+get.capt <- function(fit){
+    fit$args$capt
+}
+
 ## Error function.
 erf <- function(x){
     2*pnorm(x*sqrt(2)) - 1
@@ -397,7 +410,7 @@ scaled.log.link <- function(x){
 #' @seealso \link{stdEr.admbsecr.boot} for standard errors.
 #' @seealso \link{get.bias} for estimated biases.
 #'
-#' 
+#'
 get.mce <- function(fit, estimate){
     if (estimate == "bias"){
         out <- fit$boot$bias.mce
