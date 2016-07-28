@@ -176,7 +176,7 @@ convert.mask <- function(mask){
 #' @return A capture history object appropriate for analysis using
 #'     either the \code{admbsecr} or the \code{secr} package.
 #' @examples capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
-#' 
+#'
 #' @name convert.capt
 NULL
 
@@ -251,6 +251,9 @@ convert.pamguard <- function(dets, mics, time.range = NULL,
                          ss = ss.info, toa = toa.info)
     if (!is.null(time.range)){
         keep <- toa.info > time.range[1] & toa.info < time.range[2]
+        if (!any(keep)){
+            stop("No calls were detected within the specified time.range.")
+        }
         clicks <- clicks[keep, ]
     }
     ord <- order(clicks$toa)
