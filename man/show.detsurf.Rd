@@ -9,7 +9,7 @@ show.detsurf(fit, surface = TRUE, col = "black", levels = NULL,
   add = FALSE, ...)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{surface}{Logical, if \code{TRUE} a 3D detection surface is
 plotted over the mask point locations, otherwise a contour plot
@@ -43,7 +43,7 @@ existing plot.}
 \description{
 Plots the detection probability surface, based on trap locations
 and the estimated detection function from a model fitted using
-\link{admbsecr}.
+\link{fit.ascr}.
 }
 \examples{
 show.detsurf(example$fits$simple.hn)

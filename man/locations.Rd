@@ -17,7 +17,7 @@ locations(fit, id, infotypes = NULL, combine = FALSE, xlim = range(mask[,
   add = FALSE)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{id}{A numeric vector with row numbers from
 \code{fit$args$capt}, indicating which individuals' locations
@@ -51,7 +51,7 @@ range.}
 
 \item{mask}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a mask point. The function
-\link[admbsecr]{create.mask} will return a suitable object. The
+\link[ascr]{create.mask} will return a suitable object. The
 mask used to fit the model \code{fit} will be used by default;
 this argument is usually used when estimated location contours
 need to be plotted to a higher resolution than this.}

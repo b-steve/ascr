@@ -2,19 +2,19 @@
 % Please edit documentation in R/helpers.r
 \name{get.par}
 \alias{get.par}
-\title{Extract estimated or fixed parameter values from an \code{admbsecr} model fit}
+\title{Extract estimated or fixed parameter values from an \code{ascr} model fit}
 \usage{
 get.par(fit, pars = "all", cutoff = FALSE, as.list = FALSE)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{pars}{A character vector containing names of parameter values
 to be extracted. Alternatively, the character string
 \code{"all"} will extract all parameters, fixed or otherwise,
 and the character string \code{"fitted"} extracts only fitted
 parameters (i.e., not the effective survey area). See the
-'Details' section for the \link{admbsecr} function's
+'Details' section for the \link{fit.ascr} function's
 documentation for information on the parameters that are
 fitted.}
 
@@ -25,7 +25,7 @@ acoustic fit is included.}
 returned as the component of a list, where component names give
 the parameter names. In this case, the returned object is
 suitable as the argument of a variety of functions (e.g.,
-\code{sv} or \code{fix} for the \link{admbsecr} function, or
+\code{sv} or \code{fix} for the \link{fit.ascr} function, or
 \code{pars} for the \link{sim.capt} function). If \code{FALSE},
 parameter values are returned as part of a named vector.}
 }
@@ -37,12 +37,12 @@ See above information about the argument \code{as.list}. If
 }
 \description{
 Extracts estimated, derived, and fitted parameters from a model
-fitted using \link{admbsecr}.
+fitted using \link{fit.ascr}.
 }
 \details{
-This is a similar function to \link{coef.admbsecr}, however
+This is a similar function to \link{coef.ascr}, however
 \code{get.par} also allows for extraction of parameters that have
-been fixed using \code{admbsecr}'s \code{fix} argument.
+been fixed using \code{fit.ascr}'s \code{fix} argument.
 }
 \examples{
 get.par(fit = example$fits$simple.hn, pars = "all")

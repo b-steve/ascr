@@ -1,7 +1,7 @@
 context("Testing detection probability calculations")
 
 test_that("half normal", {
-    detfn <- admbsecr:::get.detfn("hn")
+    detfn <- ascr:::get.detfn("hn")
     test.hn <- function(d, g0, sigma){
         g0*exp(-d^2/(2*sigma^2))
     }
@@ -16,7 +16,7 @@ test_that("half normal", {
 })
 
 test_that("hazard rate", {
-    detfn <- admbsecr:::get.detfn("hr")
+    detfn <- ascr:::get.detfn("hr")
     test.hr <- function(d, g0, sigma, z){
         g0*(1 - exp(-(d/sigma)^-z))
     }
@@ -31,9 +31,9 @@ test_that("hazard rate", {
 })
 
 test_that("threshold", {
-    detfn <- admbsecr:::get.detfn("th")
+    detfn <- ascr:::get.detfn("th")
     test.th <- function(d, scale, shape){
-        0.5 - 0.5*admbsecr:::erf(d/scale - shape)
+        0.5 - 0.5*ascr:::erf(d/scale - shape)
     }
     ds <- 0:50
     pars <- list(shape = 6, scale = 3)
@@ -46,9 +46,9 @@ test_that("threshold", {
 })
 
 test_that("log-link threshold", {
-    detfn <- admbsecr:::get.detfn("lth")
+    detfn <- ascr:::get.detfn("lth")
     test.lth <- function(d, scale, shape.1, shape.2){
-       0.5 - 0.5*admbsecr:::erf(shape.1 - exp(shape.2 - scale*d))
+       0.5 - 0.5*ascr:::erf(shape.1 - exp(shape.2 - scale*d))
     }
     ds <- 0:50
     pars <- list(shape.1 = 2, scale = 0.1, shape.2 = 3)

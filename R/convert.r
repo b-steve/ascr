@@ -1,12 +1,12 @@
 #' Create mask object
 #'
 #' Creates a mask object to use with the function
-#' \code{\link{admbsecr}}.
+#' \code{\link{fit.ascr}}.
 #'
 #' @param buffer The minimum distance between trap locations and the
 #'     edge of the generated mask.
 #' @param ... Arguments to be passed to \link{make.mask}.
-#' @inheritParams admbsecr
+#' @inheritParams fit.ascr
 #'
 #' @return An object of class \code{mask}.
 #'
@@ -30,21 +30,21 @@ create.mask <- function(traps, buffer, ...){
 #' Creating capture history object.
 #'
 #' Creates a capture history object to use with the function
-#' \code{\link{admbsecr}}.
+#' \code{\link{fit.ascr}}.
 #'
 #' The \code{captures} argument to this function is intended to be of
 #' a similar format to the \code{captures} argument to
 #' \link{make.capthist} in the \link{secr} package. That is, users can
 #' use the same \code{captures} data frame with \code{create.capt} and
 #' \code{make.capthist}, which generate capture histories for use with
-#' the \code{admbsecr} and \link{secr} packages respectively.
+#' the \code{ascr} and \link{secr} packages respectively.
 #'
 #' As such, the second and fourth columns should provide the ID of the
 #' detection and the trap number of the trap which made the detection
 #' (where the trap number is the row number of the corresponding trap
 #' in the matrix of trap locations). Note that the first and third
 #' columns provide the 'session' and 'occassion' of the detection for
-#' \link{make.capthist}, but as the admbsecr package does not
+#' \link{make.capthist}, but as the ascr package does not
 #' presently have the capabilities to deal with multi-session or
 #' multi-occassion data, these columns are ignored by
 #' \code{create.capt}.
@@ -110,7 +110,7 @@ create.capt <- function(captures, n.traps = NULL){
 
 #' Convert traps object
 #'
-#' Converts an \code{admbsecr} traps matrix to a \code{secr} traps
+#' Converts an \code{ascr} traps matrix to a \code{secr} traps
 #' object.
 #'
 #' The returned object is suitable for use as the \code{traps}
@@ -118,7 +118,7 @@ create.capt <- function(captures, n.traps = NULL){
 #'
 #' @param ss Logical, set to \code{TRUE} if a signal strength
 #'     detection function is to be used.
-#' @inheritParams admbsecr
+#' @inheritParams fit.ascr
 #'
 #' @return An object of class \code{traps} comprising a data frame of
 #'     x- and y-coordinates, the detector type ('single', 'multi',
@@ -139,13 +139,13 @@ convert.traps <- function(traps, ss = FALSE){
 
 #' Convert mask object
 #'
-#' Converts an \code{admbsecr} mask matrix to a \code{secr} mask
+#' Converts an \code{ascr} mask matrix to a \code{secr} mask
 #' object.
 #'
 #' The returned object is suitable for use as the \code{mask}
 #' argument of the function \link{secr.fit}.
 #'
-#' @inheritParams admbsecr
+#' @inheritParams fit.ascr
 #'
 #' @return An object of class \code{mask}.
 #'
@@ -159,11 +159,11 @@ convert.mask <- function(mask){
 #' Capture history conversion.
 #'
 #' These functions convert a capture history object between the
-#' structures required for the \code{admbsecr} and \code{secr}
+#' structures required for the \code{ascr} and \code{secr}
 #' packages.
 #'
 #' @param capt A \code{secr} capture history object for
-#'     \code{convert.capt.to.admbsecr}, or an \code{admbsecr} capture
+#'     \code{convert.capt.to.ascr}, or an \code{ascr} capture
 #'     history object for \code{convert.capt.to.secr}.
 #' @param capthist Logical, if \code{TRUE}, a \code{capthist} object
 #'     is returned. Otherwise a data frame is returned, which is
@@ -171,10 +171,10 @@ convert.mask <- function(mask){
 #'     \link{make.capthist} function.
 #' @param cutoff The signal strength threshold for detection, if
 #'     required.
-#' @inheritParams admbsecr
+#' @inheritParams fit.ascr
 #'
 #' @return A capture history object appropriate for analysis using
-#'     either the \code{admbsecr} or the \code{secr} package.
+#'     either the \code{ascr} or the \code{secr} package.
 #' @examples capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 #'
 #' @name convert.capt
@@ -182,7 +182,7 @@ NULL
 
 #' @rdname convert.capt
 #' @export
-convert.capt.to.admbsecr <- function(capt){
+convert.capt.to.ascr <- function(capt){
     bincapt <- capt[, 1, ]
     nr <- nrow(bincapt)
     nc <- ncol(bincapt)
@@ -225,7 +225,7 @@ convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
 #' Create a capture history object from a PAMGuard output file
 #'
 #' Converts a PAMGuard output file to a capture history object
-#' suitable for use with the \link{admbsecr} function. This uses
+#' suitable for use with the \link{fit.ascr} function. This uses
 #' \link{make.acoustic.captures} to allocate call identities to
 #' detections.
 #'

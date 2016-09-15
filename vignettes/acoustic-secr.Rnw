@@ -1,6 +1,6 @@
 \documentclass{article}
 
-%\VignetteIndexEntry{Acoustic SECR}
+%\VignetteIndexEntry{Acoustic SCR}
 %\VignetteEngine{knitr::knitr}
 
 \usepackage{amsmath}
@@ -14,7 +14,7 @@
 \DeclareDocumentCommand{\sct}{ O{} O{} m }{\shortcites{#3}\citet[#1][#2]{#3}}
 \DeclareDocumentCommand{\scp}{ O{} O{} m }{\shortcites{#3}\citep[#1][#2]{#3}}
 
-\title{Acoustic SECR models with \texttt{admbsecr}}
+\title{Acoustic SCR models with \texttt{ascr}}
 \date{}
 
 \begin{document}
@@ -23,23 +23,23 @@
 
 \section{Introduction}
 
-A range of spatially explicity capture-recapture (SECR) models for
-acoustic detection data are implemented in the \texttt{admbsecr}
-package. These are outlined in this document, along with information
-on how they can be fitted.
+A range of spatial capture-recapture (SCR) models for acoustic
+detection data are implemented in the \texttt{ascr} package. These are
+outlined in this document, along with information on how they can be
+fitted.
 
-The \texttt{capt} argument to the \texttt{admbsecr()} contains the
+The \texttt{capt} argument to the \texttt{fit.ascr()} contains the
 detection data collected during an acoustic survey. For information on
 getting your data in the correct format for analysis with
-\texttt{admbsecr}, see the \emph{Data input for \texttt{admbsecr}}
+\texttt{ascr}, see the \emph{Data input for \texttt{ascr}}
 vignette. To view, run \texttt{vignette("data-structure")}.
 
 Detectors that are deployed for acoustic surveys are typically capable
 of collecting two types of auxiliary information: Signal strengths and
 times of arrival. In some situations, estimated distances and
 directions to sound sources may be collected as well. The
-\texttt{admbsecr} package allows for these data to be incorporated
-into SECR models.
+\texttt{ascr} package allows for these data to be incorporated
+into SCR models.
 
 The \texttt{capt} argument is a list with a mandatory component
 \texttt{bincapt} (the binary capture histories), and a range of
@@ -77,8 +77,8 @@ this inclusion protocol is shown in in Table
 
 The advantages and disadvantages of each choice are discussed below,
 along with guidelines on how to carry out each analysis using the
-\texttt{admbsecr} package. This document also covers the fitting of
-acoustic SECR models where detection not only depends on the distance
+\texttt{ascr} package. This document also covers the fitting of
+acoustic SCR models where detection not only depends on the distance
 from detector, but also either due to the source strength or the
 direction of the call. Brief discussion about the movement of animals
 during an acoustic survey is presented in the final section.
@@ -172,7 +172,7 @@ object (which can be generated using \texttt{create.mask()}).
 
 The model can be fitted using the code
 <<gibbons.code, eval = FALSE, tidy = FALSE>>=
-gibbons.fit <- admbsecr(capt = gibbons.capt, traps = gibbons.capt, 
+gibbons.fit <- fit.ascr(capt = gibbons.capt, traps = gibbons.capt, 
                         mask = gibbons.mask)
 @
 
@@ -243,7 +243,7 @@ heterogeneity in call rates.
 found in the exported data object \texttt{lightfooti}. This is a list,
 including the components \texttt{capt}, \texttt{traps}, and
 \texttt{mask}, appropriate as capture histories, trap location, and
-mask arguments for the \texttt{admbsecr()} function. Additionally, the
+mask arguments for the \texttt{fit.ascr()} function. Additionally, the
 component \texttt{freqs} is a vector of call rates from eight frogs,
 collected independently of the detector array. The component
 \texttt{cutoff} contains an appropriate threshold level for
@@ -254,7 +254,7 @@ of arrival were collected.
 The data can be analysed with the code
 <<lightfooti-code-1, eval = FALSE, tidy = FALSE>>=
 lightfooti.opts <- list(cutoff = lightfooti$cutoff, ss.link = "identity")
-lightfooti.fit <- admbsecr(capt = lightfooti$capt, traps = lightfooti$traps,
+lightfooti.fit <- fit.ascr(capt = lightfooti$capt, traps = lightfooti$traps,
                            mask = lightfooti$mask, detfn = "ss",
                            ss.opts = lightfooti.opts, 
                            call.freqs = lightfooti$freqs)
@@ -277,9 +277,9 @@ Because multiple calls from the same individual may be heard, call
 source locations are not all indpendent, and as a result a simulation
 approach is currently the only appropriate way of obtaining variance
 estimates for these data \scp{Stevenson2015}, and this can be carried
-out using the \texttt{boot.admbsecr()} function. For example,
+out using the \texttt{boot.ascr()} function. For example,
 <<lightfooti-code-2, eval = FALSE, tidy = FALSE>>=
-lightfooti.boot <- boot.admbsecr(lightfooti.fit, N = 10, n.cores = 4)
+lightfooti.boot <- boot.ascr(lightfooti.fit, N = 10, n.cores = 4)
 @ 
 
 The parameter \texttt{N} sets the number of bootstrap resamples to
@@ -293,7 +293,7 @@ Call rate and animal density parameters are potentially estimable from
 the acoustic survey alone (i.e., without having to collect independent
 call rate data) as long as individuals are identifiable from their
 calls. The development of methodology to achieve this is ongoing, and
-may be implemented in a future version of \texttt{admbsecr}.
+may be implemented in a future version of \texttt{ascr}.
 
 \section{First calls as detection units}
 
@@ -324,13 +324,13 @@ particular call.
 
 The ovenbird data are available as exported data from the
 \texttt{secr} package. See the \emph{Data structure for
-  \texttt{admbsecr}} vignette (run \texttt{vignette("data-structure")}
+  \texttt{ascr}} vignette (run \texttt{vignette("data-structure")}
 for information on how to convert the object from \texttt{secr} into
-an appropriate object for analysis with \texttt{admbsecr}. The models
-used by \sct{Dawson2009} can then be fitted with \texttt{admbsecr},
+an appropriate object for analysis with \texttt{ascr}. The models
+used by \sct{Dawson2009} can then be fitted with \texttt{ascr},
 for example,
 <<ovenbird-code, eval = FALSE, tidy = FALSE>>=
-ovenbird.fit <- admbsecr(capt = ovenbird.capt, traps = ovenbird.traps, 
+ovenbird.fit <- fit.ascr(capt = ovenbird.capt, traps = ovenbird.traps, 
                          mask = ovenbird.mask, ss.opts = list(cutoff = 52.5))
 @ 
 
@@ -390,7 +390,7 @@ detector be $B$, measured in radians. It may be more appropriate to
 assume that the signal is most detectable if the call is emitted in
 the direction of the detector (i.e., if $B = 0$ or $B = 2\pi$) and
 least detectable if the call is emitted in the opposite direction
-(i.e., if $B = \pi$). The \texttt{admbsecr} package supports the
+(i.e., if $B = \pi$). The \texttt{ascr} package supports the
 fitting of models with directional calls, and this is incorporated
 into the signal strength detection function by allowing the loss of
 signal strength over space, $\alpha_{s}$, to vary depending on $B$,
@@ -420,7 +420,7 @@ the \texttt{directional} component of \texttt{ss.opts} to
 Further components of \texttt{ss.opts} can be set to tune the fitting
 of models with either heterogeneity in source signal strengths, or
 with directional calling. See the documentation for the
-\texttt{admbsecr()} function for further details. 
+\texttt{fit.ascr()} function for further details. 
 
 Note that these models are fairly computationally demanding and can
 therefore take a long time to fit. Additionally, they assume that
@@ -436,7 +436,7 @@ yet been implemented in conjunction with the first-call methodology of
 
 \section{Animal movement}
 
-So far there has been no development of acoustic SECR methodology that
+So far there has been no development of acoustic SCR methodology that
 explicitly models the movement of individuals over the course of the
 survey. The methods discussed above that analyse capture histories
 where calls or first calls are the unit of detection all assume that

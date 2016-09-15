@@ -1,7 +1,7 @@
 #' Bootstrapping SECR data
 #'
 #' Carries out a parametric bootstrap, based on a model fitted using
-#' \link{admbsecr}.
+#' \link{fit.ascr}.
 #'
 #' For each bootstrap resample, a new population of individuals is
 #' simulated within the mask area. Detections of these individuals are
@@ -12,13 +12,13 @@
 #' iteration saved in the component \code{boot} of the returned list.
 #'
 #' Note that generic functions \link{stdEr} and \link{vcov} with an
-#' object of class \code{admbsecr.boot} as the main argument will
+#' object of class \code{ascr.boot} as the main argument will
 #' return standard errors and the variance-covariance matrix for
 #' estimated parameters \emph{based on the bootstrap procedure} (via
-#' the \link{stdEr.admbsecr.boot} and \link{vcov.admbsecr.boot}
+#' the \link{stdEr.ascr.boot} and \link{vcov.ascr.boot}
 #' methods). For standard errors and the variance-covariance matrix
 #' based on maximum likelihood asymptotic theory, the methods
-#' \link{stdEr.admbsecr} and \link{vcov.admbsecr} must be called
+#' \link{stdEr.ascr} and \link{vcov.ascr} must be called
 #' directly.
 #'
 #' If \code{infotypes} is provided it should take the form of a list,
@@ -41,7 +41,7 @@
 #' @section Bootstrapping for acoustic surveys:
 #'
 #' For fits based on acoustic surveys where the argument
-#' \code{cue.rates} is provided to the \code{admbsecr} function, the
+#' \code{cue.rates} is provided to the \code{fit.ascr} function, the
 #' simulated data allocates multiple calls to the same location based
 #' on an estimated distribution of the call frequencies. Using a
 #' parametric bootstrap is currently the only way parameter
@@ -73,16 +73,16 @@
 #'     framework for animal density estimation from acoustic detection
 #'     data.
 #'
-#' @return A list of class \code{"admbsecr.boot"}. Components contain
+#' @return A list of class \code{"ascr.boot"}. Components contain
 #'     information such as estimated parameters and standard
 #'     errors. The best way to access such information, however, is
 #'     through the variety of helper functions provided by the
-#'     admbsecr package. S3 methods \link{stdEr.admbsecr.boot} and
-#'     \link{vcov.admbsecr.boot} can be used to return standard errors
+#'     ascr package. S3 methods \link{stdEr.ascr.boot} and
+#'     \link{vcov.ascr.boot} can be used to return standard errors
 #'     and the variance-covariance matrix of estimated parameters
 #'     based on the bootstrap procedure.
 #'
-#' @param fit A fitted \code{admbsecr} model object.
+#' @param fit A fitted \code{ascr} model object.
 #' @param N The number of bootstrap resamples.
 #' @param prog Logical, if \code{TRUE}, a progress bar is shown. Only
 #'     available if \code{n.cores} is 1.
@@ -99,11 +99,11 @@
 #' @examples
 #' \dontrun{
 #' ## In practice, N should be >> 100, but this leads to long computation time for a simple example.
-#' boot.fit <- boot.admbsecr(fit = example$fits$simple.hn, N = 100)
+#' boot.fit <- boot.ascr(fit = example$fits$simple.hn, N = 100)
 #' }
 #'
 #' @export
-boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL){
+boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL){
     args <- fit$args
     orig.sv <- args$sv
     ## Set start values to estimated parameters.
@@ -136,11 +136,11 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
             }
         }
         ## Fitting model.
-        fit.boot <- try(do.call("admbsecr", args), silent = TRUE)
+        fit.boot <- try(do.call("fit.ascr", args), silent = TRUE)
         ## If unconverged, refit model with default start values.
         if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
             args$sv <- NULL
-            fit.boot <- try(do.call("admbsecr", args), silent = TRUE)
+            fit.boot <- try(do.call("fit.ascr", args), silent = TRUE)
         }
         ## If still unconverged, give up and report NA.
         if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
@@ -180,7 +180,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
         for (i in seq(from = 1, by = 1, along.with = infotypes)){
             new.args <- args
             new.args$capt <- args$capt[c("bincapt", infotypes[[i]])]
-            new.fit <- suppressWarnings(do.call("admbsecr", new.args))
+            new.fit <- suppressWarnings(do.call("fit.ascr", new.args))
             new.n.pars <- length(new.fit$coefficients)
             new.par.names <- names(new.fit$coefficients)
             extra.res[[i]] <- matrix(0, nrow = N, ncol = new.n.pars + 1)
@@ -210,7 +210,7 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
         }
         cluster <- makeCluster(n.cores)
         clusterEvalQ(cluster, {
-            library(admbsecr)
+            library(ascr)
         })
         ## Main bootstrap.
         if (prog){
@@ -285,6 +285,11 @@ boot.admbsecr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes
                  bias = bias, bias.mce = bias.mce, maxgrads = maxgrads,
                  extra.boots = extra.res)
     out$boot <- boot
-    class(out) <- c("admbsecr.boot", class(fit))
+    class(out) <- c("ascr.boot", class(fit))
     out
 }
+
+## Aliasing old boot.admbsecr() function name.
+#' @rdname boot.ascr
+#' @export
+boot.admbsecr <- boot.ascr

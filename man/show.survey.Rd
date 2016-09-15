@@ -7,13 +7,13 @@
 show.survey(fit, ...)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{...}{Further arguments to be passed to \link{plot}.}
 }
 \description{
 Plots the mask points and trap locations used in a model fitted
-with the function \link{admbsecr}.
+with the function \link{fit.ascr}.
 }
 \examples{
 show.survey(example$fits$simple.hn)

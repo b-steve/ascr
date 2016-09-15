@@ -6,7 +6,7 @@ Acoustic surveys provide a cheap, efficient means of monitoring wildlife populat
 
 2. The source locations of the detected cues are not observed, and so the extent of the survey area that is monitored by the acoustic detectors is not known.
 
-Spatial capture-recapture (SCR) models appear well-suited to overcoming these challenges. SCR estimates detectability across the survey area, and so cues that have not been detected for can be accounted for in the estimation of density. Furthermore, SCR accounts for the cues' unknown source locations by modelling these as latent variables. However, data from acoustic surveys are a little different to "typical" SCR data (for example, that use cameras or physical traps to detect individuals):
+Spatial capture-recapture (SCR) models appear well-suited to overcoming these challenges. SCR estimates detectability across the survey area, and so it is possible to estimate the density of cues that have not been detected. Furthermore, SCR accounts for the cues' unknown source locations by modelling these as latent variables. However, data from acoustic surveys are a little different to "typical" SCR data (for example, that use cameras or physical traps to detect individuals):
 
 1. It is often cues (rather than individuals) that are the unit of detection.
 
@@ -14,7 +14,7 @@ Spatial capture-recapture (SCR) models appear well-suited to overcoming these ch
 
 3. Acoustic detectors often collect additional data such as the received signal strength and time of arrival of detected cues, and estimated distances or bearings from the detector to detected cues' source locations. Such data are informative about the locations of detected animals, and can thus improve inference.
 
-SCR methodology has been developed to account for the these features of data from acoustic surveys (see References section, below). The ascr ("Acoustic SCR") package provides a software implementation of these to facilitate their use. Parameter estimation is carried out by an executable compiled by the powerful optimisation software package AD Model Builder (ADMB)---but users are not required to have any familiarity with this software, or have it installed. However, as the ascr package contains an ADMB executable it is not permitted on the Comprehensive R Archive Network (CRAN). See below for installation instructions.
+SCR methodology has been developed to account for the these data features (see References section, below). The ascr ("Acoustic SCR") package provides a software implementation of these to facilitate their use. Parameter estimation is carried out by an executable compiled by the powerful optimisation software package AD Model Builder (ADMB)---but users are not required to have any familiarity with this, or even have it installed. However, as the ascr package contains an ADMB executable it is not permitted on the Comprehensive R Archive Network (CRAN). See below for installation instructions.
 
 The ascr package was formerly named admbsecr (https://github.com/b-steve/admbsecr). Any code written for use with admbsecr should also run cleanly with ascr. Any functions that were named differently in admbsecr have been aliased with the new corresponding functions in ascr.
 

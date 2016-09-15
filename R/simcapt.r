@@ -2,11 +2,11 @@
 #'
 #' Simulates SECR capture histories and associated additional
 #' information in the correct format for use with the function
-#' \link{admbsecr}. If \code{fit} is provided then no other arguments
+#' \link{fit.ascr}. If \code{fit} is provided then no other arguments
 #' are required. Otherwise, at least \code{traps}, \code{mask}, and
 #' \code{pars} are needed.
 #'
-#' See documentation for the function \link{admbsecr} for information
+#' See documentation for the function \link{fit.ascr} for information
 #' on the parameters corresponding to the different detection
 #' functions, and to different types of additional information.
 #'
@@ -29,7 +29,7 @@
 #' is then incorporated into the resulting capture history only if the
 #' loudest received signal strength is also above the upper cutoff.
 #'
-#' @param fit A fitted \code{admbsecr} model object which provides the
+#' @param fit A fitted \code{ascr} model object which provides the
 #'     additional information types, detection function, and parameter
 #'     values from which to generate capture histories.
 #' @param mask A matrix with two columns, providing x- and
@@ -86,7 +86,7 @@
 #' @param keep.ids Logical, if \code{TRUE}, the ID number of detected
 #'     individuals are retained.
 #' @param ... Other arguments (mostly for back-compatibility).
-#' @inheritParams admbsecr
+#' @inheritParams fit.ascr
 #'
 #' @return A list with named components, each corresponding to a data
 #'     type listed in \code{infotypes}. Each component is a matrix
@@ -95,7 +95,7 @@
 #'     in the matrix indicate detection, and provide simulated values
 #'     of the additional information requested. This object can be
 #'     used as the \code{capt} argument for the function
-#'     \link{admbsecr}.
+#'     \link{fit.ascr}.
 #'
 #' @examples
 #' ## Simulating based on model fits.

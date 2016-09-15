@@ -3,7 +3,7 @@ context("Testing model fits")
 test_that("simple fitting -- half normal", {
     ## Fitting model.
     simple.capt <- example$capt["bincapt"]
-    fit <- admbsecr(capt = simple.capt, traps = example$traps,
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask)
     args.simple <- list(capt = simple.capt, traps = example$traps,
                         mask = example$mask)
@@ -33,7 +33,7 @@ test_that("simple fitting -- half normal", {
     expect_that(is.list(summary(fit)), is_true())
     expect_that(confint(fit), is_a("matrix"))
     ## Checking hess argument.
-    fit.nohess <- admbsecr(capt = simple.capt, traps = example$traps,
+    fit.nohess <- fit.ascr(capt = simple.capt, traps = example$traps,
                            mask = example$mask, hess = FALSE)
     expect_that(coef(fit.nohess), equals(coef(fit)))
     ## Checking estimate equivalence with secr.fit.
@@ -50,7 +50,7 @@ test_that("simple fitting -- half normal", {
     relative.error <- max(abs((coef(fit) - coefs.secr)/coefs.secr))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking fitting with local integration.
-    fit.loc <- admbsecr(capt = simple.capt, traps = example$traps,
+    fit.loc <- fit.ascr(capt = simple.capt, traps = example$traps,
                         mask = example$mask, local = TRUE)
     args.loc <- list(capt = simple.capt, traps = example$traps,
                      mask = example$mask, local = TRUE)
@@ -62,10 +62,10 @@ test_that("simple fitting -- half normal", {
     relative.error <- max(abs((stdEr(fit.loc)[-2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking parallel function.
-    fits <- par.admbsecr(n.cores = 2, args.simple, args.loc)
+    fits <- par.fit.ascr(n.cores = 2, args.simple, args.loc)
     expect_that(fits[[1]], is_identical_to(fit))
     expect_that(fits[[2]], is_identical_to(fit.loc))
-    fits.list <- par.admbsecr(n.cores = 2,
+    fits.list <- par.fit.ascr(n.cores = 2,
                               arg.list = list(args.simple, args.loc))
     expect_that(fits.list, is_identical_to(fits))
 })
@@ -73,7 +73,7 @@ test_that("simple fitting -- half normal", {
 test_that("simple fitting -- hazard rate", {
     ## Fitting model.
     simple.capt <- example$capt["bincapt"]
-    fit <- admbsecr(capt = simple.capt, traps = example$traps,
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, detfn = "hr")
     ## Checking parameter values.
     pars.test <- c(2665.01820347807, 0.879169466112046, 7.04615764143495, 
@@ -109,7 +109,7 @@ test_that("simple fitting -- hazard rate", {
 test_that("bearing fitting", {
     ## Fitting model.
     bearing.capt <- example$capt[c("bincapt", "bearing")]
-    fit <- admbsecr(capt = bearing.capt, traps = example$traps,
+    fit <- fit.ascr(capt = bearing.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
     pars.test <- c(2171.50549951556, 5.53458073287418, 53.8758189647376)
@@ -128,7 +128,7 @@ test_that("bearing fitting", {
 test_that("dist fitting", {
     ## Fitting model.
     dist.capt <- example$capt[c("bincapt", "dist")]
-    fit <- admbsecr(capt = dist.capt, traps = example$traps,
+    fit <- fit.ascr(capt = dist.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
     pars.test <- c(2308.372990408, 5.33172290979062, 5.61787904103153)
@@ -155,7 +155,7 @@ test_that("dist fitting", {
 test_that("ss fitting", {
     ## Fitting model.
     ss.capt <- example$capt[c("bincapt", "ss")]
-    fit <- admbsecr(capt = ss.capt, traps = example$traps,
+    fit <- fit.ascr(capt = ss.capt, traps = example$traps,
                     mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                     ss.opts = list(cutoff = 60))
@@ -176,7 +176,7 @@ test_that("ss fitting", {
     expect_that(get.par(fit, "all")[c(-4, -5)], equals(coef(fit, c("fitted", "derived"))))
     expect_that(get.par(fit, "b0.ss"), equals(fit$coefficients["b0.ss"]))
     ## Testing parameter phases.
-    fit.phase <- admbsecr(capt = ss.capt, traps = example$traps,
+    fit.phase <- fit.ascr(capt = ss.capt, traps = example$traps,
                     mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                     ss.opts = list(cutoff = 60),
@@ -184,7 +184,7 @@ test_that("ss fitting", {
     relative.error <- max(abs((coef(fit.phase) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Testing log-link function.
-    fit.log <- admbsecr(capt = ss.capt, traps = example$traps,
+    fit.log <- fit.ascr(capt = ss.capt, traps = example$traps,
                         mask = example$mask,
                         ss.opts = list(cutoff = 60, ss.link = "log"),
                         phase = list(b0.ss = 2), hess = FALSE)
@@ -193,7 +193,7 @@ test_that("ss fitting", {
     relative.error <- max(abs((coef(fit.log) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Testing spherical spreading.
-    fit.spherical <- admbsecr(capt = ss.capt, traps = example$traps,
+    fit.spherical <- fit.ascr(capt = ss.capt, traps = example$traps,
                               mask = example$mask,
                               sv = list(D = 2000, b0.ss = 100, b1.ss = 4, sigma.ss = 15),
                               ss.opts = list(cutoff = 60, ss.link = "spherical"),
@@ -207,7 +207,7 @@ test_that("ss fitting", {
 test_that("toa fitting", {
     ## Fitting model.
     toa.capt <- example$capt[c("bincapt", "toa")]
-    fit <- admbsecr(capt = toa.capt, traps = example$traps,
+    fit <- fit.ascr(capt = toa.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
     pars.test <- c(2007.91805398409, 5.80251359291497, 0.00177369359452944)
@@ -229,7 +229,7 @@ test_that("toa fitting", {
 
 test_that("joint ss/toa fitting", {
     joint.capt <- example$capt[c("bincapt", "ss", "toa")]
-    fit <- admbsecr(capt = joint.capt, traps = example$traps,
+    fit <- fit.ascr(capt = joint.capt, traps = example$traps,
                     mask = example$mask,
                     sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10),
                     ss.opts = list(cutoff = 60))
@@ -250,7 +250,7 @@ test_that("joint ss/toa fitting", {
 
 test_that("joint bearing/dist fitting", {
     joint.capt <- example$capt[c("bincapt", "bearing", "dist")]
-    fit <- admbsecr(capt = joint.capt, traps = example$traps,
+    fit <- fit.ascr(capt = joint.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1))
     ## Checking parameter values.
     pars.test <- c(2264.81927702306, 5.39436567560547, 51.1182707112547, 
@@ -270,7 +270,7 @@ test_that("joint bearing/dist fitting", {
 test_that("multiple calls fitting", {
     ## Checking fit works.
     simple.capt <- example$capt["bincapt"]
-    fit <- admbsecr(capt = simple.capt, traps = example$traps,
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1),
                     cue.rates = c(9, 10, 11), survey.length = 1)
     pars.test <- c(2267.7394754986, 5.39011188311111, 10, 0.0560029, 
@@ -279,10 +279,10 @@ test_that("multiple calls fitting", {
     relative.error <- max(abs((coef(fit, c("fitted", "derived")) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     expect_that(confint(fit),
-                throws_error("Standard errors not calculated; use boot.admbsecr()"))
+                throws_error("Standard errors not calculated; use boot.ascr()"))
     expect_that(summary(fit), is_a("list"))
     ## Checking hess argument.
-    fit.hess <- admbsecr(capt = simple.capt, traps = example$traps,
+    fit.hess <- fit.ascr(capt = simple.capt, traps = example$traps,
                          mask = example$mask, fix = list(g0 = 1),
                          cue.rates = c(9, 10, 11), survey.length = 1, hess = TRUE)
     expect_that(coef(fit.hess), equals(coef(fit)))
@@ -298,7 +298,7 @@ test_that("multiple calls fitting", {
     expect_that(nrow(test.capt$capt.locs), equals(134))
     expect_that(length(unique(test.capt$capt.locs[, 1])), equals(24))
     set.seed(3429)
-    fit.boot <- boot.admbsecr(fit = fit, N = 10, prog = FALSE)
+    fit.boot <- boot.ascr(fit = fit, N = 10, prog = FALSE)
     ses.test <- c(886.9398, 1.1567)
     relative.error <- max(abs((stdEr(fit.boot)[1:2] - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
@@ -307,7 +307,7 @@ test_that("multiple calls fitting", {
 test_that("directional call fitting", {
     joint.capt <- example$capt[c("bincapt", "ss", "toa")]
     joint.capt <- lapply(joint.capt, function(x) x[41:60, ])
-    fit <- admbsecr(capt = joint.capt, traps = example$traps,
+    fit <- fit.ascr(capt = joint.capt, traps = example$traps,
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
                     mask = example$mask, ss.opts = list(cutoff = 60))
     ## Checking parameter values.
@@ -322,7 +322,7 @@ test_that("directional call fitting", {
     ## Checking detection parameters.
     expect_that(fit$detpars, equals(c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss")))
     ## Checking R's ESA calculation.
-    relative.error <- (admbsecr:::p.dot(fit, esa = TRUE) - coef(fit, "esa"))/coef(fit, "esa")
+    relative.error <- (ascr:::p.dot(fit, esa = TRUE) - coef(fit, "esa"))/coef(fit, "esa")
     expect_that(relative.error < 1e-4, is_true())
     ## Checking supplementary parameters.
     expect_that(fit$suppars, equals("sigma.toa"))
@@ -342,7 +342,7 @@ test_that("fitting heterogeneity in source strengths", {
     ## I hope this is not an issue with sim.capt(); though I ran the
     ## above code with older versions and they gave the same capture
     ## history. I don't know what's going on.
-    fit <- admbsecr(capt = capt, traps = example$traps,
+    fit <- fit.ascr(capt = capt, traps = example$traps,
                     mask = example$mask, sv = pars,
                     phases = list(b0.ss = 2, sigma.b0.ss = 3,
                         sigma.ss = 4),
@@ -367,7 +367,7 @@ test_that("first-call signal strength models", {
                      ss.opts = list(cutoff = lower.cutoff,
                          ss.link = "identity"),
                      cue.rates = Inf, first.only = TRUE)
-    fit <-  admbsecr(capt = capt, traps = traps, mask = mask,
+    fit <-  fit.ascr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
                          lower.cutoff = lower.cutoff), hess = FALSE)
     pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
@@ -375,7 +375,7 @@ test_that("first-call signal strength models", {
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
     ## Testing for an error if identity ss.link is not used.
-    expect_that(fit <-  admbsecr(capt = capt, traps = traps, mask = mask,
+    expect_that(fit <-  fit.ascr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
                          lower.cutoff = lower.cutoff, ss.link = "log"), hess = FALSE),
                 throws_error("First-call models are only implemented for ss.link = \"identity\"."))

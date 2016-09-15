@@ -7,7 +7,7 @@
 get.bias(fit, pars = "fitted", mce = FALSE)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{pars}{A character vector containing either parameter names,
 or a subset of \code{"all"}, \code{"derived"}, \code{"fitted"},
@@ -23,10 +23,10 @@ standard errors is also returned.}
 }
 \description{
 Extracts bias in parameter estimates, calculated using the
-bootstrap procedure carried out by \link{boot.admbsecr}.
+bootstrap procedure carried out by \link{boot.ascr}.
 }
 \seealso{
-\link{boot.admbsecr} for the bootstrap procedure.
+\link{boot.ascr} for the bootstrap procedure.
 
 \link{get.mce} for Monte Carlo error the biases are
     subject to.

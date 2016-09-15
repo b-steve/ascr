@@ -3,7 +3,7 @@ context("Testing bootstrapping")
 test_that("simple model bootstrapping", {
     set.seed(8871)
     ## Carrying out bootstrap.
-    boot.fit <- boot.admbsecr(example$fits$simple.hn, N = 5, prog = FALSE)
+    boot.fit <- boot.ascr(example$fits$simple.hn, N = 5, prog = FALSE)
     ## Mean bootstrap parmeter values.
     means.test <- c(7.84545538086, 1.645086180732, 2579.83220808339, 
                     5.19314953374907, 0.0528957)
@@ -21,18 +21,18 @@ test_that("simple model bootstrapping", {
     ## Monte Carlo error calculation.
     se.mces.test <- c(0.042142082322081, 0.0190421611021184, 99.0170655539726, 
                       0.10204528215025, 0.00173379575479256)
-    boot.se.mces <- admbsecr:::get.mce(boot.fit, "se")
+    boot.se.mces <- ascr:::get.mce(boot.fit, "se")
     relative.error <- max(abs((boot.se.mces - se.mces.test)/se.mces.test))
     expect_that(relative.error < 1e-4, is_true())
     bias.mces.test <- c(0.0636401709223068, 0.0298418201304415, 158.490243744029, 
                         0.156547191920974, 0.00259993989006947)
-    boot.bias.mces <- admbsecr:::get.mce(boot.fit, "bias")
+    boot.bias.mces <- ascr:::get.mce(boot.fit, "bias")
     relative.error <- max(abs((boot.bias.mces - bias.mces.test)/bias.mces.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Testing parallel bootstrap.
     library(parallel)
     set.seed(8871)
-    boot.fit.par <- boot.admbsecr(example$fits$simple.hn, N = 5, prog = FALSE,
+    boot.fit.par <- boot.ascr(example$fits$simple.hn, N = 5, prog = FALSE,
                                   n.cores = detectCores())
     expect_that(boot.fit.par, is_identical_to(boot.fit))
 })
@@ -41,11 +41,11 @@ test_that("simple model bootstrapping", {
 
 test_that("cue-rate model bootstrapping", {
     set.seed(6324)          
-    fit <- admbsecr(capt = lapply(lightfooti$capt, function(x) x[1:20, ]),
+    fit <- fit.ascr(capt = lapply(lightfooti$capt, function(x) x[1:20, ]),
                     traps = lightfooti$traps, mask = lightfooti$mask,
                     cue.rates = lightfooti$freqs, survey.length = 1/5,
                     ss.opts = list(cutoff = lightfooti$cutoff))
-    boot.fit <- boot.admbsecr(fit = fit, N = 10, prog = FALSE)
+    boot.fit <- boot.ascr(fit = fit, N = 10, prog = FALSE)
     ses.test <- c(61.0933446423395, 5.03346486642733, 0.861437539078998, 
                       1.2439428882348, 0.000288758114691158, 0.0196418550329597)
     ses <- stdEr(boot.fit)
@@ -55,7 +55,7 @@ test_that("cue-rate model bootstrapping", {
 
 test_that("bootstrapping helpers", {
     ## MCE extraction.
-    expect_that(admbsecr:::get.mce(example$fits$boot.simple.hn, "se"),
+    expect_that(ascr:::get.mce(example$fits$boot.simple.hn, "se"),
                 equals(example$fits$boot.simple.hn$boot$se.mce))
     ## Variance-covariance matrix extraction.
     expect_that(sort(vcov(example$fits$boot.simple.hn, "all")),

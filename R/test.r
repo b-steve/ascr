@@ -1,8 +1,8 @@
-#' Run admbsecr tests
+#' Run ascr tests
 #'
-#' Runs tests for admbsecr.
+#' Runs tests for ascr.
 #'
-#' This function was written to allow users to test their admbsecr
+#' This function was written to allow users to test their ascr
 #' installation. Users cannot use the \link[testthat]{test_package}
 #' function from the testthat package as the tests are not
 #' installed. This is because tests fail on the R-forge servers due to
@@ -13,12 +13,12 @@
 #'     is running correctly.
 #'
 #' @export
-test.admbsecr <- function(quick = FALSE){
+test.ascr <- function(quick = FALSE){
     dir <- ifelse(quick, "quick", "full")
     if (quick){
-        example <- admbsecr::example
+        example <- ascr::example
         simple.capt <- example$capt["bincapt"]
-        fit <- try(admbsecr(capt = simple.capt, traps = example$traps,
+        fit <- try(fit.ascr(capt = simple.capt, traps = example$traps,
                             mask = example$mask, fix = list(g0 = 1)),
                    silent = TRUE)
         if (class(fit)[1] == "try-error"){
@@ -32,8 +32,12 @@ test.admbsecr <- function(quick = FALSE){
             }
         }
     } else {
-        dir <- paste(system.file(package = "admbsecr"), "tests", sep = "/")
+        dir <- paste(system.file(package = "ascr"), "tests", sep = "/")
         test_dir(dir)
     }
 }
 
+## Aliasing old test.admbsecr() function name.
+#' @rdname test.ascr
+#' @export
+test.admbsecr <- test.ascr

@@ -1,7 +1,7 @@
 #' Plotting mask and trap layout
 #'
 #' Plots the mask points and trap locations used in a model fitted
-#' with the function \link{admbsecr}.
+#' with the function \link{fit.ascr}.
 #'
 #' @param ... Further arguments to be passed to \link{plot}.
 #' @inheritParams locations
@@ -19,7 +19,7 @@ show.survey <- function(fit, ...){
 #'
 #' Plots the detection probability surface, based on trap locations
 #' and the estimated detection function from a model fitted using
-#' \link{admbsecr}.
+#' \link{fit.ascr}.
 #'
 #' @inheritParams locations
 #' @param surface Logical, if \code{TRUE} a 3D detection surface is
@@ -116,15 +116,15 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, xlim
 #' Creates a diagnostic plot that can be used to test the adequacy of
 #' a mask for a first calls model.
 #'
-#' @inheritParams admbsecr
+#' @inheritParams fit.ascr
 #' @inheritParams locations
 #' @param pars A named list. Component names are parameter names, and
 #'     components are values of parameters at which the mask is to be
 #'     tested. Parameters must include \code{b0.ss}, \code{b1.ss}, and
-#'     \code{sigma.ss}; see \link{admbsecr} for further details.
-#' @param cutoff The upper cutoff value; see \code{admbsecr} for
+#'     \code{sigma.ss}; see \link{fit.ascr} for further details.
+#' @param cutoff The upper cutoff value; see \link{fit.ascr} for
 #'     further details.
-#' @param lower.cutoff The lower cutoff value; see \code{admbsecr} for
+#' @param lower.cutoff The lower cutoff value; see \link{fit.ascr} for
 #'     further details.
 #' @param surface Logical, if \code{TRUE} a 3D detection surface is
 #'     plotted over the mask point locations.

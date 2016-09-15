@@ -8,7 +8,7 @@ p.dot(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
   detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{esa}{Logical, if \code{TRUE} the effective sampling area is
 returned instead of capture probabilities.}
@@ -30,7 +30,7 @@ strength). Ignored if \code{fit} is not \code{NULL}.}
 \code{"log"}, or \code{"spherical"}, which specifies the
 relationship between the expected received signal strength and
 distance from the microphone. See the documentation for
-\link{admbsecr} for further details. Ignored if \code{fit} is
+\link{fit.ascr} for further details. Ignored if \code{fit} is
 not \code{NULL}.}
 
 \item{pars}{A named list. Component names are parameter names, and

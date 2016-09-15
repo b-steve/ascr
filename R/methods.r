@@ -1,9 +1,9 @@
-#' Extract admbsecr model coefficients
+#' Extract ascr model coefficients
 #'
 #' Extracts estimated and derived parameters from a model fitted using
-#' \link{admbsecr}.
+#' \link{fit.ascr}.
 #'
-#' @param object A fitted model from \link[admbsecr]{admbsecr}.
+#' @param object A fitted model from \link[ascr]{fit.ascr}.
 #' @param pars A character vector containing either parameter names,
 #'     or a subset of \code{"all"}, \code{"derived"}, \code{"fitted"},
 #'     and \code{"linked"}; \code{"fitted"} corresponds to the
@@ -19,10 +19,10 @@
 #' coef(example$fits$simple.hn, pars = "all")
 #' coef(example$fits$simple.hn, pars = "derived")
 #'
-#' @method coef admbsecr
+#' @method coef ascr
 #'
 #' @export
-coef.admbsecr <- function(object, pars = "fitted", ...){
+coef.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
@@ -45,39 +45,39 @@ coef.admbsecr <- function(object, pars = "fitted", ...){
     out
 }
 
-#' @rdname coef.admbsecr
+#' @rdname coef.ascr
 #'
 #' @param correct.bias Logical, if \code{TRUE}, estimated biases are
 #'     subtracted from estimated parameter values.
 #'
-#' @method coef admbsecr.boot
+#' @method coef ascr.boot
 #'
 #' @export
-coef.admbsecr.boot <- function(object, pars = "fitted",
+coef.ascr.boot <- function(object, pars = "fitted",
                                correct.bias = FALSE, ...){
-    out <- coef.admbsecr(object, pars)
+    out <- coef.ascr(object, pars)
     if (correct.bias){
         out <- out - get.bias(object, pars)
     }
     out
 }
-#' Extract the variance-covariance matrix from an admbsecr model
+#' Extract the variance-covariance matrix from an ascr model
 #' object
 #'
 #' Extracts the variance-covariance matrix for parameters in a model
-#' fitted using \link[admbsecr]{admbsecr}.
+#' fitted using \link[ascr]{fit.ascr}.
 #'
-#' @inheritParams coef.admbsecr
+#' @inheritParams coef.ascr
 #'
 #' @examples
 #' vcov(example$fits$simple.hn)
 #' vcov(example$fits$simple.hn, pars = "all")
 #' vcov(example$fits$simple.hn, pars = "derived")
 #'
-#' @method vcov admbsecr
+#' @method vcov ascr
 #'
 #' @export
-vcov.admbsecr <- function(object, pars = "fitted", ...){
+vcov.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
@@ -105,19 +105,19 @@ vcov.admbsecr <- function(object, pars = "fitted", ...){
     object$vcov[keep, keep, drop = FALSE]
 }
 
-#' Extract the variance-covariance matrix from a bootstrapped admbsecr
+#' Extract the variance-covariance matrix from a bootstrapped ascr
 #' model object
 #'
 #' Extracts the variance-covariance matrix for parameters in a model
-#' fitted using \link[admbsecr]{admbsecr}, with a bootstrap procedure
-#' carried out using \link[admbsecr]{boot.admbsecr}.
+#' fitted using \link[ascr]{fit.ascr}, with a bootstrap procedure
+#' carried out using \link[ascr]{boot.ascr}.
 #'
-#' @inheritParams coef.admbsecr
+#' @inheritParams coef.ascr
 #'
-#' @method vcov admbsecr.boot
+#' @method vcov ascr.boot
 #'
 #' @export
-vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
+vcov.ascr.boot <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
@@ -145,22 +145,22 @@ vcov.admbsecr.boot <- function(object, pars = "fitted", ...){
     object$boot$vcov[keep, keep, drop = FALSE]
 }
 
-#' Extract standard errors from an admbsecr model fit
+#' Extract standard errors from an ascr model fit
 #'
 #' Extracts standard errors for estimated and derived parameters from
-#' a model fitted using \link[admbsecr]{admbsecr}.
+#' a model fitted using \link[ascr]{fit.ascr}.
 #'
-#' @inheritParams coef.admbsecr
+#' @inheritParams coef.ascr
 #'
 #' @examples
 #' stdEr(example$fits$simple.hn)
 #' stdEr(example$fits$simple.hn, pars = "all")
 #' stdEr(example$fits$simple.hn, pars = "derived")
 #'
-#' @method stdEr admbsecr
+#' @method stdEr ascr
 #'
 #' @export
-stdEr.admbsecr <- function(object, pars = "fitted", ...){
+stdEr.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
@@ -183,20 +183,20 @@ stdEr.admbsecr <- function(object, pars = "fitted", ...){
     out
 }
 
-#' Extract standard errors from a bootstrapped admbsecr model object
+#' Extract standard errors from a bootstrapped ascr model object
 #'
 #' Extracts standard errors for parameters of a model fitted using
-#' \link[admbsecr]{admbsecr}, with a bootstrap procedure carried out
-#' using \link[admbsecr]{boot.admbsecr}.
+#' \link[ascr]{fit.ascr}, with a bootstrap procedure carried out
+#' using \link[ascr]{boot.ascr}.
 #'
 #' @param mce Logical, if \code{TRUE} Monte Carlo error for the
 #'     standard errors is also returned.
-#' @inheritParams coef.admbsecr
+#' @inheritParams coef.ascr
 #'
-#' @method stdEr admbsecr.boot
+#' @method stdEr ascr.boot
 #'
 #' @export
-stdEr.admbsecr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
+stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
@@ -226,21 +226,21 @@ stdEr.admbsecr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     out
 }
 
-#' Extract AIC from an admbsecr model object
+#' Extract AIC from an ascr model object
 #'
-#' Extracts the AIC from an admbsecr model object.
+#' Extracts the AIC from an ascr model object.
 #'
 #' If the model is based on an acoustic survey where there are
 #' multiple calls per individual, then AIC should not be used for
 #' model selection. This function therefore returns NA in this case.
 #'
-#' @inheritParams coef.admbsecr
+#' @inheritParams coef.ascr
 #' @inheritParams stats::AIC
 #'
-#' @method AIC admbsecr
+#' @method AIC ascr
 #'
 #' @export
-AIC.admbsecr <- function(object, ..., k = 2){
+AIC.ascr <- function(object, ..., k = 2){
     if (object$fit.freqs){
         out <- NA
     } else {
@@ -249,16 +249,16 @@ AIC.admbsecr <- function(object, ..., k = 2){
     out
 }
 
-#' Summarising admbsecr model fits
+#' Summarising ascr model fits
 #'
 #' Provides a useful summary of the model fit.
 #'
-#' @inheritParams coef.admbsecr
+#' @inheritParams coef.ascr
 #'
-#' @method summary admbsecr
+#' @method summary ascr
 #'
 #' @export
-summary.admbsecr <- function(object, ...){
+summary.ascr <- function(object, ...){
     coefs <- coef(object, "fitted")
     derived <- coef(object, "derived")
     coefs.se <- stdEr(object, "fitted")
@@ -268,14 +268,14 @@ summary.admbsecr <- function(object, ...){
     out <- list(coefs = coefs, derived = derived, coefs.se = coefs.se,
                 derived.se = derived.se, infotypes = infotypes,
                 detfn = detfn)
-    class(out) <- c("summary.admbsecr", class(out))
+    class(out) <- c("summary.ascr", class(out))
     out
 }
 
-#' @method print summary.admbsecr
+#' @method print summary.ascr
 #' 
 #' @export
-print.summary.admbsecr <- function(x, ...){
+print.summary.ascr <- function(x, ...){
     n.coefs <- length(x$coefs)
     n.derived <- length(x$derived)
     mat <- matrix(0, nrow = n.coefs + n.derived + 1, ncol = 2)
@@ -296,25 +296,25 @@ print.summary.admbsecr <- function(x, ...){
     printCoefmat(mat, na.print = "")
 }
 
-#' Confidence intervals for admbsecr model parameters
+#' Confidence intervals for ascr model parameters
 #'
 #' Computes confidence intervals for one or more parameters estimated
-#' in an admbsecr model object.
+#' in an ascr model object.
 #'
 #' Options for the argument \code{method} are as follows:
 #' \code{"default"} for intervals based on a normal approximation
 #' using the calculated standard errors (for objects of class
-#' \code{admbsecr.boot}, these standard errors are calculated from the
+#' \code{ascr.boot}, these standard errors are calculated from the
 #' bootstrap procedure); \code{"default.bc"} is a bias-corrected
 #' version of \code{default}, whereby the estimated bias is subtracted
 #' from each confidence limit; \code{"basic"} for the so-called
 #' "basic" bootstrap method; and \code{"percentile"} for intervals
 #' calculated using the bootstrap percentile method (the latter three
-#' are only available for objects of class \code{admbsecr.boot}; see
+#' are only available for objects of class \code{ascr.boot}; see
 #' Davison & Hinkley, 1997, for details).
 #'
 #' For method \code{"default"} with objects of class
-#' \code{admbsecr.boot}, the appropriateness of the normal
+#' \code{ascr.boot}, the appropriateness of the normal
 #' approximation can be evaluated by setting \code{qqnorm} to
 #' \code{TRUE}. If this indicates a poor fit, set \code{linked} to
 #' \code{TRUE} and evaluate the QQ plot to see if this yields an
@@ -335,15 +335,15 @@ print.summary.admbsecr <- function(x, ...){
 #' @param linked Logical, if \code{TRUE}, intervals for fitted
 #' parameters are calculated on their link scales, then transformed
 #' back onto their "real" scales.
-#' @inheritParams coef.admbsecr
+#' @inheritParams coef.ascr
 #' @inheritParams stats::confint
 #'
-#' @method confint admbsecr
+#' @method confint ascr
 #'
 #' @export
-confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, ...){
+confint.ascr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, ...){
     if (!object$args$hess){
-        stop("Standard errors not calculated; use boot.admbsecr() or refit with 'hess = TRUE', if appropriate.")
+        stop("Standard errors not calculated; use boot.ascr() or refit with 'hess = TRUE', if appropriate.")
     }
     calc.cis(object, parm, level, method = "default", linked, qqplot = FALSE,
              boot = FALSE, ask = FALSE, ...)
@@ -358,11 +358,11 @@ confint.admbsecr <- function(object, parm = "fitted", level = 0.95, linked = FAL
 #' @param ask Logical, if \code{TRUE}, hitting return will show the
 #' next plot.
 #'
-#' @rdname confint.admbsecr
-#' @method confint admbsecr.boot
+#' @rdname confint.ascr
+#' @method confint ascr.boot
 #'
 #' @export
-confint.admbsecr.boot <- function(object, parm = "fitted", level = 0.95, method = "default",
+confint.ascr.boot <- function(object, parm = "fitted", level = 0.95, method = "default",
                                   linked = FALSE, qqplot = FALSE, ask = TRUE, ...){
     calc.cis(object, parm, level, method, linked, qqplot, boot = TRUE, ask, ...)
 }

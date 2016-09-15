@@ -1,28 +1,22 @@
-#' Fitting SECR models in ADMB
+#' Fitting acoustic SCR models
 #'
-#' Fits an SECR model, with our without supplementary information
-#' relevant to animal location. Parameter estimation is done by
-#' maximum likelihood through an AD Model Builder (ADMB) executable.
+#' Fits an acoustic SCR model. Parameter estimation is done by maximum
+#' likelihood through an AD Model Builder (ADMB) executable.
 #'
 #' ADMB uses a quasi-Newton method to find maximum likelihood
 #' estimates for the model parameters. Standard errors are calculated
 #' by taking the inverse of the negative of the
-#' Hessian. Alternatively, \link{boot.admbsecr} can be used to carry
+#' Hessian. Alternatively, \link{boot.ascr} can be used to carry
 #' out a parametric bootstrap procedure, from which parameter
 #' uncertainty can also be inferred.
-#'
-#' The class of model fitted by this function (and, indeed, around
-#' which this package is based) was first proposed by Borchers et
-#' al. (in press); this reference is a good starting point for
-#' practitioners looking to implement these methods.
 #'
 #' If the data are from an acoustic survey where individuals call more
 #' than once (i.e., the argument \code{cue.rates} contains values
 #' that are not 1), then standard errors calculated from the inverse
 #' of the negative Hessian are not correct. They are therefore not
 #' provided in this case. The method used by the function
-#' \link{boot.admbsecr} is currently the only way to calculate these
-#' reliably (see Stevenson et al., in prep., for details)
+#' \link{boot.ascr} is currently the only way to calculate these
+#' reliably (see Stevenson et al., 2015, for details)
 #'
 #' @section The \code{capt} argument:
 #'
@@ -32,8 +26,8 @@
 #' (or detectors) deployed. A component named \code{bincapt} is
 #' compulsory.
 #'
-#' Further optional component names each refer to a type of
-#' information which is informative on animal location collected on
+#' Further optional component names each refer to a type of additional
+#' information that is informative on animal location collected from
 #' each detection. Possible choices are: \code{bearing}, \code{dist},
 #' \code{ss}, \code{toa}, and \code{mrds}.
 #'
@@ -242,12 +236,12 @@
 #' @section Convergence:
 #'
 #' If maximum likelihood estimates could not be found during
-#' optimisation, then \code{admbsecr} will usually show a warning that
+#' optimisation, then \code{fit.ascr()} will usually show a warning that
 #' the maximum gradient component is large, or possibly throw an error
 #' reporting that a \code{.par} file is missing.
 #'
 #' The best approach to fixing convergence issues is to re-run the
-#' \code{admbsecr} function with the argument \code{trace} set to
+#' \code{fit.ascr()} function with the argument \code{trace} set to
 #' \code{TRUE}. Parameter values will be printed out for each step of
 #' the optimisation algorithm.
 #'
@@ -257,7 +251,7 @@
 #' ADMB searches for the maximum likelihood estimate.
 #'
 #' Alternatively, try a different set of start values using the
-#' argument \code{sv}; by default \code{admbsecr} will choose some
+#' argument \code{sv}; by default \code{fit.ascr()} will choose some
 #' start values, but these are not necessarily sensible. The start
 #' values that were used appear as the first line of text when
 #' \code{trace} is \code{TRUE}.
@@ -287,7 +281,7 @@
 #' statistics" section of the \code{trace} output. Next, find the
 #' default settings of the scalefactors by printing the object
 #' \code{fit$args$sf}, where \code{fit} is the original object
-#' returned by \code{admbsecr}. Finally, rerun \code{admbsecr} again,
+#' returned by \code{fit.ascr()}. Finally, rerun \code{fit.ascr()} again,
 #' but this time set the argument \code{sf} manually. Set scalefactors
 #' for any parameters with small gradient components to the same as
 #' the defaults ascertained above, and increase those associated with
@@ -326,21 +320,22 @@
 #'     Ornithology}, \strong{152}: 435--444.
 #'
 #' @references Borchers, D. L., Stevenson, B. C., Kidney, D., Thomas,
-#'     L., and Marques, T. A. (in press) A unifying model for
+#'     L., and Marques, T. A. (2015) A unifying model for
 #'     capture-recapture and distance sampling surveys of wildlife
 #'     populations. \emph{Journal of the American Statistical
-#'     Association}.
+#'     Association}, \strong{110}: 195--204.
 #'
 #' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Swift,
-#'     R. J., Gillespie, D. M., and Measey, G. J. (submitted) A
-#'     general framework for animal density estimation from acoustic
-#'     detections across a fixed microphone array.
+#'     R. J., Gillespie, D. M., and Measey, G. J. (2015) A general
+#'     framework for animal density estimation from acoustic
+#'     detections across a fixed microphone array. \emph{Methods in
+#'     Ecology and Evolution}, \strong{6}: 38--48.
 #'
-#' @return A list of class \code{"admbsecr"}. Components contain
+#' @return A list of class \code{"ascr"}. Components contain
 #'     information such as estimated parameters and standard
 #'     errors. The best way to access such information, however, is
 #'     through the variety of helper functions provided by the
-#'     admbsecr package.
+#'     ascr package.
 #'
 #' @param capt A list with named components, containing the capture
 #'     history and supplementary information. The function
@@ -408,13 +403,13 @@
 #'     information.
 #' @param ... Other arguments (mostly for back-compatibility).
 #'
-#' @seealso \link{boot.admbsecr} to calculate standard errors and
+#' @seealso \link{boot.ascr} to calculate standard errors and
 #'     estimate bias using a parametric bootstrap.
-#' @seealso \link{coef.admbsecr}, \link{stdEr.admbsecr}, and
-#'     \link{vcov.admbsecr} to extract estimated parameters, standard
+#' @seealso \link{coef.ascr}, \link{stdEr.ascr}, and
+#'     \link{vcov.ascr} to extract estimated parameters, standard
 #'     errors, and the variance-covariance matrix, respectively.
-#' @seealso \link{confint.admbsecr} to calculate confidence intervals.
-#' @seealso \link{summary.admbsecr} to get a summary of estimates and
+#' @seealso \link{confint.ascr} to calculate confidence intervals.
+#' @seealso \link{summary.ascr} to get a summary of estimates and
 #'     standard errors.
 #' @seealso \link{show.detfn} to plot the estimated detection
 #'     function.
@@ -424,17 +419,17 @@
 #' @examples
 #' \dontrun{
 #' simple.capt <- example$capt["bincapt"]
-#' simple.hn.fit <- admbsecr(capt = simple.capt, traps = example$traps,
+#' simple.hn.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
 #'                           mask = example$mask, fix = list(g0 = 1))
-#' simple.hr.fit <- admbsecr(capt = simple.capt, traps = example$traps,
+#' simple.hr.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
 #'                           mask = example$mask, detfn = "hr")
 #' bearing.capt <- example$capt[c("bincapt", "bearing")]
-#' bearing.hn.fit <- admbsecr(capt = bearing.capt, traps = example$traps,
+#' bearing.hn.fit <- fit.ascr(capt = bearing.capt, traps = example$traps,
 #'                            mask = example$mask, fix = list(g0 = 1))
 #' }
 #'
 #' @export
-admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
+fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      cue.rates = NULL, survey.length = NULL, sound.speed = 330,
                      local = FALSE, hess = NULL, trace = FALSE,
@@ -1119,12 +1114,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("Unknown OS type.")
         }
         ## Finding executable folder (possible permission problems?).
-        exe.dir <- paste(system.file(package = "admbsecr"), "ADMB", "bin", os.type, sep = "/")
+        exe.dir <- paste(system.file(package = "ascr"), "ADMB", "bin", os.type, sep = "/")
         exe.loc <- paste(exe.dir, exe.name, sep = "/")
         ## Creating command to run using system().
         curr.dir <- getwd()
         ## Creating temporary directory.
-        temp.dir <- tempfile("admbsecr", curr.dir)
+        temp.dir <- tempfile("ascr", curr.dir)
         dir.create(temp.dir)
         setwd(temp.dir)
         ## Creating .pin and .dat files.
@@ -1171,7 +1166,7 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                        nchar(list.files()) - 3,
                                                                        nchar(list.files())) == ".par")]][1]
         }
-        out <- suppressWarnings(try(read.admbsecr(prefix.name), silent = TRUE))
+        out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
         ## Saving esa to prevent recalculation.
         rep.string <- readLines("secr.rep")
         esa <- as.numeric(readLines("secr.rep")[1])
@@ -1265,9 +1260,9 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out[["vcov"]] <- vcov.updated
         if (trace){
             if (!hess){
-                message("NOTE: Standard errors not calculated; use boot.admbsecr().", "\n")
+                message("NOTE: Standard errors not calculated; use boot.ascr().", "\n")
             } else {
-                message("NOTE: Standard errors are probably not correct; use boot.admbsecr().", "\n")
+                message("NOTE: Standard errors are probably not correct; use boot.ascr().", "\n")
             }
         }
     } else {
@@ -1309,27 +1304,32 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             warning("Nelder-Mead algorithm has not converged.")
         }
     }
-    class(out) <- c("admbsecr", "admb")
+    class(out) <- c("ascr", "admb")
     out
 }
 
-#' Parallelising admbsecr fits using a cluster
+## Aliasing old admbsecr() function name.
+#' @rdname fit.ascr
+#' @export
+admbsecr <- fit.ascr
+
+#' Parallelising ascr fits using a cluster
 #'
 #' Fits SECR models on different cores within a cluster.
 #'
 #' @param ... Lists with components comprising arguments for a call to
-#' \link{admbsecr}. Component names must be the argument names.
+#' \link{fit.ascr}. Component names must be the argument names.
 #' @param arg.list Alternatively, a list with components comprising
 #' the lists of arguments, as above.
-#' @inheritParams boot.admbsecr
+#' @inheritParams boot.ascr
 #'
 #' @return A list, where components are objects returned by
-#' \link{admbsecr}. There is one component for each list of arguments
+#' \link{fit.ascr}. There is one component for each list of arguments
 #' provide in \code{...}.
 #'
 #' @examples
 #' \dontrun{
-#' ## Running the examples in the admbsecr() documentation in parallel.
+#' ## Running the examples in the fit.ascr() documentation in parallel.
 #' simple.capt <- example$capt["bincapt"]
 #' simple.hn.args <- list(capt = simple.capt, traps = example$traps,
 #'                        mask = example$mask, fix = list(g0 = 1))
@@ -1340,12 +1340,12 @@ admbsecr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 #'                         mask = example$mask, fix = list(g0 = 1))
 #' ## This will only run if you have 4 cores available, you may need
 #' ## to alter n.cores as appropriate.
-#' fits <- par.admbsecr(n.cores = 4, simple.hn.args, simple.hr.args,
+#' fits <- par.fit.ascr(n.cores = 4, simple.hn.args, simple.hr.args,
 #'                      bearing.hn.args)
 #' }
 #'
 #' @export
-par.admbsecr <- function(n.cores, ..., arg.list = NULL){
+par.fit.ascr <- function(n.cores, ..., arg.list = NULL){
     if (n.cores > detectCores()){
         stop("The argument n.cores is greater than the number of available cores.")
     }
@@ -1354,11 +1354,11 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
     }
     n.fits <- length(arg.list)
     FUN <- function(i, arg.list){
-        out <- try(do.call(admbsecr, arg.list[[i]]), silent = TRUE)
+        out <- try(do.call(fit.ascr, arg.list[[i]]), silent = TRUE)
     }
     cluster <- makeCluster(n.cores)
     clusterEvalQ(cluster, {
-        library(admbsecr)
+        library(ascr)
     })
     out <- parLapplyLB(cluster, 1:n.fits, FUN, arg.list = arg.list)
     stopCluster(cluster)
@@ -1376,7 +1376,7 @@ par.admbsecr <- function(n.cores, ..., arg.list = NULL){
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @importFrom utils example setTxtProgressBar txtProgressBar
-#' @useDynLib admbsecr
+#' @useDynLib ascr
 NULL
 
 ## Data documentation.
@@ -1412,7 +1412,7 @@ NULL
 #' This object contains simulated data with all types of supplementary
 #' information, corresponding trap locations, and a suitable mask
 #' object. Also included are some example model fits, which were
-#' generated from these data using the \link{admbsecr} function.
+#' generated from these data using the \link{fit.ascr} function.
 #'
 #' This object is a list which contains components:
 #' \itemize{

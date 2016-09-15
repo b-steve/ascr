@@ -16,7 +16,7 @@ number of traps is assumed to be the largest value in the
 }
 \description{
 Creates a capture history object to use with the function
-\code{\link{admbsecr}}.
+\code{\link{fit.ascr}}.
 }
 \details{
 The \code{captures} argument to this function is intended to be of
@@ -24,14 +24,14 @@ a similar format to the \code{captures} argument to
 \link{make.capthist} in the \link{secr} package. That is, users can
 use the same \code{captures} data frame with \code{create.capt} and
 \code{make.capthist}, which generate capture histories for use with
-the \code{admbsecr} and \link{secr} packages respectively.
+the \code{ascr} and \link{secr} packages respectively.
 
 As such, the second and fourth columns should provide the ID of the
 detection and the trap number of the trap which made the detection
 (where the trap number is the row number of the corresponding trap
 in the matrix of trap locations). Note that the first and third
 columns provide the 'session' and 'occassion' of the detection for
-\link{make.capthist}, but as the admbsecr package does not
+\link{make.capthist}, but as the ascr package does not
 presently have the capabilities to deal with multi-session or
 multi-occassion data, these columns are ignored by
 \code{create.capt}.

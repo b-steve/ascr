@@ -5,7 +5,7 @@
 
 \usepackage[left = 3.5cm, right = 3.5cm, top = 3.0cm, bottom = 4.5cm]{geometry}
 
-\title{Data structure for \texttt{admbsecr}}
+\title{Data structure for \texttt{ascr}}
 \date{}
 
 \begin{document}
@@ -14,7 +14,7 @@
 
 \section{Introduction}
 
-In order to carry out analysis with \texttt{admbsecr}, three objects are required:
+In order to carry out analysis with \texttt{ascr}, three objects are required:
 \begin{itemize}
 \item A capture history object, \texttt{capt}, providing information
   about which individuals/calls were detected by which detectors (see
@@ -28,16 +28,16 @@ In order to carry out analysis with \texttt{admbsecr}, three objects are require
 
 \section{Compatability with \texttt{secr}}
 
-Data input for the \texttt{admbsecr} package is designed to work
+Data input for the \texttt{ascr} package is designed to work
 similarly to the procedures used by the \texttt{secr} package. The
-functions \texttt{convert.capt.to.admbsecr()} and
+functions \texttt{convert.capt.to.ascr()} and
 \texttt{convert.capt.to.secr()} convert capture history objects used by
-\texttt{secr} to objects suitable for analysis with \texttt{admbsecr},
+\texttt{secr} to objects suitable for analysis with \texttt{ascr},
 and vice versa. For example, \texttt{signalCH} is an exported data
 object from the \texttt{secr} package. Appropriate \texttt{capt} and
 \texttt{traps} objects can be generated using
 <<convert, eval = FALSE, tidy = FALSE>>=
-ovenbird.capt <- convert.capt.to.admbsecr(signalCH)
+ovenbird.capt <- convert.capt.to.ascr(signalCH)
 ovenbird.traps <- traps(signalCH)
 @ 
 
@@ -87,7 +87,7 @@ detection of an individual/call at a detector. It has four variables:
   individual/call.
 \end{itemize}
 
-As \texttt{admbsecr} does not (yet) support multi-session or
+As \texttt{ascr} does not (yet) support multi-session or
 multi-occasion data, the first and third columns of this data frame
 are ignored. If additional information has been collected by the
 detectors, then this information should appear in subsequent columns
@@ -106,9 +106,9 @@ columns. Each row provides the Cartesian coordinates of a detector.
 See the section \emph{Habitat mask} in the \texttt{secr} package
 overview vignette for a brief explanation of the mask object. Mask
 objects created for analysis using the \texttt{secr} package should
-also be compatible with \texttt{admbsecr}.
+also be compatible with \texttt{ascr}.
 
-The functions \texttt{create.mask()} (in \texttt{admbsecr}) and
+The functions \texttt{create.mask()} (in \texttt{ascr}) and
 \texttt{make.mask()} (in \texttt{secr}) are both capable of creating
 suitable mask objects.
 

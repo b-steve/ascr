@@ -3,7 +3,7 @@
 #' Plots estimated densities of animal locations, which are latent
 #' variables in SECR models.
 #'
-#' @param fit A fitted model from \link{admbsecr}.
+#' @param fit A fitted model from \link{fit.ascr}.
 #' @param id A numeric vector with row numbers from
 #'     \code{fit$args$capt}, indicating which individuals' locations
 #'     are to be plotted.
@@ -31,7 +31,7 @@
 #'     range.
 #' @param mask A matrix with two columns. Each row provides Cartesian
 #'     coordinates for the location of a mask point. The function
-#'     \link[admbsecr]{create.mask} will return a suitable object. The
+#'     \link[ascr]{create.mask} will return a suitable object. The
 #'     mask used to fit the model \code{fit} will be used by default;
 #'     this argument is usually used when estimated location contours
 #'     need to be plotted to a higher resolution than this.

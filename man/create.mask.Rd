@@ -20,7 +20,7 @@ An object of class \code{mask}.
 }
 \description{
 Creates a mask object to use with the function
-\code{\link{admbsecr}}.
+\code{\link{fit.ascr}}.
 }
 \examples{
 mask <- create.mask(traps = example$traps, buffer = 20)

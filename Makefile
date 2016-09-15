@@ -26,7 +26,7 @@ compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr
 
 prepare:
 	rm -rfv man
-	rm -fv NAMESPACE src/*.o src/RcppExports.cpp src/admbsecr.so src/symbols.rds R/RcppExports.R
+	rm -fv NAMESPACE src/*.o src/RcppExports.cpp src/ascr.so src/symbols.rds R/RcppExports.R
 
 rcpp:
 	R --slave -e "library(Rcpp); compileAttributes()"
@@ -37,13 +37,13 @@ roxygen:
 build:
 	R CMD build --resave-data .
 	mkdir -p package-build
-	mv admbsecr_1.2.3.tar.gz package-build/
+	mv ascr_2.0.0.tar.gz package-build/
 
 check:
-	R CMD check package-build/admbsecr_1.2.3.tar.gz --no-tests
+	R CMD check package-build/ascr_2.0.0.tar.gz --no-tests
 
 install:
-	R CMD INSTALL package-build/admbsecr_1.2.3.tar.gz --install-tests
+	R CMD INSTALL package-build/ascr_2.0.0.tar.gz --install-tests
 
 pdf:
 	R CMD Rd2pdf --pdf . &
@@ -53,5 +53,5 @@ clean:
 	rm -rfv ..Rcheck/ ..pdf
 	rm -rfv src/*.o src/*.so src/*.rds
 	rm -rfv src-i386/ src-x64/
-	rm -rfv admbsecr.Rcheck
+	rm -rfv ascr.Rcheck
 

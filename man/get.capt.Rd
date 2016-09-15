@@ -7,12 +7,12 @@
 get.capt(fit)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 }
 \value{
 A capture history object.
 }
 \description{
-Extracts the capture history object used in an admbsecr fit.
+Extracts the capture history object used in an ascr fit.
 }
 

@@ -105,7 +105,7 @@ allocate.calls <- function(mics, dets, sound.speed){
 }
 
 ## Adapted from R2admb.
-read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
+read.ascr <- function(fn, verbose = FALSE, checkterm = TRUE){
     if (verbose)
         cat("reading output ...\n")
     parfn <- paste(fn, "par", sep = ".")
@@ -123,21 +123,21 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
     L
 }
 
-#' Extract estimated or fixed parameter values from an \code{admbsecr} model fit
+#' Extract estimated or fixed parameter values from an \code{ascr} model fit
 #'
 #' Extracts estimated, derived, and fitted parameters from a model
-#' fitted using \link{admbsecr}.
+#' fitted using \link{fit.ascr}.
 #'
-#' This is a similar function to \link{coef.admbsecr}, however
+#' This is a similar function to \link{coef.ascr}, however
 #' \code{get.par} also allows for extraction of parameters that have
-#' been fixed using \code{admbsecr}'s \code{fix} argument.
+#' been fixed using \code{fit.ascr}'s \code{fix} argument.
 #'
 #' @param pars A character vector containing names of parameter values
 #'     to be extracted. Alternatively, the character string
 #'     \code{"all"} will extract all parameters, fixed or otherwise,
 #'     and the character string \code{"fitted"} extracts only fitted
 #'     parameters (i.e., not the effective survey area). See the
-#'     'Details' section for the \link{admbsecr} function's
+#'     'Details' section for the \link{fit.ascr} function's
 #'     documentation for information on the parameters that are
 #'     fitted.
 #' @param cutoff Logical, if \code{TRUE}, the cutoff value for an
@@ -146,7 +146,7 @@ read.admbsecr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #'     returned as the component of a list, where component names give
 #'     the parameter names. In this case, the returned object is
 #'     suitable as the argument of a variety of functions (e.g.,
-#'     \code{sv} or \code{fix} for the \link{admbsecr} function, or
+#'     \code{sv} or \code{fix} for the \link{fit.ascr} function, or
 #'     \code{pars} for the \link{sim.capt} function). If \code{FALSE},
 #'     parameter values are returned as part of a named vector.
 #' @inheritParams locations
@@ -228,7 +228,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
 
 #' Extracting mask point locations
 #'
-#' Extracts the mask used in an admbsecr fit.
+#' Extracts the mask used in an ascr fit.
 #'
 #' @inheritParams locations
 #'
@@ -241,7 +241,7 @@ get.mask <- function(fit){
 
 #' Extracting trap locations
 #'
-#' Extracts the trap locations used in an admbsecr fit.
+#' Extracts the trap locations used in an ascr fit.
 #'
 #' @inheritParams locations
 #'
@@ -254,7 +254,7 @@ get.traps <- function(fit){
 
 #' Extracting capture history object
 #'
-#' Extracts the capture history object used in an admbsecr fit.
+#' Extracts the capture history object used in an ascr fit.
 #'
 #' @inheritParams locations
 #'
@@ -275,7 +275,7 @@ erf <- function(x){
 #' Calculates the probability of detection by at least one detector
 #' for specific locations in the survey area.
 #'
-#' @param fit A fitted model from \link{admbsecr}.
+#' @param fit A fitted model from \link{fit.ascr}.
 #' @param esa Logical, if \code{TRUE} the effective sampling area is
 #'     returned instead of capture probabilities.
 #' @param points A matrix with two columns. Each row provides
@@ -292,7 +292,7 @@ erf <- function(x){
 #'     \code{"log"}, or \code{"spherical"}, which specifies the
 #'     relationship between the expected received signal strength and
 #'     distance from the microphone. See the documentation for
-#'     \link{admbsecr} for further details. Ignored if \code{fit} is
+#'     \link{fit.ascr} for further details. Ignored if \code{fit} is
 #'     not \code{NULL}.
 #' @param pars A named list. Component names are parameter names, and
 #'     each component is a value for the associated parameter. Ignored
@@ -366,7 +366,7 @@ p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
     out
 }
 
-## Link functions for admbsecr() function.
+## Link functions for fit.ascr() function.
 log.link <- function(x){
     x <- pmax(x, .Machine$double.eps)
     log(x)
@@ -399,15 +399,15 @@ scaled.log.link <- function(x){
 #' Extracting Monte Carlo error
 #'
 #' Extracts calculated Monte Carlo errors from a bootstrap procedure
-#' carried out by \link{boot.admbsecr}.
+#' carried out by \link{boot.ascr}.
 #'
 #' @param estimate A character string, either \code{"bias"} or
 #'     \code{"se"}, which determines whether Monte Carlo errors for
 #'     bias estimates or standard errors are reported.
 #' @inheritParams locations
 #'
-#' @seealso \link{boot.admbsecr} for the bootstrap procedure.
-#' @seealso \link{stdEr.admbsecr.boot} for standard errors.
+#' @seealso \link{boot.ascr} for the bootstrap procedure.
+#' @seealso \link{stdEr.ascr.boot} for standard errors.
 #' @seealso \link{get.bias} for estimated biases.
 #'
 #'
@@ -425,13 +425,13 @@ get.mce <- function(fit, estimate){
 #' Extracting estimated biases
 #'
 #' Extracts bias in parameter estimates, calculated using the
-#' bootstrap procedure carried out by \link{boot.admbsecr}.
+#' bootstrap procedure carried out by \link{boot.ascr}.
 #'
 #' @inheritParams locations
-#' @inheritParams coef.admbsecr
-#' @inheritParams stdEr.admbsecr.boot
+#' @inheritParams coef.ascr
+#' @inheritParams stdEr.ascr.boot
 #'
-#' @seealso \link{boot.admbsecr} for the bootstrap procedure.
+#' @seealso \link{boot.ascr} for the bootstrap procedure.
 #' @seealso \link{get.mce} for Monte Carlo error the biases are
 #'     subject to.
 #'

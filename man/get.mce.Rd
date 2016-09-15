@@ -7,7 +7,7 @@
 get.mce(fit, estimate)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{estimate}{A character string, either \code{"bias"} or
 \code{"se"}, which determines whether Monte Carlo errors for
@@ -15,12 +15,12 @@ bias estimates or standard errors are reported.}
 }
 \description{
 Extracts calculated Monte Carlo errors from a bootstrap procedure
-carried out by \link{boot.admbsecr}.
+carried out by \link{boot.ascr}.
 }
 \seealso{
-\link{boot.admbsecr} for the bootstrap procedure.
+\link{boot.ascr} for the bootstrap procedure.
 
-\link{stdEr.admbsecr.boot} for standard errors.
+\link{stdEr.ascr.boot} for standard errors.
 
 \link{get.bias} for estimated biases.
 }

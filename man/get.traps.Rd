@@ -7,12 +7,12 @@
 get.traps(fit)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 }
 \value{
 A traps object.
 }
 \description{
-Extracts the trap locations used in an admbsecr fit.
+Extracts the trap locations used in an ascr fit.
 }
 

@@ -2,17 +2,17 @@
 % Please edit documentation in R/convert.r
 \name{convert.capt}
 \alias{convert.capt}
-\alias{convert.capt.to.admbsecr}
+\alias{convert.capt.to.ascr}
 \alias{convert.capt.to.secr}
 \title{Capture history conversion.}
 \usage{
-convert.capt.to.admbsecr(capt)
+convert.capt.to.ascr(capt)
 
 convert.capt.to.secr(capt, traps, capthist = TRUE, cutoff = NULL)
 }
 \arguments{
 \item{capt}{A \code{secr} capture history object for
-\code{convert.capt.to.admbsecr}, or an \code{admbsecr} capture
+\code{convert.capt.to.ascr}, or an \code{ascr} capture
 history object for \code{convert.capt.to.secr}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
@@ -28,11 +28,11 @@ required.}
 }
 \value{
 A capture history object appropriate for analysis using
-    either the \code{admbsecr} or the \code{secr} package.
+    either the \code{ascr} or the \code{secr} package.
 }
 \description{
 These functions convert a capture history object between the
-structures required for the \code{admbsecr} and \code{secr}
+structures required for the \code{ascr} and \code{secr}
 packages.
 }
 \examples{

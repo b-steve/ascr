@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // find_incomplete_blocks
 IntegerVector find_incomplete_blocks(const LogicalMatrix& mat);
-RcppExport SEXP admbsecr_find_incomplete_blocks(SEXP matSEXP) {
+RcppExport SEXP ascr_find_incomplete_blocks(SEXP matSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -18,7 +18,7 @@ END_RCPP
 }
 // blockify
 LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss);
-RcppExport SEXP admbsecr_blockify(SEXP blockSEXP, SEXP reqssSEXP) {
+RcppExport SEXP ascr_blockify(SEXP blockSEXP, SEXP reqssSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -30,7 +30,7 @@ END_RCPP
 }
 // detection_dists
 NumericMatrix detection_dists(const NumericMatrix& trap_dists, const NumericVector& traps);
-RcppExport SEXP admbsecr_detection_dists(SEXP trap_distsSEXP, SEXP trapsSEXP) {
+RcppExport SEXP ascr_detection_dists(SEXP trap_distsSEXP, SEXP trapsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -42,7 +42,7 @@ END_RCPP
 }
 // detection_timediffs
 NumericMatrix detection_timediffs(const NumericVector& times, const NumericVector& traps);
-RcppExport SEXP admbsecr_detection_timediffs(SEXP timesSEXP, SEXP trapsSEXP) {
+RcppExport SEXP ascr_detection_timediffs(SEXP timesSEXP, SEXP trapsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -54,7 +54,7 @@ END_RCPP
 }
 // min_skip_matrix
 int min_skip_matrix(const IntegerMatrix& skip, const LogicalMatrix& allocated);
-RcppExport SEXP admbsecr_min_skip_matrix(SEXP skipSEXP, SEXP allocatedSEXP) {
+RcppExport SEXP ascr_min_skip_matrix(SEXP skipSEXP, SEXP allocatedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -66,7 +66,7 @@ END_RCPP
 }
 // distances
 NumericMatrix distances(const NumericMatrix& a, const NumericMatrix& b);
-RcppExport SEXP admbsecr_distances(SEXP aSEXP, SEXP bSEXP) {
+RcppExport SEXP ascr_distances(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -78,7 +78,7 @@ END_RCPP
 }
 // bearings
 NumericMatrix bearings(const NumericMatrix& a, const NumericMatrix& b);
-RcppExport SEXP admbsecr_bearings(SEXP aSEXP, SEXP bSEXP) {
+RcppExport SEXP ascr_bearings(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -90,7 +90,7 @@ END_RCPP
 }
 // make_toa_ssq
 NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists, const double& sound_speed);
-RcppExport SEXP admbsecr_make_toa_ssq(SEXP captSEXP, SEXP distsSEXP, SEXP sound_speedSEXP) {
+RcppExport SEXP ascr_make_toa_ssq(SEXP captSEXP, SEXP distsSEXP, SEXP sound_speedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -103,7 +103,7 @@ END_RCPP
 }
 // find_local
 List find_local(const IntegerMatrix& capt, const NumericMatrix& dists, const double& buffer);
-RcppExport SEXP admbsecr_find_local(SEXP captSEXP, SEXP distsSEXP, SEXP bufferSEXP) {
+RcppExport SEXP ascr_find_local(SEXP captSEXP, SEXP distsSEXP, SEXP bufferSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -116,7 +116,7 @@ END_RCPP
 }
 // sim_ss
 NumericMatrix sim_ss(const NumericMatrix& ss_mean, const double& sigma_ss, const double& cutoff, const NumericVector& freqs);
-RcppExport SEXP admbsecr_sim_ss(SEXP ss_meanSEXP, SEXP sigma_ssSEXP, SEXP cutoffSEXP, SEXP freqsSEXP) {
+RcppExport SEXP ascr_sim_ss(SEXP ss_meanSEXP, SEXP sigma_ssSEXP, SEXP cutoffSEXP, SEXP freqsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -130,7 +130,7 @@ END_RCPP
 }
 // secr_nll
 double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get_esa);
-RcppExport SEXP admbsecr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
+RcppExport SEXP ascr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -143,7 +143,7 @@ END_RCPP
 }
 // calc_probsurf
 List calc_probsurf(const NumericVector& link_pars, const List& dat);
-RcppExport SEXP admbsecr_calc_probsurf(SEXP link_parsSEXP, SEXP datSEXP) {
+RcppExport SEXP ascr_calc_probsurf(SEXP link_parsSEXP, SEXP datSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;

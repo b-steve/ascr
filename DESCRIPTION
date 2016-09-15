@@ -1,8 +1,8 @@
-Package: admbsecr
+Package: ascr
 Type: Package
-Title: SECR models with supplementary location information
-Version: 1.2.3
-Date: 2016-06-06
+Title: Acoustic spatial capture-recapture in AD Model Builder
+Version: 2.0.0
+Date: 2016-09-15
 Author: Ben Stevenson <bcs5@st-andrews.ac.uk>,
     David Borchers <dlb@st-andrews.ac.uk>
 Maintainer: Ben Stevenson <bcs5@st-andrews.ac.uk>
@@ -30,11 +30,8 @@ Suggests:
     xtable
 LinkingTo: Rcpp
 VignetteBuilder: knitr
-Description: This package allows for the fitting of spatially explicit
-    capture-recapture (SECR) models. In particular, it is focussed on
-    a class of SECR model which makes use of supplementary information
-    that is informative on animal location.
+Description: This package allows for the fitting of spatial capture-recapture (SCR) models, primarily to acoustic data. Acoustic surveys are capable of collecting auxiliary information in addition to capture histories that is informative about the source location of detected cues; examples include signal strengths, times of arrival, estimated bearings, and estimated distances. The ascr package fits a class of SCR model that allows use of such information.
 License: GPL
-URL: https://github.com/b-steve/admbsecr
+URL: https://github.com/b-steve/ascr
 LazyData: true
 RoxygenNote: 5.0.1

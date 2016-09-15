@@ -25,7 +25,7 @@ that older analyses can be replicated.}
 }
 \description{
 Converts a PAMGuard output file to a capture history object
-suitable for use with the \link{admbsecr} function. This uses
+suitable for use with the \link{fit.ascr} function. This uses
 \link{make.acoustic.captures} to allocate call identities to
 detections.
 }

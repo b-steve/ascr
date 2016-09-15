@@ -20,7 +20,7 @@ An object of class \code{traps} comprising a data frame of
     attributes.
 }
 \description{
-Converts an \code{admbsecr} traps matrix to a \code{secr} traps
+Converts an \code{ascr} traps matrix to a \code{secr} traps
 object.
 }
 \details{

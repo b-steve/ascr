@@ -15,7 +15,7 @@ coordinates for the location of a mask point. The function
 An object of class \code{mask}.
 }
 \description{
-Converts an \code{admbsecr} mask matrix to a \code{secr} mask
+Converts an \code{ascr} mask matrix to a \code{secr} mask
 object.
 }
 \details{

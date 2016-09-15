@@ -8,7 +8,7 @@ mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
   surface = FALSE, col = c("black", "blue", "red"), pincol = "red", ...)
 }
 \arguments{
-\item{fit}{A fitted model from \link{admbsecr}.}
+\item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{mask}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a mask point. The function
@@ -20,12 +20,12 @@ coordinates for the location of a trap (or detector).}
 \item{pars}{A named list. Component names are parameter names, and
 components are values of parameters at which the mask is to be
 tested. Parameters must include \code{b0.ss}, \code{b1.ss}, and
-\code{sigma.ss}; see \link{admbsecr} for further details.}
+\code{sigma.ss}; see \link{fit.ascr} for further details.}
 
-\item{cutoff}{The upper cutoff value; see \code{admbsecr} for
+\item{cutoff}{The upper cutoff value; see \link{fit.ascr} for
 further details.}
 
-\item{lower.cutoff}{The lower cutoff value; see \code{admbsecr} for
+\item{lower.cutoff}{The lower cutoff value; see \link{fit.ascr} for
 further details.}
 
 \item{surface}{Logical, if \code{TRUE} a 3D detection surface is
