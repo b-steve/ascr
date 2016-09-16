@@ -1365,6 +1365,11 @@ par.fit.ascr <- function(n.cores, ..., arg.list = NULL){
     out
 }
 
+## Aliasing old par.admbsecr() function name.
+#' @rdname par.fit.ascr
+#' @export
+par.admbsecr <- par.fit.ascr
+
 ## Roxygen code for NAMESPACE and datasets.
 
 ## Package imports for roxygenise to pass to NAMESPACE.

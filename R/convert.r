@@ -193,6 +193,11 @@ convert.capt.to.ascr <- function(capt){
     list(bincapt = bincapt, ss = ss.capt)
 }
 
+## Aliasing old convert.capt.to.admbsecr() function name.
+#' @rdname convert.capt
+#' @export
+convert.capt.to.admbsecr <- convert.capt.to.ascr
+
 #' @rdname convert.capt
 #' @export
 convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
