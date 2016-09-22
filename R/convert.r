@@ -16,6 +16,9 @@
 #' @examples
 #' mask <- create.mask(traps = example$traps, buffer = 20)
 #'
+#' # calculate the area of the mask (in hectares)
+#' mask_area <- attr(mask, "area") * nrow(mask)
+#'
 #' @export
 create.mask <- function(traps, buffer, ...){
     traps <- convert.traps(traps)

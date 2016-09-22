@@ -25,6 +25,9 @@ Creates a mask object to use with the function
 \examples{
 mask <- create.mask(traps = example$traps, buffer = 20)
 
+# calculate the area of the mask (in hectares)
+mask_area <- attr(mask, "area") * nrow(mask)
+
 }
 \seealso{
 \link{convert.mask} to convert a mask compatible with the
