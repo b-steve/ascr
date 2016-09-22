@@ -465,8 +465,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     ## Warning from survey.length without cue.rates.
-    if (missing(cue.rates)){
-        if (!missing(survey.length)){
+    if (is.null(cue.rates)){
+        if (!is.null(survey.length)){
             warning("The `survey.length' argument is being ignored, as `cue.rates' has not been provided.")
         }
     }
