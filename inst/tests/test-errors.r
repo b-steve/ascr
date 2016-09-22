@@ -104,3 +104,16 @@ test_that("Extra components of 'sv' and 'fix' are removed", {
                 gives_warning("Some parameters listed in 'fix' are not being used. These are being removed."))
     expect_that(test.fit, equals(example$fits$simple.hn))
 })
+
+test_that("cue.rates and survey.length arguments set up correctly", {
+    test.capt <- example$capt["bincapt"]
+    expect_that(fit <- fit.ascr(capt = test.capt, traps = example$traps,
+                    mask = example$mask, fix = list(g0 = 1),
+                    cue.rates = c(9, 10, 11)),
+                gives_warning("The use of `cue.rates' without `survey.length' is deprecated. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units."))
+    expect_that(fit <- fit.ascr(capt = test.capt, traps = example$traps,
+                    mask = example$mask, fix = list(g0 = 1),
+                    survey.length = 2),
+                gives_warning("The `survey.length' argument is being ignored, as `cue.rates' has not been provided."))
+                
+}
