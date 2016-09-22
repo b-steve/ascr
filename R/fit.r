@@ -464,6 +464,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("The argument `survey.length' must be scalar.")
         }
     }
+    ## Warning from survey.length without cue.rates.
+    if (missing(cue.rates)){
+        if (!missing(survey.length)){
+            warning("The `survey.length' argument is being ignored, as `cue.rates' has not been provided.")
+        }
+    }
     ## Sorting out cues per survey.
     if (!is.null(cue.rates)){
         cue.freqs <- cue.rates*survey.length
