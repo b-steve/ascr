@@ -16,7 +16,7 @@ edge of the generated mask.}
 \item{...}{Arguments to be passed to \link{make.mask}.}
 }
 \value{
-An object of class \code{mask}.
+An object of class \code{mask}. The object has two useful attributes: \code{area} which gives the area of each grid cell in hectares and \code{buffer} which gives the value of \code{buffer} supplied to this function.
 }
 \description{
 Creates a mask object to use with the function

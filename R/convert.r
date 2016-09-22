@@ -8,7 +8,7 @@
 #' @param ... Arguments to be passed to \link{make.mask}.
 #' @inheritParams fit.ascr
 #'
-#' @return An object of class \code{mask}.
+#' @return An object of class \code{mask}. The object has two useful attributes: \code{area} which gives the area of each grid cell in hectares and \code{buffer} which gives the value of \code{buffer} supplied to this function.
 #'
 #' @seealso \link{convert.mask} to convert a mask compatible with the
 #'     \link{secr} package.
