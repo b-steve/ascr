@@ -453,21 +453,20 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
-    ## Warning from cue.rates without survey.length.
-    if (missing(survey.length)){
-        if (!is.null(cue.rates)){
-            warning("The use of `cue.rates' without `survey.length' is deprecated. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
-        }
-        survey.length <- 1
-    } else {
-        if (length(survey.length) != 1){
-            stop("The argument `survey.length' must be scalar.")
-        }
-    }
     ## Warning from survey.length without cue.rates.
     if (is.null(cue.rates)){
         if (!is.null(survey.length)){
             warning("The `survey.length' argument is being ignored, as `cue.rates' has not been provided.")
+        }
+    }
+    ## Warning from cue.rates without survey.length.
+    if (is.null(survey.length)){
+        if (!is.null(cue.rates)){
+            stop("The use of `cue.rates' without `survey.length' is no longer supported. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
+        }
+    } else {
+        if (length(survey.length) != 1){
+            stop("The argument `survey.length' must be scalar.")
         }
     }
     ## Sorting out cues per survey.
