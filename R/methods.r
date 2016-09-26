@@ -19,8 +19,6 @@
 #' coef(example$fits$simple.hn, pars = "all")
 #' coef(example$fits$simple.hn, pars = "derived")
 #'
-#' @method coef ascr
-#'
 #' @export
 coef.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
@@ -50,8 +48,6 @@ coef.ascr <- function(object, pars = "fitted", ...){
 #' @param correct.bias Logical, if \code{TRUE}, estimated biases are
 #'     subtracted from estimated parameter values.
 #'
-#' @method coef ascr.boot
-#'
 #' @export
 coef.ascr.boot <- function(object, pars = "fitted",
                                correct.bias = FALSE, ...){
@@ -73,8 +69,6 @@ coef.ascr.boot <- function(object, pars = "fitted",
 #' vcov(example$fits$simple.hn)
 #' vcov(example$fits$simple.hn, pars = "all")
 #' vcov(example$fits$simple.hn, pars = "derived")
-#'
-#' @method vcov ascr
 #'
 #' @export
 vcov.ascr <- function(object, pars = "fitted", ...){
@@ -113,8 +107,6 @@ vcov.ascr <- function(object, pars = "fitted", ...){
 #' carried out using \link[ascr]{boot.ascr}.
 #'
 #' @inheritParams coef.ascr
-#'
-#' @method vcov ascr.boot
 #'
 #' @export
 vcov.ascr.boot <- function(object, pars = "fitted", ...){
@@ -157,8 +149,6 @@ vcov.ascr.boot <- function(object, pars = "fitted", ...){
 #' stdEr(example$fits$simple.hn, pars = "all")
 #' stdEr(example$fits$simple.hn, pars = "derived")
 #'
-#' @method stdEr ascr
-#'
 #' @export
 stdEr.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
@@ -192,8 +182,6 @@ stdEr.ascr <- function(object, pars = "fitted", ...){
 #' @param mce Logical, if \code{TRUE} Monte Carlo error for the
 #'     standard errors is also returned.
 #' @inheritParams coef.ascr
-#'
-#' @method stdEr ascr.boot
 #'
 #' @export
 stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
@@ -237,8 +225,6 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
 #' @inheritParams coef.ascr
 #' @inheritParams stats::AIC
 #'
-#' @method AIC ascr
-#'
 #' @export
 AIC.ascr <- function(object, ..., k = 2){
     if (object$fit.freqs){
@@ -255,8 +241,6 @@ AIC.ascr <- function(object, ..., k = 2){
 #'
 #' @inheritParams coef.ascr
 #'
-#' @method summary ascr
-#'
 #' @export
 summary.ascr <- function(object, ...){
     coefs <- coef(object, "fitted")
@@ -271,9 +255,7 @@ summary.ascr <- function(object, ...){
     class(out) <- c("summary.ascr", class(out))
     out
 }
-
-#' @method print summary.ascr
-#' 
+ 
 #' @export
 print.summary.ascr <- function(x, ...){
     n.coefs <- length(x$coefs)
@@ -338,8 +320,6 @@ print.summary.ascr <- function(x, ...){
 #' @inheritParams coef.ascr
 #' @inheritParams stats::confint
 #'
-#' @method confint ascr
-#'
 #' @export
 confint.ascr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, ...){
     if (!object$args$hess){
@@ -359,7 +339,6 @@ confint.ascr <- function(object, parm = "fitted", level = 0.95, linked = FALSE, 
 #' next plot.
 #'
 #' @rdname confint.ascr
-#' @method confint ascr.boot
 #'
 #' @export
 confint.ascr.boot <- function(object, parm = "fitted", level = 0.95, method = "default",
