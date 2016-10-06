@@ -410,7 +410,7 @@ scaled.log.link <- function(x){
 #' @seealso \link{stdEr.ascr.boot} for standard errors.
 #' @seealso \link{get.bias} for estimated biases.
 #'
-#'
+#' @export
 get.mce <- function(fit, estimate){
     if (estimate == "bias"){
         out <- fit$boot$bias.mce
