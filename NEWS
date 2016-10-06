@@ -1,3 +1,8 @@
+ascr 2.0.1
+----------
+
+* Bug fix---the get.mce() function was not previously exported.
+
 ascr 2.0.0
 ----------
 
