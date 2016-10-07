@@ -16,7 +16,7 @@ edge of the generated mask.}
 \item{...}{Arguments to be passed to \link{make.mask}.}
 }
 \value{
-An object of class \code{mask}.
+An object of class \code{mask}. The object has two useful attributes: \code{area} which gives the area of each grid cell in hectares and \code{buffer} which gives the value of \code{buffer} supplied to this function.
 }
 \description{
 Creates a mask object to use with the function
@@ -24,6 +24,9 @@ Creates a mask object to use with the function
 }
 \examples{
 mask <- create.mask(traps = example$traps, buffer = 20)
+
+# calculate the area of the mask (in hectares)
+mask_area <- attr(mask, "area") * nrow(mask)
 
 }
 \seealso{
