@@ -384,7 +384,6 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
         legend.ltys <- c(ltys[infotypes], recursive = TRUE)
         legend("topright", legend = infotypes, lty = legend.ltys, col = legend.cols, bg = "white")
     }
-    invisible(TRUE)
     if (keep.estlocs){
         out <- list(estlocs = estlocs)
     } else {
