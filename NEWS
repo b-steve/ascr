@@ -2,6 +2,8 @@ ascr 2.0.1
 ----------
 
 * Bug fix---the get.mce() function was not previously exported.
+* Implemented a workaround for bootstrap resamples in which no
+  detections are made
 
 ascr 2.0.0
 ----------
