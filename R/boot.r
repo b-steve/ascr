@@ -129,7 +129,6 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
         set.seed(seeds[i])
         ## Simulating capture history.
         args$capt <- sim.capt(fit)[c("bincapt", infotypes)]
-        print(nrow(args$capt$bincapt))
         ## If no calls simulated, set density to 0 and other parameters to NA.
         if (is.null(nrow(args$capt$bincapt))){
             n.par <- length(fit$coefficients)
@@ -144,11 +143,11 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
                 }
             }
             ## Fitting model.
-            fit.boot <- try(do.call("fit.ascr", args), silent = TRUE)
+            fit.boot <- suppressWarnings(try(do.call("fit.ascr", args), silent = TRUE))
             ## If unconverged, refit model with default start values.
             if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
                 args$sv <- NULL
-                fit.boot <- try(do.call("fit.ascr", args), silent = TRUE)
+                fit.boot <- suppressWarnings(try(do.call("fit.ascr", args), silent = TRUE))
             }
             ## If still unconverged, give up and report NA.
             if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
@@ -158,7 +157,6 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
                 out <- c(fit.boot$coefficients, fit.boot$maxgrad)
             }
         }
-        print(out)
         if (prog){
             cat(i, "\n", file = "prog.txt", append = TRUE)
         }
