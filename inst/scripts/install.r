@@ -8,17 +8,17 @@ for (i in pkgs){
 }
 options(warn = 0)
 if (.Platform$OS == "windows"){
-    bin.name <- "https://github.com/b-steve/ascr/releases/download/v2.0.1/ascr_2.0.1.zip"
+    bin.name <- "https://github.com/b-steve/ascr/releases/download/v2.0.2/ascr_2.0.2.zip"
     ext <- ".zip"
     type <- "win.binary"
 } else if (.Platform$OS == "unix"){
-    bin.name <- "https://github.com/b-steve/ascr/archive/v2.0.1.tar.gz"
+    bin.name <- "https://github.com/b-steve/ascr/archive/v2.0.2.tar.gz"
     ext <- ".tar.gz"
     type <- "source"
 } else {
     stop("Unknown OS type.")
 }
-dest <- paste("ascr_2.0.1", ext, sep = "")
+dest <- paste("ascr_2.0.2", ext, sep = "")
 library(downloader)
 download(bin.name, destfile = dest)
 install.packages(dest, repos = NULL, type = type)

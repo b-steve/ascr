@@ -1,3 +1,9 @@
+ascr 2.0.2
+----------
+
+* Implemented a workaround for bootstrap resamples in which no animals
+  are simulated in the population.
+
 ascr 2.0.1
 ----------
 
