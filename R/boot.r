@@ -130,7 +130,7 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
         ## Simulating capture history.
         args$capt <- sim.capt(fit)[c("bincapt", infotypes)]
         ## If no calls simulated, set density to 0 and other parameters to NA.
-        if (is.null(nrow(args$capt$bincapt))){
+        if (nrow(args$capt$bincapt) == 0){
             n.par <- length(fit$coefficients)
             out <- rep(NA, n.par + 1)
             out[names(fit$coefficients) %in% c("D", "Da", "Dc")] <- 0
