@@ -361,7 +361,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                                         nrow = n.popn, ncol = n.traps)
             }
             captures <- which(apply(full.bin.capt, 1, sum) > 0)
-            bin.capt <- full.bin.capt[captures, ]
+            bin.capt <- full.bin.capt[captures, , drop=FALSE]
             out <- list(bincapt = bin.capt)
         } else {
             if (ss.link == "identity"){
