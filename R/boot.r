@@ -145,12 +145,12 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
             ## Fitting model.
             fit.boot <- suppressWarnings(try(do.call("fit.ascr", args), silent = TRUE))
             ## If unconverged, refit model with default start values.
-            if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
+            if ("try-error" %in% class(fit.boot) || fit.boot$maxgrad < -0.01){
                 args$sv <- NULL
                 fit.boot <- suppressWarnings(try(do.call("fit.ascr", args), silent = TRUE))
             }
             ## If still unconverged, give up and report NA.
-            if (fit.boot$maxgrad < -0.01 | "try-error" %in% class(fit.boot)){
+            if ("try-error" %in% class(fit.boot) || fit.boot$maxgrad < -0.01){
                 n.par <- length(fit$coefficients)
                 out <- rep(NA, n.par + 1)
             } else {
