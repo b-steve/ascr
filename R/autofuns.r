@@ -23,7 +23,7 @@ autosigma <- function(args){
             c(out, w)
         }
         mean.dists <- apply(bincapt, 1, ave.rc.dist)
-        mean.dists <- mean.dists[, !is.na(mean.dists[1, ])]
+        mean.dists <- mean.dists[, !is.na(mean.dists[1, ]), drop = FALSE]
         out <- sum(mean.dists[1, ]*mean.dists[2, ])/sum(mean.dists[2, ])
     }
     out
