@@ -320,7 +320,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             } else {
                 individual <- rep(1:n.a, times = freqs)
             }
-            popn <- popn[individual, ]
+            popn <- popn[individual, , drop=FALSE]
         } else {
             individual <- seq_along(numeric(n.a))
         }
