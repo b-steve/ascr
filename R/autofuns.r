@@ -3,9 +3,8 @@
 ## Not lifted from the secr package.
 ## Grabs the average recapture distance, or something.
 autosigma <- function(args){
-    if (args$same.traplocs){
-        out <- attr(args$mask, "buffer")/4
-    } else {
+    easy.out <- attr(args$mask, "buffer")/4
+    if (!args$same.traplocs){
         capt <- args$capt
         traps <- args$traps
         bincapt <- capt$bincapt
@@ -23,8 +22,13 @@ autosigma <- function(args){
             c(out, w)
         }
         mean.dists <- apply(bincapt, 1, ave.rc.dist)
-        mean.dists <- mean.dists[, !is.na(mean.dists[1, ])]
+        mean.dists <- mean.dists[, !is.na(mean.dists[1, ]), drop = FALSE]
         out <- sum(mean.dists[1, ]*mean.dists[2, ])/sum(mean.dists[2, ])
+        if (!is.finite(out)){
+            out <- easy.out
+            }
+    } else {
+        out <- easy.out
     }
     out
 }
