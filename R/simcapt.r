@@ -441,7 +441,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
                                     function(x, cutoff) any(x > cutoff),
                                     cutoff = cutoff))
             full.bin.capt <- ifelse(full.ss.capt > cutoff, 1, 0)
-            ss.capt <- full.ss.capt[captures, , drop=TRUE]
+            ss.capt <- full.ss.capt[captures, , drop=FALSE]
             if (length(captures) == 0){
                 bin.capt <- ss.capt
             } else {
