@@ -1007,7 +1007,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         suppars_lb = suppars.lb, suppars_ub = suppars.ub, suppars_phase =
         suppars.phase, suppars_sf = suppars.sf, suppars_linkfns =
         suppars.link, detfn_id = detfn.id, trace =
-        as.numeric(trace), DBL_MIN = dbl.min, n = n, n_traps = n.traps, n_mask
+        as.numeric(trace), dbl_min = dbl.min, n = n, n_traps = n.traps, n_mask
         = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
         capt.bin.freqs, fit_angs = as.numeric(fit.bearings),
         fit_dir = as.numeric(fit.dir), n_dir_quadpoints = n.dir.quadpoints,
