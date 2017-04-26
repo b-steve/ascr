@@ -15,4 +15,3 @@ A mask object.
 \description{
 Extracts the mask used in an ascr fit.
 }
-

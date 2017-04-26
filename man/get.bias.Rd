@@ -31,4 +31,3 @@ bootstrap procedure carried out by \link{boot.ascr}.
 \link{get.mce} for Monte Carlo error the biases are
     subject to.
 }
-

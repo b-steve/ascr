@@ -21,4 +21,3 @@ Calculates the bearing from one set of points to another.
 bears <- bearings(example$traps, example$mask) 
 
 }
-

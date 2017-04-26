@@ -21,4 +21,3 @@ Calculates pairwise distances between two sets of points.
 dists <- distances(example$traps, example$mask)
 
 }
-

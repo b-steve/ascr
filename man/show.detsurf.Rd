@@ -49,4 +49,3 @@ and the estimated detection function from a model fitted using
 show.detsurf(example$fits$simple.hn)
 
 }
-

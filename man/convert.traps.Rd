@@ -31,4 +31,3 @@ argument of the function \link{make.capthist}.
 traps <- convert.traps(traps = example$traps)
 
 }
-

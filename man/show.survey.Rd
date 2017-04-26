@@ -19,4 +19,3 @@ with the function \link{fit.ascr}.
 show.survey(example$fits$simple.hn)
 
 }
-

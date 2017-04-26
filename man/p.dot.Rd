@@ -49,4 +49,3 @@ A vector containing detection probabilities for each
 Calculates the probability of detection by at least one detector
 for specific locations in the survey area.
 }
-

@@ -20,4 +20,3 @@ The value of the negative log-likelihood.
 \description{
 Returns the likelihood for a vector of parameter values.
 }
-

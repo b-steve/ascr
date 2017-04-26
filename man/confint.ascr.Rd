@@ -71,4 +71,3 @@ Davison, A. C., and Hinkley, D. V. (1997)
 \emph{Bootstrap methods and their application}. Cambridge:
 Cambridge University Press.
 }
-

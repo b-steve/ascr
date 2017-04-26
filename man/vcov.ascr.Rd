@@ -31,4 +31,3 @@ vcov(example$fits$simple.hn, pars = "all")
 vcov(example$fits$simple.hn, pars = "derived")
 
 }
-

@@ -43,4 +43,3 @@ required.}
 Creates a diagnostic plot that can be used to test the adequacy of
 a mask for a first calls model.
 }
-

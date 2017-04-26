@@ -15,4 +15,3 @@ A capture history object.
 \description{
 Extracts the capture history object used in an ascr fit.
 }
-

@@ -141,4 +141,3 @@ new.capt <- sim.capt(traps = example$traps, mask = example$mask, infotypes = c("
                      pars = list(D = 2500, g0 = 0.9, sigma = 3, z = 2, kappa = 50, alpha = 10))
 
 }
-

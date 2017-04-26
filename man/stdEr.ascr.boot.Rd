@@ -28,4 +28,3 @@ Extracts standard errors for parameters of a model fitted using
 \link[ascr]{fit.ascr}, with a bootstrap procedure carried out
 using \link[ascr]{boot.ascr}.
 }
-

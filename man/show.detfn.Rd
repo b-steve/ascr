@@ -39,4 +39,3 @@ show.detfn(example$fits$simple.hr, add = TRUE, col = "blue")
 legend("topright", legend = c("Half normal", "Hazard rate"), lty = 1, col = c("black", "blue"), bg = "white")
 
 }
-

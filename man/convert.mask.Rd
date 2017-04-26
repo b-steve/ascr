@@ -26,4 +26,3 @@ argument of the function \link{secr.fit}.
 mask <- convert.mask(mask = example$mask)
 
 }
-

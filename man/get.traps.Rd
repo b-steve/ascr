@@ -15,4 +15,3 @@ A traps object.
 \description{
 Extracts the trap locations used in an ascr fit.
 }
-
