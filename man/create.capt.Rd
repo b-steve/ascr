@@ -55,4 +55,3 @@ collected over the course of the survey:
         detector.
 }
 }
-

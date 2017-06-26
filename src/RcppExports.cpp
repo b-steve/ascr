@@ -153,3 +153,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"ascr_find_incomplete_blocks", (DL_FUNC) &ascr_find_incomplete_blocks, 1},
+    {"ascr_blockify", (DL_FUNC) &ascr_blockify, 2},
+    {"ascr_detection_dists", (DL_FUNC) &ascr_detection_dists, 2},
+    {"ascr_detection_timediffs", (DL_FUNC) &ascr_detection_timediffs, 2},
+    {"ascr_min_skip_matrix", (DL_FUNC) &ascr_min_skip_matrix, 2},
+    {"ascr_distances", (DL_FUNC) &ascr_distances, 2},
+    {"ascr_bearings", (DL_FUNC) &ascr_bearings, 2},
+    {"ascr_make_toa_ssq", (DL_FUNC) &ascr_make_toa_ssq, 3},
+    {"ascr_find_local", (DL_FUNC) &ascr_find_local, 3},
+    {"ascr_sim_ss", (DL_FUNC) &ascr_sim_ss, 4},
+    {"ascr_secr_nll", (DL_FUNC) &ascr_secr_nll, 3},
+    {"ascr_calc_probsurf", (DL_FUNC) &ascr_calc_probsurf, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_ascr(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}

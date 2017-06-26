@@ -143,4 +143,3 @@ locations(example$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
 }
 
 }
-

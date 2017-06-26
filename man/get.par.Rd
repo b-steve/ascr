@@ -49,4 +49,3 @@ get.par(fit = example$fits$simple.hn, pars = "all")
 get.par(fit = example$fits$bearing.hn, pars = c("D", "kappa", "esa"), as.list = TRUE)
 
 }
-

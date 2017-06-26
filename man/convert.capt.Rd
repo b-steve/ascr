@@ -2,8 +2,8 @@
 % Please edit documentation in R/convert.r
 \name{convert.capt}
 \alias{convert.capt}
-\alias{convert.capt.to.admbsecr}
 \alias{convert.capt.to.ascr}
+\alias{convert.capt.to.admbsecr}
 \alias{convert.capt.to.secr}
 \title{Capture history conversion.}
 \usage{
@@ -42,4 +42,3 @@ packages.
 capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
 
 }
-

@@ -30,4 +30,3 @@ stdEr(example$fits$simple.hn, pars = "all")
 stdEr(example$fits$simple.hn, pars = "derived")
 
 }
-

@@ -29,4 +29,3 @@ suitable for use with the \link{fit.ascr} function. This uses
 \link{make.acoustic.captures} to allocate call identities to
 detections.
 }
-

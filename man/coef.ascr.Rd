@@ -36,4 +36,3 @@ coef(example$fits$simple.hn, pars = "all")
 coef(example$fits$simple.hn, pars = "derived")
 
 }
-

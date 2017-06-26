@@ -24,4 +24,3 @@ carried out by \link{boot.ascr}.
 
 \link{get.bias} for estimated biases.
 }
-

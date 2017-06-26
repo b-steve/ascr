@@ -14,4 +14,3 @@
 \description{
 Provides a useful summary of the model fit.
 }
-

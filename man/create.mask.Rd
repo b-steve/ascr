@@ -33,4 +33,3 @@ mask_area <- attr(mask, "area") * nrow(mask)
 \link{convert.mask} to convert a mask compatible with the
     \link{secr} package.
 }
-

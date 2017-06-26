@@ -22,4 +22,3 @@ If the model is based on an acoustic survey where there are
 multiple calls per individual, then AIC should not be used for
 model selection. This function therefore returns NA in this case.
 }
-
