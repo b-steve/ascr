@@ -5,8 +5,8 @@ ALL:
 
 nocompile:
 	make prepare
-	make rcpp
 	make roxygen
+	make rcpp
 	make clean
 	make build
 	make check
@@ -15,8 +15,8 @@ nocompile:
 docs:
 	make compile
 	make prepare
-	make rcpp
 	make roxygen
+	make rcpp
 
 compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr.tpl
 	if [ $(shell hostname) == "twiga" ]; then cd inst/ADMB/src; LDFLAGS=-static admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/linux; rm -rfv secr; mv ../../src/secr ./secr; fi
