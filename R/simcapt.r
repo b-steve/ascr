@@ -46,6 +46,8 @@
 #'     to be used. Options are "hn" (halfnormal), "hr" (hazard rate),
 #'     "th" (threshold), "lth" (log-link threshold), or "ss" (signal
 #'     strength).
+#' @param popn A matrix with two columns, providing x- and
+#'     y-coordinates of the animal locations.
 #' @param pars A named list. Component names are parameter names, and
 #'     each component is the value of the associated parameter. A
 #'     value for the parameter \code{D}, animal density (or call
@@ -106,7 +108,7 @@
 #'                      pars = list(D = 2500, g0 = 0.9, sigma = 3, z = 2, kappa = 50, alpha = 10))
 #'
 #' @export
-sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
+sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                      infotypes = character(0), detfn = "hn",
                      pars = NULL, ss.opts = NULL, cue.rates = NULL, survey.length = NULL,
                      freq.dist = "edf", sound.speed = 330, test.detfn = FALSE,
@@ -289,7 +291,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL,
             ## density to animal density.
             D <- D/(mean(cue.rates)*survey.length)
         }
-        popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
+        if (is.null(popn)){
+            popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
+        }
         n.a <- nrow(popn)
         if (freq.dist == "edf"){
             if (length(cue.rates) == 1){
