@@ -51,7 +51,7 @@ double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get
   NumericMatrix dists = as<NumericMatrix>(dat["dists"]);
   int trace = as<int>(dat["trace"]);
   double A = as<double>(dat["A"]);
-  double dbl_min = as<double>(dat["DBL_MIN"]);
+  double dbl_min = as<double>(dat["dbl_min"]);
   int i, j;
   double sum_det_probs = 0;
   double sum_sub_det_probs = 0;
