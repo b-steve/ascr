@@ -52,7 +52,7 @@ dvar_vector log_dvm (double x, dvector mu, const prevariable& kappa)
 
 // Multivariate normal distribution density functions:
 
-dvariable log_dmvn_diag (dvector x, const dvar_vector& mu, const prevariable& diag, const prevariable& offdiag, double DBL_MIN = 1e-150)
+dvariable log_dmvn_diag (dvector x, const dvar_vector& mu, const prevariable& diag, const prevariable& offdiag, double dbl_min = 1e-150)
 {
   double k = x.size();
   dvar_matrix diff(1,1,1,k);
@@ -62,10 +62,10 @@ dvariable log_dmvn_diag (dvector x, const dvar_vector& mu, const prevariable& di
     tdiff(i,1) = diff(1,i);
   }
   dvariable e = (diff*inv_diag(k, diag, offdiag)*tdiff)(1,1);
-  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + DBL_MIN) + e);
+  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + dbl_min) + e);
 }
 
-dvariable log_dmvn_diag (dvector x, dvector mu, const prevariable& diag, const prevariable& offdiag, double DBL_MIN = 1e-150)
+dvariable log_dmvn_diag (dvector x, dvector mu, const prevariable& diag, const prevariable& offdiag, double dbl_min = 1e-150)
 {
   double k = x.size();
   dmatrix diff(1,1,1,k);
@@ -75,10 +75,10 @@ dvariable log_dmvn_diag (dvector x, dvector mu, const prevariable& diag, const p
     tdiff(i,1) = diff(1,i);
   }
   dvariable e = (diff*inv_diag(k, diag, offdiag)*tdiff)(1,1);
-  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + DBL_MIN) + e);
+  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + dbl_min) + e);
 }
 
-double log_dmvn_diag (dvector x, dvector mu, double diag, double offdiag, double DBL_MIN = 1e-150)
+double log_dmvn_diag (dvector x, dvector mu, double diag, double offdiag, double dbl_min = 1e-150)
 {
   double k = x.size();
   dmatrix diff(1,1,1,k);
@@ -88,7 +88,7 @@ double log_dmvn_diag (dvector x, dvector mu, double diag, double offdiag, double
     tdiff(i,1) = diff(1,i);
   }
   double e = (diff*inv_diag(k, diag, offdiag)*tdiff)(1,1);
-  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + DBL_MIN) + e);
+  return -0.5*(k*log(2*M_PI) + log(det_diag(k, diag, offdiag) + dbl_min) + e);
 }
 
 // Multivariate normal cumulative distribution functions. 

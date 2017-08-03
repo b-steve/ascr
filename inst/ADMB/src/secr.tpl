@@ -54,7 +54,7 @@ DATA_SECTION
   // Initialising various scalars.
   init_number detfn_id
   init_number trace
-  init_number DBL_MIN
+  init_number dbl_min
   init_int n
   init_int n_traps
   init_int n_mask
@@ -319,8 +319,8 @@ PROCEDURE_SECTION
           orientation = bearing_to_trap - dir;
           dist = dists(j, i);
           capt_prob = detfn(dist, detpars, cutoff, orientation);
-          log_capt_probs(b, j, i) = log(capt_prob + DBL_MIN);
-          log_evade_probs(b, j, i) = log(1 - capt_prob + DBL_MIN);
+          log_capt_probs(b, j, i) = log(capt_prob + dbl_min);
+          log_evade_probs(b, j, i) = log(1 - capt_prob + dbl_min);
           point_evade *= 1 - capt_prob;
           if (fit_ss){
             if (linkfn_id == 3){
@@ -367,13 +367,13 @@ PROCEDURE_SECTION
           dist = dists(j, i);
           capt_prob = detfn(dist, detpars, cutoff, orientation);
           // Compare to calculating these outside loop.
-          log_capt_probs(1, j, i) = log(capt_prob + DBL_MIN);
-          log_evade_probs(1, j, i) = log(1 - capt_prob + DBL_MIN);
+          log_capt_probs(1, j, i) = log(capt_prob + dbl_min);
+          log_evade_probs(1, j, i) = log(1 - capt_prob + dbl_min);
           undet_prob *= 1 - capt_prob;
         }
       }
       det_prob = 1 - undet_prob;
-      sum_det_probs += det_prob + DBL_MIN;
+      sum_det_probs += det_prob + dbl_min;
     }  
   }
   // Contribution due to capture history.
@@ -508,7 +508,7 @@ PROCEDURE_SECTION
             if (all_dets){
               obs_ss = row(capt_ss, i);
               for (j = 1; j <= n_local; j++){
-                bincapt_contrib(j) = log_dmvn_diag(obs_ss, column((*expected_ss_pointer), j), diag_sigma_ss, offdiag_sigma_ss, DBL_MIN);
+                bincapt_contrib(j) = log_dmvn_diag(obs_ss, column((*expected_ss_pointer), j), diag_sigma_ss, offdiag_sigma_ss, dbl_min);
               }
               // Put in log_dmvn for received signal strengths.
             } else {
@@ -546,9 +546,9 @@ PROCEDURE_SECTION
                 mu_ss_det = column((*expected_ss_pointer), j)(ind_det);
                 mu_ss_nodet = column((*expected_ss_pointer), j)(ind_nodet);
                 mu_ss_cond = mu_ss_nodet + (square(detpars(4))*sum(obs_ss - mu_ss_det))/(square(detpars(5)) + n_dets*square(detpars(4)));
-                bincapt_contrib(j) = log_dmvn_diag(obs_ss, mu_ss_det, diag_sigma_ss, offdiag_sigma_ss, DBL_MIN);
+                bincapt_contrib(j) = log_dmvn_diag(obs_ss, mu_ss_det, diag_sigma_ss, offdiag_sigma_ss, dbl_min);
                 z_ss_nodet = (cutoff - mu_ss_cond)/pow(diag_sigma_ss_cond, 0.5);
-                bincapt_contrib(j) += log(pmvn(z_ss_nodet, corr_ss_cond, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5) + DBL_MIN);
+                bincapt_contrib(j) += log(pmvn(z_ss_nodet, corr_ss_cond, het_source_gh, het_source_weights, het_source_nodes, n_het_source_quadpoints, -5, 5) + dbl_min);
               }
             }
           } else {
@@ -602,7 +602,7 @@ PROCEDURE_SECTION
         if (fit_dir){
           fs(i) += f_ind/n_dir_quadpoints;
         } else {
-          f -= log(f_ind + DBL_MIN);
+          f -= log(f_ind + dbl_min);
         }
       }
     }
@@ -610,7 +610,7 @@ PROCEDURE_SECTION
   // For directional calling, fs contains liklihood contributions for
   // each individual. Need to log and sum for log-likelihood.
   if (fit_dir){
-    f -= sum(log(fs + DBL_MIN));
+    f -= sum(log(fs + dbl_min));
   }
   // Calculating ESA.
   esa = A*(sum_det_probs);

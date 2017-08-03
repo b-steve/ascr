@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // find_incomplete_blocks
 IntegerVector find_incomplete_blocks(const LogicalMatrix& mat);
-RcppExport SEXP ascr_find_incomplete_blocks(SEXP matSEXP) {
+RcppExport SEXP _ascr_find_incomplete_blocks(SEXP matSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,7 +18,7 @@ END_RCPP
 }
 // blockify
 LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss);
-RcppExport SEXP ascr_blockify(SEXP blockSEXP, SEXP reqssSEXP) {
+RcppExport SEXP _ascr_blockify(SEXP blockSEXP, SEXP reqssSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,7 +30,7 @@ END_RCPP
 }
 // detection_dists
 NumericMatrix detection_dists(const NumericMatrix& trap_dists, const NumericVector& traps);
-RcppExport SEXP ascr_detection_dists(SEXP trap_distsSEXP, SEXP trapsSEXP) {
+RcppExport SEXP _ascr_detection_dists(SEXP trap_distsSEXP, SEXP trapsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,7 @@ END_RCPP
 }
 // detection_timediffs
 NumericMatrix detection_timediffs(const NumericVector& times, const NumericVector& traps);
-RcppExport SEXP ascr_detection_timediffs(SEXP timesSEXP, SEXP trapsSEXP) {
+RcppExport SEXP _ascr_detection_timediffs(SEXP timesSEXP, SEXP trapsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,7 +54,7 @@ END_RCPP
 }
 // min_skip_matrix
 int min_skip_matrix(const IntegerMatrix& skip, const LogicalMatrix& allocated);
-RcppExport SEXP ascr_min_skip_matrix(SEXP skipSEXP, SEXP allocatedSEXP) {
+RcppExport SEXP _ascr_min_skip_matrix(SEXP skipSEXP, SEXP allocatedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,7 @@ END_RCPP
 }
 // distances
 NumericMatrix distances(const NumericMatrix& a, const NumericMatrix& b);
-RcppExport SEXP ascr_distances(SEXP aSEXP, SEXP bSEXP) {
+RcppExport SEXP _ascr_distances(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -78,7 +78,7 @@ END_RCPP
 }
 // bearings
 NumericMatrix bearings(const NumericMatrix& a, const NumericMatrix& b);
-RcppExport SEXP ascr_bearings(SEXP aSEXP, SEXP bSEXP) {
+RcppExport SEXP _ascr_bearings(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -90,7 +90,7 @@ END_RCPP
 }
 // make_toa_ssq
 NumericMatrix make_toa_ssq(const NumericMatrix& capt, const NumericMatrix& dists, const double& sound_speed);
-RcppExport SEXP ascr_make_toa_ssq(SEXP captSEXP, SEXP distsSEXP, SEXP sound_speedSEXP) {
+RcppExport SEXP _ascr_make_toa_ssq(SEXP captSEXP, SEXP distsSEXP, SEXP sound_speedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -103,7 +103,7 @@ END_RCPP
 }
 // find_local
 List find_local(const IntegerMatrix& capt, const NumericMatrix& dists, const double& buffer);
-RcppExport SEXP ascr_find_local(SEXP captSEXP, SEXP distsSEXP, SEXP bufferSEXP) {
+RcppExport SEXP _ascr_find_local(SEXP captSEXP, SEXP distsSEXP, SEXP bufferSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -116,7 +116,7 @@ END_RCPP
 }
 // sim_ss
 NumericMatrix sim_ss(const NumericMatrix& ss_mean, const double& sigma_ss, const double& cutoff, const NumericVector& freqs);
-RcppExport SEXP ascr_sim_ss(SEXP ss_meanSEXP, SEXP sigma_ssSEXP, SEXP cutoffSEXP, SEXP freqsSEXP) {
+RcppExport SEXP _ascr_sim_ss(SEXP ss_meanSEXP, SEXP sigma_ssSEXP, SEXP cutoffSEXP, SEXP freqsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -130,7 +130,7 @@ END_RCPP
 }
 // secr_nll
 double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get_esa);
-RcppExport SEXP ascr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
+RcppExport SEXP _ascr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -143,7 +143,7 @@ END_RCPP
 }
 // calc_probsurf
 List calc_probsurf(const NumericVector& link_pars, const List& dat);
-RcppExport SEXP ascr_calc_probsurf(SEXP link_parsSEXP, SEXP datSEXP) {
+RcppExport SEXP _ascr_calc_probsurf(SEXP link_parsSEXP, SEXP datSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -155,18 +155,18 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"ascr_find_incomplete_blocks", (DL_FUNC) &ascr_find_incomplete_blocks, 1},
-    {"ascr_blockify", (DL_FUNC) &ascr_blockify, 2},
-    {"ascr_detection_dists", (DL_FUNC) &ascr_detection_dists, 2},
-    {"ascr_detection_timediffs", (DL_FUNC) &ascr_detection_timediffs, 2},
-    {"ascr_min_skip_matrix", (DL_FUNC) &ascr_min_skip_matrix, 2},
-    {"ascr_distances", (DL_FUNC) &ascr_distances, 2},
-    {"ascr_bearings", (DL_FUNC) &ascr_bearings, 2},
-    {"ascr_make_toa_ssq", (DL_FUNC) &ascr_make_toa_ssq, 3},
-    {"ascr_find_local", (DL_FUNC) &ascr_find_local, 3},
-    {"ascr_sim_ss", (DL_FUNC) &ascr_sim_ss, 4},
-    {"ascr_secr_nll", (DL_FUNC) &ascr_secr_nll, 3},
-    {"ascr_calc_probsurf", (DL_FUNC) &ascr_calc_probsurf, 2},
+    {"_ascr_find_incomplete_blocks", (DL_FUNC) &_ascr_find_incomplete_blocks, 1},
+    {"_ascr_blockify", (DL_FUNC) &_ascr_blockify, 2},
+    {"_ascr_detection_dists", (DL_FUNC) &_ascr_detection_dists, 2},
+    {"_ascr_detection_timediffs", (DL_FUNC) &_ascr_detection_timediffs, 2},
+    {"_ascr_min_skip_matrix", (DL_FUNC) &_ascr_min_skip_matrix, 2},
+    {"_ascr_distances", (DL_FUNC) &_ascr_distances, 2},
+    {"_ascr_bearings", (DL_FUNC) &_ascr_bearings, 2},
+    {"_ascr_make_toa_ssq", (DL_FUNC) &_ascr_make_toa_ssq, 3},
+    {"_ascr_find_local", (DL_FUNC) &_ascr_find_local, 3},
+    {"_ascr_sim_ss", (DL_FUNC) &_ascr_sim_ss, 4},
+    {"_ascr_secr_nll", (DL_FUNC) &_ascr_secr_nll, 3},
+    {"_ascr_calc_probsurf", (DL_FUNC) &_ascr_calc_probsurf, 2},
     {NULL, NULL, 0}
 };
 

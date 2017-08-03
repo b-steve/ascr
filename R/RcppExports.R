@@ -2,23 +2,23 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 find_incomplete_blocks <- function(mat) {
-    .Call('ascr_find_incomplete_blocks', PACKAGE = 'ascr', mat)
+    .Call('_ascr_find_incomplete_blocks', PACKAGE = 'ascr', mat)
 }
 
 blockify <- function(block, reqss) {
-    .Call('ascr_blockify', PACKAGE = 'ascr', block, reqss)
+    .Call('_ascr_blockify', PACKAGE = 'ascr', block, reqss)
 }
 
 detection_dists <- function(trap_dists, traps) {
-    .Call('ascr_detection_dists', PACKAGE = 'ascr', trap_dists, traps)
+    .Call('_ascr_detection_dists', PACKAGE = 'ascr', trap_dists, traps)
 }
 
 detection_timediffs <- function(times, traps) {
-    .Call('ascr_detection_timediffs', PACKAGE = 'ascr', times, traps)
+    .Call('_ascr_detection_timediffs', PACKAGE = 'ascr', times, traps)
 }
 
 min_skip_matrix <- function(skip, allocated) {
-    .Call('ascr_min_skip_matrix', PACKAGE = 'ascr', skip, allocated)
+    .Call('_ascr_min_skip_matrix', PACKAGE = 'ascr', skip, allocated)
 }
 
 #' Calculating distances between two sets of points
@@ -35,7 +35,7 @@ min_skip_matrix <- function(skip, allocated) {
 #'
 #' @export
 distances <- function(a, b) {
-    .Call('ascr_distances', PACKAGE = 'ascr', a, b)
+    .Call('_ascr_distances', PACKAGE = 'ascr', a, b)
 }
 
 #' Calculating bearings between two sets of points
@@ -52,19 +52,19 @@ distances <- function(a, b) {
 #'
 #' @export
 bearings <- function(a, b) {
-    .Call('ascr_bearings', PACKAGE = 'ascr', a, b)
+    .Call('_ascr_bearings', PACKAGE = 'ascr', a, b)
 }
 
 make_toa_ssq <- function(capt, dists, sound_speed) {
-    .Call('ascr_make_toa_ssq', PACKAGE = 'ascr', capt, dists, sound_speed)
+    .Call('_ascr_make_toa_ssq', PACKAGE = 'ascr', capt, dists, sound_speed)
 }
 
 find_local <- function(capt, dists, buffer) {
-    .Call('ascr_find_local', PACKAGE = 'ascr', capt, dists, buffer)
+    .Call('_ascr_find_local', PACKAGE = 'ascr', capt, dists, buffer)
 }
 
 sim_ss <- function(ss_mean, sigma_ss, cutoff, freqs) {
-    .Call('ascr_sim_ss', PACKAGE = 'ascr', ss_mean, sigma_ss, cutoff, freqs)
+    .Call('_ascr_sim_ss', PACKAGE = 'ascr', ss_mean, sigma_ss, cutoff, freqs)
 }
 
 #' Evaluating the likelihood using C++
@@ -79,10 +79,10 @@ sim_ss <- function(ss_mean, sigma_ss, cutoff, freqs) {
 #' @return The value of the negative log-likelihood.
 #'
 secr_nll <- function(link_pars, dat, get_esa) {
-    .Call('ascr_secr_nll', PACKAGE = 'ascr', link_pars, dat, get_esa)
+    .Call('_ascr_secr_nll', PACKAGE = 'ascr', link_pars, dat, get_esa)
 }
 
 calc_probsurf <- function(link_pars, dat) {
-    .Call('ascr_calc_probsurf', PACKAGE = 'ascr', link_pars, dat)
+    .Call('_ascr_calc_probsurf', PACKAGE = 'ascr', link_pars, dat)
 }
 

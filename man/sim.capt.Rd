@@ -4,7 +4,7 @@
 \alias{sim.capt}
 \title{Simulating SECR data}
 \usage{
-sim.capt(fit = NULL, traps = NULL, mask = NULL,
+sim.capt(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
   cue.rates = NULL, survey.length = NULL, freq.dist = "edf",
   sound.speed = 330, test.detfn = FALSE, first.only = FALSE,
@@ -22,6 +22,9 @@ coordinates for the location of a trap (or detector).}
 y-coordinates respectively. The extreme x- and y-coordinates
 define the rectangle in which individuals' locations are
 simulated.}
+
+\item{popn}{A matrix with two columns, providing x- and
+y-coordinates of the animal locations.}
 
 \item{infotypes}{A character vector indicating the type(s) of
 additional information to be simulated. Elements can be a

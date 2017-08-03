@@ -324,7 +324,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             } else {
                 individual <- rep(1:n.a, times = freqs)
             }
-            popn <- popn[individual, ]
+            popn <- popn[individual, , drop=FALSE]
         } else {
             individual <- seq_along(numeric(n.a))
         }
@@ -365,7 +365,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                                         nrow = n.popn, ncol = n.traps)
             }
             captures <- which(apply(full.bin.capt, 1, sum) > 0)
-            bin.capt <- full.bin.capt[captures, ]
+            bin.capt <- full.bin.capt[captures, , drop=FALSE]
             out <- list(bincapt = bin.capt)
         } else {
             if (ss.link == "identity"){
@@ -435,7 +435,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                 ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
                 ## Filling ss.error for non-hetergeneity models for consistency with old versions.
                 if (pars$sigma.b0.ss == 0){
-                    
+
                     ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
                 }
                 ## Creating SS capture history.
@@ -445,7 +445,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                                     function(x, cutoff) any(x > cutoff),
                                     cutoff = cutoff))
             full.bin.capt <- ifelse(full.ss.capt > cutoff, 1, 0)
-            ss.capt <- full.ss.capt[captures, ]
+            ss.capt <- full.ss.capt[captures, , drop=FALSE]
             if (length(captures) == 0){
                 bin.capt <- ss.capt
             } else {
