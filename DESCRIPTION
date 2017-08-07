@@ -1,7 +1,7 @@
 Package: ascr
 Type: Package
 Title: Acoustic spatial capture-recapture in AD Model Builder
-Version: 2.0.2
+Version: 2.0.3
 Date: 2017-08-07
 Author: Ben Stevenson <ben.stevenson@auckland.ac.nz>,
     David Borchers <dlb@st-andrews.ac.uk>
@@ -30,8 +30,13 @@ Suggests:
     xtable
 LinkingTo: Rcpp
 VignetteBuilder: knitr
-Description: This package allows for the fitting of spatial capture-recapture (SCR) models, primarily to acoustic data. Acoustic surveys are capable of collecting auxiliary information in addition to capture histories that is informative about the source location of detected cues; examples include signal strengths, times of arrival, estimated bearings, and estimated distances. The ascr package fits a class of SCR model that allows use of such information.
+Description: This package allows for the fitting of spatial capture-recapture
+    (SCR) models, primarily to acoustic data. Acoustic surveys are capable of
+    collecting auxiliary information in addition to capture histories that is
+    informative about the source location of detected cues; examples include signal
+    strengths, times of arrival, estimated bearings, and estimated distances. The
+    ascr package fits a class of SCR model that allows use of such information.
 License: GPL
 URL: https://github.com/b-steve/ascr
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 5.0.1
