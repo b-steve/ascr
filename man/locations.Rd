@@ -12,9 +12,9 @@ locations(fit, id, infotypes = NULL, combine = FALSE, xlim = range(mask[,
   "solid", dist = "solid", toa = "solid"), trap.col = "red",
   circle.traps = TRUE, show.labels = TRUE, plot.contours = TRUE,
   plot.estlocs = FALSE, keep.estlocs = FALSE, plot.arrows = "bearing"
-  \%in\% fit$infotypes, plot.circles = "dist" \%in\% fit$infotypes,
-  arrow.length = NULL, show.legend = FALSE, show.axes = TRUE,
-  add = FALSE)
+  \%in\% fit$infotypes, plot.circles = "dist" \%in\% fit$infotypes &
+  !("bearing" \%in\% fit$infotypes), arrow.length = NULL,
+  show.legend = FALSE, show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
