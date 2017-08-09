@@ -94,6 +94,7 @@ create.capt <- function(captures, n.traps = NULL){
     for (i in 1:length(out)){
         out[[i]] <- matrix(0, nrow = n, ncol = n.traps)
     }
+    rnames <- character(n)
     for (i in 1:n){
         id <- unique(ids)[i]
         trig <- traps[ids == id]
@@ -107,7 +108,9 @@ create.capt <- function(captures, n.traps = NULL){
                 out[[j]][i, k] <- captures[ids == id & traps == k, j][1]
             }
         }
+        rnames[i] <- id
     }
+    rownames(out[[1]]) <- rnames
     out
 }
 
