@@ -115,7 +115,7 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                       plot.estlocs = FALSE,
                       keep.estlocs = FALSE,
                       plot.arrows = "bearing" %in% fit$infotypes,
-                      plot.circles = "dist" %in% fit$infotypes,
+                      plot.circles = "dist" %in% fit$infotypes & !("bearing" %in% fit$infotypes),
                       arrow.length = NULL,
                       show.legend = FALSE, show.axes = TRUE, add = FALSE){
     ## Error for locations() with a directional model.
@@ -374,6 +374,9 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
     ## Plotting arrows for estimated bearings.
     if (fit$fit.types["bearing"]){
         if (plot.arrows){
+            if (fit$fit.types["dist"]){
+                arrow.length <- fit$args$capt$dist[i, capt == 1]
+            }
             show.arrows(fit, i, arrow.length, trap.col)
         }
     }
