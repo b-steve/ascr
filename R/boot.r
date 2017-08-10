@@ -301,3 +301,30 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
 #' @rdname boot.ascr
 #' @export
 boot.admbsecr <- boot.ascr
+
+#' Combining subsamples to obtain a standard error.
+#'
+#' Calculates a single standard error for a parameter that has been
+#' calculated by averaging over subsamples.
+#'
+#' @param ... A number of bootstrap model objects.
+#' @param par A character string providing the parameter for which to
+#'     calculate a standard error.
+#' @param plot Logical, if \code{TRUE}, a boxplot is produced.
+#' @param ceiling A threshold value; bootstrapped parameter values
+#'     above this are discarded.
+subsample.se <- function(..., par, plot = TRUE, ceiling = NULL){
+    boot.list <- list(...)
+    n.fits <- length(boot.list)
+    FUN <- function(x, par){
+        x$boot$boots[, par]
+    }
+    mean.pars <- apply(t(laply(boot.list, FUN, par = par)), 1, mean)
+    if (!is.null(ceiling)){
+        mean.pars <- mean.pars[mean.pars <= ceiling]
+    }
+    if (plot){
+        boxplot(mean.pars)
+    }
+    sd(mean.pars, na.rm = TRUE)
+}
