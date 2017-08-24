@@ -25,6 +25,12 @@ show.survey <- function(fit, ...){
 #' @param surface Logical, if \code{TRUE} a 3D detection surface is
 #'     plotted over the mask point locations, otherwise a contour plot
 #'     is shown.
+#' @param mask A matrix with two columns. Each row provides Cartesian
+#'     coordinates for the location of a mask point. The function
+#'     \link[ascr]{create.mask} will return a suitable object. The
+#'     mask used to fit the model \code{fit} will be used by default;
+#'     this argument is usually used when estimated location contours
+#'     need to be plotted to a higher resolution than this.
 #' @param col The colour of the plotted contours.
 #' @param levels A numeric vector giving the values to be associated
 #'     with the plotted contours. Alternatively, this can be the
@@ -39,7 +45,7 @@ show.survey <- function(fit, ...){
 #' show.detsurf(example$fits$simple.hn)
 #'
 #' @export
-show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, xlim = NULL, ylim = NULL,
+show.detsurf <- function(fit, surface = TRUE, mask = NULL, col = "black", levels = NULL, xlim = NULL, ylim = NULL,
                          show.labels = TRUE, trap.col = "red", add = FALSE, ...){
     match.esa <- FALSE
     if (!surface){
@@ -51,8 +57,10 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, xlim
             }
         }
     }
-    p.det <- p.dot(fit)
-    mask <- get.mask(fit)
+    if (is.null(mask)){
+        mask <- get.mask(fit)
+    }
+    p.det <- p.dot(fit, points = mask)
     traps <- get.traps(fit)
     unique.x <- sort(unique(mask[, 1]))
     unique.y <- sort(unique(mask[, 2]))
@@ -94,12 +102,12 @@ show.detsurf <- function(fit, surface = TRUE, col = "black", levels = NULL, xlim
         }
     } else {
         if (!add){
-            plot(fit$args$mask, type = "n", xlim = xlim, ylim = ylim, asp = 1,
+            plot(mask, type = "n", xlim = xlim, ylim = ylim, asp = 1,
                  xlab = "", ylab = "")
-            points(fit$args$traps, col = trap.col, pch = 4, lwd = 2)
+            points(traps, col = trap.col, pch = 4, lwd = 2)
         }
         if (match.esa){
-            mask.area <- attr(get.mask(fit), "area")
+            mask.area <- attr(mask, "area")
             esa <- coef(fit, "esa")
             n.inside <- round(esa/mask.area)
             levels <- sort(z, decreasing = TRUE)[n.inside]
