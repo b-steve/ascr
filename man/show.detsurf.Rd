@@ -4,9 +4,9 @@
 \alias{show.detsurf}
 \title{Plotting the detection probability surface}
 \usage{
-show.detsurf(fit, surface = TRUE, col = "black", levels = NULL,
-  xlim = NULL, ylim = NULL, show.labels = TRUE, trap.col = "red",
-  add = FALSE, ...)
+show.detsurf(fit, surface = TRUE, mask = NULL, col = "black",
+  levels = NULL, xlim = NULL, ylim = NULL, show.labels = TRUE,
+  trap.col = "red", add = FALSE, ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
@@ -14,6 +14,13 @@ show.detsurf(fit, surface = TRUE, col = "black", levels = NULL,
 \item{surface}{Logical, if \code{TRUE} a 3D detection surface is
 plotted over the mask point locations, otherwise a contour plot
 is shown.}
+
+\item{mask}{A matrix with two columns. Each row provides Cartesian
+coordinates for the location of a mask point. The function
+\link[ascr]{create.mask} will return a suitable object. The
+mask used to fit the model \code{fit} will be used by default;
+this argument is usually used when estimated location contours
+need to be plotted to a higher resolution than this.}
 
 \item{col}{The colour of the plotted contours.}
 
