@@ -22,4 +22,4 @@ example <- list(capt = example.capt, traps = example.traps, mask = example.mask,
                                  simple.hr = simple.hr.fit,
                                  bearing.hn = bearing.hn.fit,
                                  boot.simple.hn = boot.simple.hn.fit))
-save(example, file = "/home/ben/GitHub/ascr/data/example.RData")
+save(example, file = "/home/bste085/GitHub/ascr/data/example.RData")
