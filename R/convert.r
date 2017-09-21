@@ -110,7 +110,9 @@ create.capt <- function(captures, n.traps = NULL){
         }
         rnames[i] <- id
     }
-    rownames(out[[1]]) <- rnames
+    for (i in 1:length(out)){
+        rownames(out[[i]]) <- rnames
+    }
     out
 }
 
