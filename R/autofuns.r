@@ -61,7 +61,7 @@ autog0 <- function(args){
 }
 
 autoz <- function(args){
-    autosigma(args)
+    1
 }
 
 autosigma.toa <- function(args){
