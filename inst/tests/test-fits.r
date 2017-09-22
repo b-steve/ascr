@@ -369,7 +369,8 @@ test_that("first-call signal strength models", {
                      cue.rates = Inf, first.only = TRUE)
     fit <-  fit.ascr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
-                         lower.cutoff = lower.cutoff), hess = FALSE)
+                                    lower.cutoff = lower.cutoff),
+                     hess = FALSE)
     pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
                    6.24489981755584)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
