@@ -21,13 +21,13 @@ test_that("error for mismatch in number of individuals or traps", {
     test.capt$bearing <- test.capt$bearing[-1, ]
     expect_that(fit.ascr(capt = test.capt, traps = example$traps,
                          mask = example$mask),
-                throws_error("Components of 'capt' object have different dimensions."))
+                throws_error("Components of 'capt' object within a session have different dimensions."))
     ## Testing error checking for equality in number of columns.
     test.capt <- example$capt[c("bincapt", "bearing", "dist")]
     test.capt$bearing <- test.capt$bincapt[, -1]
     expect_that(fit.ascr(capt = test.capt, traps = example$traps,
                          mask = example$mask),
-                throws_error("Components of 'capt' object have different dimensions."))
+                throws_error("Components of 'capt' object within a session have different dimensions."))
     ## Testing error checking for matching in number of traps.
     test.capt <- example$capt["bincapt"]
     test.capt$bincapt <- test.capt$bincapt[, -1]

@@ -160,8 +160,15 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     }
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
+        ## TODO: Fix for multisession.
         traps <- get.traps(fit)
+        if (is.list(traps)){
+            traps <- traps[[1]]
+        }
         mask <- get.mask(fit)
+        if (is.list(mask)){
+            mask <- mask[[1]]
+        }
         infotypes <- fit$infotypes
         detfn <- fit$args$detfn
         pars <- get.par(fit, "fitted", as.list = TRUE)
@@ -528,6 +535,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             out[["capt.ids"]] <- capt.ids
         }
     }
+    ## This needs to change for multisession stuff.
     out
 }
 

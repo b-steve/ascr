@@ -448,12 +448,15 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     multi.session <- ifelse(is.list(traps) & is.list(mask), TRUE, FALSE)
     ## If only a single session, just make multi-session objects with a single component.
     if (!multi.session){
-        capt <- list(capt)
-        traps <- list(traps)
-        mask <- list(mask)
         if (is.list(traps) | is.list(mask)){
             stop("For multi-session models, both `traps' and `mask' must be lists.")
         }
+        capt <- list(capt)
+        traps <- list(traps)
+        mask <- list(mask)
+    }
+    if (!is.list(capt[[1]])){
+        capt <- list(capt)
     }
     if (length(traps) != length(mask)){
         stop("For multi-session models, both `traps' and `mask' must have the same number of components.")
@@ -566,11 +569,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     capt.bin <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
-        capt.bin[[i]] <- capt[[i]]$bincapt
         ## Checking for bincapt.
-        if (is.null(capt.bin[[i]])){
+        if (!any(names(capt[[i]]) == "bincapt")){
             stop("The binary capture history must be provided as a component of 'capt'.")
         }
+        capt.bin[[i]] <- capt[[i]]$bincapt
         ## Checking for correct number of trap locations.
         if (ncol(capt.bin[[i]]) != nrow(traps[[i]])){
             stop("There must be a trap location for each column in the components of 'capt'.")
@@ -758,22 +761,22 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     capt.ord <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
         capt.bin.order[[i]] <- do.call(order, as.data.frame(capt.bin[[i]]))
-        capt.bin.unique[[i]] <- capt.bin[capt.bin.order[[i]], ]
+        capt.bin.unique[[i]] <- capt.bin[[i]][capt.bin.order[[i]], ]
         capt.bin.freqs[[i]] <- as.vector(table(apply(capt.bin.unique[[i]], 1, paste, collapse = "")))
         names(capt.bin.freqs[[i]]) <- NULL
         capt.bin.unique[[i]] <- capt.bin.unique[[i]][!duplicated(as.data.frame(capt.bin.unique[[i]])), , drop = FALSE]
         n.unique[i] <- nrow(capt.bin.unique[[i]])
         ## Reordering all capture history components.
         capt.ord[[i]] <- capt[[i]]
-        for (j in 1:length(capt)){
-            capt.ord[[i]][[j]] <- capt[[i]][[j]][capt.bin.order, ]
+        for (j in 1:length(capt[[i]])){
+            capt.ord[[i]][[j]] <- capt[[i]][[j]][capt.bin.order[[i]], ]
         }
         ## Capture histories for additional information types (if they exist)
-        capt.bearing[[i]] <- if (fit.bearings) capt.ord$bearing[[i]] else 0
-        capt.dist[[i]] <- if (fit.dists) capt.ord$dist[[i]] else 0
-        capt.ss[[i]] <- if (fit.ss) capt.ord$ss[[i]] else 0
-        capt.toa[[i]] <- if (fit.toas) capt.ord$toa[[i]] else 0
-        mrds.dist[[i]] <- if (fit.mrds) capt.ord$mrds[[i]] else 0
+        capt.bearing[[i]] <- if (fit.bearings) capt.ord[[i]]$bearing else 0
+        capt.dist[[i]] <- if (fit.dists) capt.ord[[i]]$dist else 0
+        capt.ss[[i]] <- if (fit.ss) capt.ord[[i]]$ss else 0
+        capt.toa[[i]] <- if (fit.toas) capt.ord[[i]]$toa else 0
+        mrds.dist[[i]] <- if (fit.mrds) capt.ord[[i]]$mrds else 0
     }
     if (fit.ss){
         if (!missing(detfn) & detfn != "ss"){
@@ -990,10 +993,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     dists <- vector(mode = "list", length = n.sessions)
     bearings <- vector(mode = "list", length = n.sessions)
     toa.ssq <- vector(mode = "list", length = n.sessions)
-    for (i in 1:sessions){
+    for (i in 1:n.sessions){
         dists[[i]] <- distances(traps[[i]], mask[[i]])
         if (fit.bearings | fit.dir){
-            bearings[[i]] <- bearings(traps, mask)
+            bearings[[i]] <- bearings(traps[[i]], mask[[i]])
         } else {
             bearings[[i]] <- 0
         }
@@ -1021,7 +1024,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
     } else {
         all.n.local[[i]] <- rep(1, n.unique[i])
-        all.which.local <- rep(0, n.unique[i])
+        all.which.local[[i]] <- rep(0, n.unique[i])
     }
     ## Sorting out number of quadrature points for directional calling.
     if (fit.dir){

@@ -308,7 +308,11 @@ erf <- function(x){
 p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
                   detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8){
     if (!is.null(fit)){
+        ## Need to change for multisession stuff.
         traps <- get.traps(fit)
+        if (is.list(traps)){
+            traps <- traps[[1]]
+        }
         detfn <- fit$args$detfn
         pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
         ss.link <- fit$args$ss.opts$ss.link
@@ -320,6 +324,10 @@ p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
                 re.detfn <- TRUE
             }
         }
+    }
+    ## Need to change for multisession stuff.
+    if (is.list(points)){
+        points <- points[[1]]
     }
     dists <- distances(traps, points)
     ## Calculating probabilities of detection when random effects are

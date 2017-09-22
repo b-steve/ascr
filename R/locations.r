@@ -103,8 +103,7 @@
 #'
 #' @export
 locations <- function(fit, id, infotypes = NULL, combine = FALSE,
-                      xlim = range(mask[, 1]),
-                      ylim = range(mask[, 2]), mask = get.mask(fit),
+                      xlim = NULL, ylim = NULL, mask = get.mask(fit),
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
                           ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
@@ -140,6 +139,17 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
     if (keep.estlocs){
         estlocs <- matrix(0, nrow = length(id), ncol = 2)
         j <- 1
+    }
+    ## Needs to be changed for multisession stuff.
+    if (is.list(mask)){
+        mask <- mask[[1]]
+    }
+    ## Sorting out limits.
+    if (is.null(xlim)){
+        xlim <- range(mask[, 1])
+    }
+    if (is.null(ylim)){
+        ylim <- range(mask[, 1])
     }
     ## Setting up plotting area.
     if (!add){
@@ -218,6 +228,10 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
         }
     }
     traps <- get.traps(fit)
+    ## Needs to be changed for multisession stuff.
+    if (is.list(traps)){
+        traps <- traps[[1]]
+    }
     detfn <- fit$args$detfn
     ss.link <- fit$args$ss.opts$ss.link
     dists <- distances(traps, mask)
