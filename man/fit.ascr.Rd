@@ -21,14 +21,22 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 \item{capt}{A list with named components, containing the capture
 history and supplementary information. The function
 \link{create.capt} will return a suitable object. See 'Details'
-below.}
+below. Alternatively, this can be a list of such lists if
+detections from multiple detector arrays are being used to fit
+a single model.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or detector).}
+coordinates for the location of a trap (or
+detector). Alternatively, this can be a list of such matrices
+if detections from multiple detector arrays are being used to
+fit a single model.}
 
 \item{mask}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a mask point. The function
-\link{create.mask} will return a suitable object.}
+\link{create.mask} will return a suitable
+object. Alternatively, this can be a list of such matrices if
+detections from multiple detector arrays are being used to fit
+a single model.}
 
 \item{detfn}{A character string specifying the detection function
 to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"

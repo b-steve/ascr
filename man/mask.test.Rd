@@ -12,10 +12,16 @@ mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
 
 \item{mask}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a mask point. The function
-\link{create.mask} will return a suitable object.}
+\link{create.mask} will return a suitable
+object. Alternatively, this can be a list of such matrices if
+detections from multiple detector arrays are being used to fit
+a single model.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or detector).}
+coordinates for the location of a trap (or
+detector). Alternatively, this can be a list of such matrices
+if detections from multiple detector arrays are being used to
+fit a single model.}
 
 \item{pars}{A named list. Component names are parameter names, and
 components are values of parameters at which the mask is to be
