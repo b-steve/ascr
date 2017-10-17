@@ -123,22 +123,8 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
         }
         xlim <- c(0, x.max)
     }
-    detfn <- fit$args$detfn
-    pars <- get.par(fit, pars = fit$detpars, cutoff = fit$fit.types["ss"],
-                    as.list = TRUE)
     dists <- seq(xlim[1], xlim[2], length.out = 1000)
-    if (any(names(pars) == "sigma.b0.ss")){
-        if (pars$sigma.b0.ss != 0){
-            warning("Detection probabilities only shown for the average emitted cue strength.")
-        }
-    }
-    if (any(names(pars) == "b2.ss")){
-        if (pars$b2.ss != 0){
-            warning("Detection probabilities only shown for a detector directly in line with the direction of the cue.")
-        }
-    }
-    probs <- calc.detfn(dists, detfn = detfn, pars = pars,
-                        ss.link = fit$args$ss.opts$ss.link)
+    probs <- detfn(fit, dists)
     if (!add){
         plot.new()
         old.par <- par(xaxs = "i")
@@ -151,4 +137,32 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
         par(old.par)
     }
     lines(dists, probs, ...)
+}
+
+#' Calculating the detection function from a fitted model object.
+#'
+#' Calculates detection probabilities from a fitted model's estimated
+#' detection function.
+#'
+#' @param d A vector of distances.
+#' @inheritParams locations
+#'
+#' @return A vector of detection probabilities.
+#'
+#' @export
+detfn <- function(fit, d){
+    detfn <- fit$args$detfn
+    pars <- get.par(fit, pars = fit$detpars, cutoff = fit$fit.types["ss"],
+                    as.list = TRUE)
+    if (any(names(pars) == "sigma.b0.ss")){
+        if (pars$sigma.b0.ss != 0){
+            warning("Detection probabilities only calculated for the average emitted cue strength.")
+        }
+    }
+    if (any(names(pars) == "b2.ss")){
+        if (pars$b2.ss != 0){
+            warning("Detection probabilities only calculated for a detector directly in line with the direction of the cue.")
+        }
+    }
+    calc.detfn(d, detfn = detfn, pars = pars, ss.link = fit$args$ss.opts$ss.link)
 }
