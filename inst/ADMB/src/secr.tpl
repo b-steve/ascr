@@ -540,8 +540,8 @@ PROCEDURE_SECTION
               dvar_vector z_ss_nodet(1, n_nodets);
               // In here goes f(w, r | x), right?
               //
-              // Why are you writing questions? I don't fucking know
-              // but it seems to work so I guess you did this fine.
+              // Why are you writing questions? I don't know but it
+              // seems to work so I guess you did this fine.
               for (j = 1; j <= n_local; j++){
                 mu_ss_det = column((*expected_ss_pointer), j)(ind_det);
                 mu_ss_nodet = column((*expected_ss_pointer), j)(ind_nodet);
@@ -620,16 +620,16 @@ PROCEDURE_SECTION
   f -= -n*log(sum_det_probs);
   // Printing trace.
   if (trace){
-    cout << "D: " << D << ", ";
+    cerr << "D: " << D << ", ";
     for (i = 1; i <= n_detpars; i++){
-      cout << "DF Par " << i << ": " << detpars(i) << ", ";
+      cerr << "DF Par " << i << ": " << detpars(i) << ", ";
     }
     if (any_suppars){
       for (i = 1; i <= n_suppars; i++){
-        cout << "Supp Par " << i << ": " << suppars(i) << ", ";
+        cerr << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
-    cout << "LL: " << -f << ", ESA: " << esa << endl;
+    cerr << "LL: " << -f << ", ESA: " << esa << endl;
   }
 
 REPORT_SECTION
