@@ -4,10 +4,10 @@
 \alias{locations}
 \title{Plotting estimated locations}
 \usage{
-locations(fit, id, infotypes = NULL, combine = FALSE, xlim = range(mask[,
-  1]), ylim = range(mask[, 2]), mask = get.mask(fit), levels = NULL,
-  nlevels = 10, density = FALSE, cols = list(combined = "black", capt =
-  "purple", ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
+locations(fit, id, infotypes = NULL, combine = FALSE, xlim = NULL,
+  ylim = NULL, mask = get.mask(fit), levels = NULL, nlevels = 10,
+  density = FALSE, cols = list(combined = "black", capt = "purple", ss =
+  "orange", bearing = "green", dist = "brown", toa = "blue"),
   ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing =
   "solid", dist = "solid", toa = "solid"), trap.col = "red",
   circle.traps = TRUE, show.labels = TRUE, plot.contours = TRUE,
