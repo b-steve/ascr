@@ -1193,6 +1193,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Creating temporary directory.
         temp.dir <- tempfile("ascr", curr.dir)
         dir.create(temp.dir)
+        ## Cleaning up files on function exit.
+        if (clean){
+            on.exit(unlink(temp.dir, recursive = TRUE))
+        } else {
+            on.exit(message("ADMB files found in:", "\n", temp.dir, "\n"))
+        }
         setwd(temp.dir)
         ## Creating .pin and .dat files.
         write_pin("secr", sv.link)
@@ -1243,12 +1249,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         rep.string <- readLines("secr.rep")
         esa <- as.numeric(readLines("secr.rep")[1])
         setwd(curr.dir)
-        ## Cleaning up files.
-        if (clean){
-            unlink(temp.dir, recursive = TRUE)
-        } else {
-            message("ADMB files found in:", "\n", temp.dir, "\n")
-        }
         if (class(out)[1] == "try-error"){
             stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
         }

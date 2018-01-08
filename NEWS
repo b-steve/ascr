@@ -1,3 +1,9 @@
+ascr 2.0.4
+----------
+
+* Added the detfn() function, which calulates detection probabilities
+  from an estimated detection function.
+
 ascr 2.0.3
 ----------
 
