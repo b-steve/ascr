@@ -41,7 +41,7 @@ build:
 	mv ascr_2.0.3.tar.gz package-build/
 
 check:
-	R CMD check package-build/ascr_2.0.3.tar.gz --no-tests
+	R CMD check package-build/ascr_2.0.3.tar.gz --no-tests --no-examples
 
 install:
 	R CMD INSTALL package-build/ascr_2.0.3.tar.gz --install-tests
