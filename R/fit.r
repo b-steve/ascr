@@ -1128,9 +1128,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         dir.create(temp.dir)
         ## Cleaning up files on function exit.
         if (clean){
-            on.exit(unlink(temp.dir, recursive = TRUE))
+            on.exit({setwd(curr.dir)
+                unlink(temp.dir, recursive = TRUE)})
         } else {
-            on.exit(message("ADMB files found in:", "\n", temp.dir, "\n"))
+            on.exit({setwd(curr.dir)
+                message("ADMB files found in:", "\n", temp.dir, "\n")})
         }
         setwd(temp.dir)
         ## Creating .pin and .dat files.
