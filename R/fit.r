@@ -1506,3 +1506,25 @@ NULL
 #' @docType data
 #' @keywords datasets
 NULL
+
+#' Multi-array example data
+#'
+#' This object contains simulated data From multiple detector
+#' arrays.
+#'
+#' This object is a list which contains components:
+#' \itemize{
+#' 
+#' \item \code{capt}: A list of capture history objects, one from each
+#' detector array.
+#'
+#' \item \code{traps}: A list of traps objects.
+#' \item \code{mask}: A list of suitable mask objects.
+#' }
+#'
+#' @name multi.example
+#' @format A list.
+#' @usage multi.example
+#' @docType data
+#' @keywords datasets
+NULL
