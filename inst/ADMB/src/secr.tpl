@@ -1,9 +1,12 @@
 DATA_SECTION
-  init_int n_unique
+  init_int n_sessions
+  init_ivector n_unique_per_sess(1,n_sessions)
+  //int n_unique
+  //!! n_unique = sum(n_unique_per_sess);
   init_int local
   // Ragged matrix of local point indices.
-  init_ivector all_n_local(1,n_unique)
-  init_matrix all_which_local(1,n_unique,1,all_n_local)
+  init_imatrix n_local_per_unique(1,n_sessions,1,n_unique_per_sess)
+  init_3darray which_local_per_unique(1,n_sessions,1,n_unique_per_sess,1,n_local_per_unique)
   // Density parameter details.
   init_number D_lb
   init_number D_ub
@@ -55,13 +58,15 @@ DATA_SECTION
   init_number detfn_id
   init_number trace
   init_number dbl_min
-  init_int n
-  init_int n_traps
-  init_int n_mask
-  init_number A
+  init_int n_per_sess
+  //int n
+  //!! n = sum(n_per_sess);
+  init_int n_traps_per_sess
+  init_int n_mask_per_sess
+  init_number A_per_sess
   // Initialising capture histories and frequencies.
-  init_matrix capt_bin_unique(1,n_unique,1,n_traps)
-  init_ivector capt_bin_freqs(1,n_unique)
+  init_3darray capt_bin_unique(1,n_sessions,1,n_unique_per_sess,1,n_traps_per_sess)
+  init_imatrix capt_bin_freqs(1,n_sessions,1,n_unique_per_sess)
   // Initialising observed bearings.
   init_int fit_angs
   // Logical indicator for directional calling.
@@ -84,109 +89,110 @@ DATA_SECTION
   !! } else {
   !!   length_fs = 1;
   !! }
-  int nr_ang
-  int nc_ang
-  int nr_angmat
-  int nc_angmat
+  ivector nr_ang(1,n_sessions)
+  ivector nc_ang(1,n_sessions)
+  ivector nr_angmat(1,n_sessions)
+  ivector nc_angmat(1,n_sessions)
+  // Not sure what to do with these below but 
   int nr_local_angmat
   int nc_local_angmat
   !! if (fit_angs){
-  !!   nr_ang = n;
-  !!   nc_ang = n_traps;
-  !!   nr_angmat = n_traps;
-  !!   nc_angmat = n_mask;
+  !!   nr_ang = n_per_sess;
+  !!   nc_ang = n_traps_per_sess;
+  !!   nr_angmat = n_traps_per_sess;
+  !!   nc_angmat = n_mask_per_sess;
   !! } else if (fit_dir) {
   !!   nr_ang = 1;
   !!   nc_ang = 1;
-  !!   nr_angmat = n_traps;
-  !!   nc_angmat = n_mask;
+  !!   nr_angmat = n_traps_per_sess;
+  !!   nc_angmat = n_mask_per_sess;
   !! } else {
   !!   nr_ang = 1;
   !!   nc_ang = 1;
   !!   nr_angmat = 1;
   !!   nc_angmat = 1;
   !! }
-  init_matrix capt_ang(1,nr_ang,1,nc_ang)
+  init_3darray capt_ang(1,n_sessions,1,nr_ang,1,nc_ang)
   // Initialising observed distances.
   init_int fit_dists
-  int nr_dist
-  int nc_dist
-  int nr_local_dist
-  int nc_local_dist
+  ivector nr_dist(1,n_sessions)
+  ivector nc_dist(1,n_sessions)
+  ivector nr_local_dist(1,n_sessions)
+  ivector nc_local_dist(1,n_sessions)
   !! if (fit_dists == 1){
-  !!   nr_dist = n;
-  !!   nc_dist = n_traps;
+  !!   nr_dist = n_per_sess;
+  !!   nc_dist = n_traps_per_sess;
   !! } else {
   !!   nr_dist = 1;
   !!   nc_dist = 1;
   !! }
-  init_matrix capt_dist(1,nr_dist,1,nc_dist)
+  init_3darray capt_dist(1,n_sessions,1,nr_dist,1,nc_dist)
   // Initialising observed signal strengths.
   init_int fit_ss
   init_number cutoff
   init_int first_calls
-  int n_mask_det_probs
+  ivector n_mask_det_probs(1,n_sessions)
   !! if (first_calls == 1){
-  !!   n_mask_det_probs = n_mask;
+  !!   n_mask_det_probs = n_mask_per_session;
   !! } else {
   !!   n_mask_det_probs = 1;
   !! }
   init_number lower_cutoff
   init_int linkfn_id
-  int nr_ss
-  int nc_ss
-  int nr_expected_ss
-  int nc_expected_ss
-  int nr_local_expected_ss
-  int nc_local_expected_ss
+  ivector nr_ss(1,n_sessions)
+  ivector nc_ss(1,n_sessions)
+  ivector nr_expected_ss(1,n_sessions)
+  ivector nc_expected_ss(1,n_sessions)
+  ivector nr_local_expected_ss(1,n_sessions)
+  ivector nc_local_expected_ss(1,n_sessions)
   !! if (fit_ss == 1){
-  !!   nr_ss = n;
-  !!   nc_ss = n_traps;
-  !!   nr_expected_ss = n_traps;
-  !!   nc_expected_ss = n_mask;
+  !!   nr_ss = n_per_sess;
+  !!   nc_ss = n_traps_per_sess;
+  !!   nr_expected_ss = n_traps_per_sess;
+  !!   nc_expected_ss = n_mask_per_sess;
   !! } else {
   !!   nr_ss = 1;
   !!   nc_ss = 1;
   !!   nr_expected_ss = 1;
   !!   nc_expected_ss = 1;
   !! }
-  init_matrix capt_ss(1,nr_ss,1,nc_ss)
+  init_3darray capt_ss(1,n_sessions,1,nr_ss,1,nc_ss)
   // Initialising observed times of arrival.
   init_int fit_toas
-  int nr_toa
-  int nc_toa
-  int nr_toa_ssq
-  int nc_toa_ssq
-  int nr_local_toa_ssq
-  int nc_local_toa_ssq
+  ivector nr_toa(1,n_sessions)
+  ivector nc_toa(1,n_sessions)
+  ivector nr_toa_ssq(1,n_sessions)
+  ivector nc_toa_ssq(1,n_sessions)
+  ivector nr_local_toa_ssq(1,n_sessions)
+  ivector nc_local_toa_ssq(1,n_sessions)
   !! if (fit_toas == 1){
-  !!   nr_toa = n;
-  !!   nc_toa = n_traps;
-  !!   nr_toa_ssq = n;
-  !!   nc_toa_ssq = n_mask;
+  !!   nr_toa = n_per_sess;
+  !!   nc_toa = n_traps_per_sess;
+  !!   nr_toa_ssq = n_per_sess;
+  !!   nc_toa_ssq = n_mask_per_sess;
   !! } else {
   !!   nr_toa = 1;
   !!   nc_toa = 1;
   !!   nr_toa_ssq = 1;
   !!   nc_toa_ssq = 1;
   !! }
-  init_matrix capt_toa(1,nr_toa,1,nc_toa)
+  init_3darray capt_toa(1,n_sessions,1,nr_toa,1,nc_toa)
   // Initialising observed exact distances (not yet implemented?).
   init_int fit_mrds
-  int nr_mrds
-  int nc_mrds
+  ivector nr_mrds(1,n_sessions)
+  ivector nc_mrds(1,n_sessions)
   !! if (fit_mrds == 1){
-  !!   nr_mrds = n;
-  !!   nc_mrds = n_traps;
+  !!   nr_mrds = n_per_sess;
+  !!   nc_mrds = n_traps_per_sess;
   !! } else {
   !!   nr_mrds = 1;
   !!   nc_mrds = 1;
   !! }
   // Expected supplementary information from each mask point.
-  init_matrix mrds_dist(1,nr_mrds,1,nc_mrds)
-  init_matrix dists(1,n_traps,1,n_mask)
-  init_matrix angs(1,nr_angmat,1,nc_angmat)
-  init_matrix toa_ssq(1,nr_toa_ssq,1,nc_toa_ssq)
+  init_3darray mrds_dist(1,n_sessions,1,nr_mrds,1,nc_mrds)
+  init_3darray dists(1,n_sessions,1,n_traps_per_sess,1,n_mask_per_sess)
+  init_3darray angs(1,n_sessions,1,nr_angmat,1,nc_angmat)
+  init_3darray toa_ssq(1,n_sessions,1,nr_toa_ssq,1,nc_toa_ssq)
   // Indicator for supplementary information (other than SS).
   int any_suppars
   !! if (fit_angs + fit_dists + fit_toas > 0){
@@ -212,15 +218,15 @@ DATA_SECTION
   !!   sigma_toa_ind = curr_ind;
   !! }
   // Setting n_local permanently if local integration is disabled.
-  int nr_localmats
-  int nc_localmats
-  int n_local
+  ivector nr_localmats(1,n_sessions)
+  ivector nc_localmats(1,n_sessions)
+  ivector n_local(1,n_sessions)
   !! if (local == 0){
-  !!   n_local = n_mask;
+  !!   n_local = n_mask_per_sess;
   !!   nr_localmats = 1;
   !!   nc_localmats = 1;
   !! } else {
-  !!   nr_localmats = n_traps;
+  !!   nr_localmats = n_traps_per_sess;
   !! }
   number dir
   number bearing_to_trap
@@ -380,7 +386,7 @@ PROCEDURE_SECTION
   for (u = 1; u <= n_unique; u++){
     capt_hist = row(capt_bin_unique, u);
     if (local == 1){
-      n_local = all_n_local(u);
+      n_local = n_local_per_unique(u);
       nc_localmats = n_local;
     }
     // Filling local_angs.
@@ -397,7 +403,7 @@ PROCEDURE_SECTION
     if (fit_angs == 1){
       if (local){
         for (j = 1; j <= n_local; j++){
-          local_angs.colfill(j, column(angs, all_which_local(u, j)));
+          local_angs.colfill(j, column(angs, which_local_per_unique(u, j)));
         }
         angs_pointer = &local_angs;
       } else {
@@ -417,7 +423,7 @@ PROCEDURE_SECTION
     if (fit_dists == 1){
       if (local){
         for (j = 1; j <= n_local; j++){
-          local_dists.colfill(j, column(dists, all_which_local(u, j)));
+          local_dists.colfill(j, column(dists, which_local_per_unique(u, j)));
         }
         dists_pointer = &local_dists;
       } else {
@@ -437,7 +443,7 @@ PROCEDURE_SECTION
     if (fit_toas){
       if (local){
         for (j = 1; j <= n_local; j++){
-          local_toa_ssq.colfill(j, column(toa_ssq, all_which_local(u, j)));
+          local_toa_ssq.colfill(j, column(toa_ssq, which_local_per_unique(u, j)));
         }
         toa_ssq_pointer = &local_toa_ssq;
       } else {
@@ -454,8 +460,8 @@ PROCEDURE_SECTION
       i = 0;
       if (local){
         for (j = 1; j <= n_local; j++){
-          local_log_capt_probs.colfill(j, column(log_capt_probs(b), all_which_local(u, j)));
-          local_log_evade_probs.colfill(j, column(log_evade_probs(b), all_which_local(u, j)));
+          local_log_capt_probs.colfill(j, column(log_capt_probs(b), which_local_per_unique(u, j)));
+          local_log_evade_probs.colfill(j, column(log_evade_probs(b), which_local_per_unique(u, j)));
         }
         log_capt_probs_pointer = &local_log_capt_probs;
         log_evade_probs_pointer = &local_log_evade_probs;
@@ -481,7 +487,7 @@ PROCEDURE_SECTION
       if (fit_ss){
         if (local){
           for (j = 1; j <= n_local; j++){
-            local_expected_ss.colfill(j, column(expected_ss(b), all_which_local(u, j)));
+            local_expected_ss.colfill(j, column(expected_ss(b), which_local_per_unique(u, j)));
           }
           expected_ss_pointer = &local_expected_ss;
         } else {

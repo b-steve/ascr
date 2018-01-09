@@ -908,7 +908,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
-    default.bounds <- list(D = c(n/(A*n.mask), 1e8),
+    default.bounds <- list(D = c(n[1]/(A[1]*n.mask[1]), 1e8),
                            g0 = c(0, 1),
                            sigma = c(0, 1e8),
                            shape = c(-100, 100),
@@ -1019,12 +1019,16 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     all.which.local <- vector(mode = "list", length = n.sessions)
     all.n.local <- vector(mode = "list", length = n.sessions)
     if (local){
-        all.which.local[[i]] <- find_local(capt.bin.unique[[i]], dists[[i]], buffer[i])
-        all.n.local[[i]] <- laply(all.which.local[[i]], length)
-        all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
+        for (i in 1:n.sessions){
+            all.which.local[[i]] <- find_local(capt.bin.unique[[i]], dists[[i]], buffer[i])
+            all.n.local[[i]] <- laply(all.which.local[[i]], length)
+            all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
+        }
     } else {
-        all.n.local[[i]] <- rep(1, n.unique[i])
-        all.which.local[[i]] <- rep(0, n.unique[i])
+        for (i in 1:n.sessions){
+            all.n.local[[i]] <- rep(1, n.unique[i])
+            all.which.local[[i]] <- rep(0, n.unique[i])
+        }
     }
     ## Sorting out number of quadrature points for directional calling.
     if (fit.dir){
@@ -1061,31 +1065,33 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("Fitting of signal strength models with heterogeneity in source signal strength is only implemented with an identity link function.")
         }
     }
+    browser()
     ## Stuff for the .dat file.
-    data.list <- list(
-        n_unique = n.unique[1], local = as.numeric(local), all_n_local = all.n.local[[1]],
-        all_which_local = all.which.local[[1]], D_lb = D.lb, D_ub = D.ub, D_phase =
+      data.list <- list(
+        n_sessions = n.sessions, n_unique_per_sess = n.unique, local = as.numeric(local), n_local_per_unique = c(all.n.local, recursive = TRUE),
+        which_local_per_unique = c(all.which.local, recursive = TRUE), D_lb = D.lb, D_ub = D.ub, D_phase =
         D.phase, D_sf = D.sf, n_detpars = n.detpars, detpars_lb = detpars.lb,
         detpars_ub = detpars.ub, detpars_phase = detpars.phase, detpars_sf =
         detpars.sf, detpars_linkfns = detpars.link, n_suppars = n.suppars,
         suppars_lb = suppars.lb, suppars_ub = suppars.ub, suppars_phase =
         suppars.phase, suppars_sf = suppars.sf, suppars_linkfns =
         suppars.link, detfn_id = detfn.id, trace =
-        as.numeric(trace), dbl_min = dbl.min, n = n[1], n_traps = n.traps[1], n_mask
-        = n.mask[1], A = A[1], capt_bin_unique = capt.bin.unique[[1]], capt_bin_freqs =
-        capt.bin.freqs[[1]], fit_angs = as.numeric(fit.bearings),
+        as.numeric(trace), dbl_min = dbl.min, n_per_sess= n, n_traps_per_sess = n.traps, n_mask_per_sess
+        = n.mask, A_per_sess = A, capt_bin_unique = list.to.vector(capt.bin.unique), capt_bin_freqs =
+        c(capt.bin.freqs, recursive = TRUE), fit_angs = as.numeric(fit.bearings),
         fit_dir = as.numeric(fit.dir), n_dir_quadpoints = n.dir.quadpoints,
         fit_het_source = as.numeric(fit.het.source), het_source_gh =
         as.numeric(het.source.gh), n_het_source_quadpoints =
         n.het.source.quadpoints, het_source_nodes = het.source.nodes,
-        het_source_weights = het.source.weights, capt_ang = capt.bearing[[1]], fit_dists =
-        as.numeric(fit.dists), capt_dist = capt.dist[[1]], fit_ss = as.numeric(fit.ss),
+        het_source_weights = het.source.weights, capt_ang = list.to.vector(capt.bearing, fit_dists =
+        as.numeric(fit.dists), capt_dist = list.to.vector(capt.dist), fit_ss = as.numeric(fit.ss),
         cutoff = cutoff, first_calls = as.numeric(first.calls),
         lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
-        linkfn_id = linkfn.id, capt_ss = capt.ss[[1]], fit_toas =
-        as.numeric(fit.toas), capt_toa = capt.toa[[1]], fit_mrds =
-        as.numeric(fit.mrds), mrds_dist = mrds.dist[[1]], dists = dists[[1]], angs =
-        bearings[[1]], toa_ssq = toa.ssq[[1]])
+        linkfn_id = linkfn.id, capt_ss = list.to.vector(capt.ss), fit_toas =
+        as.numeric(fit.toas), capt_toa = list.to.vector(capt.toa), fit_mrds =
+        as.numeric(fit.mrds), mrds_dist = list.to.vector(mrds.dist), dists = list.to.vector(dists), angs =
+        list.to.vector(bearings), toa_ssq = list.to.vector(toa.ssq))
+    
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
         fit.freqs <- any(cue.freqs != 1)
