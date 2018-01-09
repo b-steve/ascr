@@ -474,3 +474,7 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
     out
 }
 
+## Helper function for passing lists as 3D arrays to ADMB.
+list.to.vector <- function(x){
+    c(lapply(x, function(m) c(t(m))), recursive = TRUE)
+}
