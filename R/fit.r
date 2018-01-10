@@ -1065,7 +1065,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("Fitting of signal strength models with heterogeneity in source signal strength is only implemented with an identity link function.")
         }
     }
-    browser()
     ## Stuff for the .dat file.
     data.list <- list(n_sessions = n.sessions,
                       n_unique_per_sess = n.unique,
