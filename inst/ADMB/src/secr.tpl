@@ -121,8 +121,8 @@ DATA_SECTION
   init_int fit_dists
   ivector nr_dist(1,n_sessions)
   ivector nc_dist(1,n_sessions)
-  ivector nr_local_dist(1,n_sessions)
-  ivector nc_local_dist(1,n_sessions)
+  int nr_local_dist
+  int nc_local_dist
   !! if (fit_dists == 1){
   !!   nr_dist = n_per_sess;
   !!   nc_dist = n_traps_per_sess;
@@ -247,7 +247,7 @@ PARAMETER_SECTION
   // Collection of parameter estimates.
   sdreport_vector par_ests(1,n_ests)
   // Effective sampling area.
-  sdreport_number esa
+  sdreport_vector esa(1,n_sessions)
   // Log-probability of capture of animals at each mask point by each detector.
   4darray log_capt_probs(1,n_sessions,1,dummy_n_dir_quadpoints,1,n_traps_per_sess,1,n_mask_per_sess)
   // Log-probability of evasion of animals at each mask point by each detector.
@@ -517,7 +517,7 @@ PROCEDURE_SECTION
         i_start = 0;
         k = 1;
         while (k < u){
-          i_start += capt_bin_freqs(k);
+          i_start += capt_bin_freqs(s, k);
           k++;
         }
         i_start += 1;
@@ -623,7 +623,7 @@ PROCEDURE_SECTION
           // For directional calling, save components due to each
           // direction for each individual.
           if (fit_dir){
-            fs(i) += f_ind/n_dir_quadpoints;
+            fs(s, i) += f_ind/n_dir_quadpoints;
           } else {
             f -= log(f_ind + dbl_min);
           }
@@ -631,19 +631,19 @@ PROCEDURE_SECTION
       }
     }
   }
-  // DONE TO HERE.
-
   // For directional calling, fs contains liklihood contributions for
   // each individual. Need to log and sum for log-likelihood.
   if (fit_dir){
     f -= sum(log(fs + dbl_min));
   }
-  // Calculating ESA.
-  esa = A*(sum_det_probs);
-  // Contribution from n.
-  f -= log_dpois(n, D*esa);
-  // Extra bit that falls out of ll.
-  f -= -n*log(sum_det_probs);
+  for (s = 1; s <= n_sessions; s++){
+    // Calculating ESAs.
+    esa(s) = A_per_sess(s)*sum_det_probs(s);
+    // Adding contribution from ns.
+    f -= log_dpois(n_per_sess(s), D*esa(s));
+    // Extra bit that falls out of log-likelihood.
+    f -= -n_per_sess(s)*log(sum_det_probs(s));
+  }
   // Printing trace.
   if (trace){
     cout << "D: " << D << ", ";
