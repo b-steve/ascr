@@ -1067,32 +1067,43 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     browser()
     ## Stuff for the .dat file.
-      data.list <- list(
-        n_sessions = n.sessions, n_unique_per_sess = n.unique, local = as.numeric(local), n_local_per_unique = c(all.n.local, recursive = TRUE),
-        which_local_per_unique = c(all.which.local, recursive = TRUE), D_lb = D.lb, D_ub = D.ub, D_phase =
-        D.phase, D_sf = D.sf, n_detpars = n.detpars, detpars_lb = detpars.lb,
-        detpars_ub = detpars.ub, detpars_phase = detpars.phase, detpars_sf =
-        detpars.sf, detpars_linkfns = detpars.link, n_suppars = n.suppars,
-        suppars_lb = suppars.lb, suppars_ub = suppars.ub, suppars_phase =
-        suppars.phase, suppars_sf = suppars.sf, suppars_linkfns =
-        suppars.link, detfn_id = detfn.id, trace =
-        as.numeric(trace), dbl_min = dbl.min, n_per_sess= n, n_traps_per_sess = n.traps, n_mask_per_sess
-        = n.mask, A_per_sess = A, capt_bin_unique = list.to.vector(capt.bin.unique), capt_bin_freqs =
-        c(capt.bin.freqs, recursive = TRUE), fit_angs = as.numeric(fit.bearings),
-        fit_dir = as.numeric(fit.dir), n_dir_quadpoints = n.dir.quadpoints,
-        fit_het_source = as.numeric(fit.het.source), het_source_gh =
-        as.numeric(het.source.gh), n_het_source_quadpoints =
-        n.het.source.quadpoints, het_source_nodes = het.source.nodes,
-        het_source_weights = het.source.weights, capt_ang = list.to.vector(capt.bearing, fit_dists =
-        as.numeric(fit.dists), capt_dist = list.to.vector(capt.dist), fit_ss = as.numeric(fit.ss),
-        cutoff = cutoff, first_calls = as.numeric(first.calls),
-        lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
-        linkfn_id = linkfn.id, capt_ss = list.to.vector(capt.ss), fit_toas =
-        as.numeric(fit.toas), capt_toa = list.to.vector(capt.toa), fit_mrds =
-        as.numeric(fit.mrds), mrds_dist = list.to.vector(mrds.dist), dists = list.to.vector(dists), angs =
-        list.to.vector(bearings), toa_ssq = list.to.vector(toa.ssq))
-    
-    ## Determining whether or not standard errors should be calculated.
+    data.list <- list(n_sessions = n.sessions,
+                      n_unique_per_sess = n.unique,
+                      local = as.numeric(local),
+                      n_local_per_unique = c(all.n.local, recursive = TRUE),
+                      which_local_per_unique = c(all.which.local, recursive = TRUE),
+                      D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf,
+                      n_detpars = n.detpars, detpars_lb = detpars.lb,
+                      detpars_ub = detpars.ub, detpars_phase = detpars.phase,
+                      detpars_sf = detpars.sf, detpars_linkfns = detpars.link,
+                      n_suppars = n.suppars, suppars_lb = suppars.lb,
+                      suppars_ub = suppars.ub, suppars_phase = suppars.phase,
+                      suppars_sf = suppars.sf, suppars_linkfns = suppars.link,
+                      detfn_id = detfn.id, trace = as.numeric(trace),
+                      dbl_min = dbl.min, n_per_sess= n, n_traps_per_sess = n.traps,
+                      n_mask_per_sess = n.mask, A_per_sess = A,
+                      capt_bin_unique = list.to.vector(capt.bin.unique),
+                      capt_bin_freqs = c(capt.bin.freqs, recursive = TRUE),
+                      fit_angs = as.numeric(fit.bearings),
+                      fit_dir = as.numeric(fit.dir),
+                      n_dir_quadpoints = n.dir.quadpoints,
+                      fit_het_source = as.numeric(fit.het.source),
+                      het_source_gh = as.numeric(het.source.gh),
+                      n_het_source_quadpoints = n.het.source.quadpoints,
+                      het_source_nodes = het.source.nodes,
+                      het_source_weights = het.source.weights,
+                      capt_ang = list.to.vector(capt.bearing),
+                      fit_dists = as.numeric(fit.dists),
+                      capt_dist = list.to.vector(capt.dist),
+                      fit_ss = as.numeric(fit.ss),
+                      cutoff = cutoff, first_calls = as.numeric(first.calls),
+                      lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
+                      linkfn_id = linkfn.id, capt_ss = list.to.vector(capt.ss),
+                      fit_toas = as.numeric(fit.toas), capt_toa = list.to.vector(capt.toa),
+                      fit_mrds = as.numeric(fit.mrds), mrds_dist = list.to.vector(mrds.dist),
+                      dists = list.to.vector(dists), angs = list.to.vector(bearings),
+                      toa_ssq = list.to.vector(toa.ssq)) 
+         ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
         fit.freqs <- any(cue.freqs != 1)
     } else {
@@ -1386,7 +1397,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     class(out) <- c("ascr", "admb")
     out
-}
+    }
 
 ## Aliasing old admbsecr() function name.
 #' @rdname fit.ascr
