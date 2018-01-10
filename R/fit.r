@@ -1263,9 +1263,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                        nchar(list.files())) == ".par")]][1]
         }
         out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
-        ## Saving esa to prevent recalculation.
-        rep.string <- readLines("secr.rep")
-        esa <- as.numeric(readLines("secr.rep")[1])
+        ## Getting ESAs from .rep file for better accuracy.
+        esa <- read_rep("secr")$est
+        names(esa) <- NULL
         setwd(curr.dir)
         if (class(out)[1] == "try-error"){
             stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
@@ -1284,8 +1284,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Creating coefficients vector.
     est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
     n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + 1)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, "esa")
+    out$coefficients <- numeric(2*n.est.pars + n.sessions)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))
     for (i in 1:n.est.pars){
         out$coefficients[i] <- out$coeflist[[i]]
     }
@@ -1304,6 +1304,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     out$args <- args
+    out$n.sessions <- n.sessions
     out$fit.types <- fit.types
     out$infotypes <- names(fit.types)[fit.types]
     out$detpars <- detpar.names
@@ -1319,7 +1320,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     ## Putting in esa estimate.
-    out$coefficients[2*n.est.pars + 1] <- esa
+    out$coefficients[2*n.est.pars + (1:n.sessions)] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
         mu.freqs <- mean(cue.freqs)

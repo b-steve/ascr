@@ -659,9 +659,11 @@ PROCEDURE_SECTION
   }
 
 REPORT_SECTION
-  // Writing ESA to report file.
-  report << esa << endl;
-
+  // Writing ESAs to report file.
+  for (i = 1; i <= n_sessions; i++){
+    report << "# esa[" << i << "]:" << endl << esa(i) << endl;
+  }
+  
 GLOBALS_SECTION
   #include <detfuns.cpp>
   #include <helpers.cpp>

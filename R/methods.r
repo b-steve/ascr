@@ -31,7 +31,7 @@ coef.ascr <- function(object, pars = "fitted", ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$coefficients[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da" | par.names == "Dc")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da" | par.names == "Dc")
         derived <- object$coefficients[which.derived]
         fitted <- object$coefficients[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -81,7 +81,7 @@ vcov.ascr <- function(object, pars = "fitted", ...){
     }
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
-        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da")
         which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
         keep <- NULL
         if ("fitted" %in% pars){
@@ -119,7 +119,7 @@ vcov.ascr.boot <- function(object, pars = "fitted", ...){
     }
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
-        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da")
         which.fitted <- (1:length(par.names))[-c(which.linked, which.derived)]
         keep <- NULL
         if ("fitted" %in% pars){
@@ -161,7 +161,7 @@ stdEr.ascr <- function(object, pars = "fitted", ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$se[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da" | par.names == "Dc")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da" | par.names == "Dc")
         derived <- object$se[which.derived]
         fitted <- object$se[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -196,7 +196,7 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$boot$se[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da" | par.names == "Dc")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da" | par.names == "Dc")
         derived <- object$boot$se[which.derived]
         fitted <- object$boot$se[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -249,9 +249,10 @@ summary.ascr <- function(object, ...){
     derived.se <- stdEr(object, "derived")
     infotypes <- object$infotypes
     detfn <- object$args$detfn
+    n.sessions <- object$n.sessions
     out <- list(coefs = coefs, derived = derived, coefs.se = coefs.se,
                 derived.se = derived.se, infotypes = infotypes,
-                detfn = detfn)
+                detfn = detfn, n.sessions = n.sessions)
     class(out) <- c("summary.ascr", class(out))
     out
 }
