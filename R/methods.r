@@ -353,7 +353,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
     }
     if (linked){
         fitted.names <- names(coef(object, "fitted")[parm])
-        fitted.names <- fitted.names[fitted.names != "mu.freqs"]
+        fitted.names <- fitted.names[fitted.names != "mu.rates"]
         linked.names <- paste(fitted.names, "_link", sep = "")
         link.parm <- linked.names[!(linked.names %in% parm)]
         all.parm <- c(parm, link.parm)

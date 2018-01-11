@@ -42,6 +42,7 @@ autoD <- function(args){
     sv <- args$sv
     detpar.names <- args$detpar.names
     ss.link <- args$ss.opts$ss.link
+    survey.length <- args$survey.length
     pars <- sv[detpar.names]
     if (any(detpar.names == "sigma.b0.ss")){
         pars$sigma.b0.ss <- 0
@@ -53,7 +54,7 @@ autoD <- function(args){
     esa <- p.dot(points = mask, esa = TRUE, traps = traps, detfn = detfn,
                  ss.link = ss.link, pars = pars, n.quadpoints = 8)
     ## HT-like estimator for D is n/esa.
-    nrow(args$capt$bincapt)/esa
+    nrow(args$capt$bincapt)/(esa*survey.length)
 }
 
 autog0 <- function(args){

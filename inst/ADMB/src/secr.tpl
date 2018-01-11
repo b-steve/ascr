@@ -1,8 +1,8 @@
 DATA_SECTION
+  // Session-related stuff.
   init_int n_sessions
+  init_vector survey_length(1,n_sessions)
   init_ivector n_unique_per_sess(1,n_sessions)
-  //int n_unique
-  //!! n_unique = sum(n_unique_per_sess);
   init_int local
   // Ragged matrix of local point indices.
   init_imatrix n_local_per_unique(1,n_sessions,1,n_unique_per_sess)
@@ -60,8 +60,6 @@ DATA_SECTION
   init_number trace
   init_number dbl_min
   init_ivector n_per_sess(1,n_sessions)
-  //int n
-  //!! n = sum(n_per_sess);
   init_ivector n_traps_per_sess(1,n_sessions)
   init_ivector n_mask_per_sess(1,n_sessions)
   init_vector A_per_sess(1,n_sessions)
@@ -97,7 +95,6 @@ DATA_SECTION
   ivector nc_ang(1,n_sessions)
   ivector nr_angmat(1,n_sessions)
   ivector nc_angmat(1,n_sessions)
-  // Not sure what to do with these below but 
   int nr_local_angmat
   int nc_local_angmat
   !! if (fit_angs){
@@ -640,7 +637,7 @@ PROCEDURE_SECTION
     // Calculating ESAs.
     esa(s) = A_per_sess(s)*sum_det_probs(s);
     // Adding contribution from ns.
-    f -= log_dpois(n_per_sess(s), D*esa(s));
+    f -= log_dpois(n_per_sess(s), D*survey_length(s)*esa(s));
     // Extra bit that falls out of log-likelihood.
     f -= -n_per_sess(s)*log(sum_det_probs(s));
   }

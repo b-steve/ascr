@@ -380,13 +380,15 @@
 #'     on convergence below.
 #' @param ss.opts Options for models using the signal strength
 #'     detection function. See 'Details' below.
-#' @param cue.rates A vector of call frequencies collected
-#'     independently of the main acoustic survey. This must be
-#'     measured in calls per unit time, where the time units are
-#'     equivalent to those used by \code{survey.length}.
+#' @param cue.rates A vector of call rates collected independently of
+#'     the main acoustic survey. This must be measured in calls per
+#'     unit time, where the time units are equivalent to those used by
+#'     \code{survey.length}.
 #' @param survey.length The length of a cue-based survey. If provided,
 #'     the estimated density \code{Dc} is measured in cues per unit
-#'     time (using the same units as \code{survey.length}).
+#'     time (using the same units as \code{survey.length}). For
+#'     multi-session data, this must be a vector, giving the survey
+#'     lengths for each session.
 #' @param sound.speed The speed of sound in metres per second,
 #'     defaults to 330 (the speed of sound in air). Only used when
 #'     \code{"toa"} is a component name of \code{capt}.
@@ -488,20 +490,15 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
-    ## Warning from survey.length without cue.rates.
-    if (is.null(cue.rates)){
-        if (!is.null(survey.length)){
-            warning("The `survey.length' argument is being ignored, as `cue.rates' has not been provided.")
-        }
-    }
     ## Warning from cue.rates without survey.length.
     if (is.null(survey.length)){
+        survey.length <- rep(1, n.sessions)
         if (!is.null(cue.rates)){
             stop("The use of `cue.rates' without `survey.length' is no longer supported. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
         }
     } else {
-        if (length(survey.length) != 1){
-            stop("The argument `survey.length' must be scalar.")
+        if (length(survey.length) != n.sessions){
+            stop("The argument `survey.length' must have a value for each session.")
         }
     }
     ## Sorting out cues per survey.
@@ -876,7 +873,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                             detpar.names = detpar.names,
                                             mask = mask[[1]], traps = traps[[1]],
                                             sv = sv.link, ss.opts = ss.opts,
-                                            A = A[1], same.traplocs = same.traplocs)))
+                                            A = A[1], survey.length = survey.length[1],
+                                            same.traplocs = same.traplocs)))
     }
     ## Converting start values to link scale.
     sv <- sv.link
@@ -908,7 +906,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
-    default.bounds <- list(D = c(n[1]/(A[1]*n.mask[1]), 1e8),
+    default.bounds <- list(D = c(n[1]/(A[1]*n.mask[1]*survey.length[1]), 1e8),
                            g0 = c(0, 1),
                            sigma = c(0, 1e8),
                            shape = c(-100, 100),
@@ -1067,6 +1065,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Stuff for the .dat file.
     data.list <- list(n_sessions = n.sessions,
+                      survey_length = survey.length,
                       n_unique_per_sess = n.unique,
                       local = as.numeric(local),
                       n_local_per_unique = c(all.n.local, recursive = TRUE),
@@ -1323,11 +1322,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$coefficients[2*n.est.pars + (1:n.sessions)] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
-        mu.freqs <- mean(cue.freqs)
-        Da <- get.par(out, "D")/mu.freqs
-        Dc <- get.par(out, "D")/survey.length
-        names.vec <- c(names(out[["coefficients"]]), "Da", "Dc", "mu.freqs")
-        coefs.updated <- c(out[["coefficients"]], Da, Dc, mu.freqs)
+        mu.rates <- mean(cue.rates)
+        Dc <- get.par(out, "D")
+        Da <- Dc/mu.rates
+        names.vec <- c(names(out[["coefficients"]]), "Da", "Dc", "mu.rates")
+        coefs.updated <- c(out[["coefficients"]], Da, Dc, mu.rates)
         names(coefs.updated) <- names.vec
         out[["coefficients"]] <- coefs.updated
         ## Removing ses, cor, vcov matrices.
