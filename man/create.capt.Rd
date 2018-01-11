@@ -4,7 +4,7 @@
 \alias{create.capt}
 \title{Creating capture history object.}
 \usage{
-create.capt(captures, n.traps = NULL)
+create.capt(captures, n.traps = NULL, n.sessions = NULL)
 }
 \arguments{
 \item{captures}{A data frame of capture records, see 'Details' for
@@ -12,7 +12,11 @@ the correct format.}
 
 \item{n.traps}{The total number of traps. If \code{NULL} then the
 number of traps is assumed to be the largest value in the
-\code{traps} column of the \code{captures} argument.}
+\code{trap} column of the \code{captures} argument.}
+
+\item{n.sessions}{The total number of sessions. If \code{NULL} then
+the number of sessions is assumed to be the largest value in
+the \code{session} column of the \code{captures} argument.}
 }
 \description{
 Creates a capture history object to use with the function
