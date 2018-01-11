@@ -296,7 +296,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         if (!first.only){
             ## This is super messy, but it's scaling D from call
             ## density to animal density.
-            D <- D/(mean(cue.rates)*survey.length)
+            D <- D/mean(cue.rates)
         }
         if (is.null(popn)){
             popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
