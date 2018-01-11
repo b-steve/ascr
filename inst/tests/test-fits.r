@@ -381,3 +381,10 @@ test_that("first-call signal strength models", {
                          lower.cutoff = lower.cutoff, ss.link = "log"), hess = FALSE),
                 throws_error("First-call models are only implemented for ss.link = \"identity\"."))
 })
+
+test_that("Multi-session models", {
+    fit <- fit.ascr(multi.example$capt, multi.example$traps, multi.example$mask)
+    pars.test <- c(2525.4060484, 0.9849349, 2.8395646, 120.0353505)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-3, is_true())
+})
