@@ -71,14 +71,16 @@ on convergence below.}
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
 
-\item{cue.rates}{A vector of call frequencies collected
-independently of the main acoustic survey. This must be
-measured in calls per unit time, where the time units are
-equivalent to those used by \code{survey.length}.}
+\item{cue.rates}{A vector of call rates collected independently of
+the main acoustic survey. This must be measured in calls per
+unit time, where the time units are equivalent to those used by
+\code{survey.length}.}
 
 \item{survey.length}{The length of a cue-based survey. If provided,
 the estimated density \code{Dc} is measured in cues per unit
-time (using the same units as \code{survey.length}).}
+time (using the same units as \code{survey.length}). For
+multi-session data, this must be a vector, giving the survey
+lengths for each session.}
 
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
