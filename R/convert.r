@@ -75,43 +75,68 @@ create.mask <- function(traps, buffer, ...){
 #'     the correct format.
 #' @param n.traps The total number of traps. If \code{NULL} then the
 #'     number of traps is assumed to be the largest value in the
-#'     \code{traps} column of the \code{captures} argument.
+#'     \code{trap} column of the \code{captures} argument.
+#' @param n.sessions The total number of sessions. If \code{NULL} then
+#'     the number of sessions is assumed to be the largest value in
+#'     the \code{session} column of the \code{captures} argument.
 #'
 #' @export
-create.capt <- function(captures, n.traps = NULL){
-    ids <- captures[, 2]
-    traps <- captures[, 4]
+create.capt <- function(captures, n.traps = NULL, n.sessions = NULL){
+    session.full <- captures[, 1]
+    id.full <- captures[, 2]
+    trap.full <- captures[, 4]
+    if (is.null(n.sessions)){
+        n.sessions <- max(session.full)
+    } else if (any(session.full > n.sessions)){
+        stop("Session ID in arguments 'captures' exceeds 'n.sessions'.")
+    }
     if (is.null(n.traps)){
-        n.traps <- max(traps)
-    } else if (any(traps > n.traps)){
+        n.traps <- max(trap.full)
+    } else if (any(trap.full > n.traps)){
         stop("Trap ID in argument 'captures' exceeds 'n.traps'.")
     }
     all.types <- c("bearing", "dist", "ss", "toa", "mrds")
     info.types <- all.types[all.types %in% colnames(captures)]
-    out <- vector(mode = "list", length = length(info.types) + 1)
-    names(out) <- c("bincapt", info.types)
-    n <- length(unique(ids))
-    for (i in 1:length(out)){
-        out[[i]] <- matrix(0, nrow = n, ncol = n.traps)
+    if (n.sessions > 1){
+        out.list <- vector(mode = "list", length = n.sessions)
     }
-    rnames <- character(n)
-    for (i in 1:n){
-        id <- unique(ids)[i]
-        trig <- traps[ids == id]
-        if (length(trig) != length(unique(trig))){
-            msg <- paste("Ignoring that individual", id, "was detected by some traps more than once.")
-            warning(msg)
+    captures.full <- captures
+    for (s in 1:n.sessions){
+        captures <- captures.full[session.full == s, ]
+        session <- captures[, 1]
+        id <- captures[, 2]
+        trap <- captures[, 4]
+        out <- vector(mode = "list", length = length(info.types) + 1)
+        names(out) <- c("bincapt", info.types)
+        n <- length(unique(id))
+        for (i in 1:length(out)){
+            out[[i]] <- matrix(0, nrow = n, ncol = n.traps)
         }
-        out[["bincapt"]][i, trig] <- 1
-        for (j in info.types){
-            for (k in trig){
-                out[[j]][i, k] <- captures[ids == id & traps == k, j][1]
+        rnames <- character(n)
+        for (i in 1:n){
+            u.id <- unique(id)[i]
+            trig <- trap[id == u.id]
+            if (length(trig) != length(unique(trig))){
+                msg <- paste("Ignoring that individual", u.id, "was detected by some traps more than once.")
+                warning(msg)
             }
+            out[["bincapt"]][i, trig] <- 1
+            for (j in info.types){
+                for (k in trig){
+                    out[[j]][i, k] <- captures[id == u.id & trap == k, j][1]
+                }
+            }
+            rnames[i] <- u.id
         }
-        rnames[i] <- id
+        for (i in 1:length(out)){
+            rownames(out[[i]]) <- rnames
+        }
+        if (n.sessions > 1){
+            out.list[[s]] <- out
+        }
     }
-    for (i in 1:length(out)){
-        rownames(out[[i]]) <- rnames
+    if (n.sessions > 1){
+        out <- out.list
     }
     out
 }
