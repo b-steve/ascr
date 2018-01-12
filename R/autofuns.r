@@ -107,11 +107,26 @@ autoalpha <- function(args){
     2
 }
 
-
 autoshape <- function(args){
-    autosigma(args)/args$sv[["scale"]]
+    2
 }
 
 autoscale <- function(args){
-    sqrt(autosigma(args))
+    if (args$detfn == "th"){
+        out <- autosigma(args)
+    } else if (args$detfn == "lth") {
+        out <- (log(autoshape.1(args)) - log(autoshape.1(args) - 0.5))/autosigma(args)
+    } else {
+        stop("Detection function not recognised.")
+    }
+    out
+}
+
+autoshape.1 <- function(args){
+    ## Magic number based on clever maths.
+    0.809017
+}
+
+autoshape.2 <- function(args){
+    log(autoshape.1(args) + autoscale(args)*autosigma(args))
 }
