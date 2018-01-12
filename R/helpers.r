@@ -226,17 +226,44 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     out
 }
 
+#' Extracting the capture histories
+#'
+#' Extracts the capture histories from an ascr fit.
+#'
+#' @inheritParams locations
+#' @param session The session from which to extract the capture
+#'     histories.
+#'
+#' @return A capture histories object.
+#'
+#' @export
+get.capt <- function(fit, session){
+    if (is.null(session) | !is.list(fit$args$capt)){
+        out <- fit$args$capt
+    } else {
+        out <- fit$args$capt[[session]]
+    }
+    out
+}
+
+
 #' Extracting mask point locations
 #'
 #' Extracts the mask used in an ascr fit.
 #'
 #' @inheritParams locations
+#' @param session The session from which to extract the mask.
 #'
 #' @return A mask object.
 #'
 #' @export
-get.mask <- function(fit){
-    fit$args$mask
+get.mask <- function(fit, session){
+    if (is.null(session) | !is.list(fit$args$mask)){
+        out <- fit$args$mask
+    } else {
+        out <- fit$args$mask[[session]]
+    }
+    out
 }
 
 #' Extracting trap locations
@@ -244,25 +271,19 @@ get.mask <- function(fit){
 #' Extracts the trap locations used in an ascr fit.
 #'
 #' @inheritParams locations
-#'
+#' @param session The session from which to extract the trap
+#'     locations.
+#' 
 #' @return A traps object.
-#'
+#' 
 #' @export
-get.traps <- function(fit){
-    fit$args$traps
-}
-
-#' Extracting capture history object
-#'
-#' Extracts the capture history object used in an ascr fit.
-#'
-#' @inheritParams locations
-#'
-#' @return A capture history object.
-#'
-#' @export
-get.capt <- function(fit){
-    fit$args$capt
+get.traps <- function(fit, session = NULL){
+    if (is.null(session) | !is.list(fit$args$traps)){
+        out <- fit$args$traps
+    } else {
+        out <- fit$args$traps[[session]]
+    }
+    out
 }
 
 ## Error function.
