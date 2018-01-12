@@ -194,11 +194,15 @@ convert.capt.to.ascr <- function(capt){
     bincapt <- capt[, 1, ]
     nr <- nrow(bincapt)
     nc <- ncol(bincapt)
+    out <- list(bincapt = bincapt)
     if (!is.null(attr(capt, "signalframe"))){
         ss.capt <- matrix(attr(capt, "signalframe")[, 1],
                           nrow = nr, ncol = nc)
+        out$ss <- ss.capt
+    } else {
+        
     }
-    list(bincapt = bincapt, ss = ss.capt)
+    out
 }
 
 ## Aliasing old convert.capt.to.admbsecr() function name.
