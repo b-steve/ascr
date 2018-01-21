@@ -237,7 +237,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
 #' @return A capture histories object.
 #'
 #' @export
-get.capt <- function(fit, session){
+get.capt <- function(fit, session = NULL){
     if (is.null(session) | !is.list(fit$args$capt)){
         out <- fit$args$capt
     } else {
@@ -257,7 +257,7 @@ get.capt <- function(fit, session){
 #' @return A mask object.
 #'
 #' @export
-get.mask <- function(fit, session){
+get.mask <- function(fit, session = NULL){
     if (is.null(session) | !is.list(fit$args$mask)){
         out <- fit$args$mask
     } else {
