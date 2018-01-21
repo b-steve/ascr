@@ -117,7 +117,7 @@ show.detfn <- function(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
         if (!is.null(buffer)){
             x.max <- buffer
         } else {
-            dists <- distances(fit$args$traps, fit$args$mask)
+            dists <- distances(get.traps(fit, 1), get.mask(fit, 1))
             edge.point <- which(dists[1, ] == max(dists[1, ]))[1]
             x.max <- min(dists[, edge.point])
         }
