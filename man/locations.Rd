@@ -4,12 +4,12 @@
 \alias{locations}
 \title{Plotting estimated locations}
 \usage{
-locations(fit, id, infotypes = NULL, combine = FALSE, xlim = NULL,
-  ylim = NULL, mask = get.mask(fit), levels = NULL, nlevels = 10,
-  density = FALSE, cols = list(combined = "black", capt = "purple", ss =
-  "orange", bearing = "green", dist = "brown", toa = "blue"),
-  ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing =
-  "solid", dist = "solid", toa = "solid"), trap.col = "red",
+locations(fit, id, session = 1, infotypes = NULL, combine = FALSE,
+  xlim = NULL, ylim = NULL, mask = get.mask(fit, session),
+  levels = NULL, nlevels = 10, density = FALSE, cols = list(combined =
+  "black", capt = "purple", ss = "orange", bearing = "green", dist = "brown",
+  toa = "blue"), ltys = list(combined = "solid", capt = "solid", ss = "solid",
+  bearing = "solid", dist = "solid", toa = "solid"), trap.col = "red",
   circle.traps = TRUE, show.labels = TRUE, plot.contours = TRUE,
   plot.estlocs = FALSE, keep.estlocs = FALSE, plot.arrows = "bearing"
   \%in\% fit$infotypes, plot.circles = "dist" \%in\% fit$infotypes &
@@ -22,6 +22,9 @@ locations(fit, id, infotypes = NULL, combine = FALSE, xlim = NULL,
 \item{id}{A numeric vector with row numbers from
 \code{fit$args$capt}, indicating which individuals' locations
 are to be plotted.}
+
+\item{session}{The session with the detector array and invidual(s)
+to be plotted (for multi-session models only).}
 
 \item{infotypes}{A character vector indicating the type(s) of
 information to be used when plotting the estimated density of
