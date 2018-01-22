@@ -238,7 +238,7 @@ locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
     ss.link <- fit$args$ss.opts$ss.link
     dists <- distances(traps, mask)
     ## Calculating density due to animal locations.
-    p.det <- p.dot(fit = fit, points = mask)
+    p.det <- p.dot(fit = fit, session = session, points = mask)
     ## Divide by normalising constant; not conversion to square metres.
     a <- attr(mask, "area")
     f.x <- p.det/(a*sum(p.det))

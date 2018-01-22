@@ -22,6 +22,8 @@ show.survey <- function(fit, ...){
 #' \link{fit.ascr}.
 #'
 #' @inheritParams locations
+#' @param session For multisession models, the session from which the
+#'     plot should be generated.
 #' @param surface Logical, if \code{TRUE} a 3D detection surface is
 #'     plotted over the mask point locations, otherwise a contour plot
 #'     is shown.
@@ -45,7 +47,7 @@ show.survey <- function(fit, ...){
 #' show.detsurf(example$fits$simple.hn)
 #'
 #' @export
-show.detsurf <- function(fit, surface = TRUE, mask = NULL, col = "black", levels = NULL, xlim = NULL, ylim = NULL,
+show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "black", levels = NULL, xlim = NULL, ylim = NULL,
                          show.labels = TRUE, trap.col = "red", add = FALSE, ...){
     match.esa <- FALSE
     if (!surface){
@@ -58,10 +60,10 @@ show.detsurf <- function(fit, surface = TRUE, mask = NULL, col = "black", levels
         }
     }
     if (is.null(mask)){
-        mask <- get.mask(fit)
+        mask <- get.mask(fit, session)
     }
-    p.det <- p.dot(fit, points = mask)
-    traps <- get.traps(fit)
+    p.det <- p.dot(fit, session, points = mask)
+    traps <- get.traps(fit, session)
     unique.x <- sort(unique(mask[, 1]))
     unique.y <- sort(unique(mask[, 2]))
     z <- matrix(NA, nrow = length(unique.x), ncol = length(unique.y))

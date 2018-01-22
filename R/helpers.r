@@ -297,6 +297,8 @@ erf <- function(x){
 #' for specific locations in the survey area.
 #'
 #' @param fit A fitted model from \link{fit.ascr}.
+#' @param session For multisession models, the session from which the
+#'     trap locations should be taken.
 #' @param esa Logical, if \code{TRUE} the effective sampling area is
 #'     returned instead of capture probabilities.
 #' @param points A matrix with two columns. Each row provides
@@ -326,13 +328,11 @@ erf <- function(x){
 #'     location in \code{points}.
 #'
 #' @export
-p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
-                  detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8){
+p.dot <- function(fit = NULL, session = 1, esa = FALSE, points = get.mask(fit, session),
+                  traps = NULL, detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8){
     if (!is.null(fit)){
-        ## Need to change for multisession stuff.
-        traps <- get.traps(fit)
-        if (is.list(traps)){
-            traps <- traps[[1]]
+        if (is.null(traps)){
+            traps <- get.traps(fit, session)
         }
         detfn <- fit$args$detfn
         pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
@@ -345,10 +345,6 @@ p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
                 re.detfn <- TRUE
             }
         }
-    }
-    ## Need to change for multisession stuff.
-    if (is.list(points)){
-        points <- points[[1]]
     }
     dists <- distances(traps, points)
     ## Calculating probabilities of detection when random effects are
