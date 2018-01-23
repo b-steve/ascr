@@ -495,3 +495,14 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
 list.to.vector <- function(x){
     c(lapply(x, function(m) c(t(m))), recursive = TRUE)
 }
+
+## Calculates the `effective listening area', assuming perfect
+## detection within some fixed radius of the traps.
+calc.ela <- function(traps, radius, mask = NULL, ...){
+    if (is.null(mask)){
+        mask <- create.mask(traps, buffer = 1.1*radius, ...)
+    }
+    a <- attr(mask, "area")
+    in.area <- apply(distances(mask, as.matrix(traps)), 1, function(x) min(x) < radius)
+    a*sum(in.area)
+}
