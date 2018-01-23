@@ -4,12 +4,15 @@
 \alias{show.detsurf}
 \title{Plotting the detection probability surface}
 \usage{
-show.detsurf(fit, surface = TRUE, mask = NULL, col = "black",
-  levels = NULL, xlim = NULL, ylim = NULL, show.labels = TRUE,
-  trap.col = "red", add = FALSE, ...)
+show.detsurf(fit, session = 1, surface = TRUE, mask = NULL,
+  col = "black", levels = NULL, xlim = NULL, ylim = NULL,
+  show.labels = TRUE, trap.col = "red", add = FALSE, ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
+
+\item{session}{For multisession models, the session from which the
+plot should be generated.}
 
 \item{surface}{Logical, if \code{TRUE} a 3D detection surface is
 plotted over the mask point locations, otherwise a contour plot

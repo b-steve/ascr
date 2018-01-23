@@ -4,7 +4,7 @@
 \alias{get.mask}
 \title{Extracting mask point locations}
 \usage{
-get.mask(fit, session)
+get.mask(fit, session = NULL)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}

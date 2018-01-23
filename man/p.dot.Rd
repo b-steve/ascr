@@ -4,11 +4,15 @@
 \alias{p.dot}
 \title{Calculating detection probabilities.}
 \usage{
-p.dot(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
-  detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8)
+p.dot(fit = NULL, session = 1, esa = FALSE, points = get.mask(fit,
+  session), traps = NULL, detfn = NULL, ss.link = NULL, pars = NULL,
+  n.quadpoints = 8)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
+
+\item{session}{For multisession models, the session from which the
+trap locations should be taken.}
 
 \item{esa}{Logical, if \code{TRUE} the effective sampling area is
 returned instead of capture probabilities.}

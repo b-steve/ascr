@@ -4,7 +4,7 @@
 \alias{get.capt}
 \title{Extracting the capture histories}
 \usage{
-get.capt(fit, session)
+get.capt(fit, session = NULL)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
