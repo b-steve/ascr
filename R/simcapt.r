@@ -186,6 +186,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             stop("The 'mask' and 'traps' objects must have the same number of components.")
         }
         n.sessions <- length(full.mask)
+    } else {
+        n.sessions <- 1
+        full.mask <- list(full.mask)
+        full.traps <- list(full.traps)
     }
     ## Setting up logical indicators for additional information types.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
@@ -547,7 +551,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         }
     }
     if (n.sessions == 1){
-        out[[1]]
+        out <- out[[1]]
     }
     out
 }
