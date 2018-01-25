@@ -1289,7 +1289,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
     n.est.pars <- length(est.pars)
     out$coefficients <- numeric(2*n.est.pars + n.sessions)
-    names(out$coefficients) <- names(out$se) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))
+    if (hess){
+        names(out$se) <- names(out$coefficients)
+    }
     for (i in 1:n.est.pars){
         out$coefficients[i] <- out$coeflist[[i]]
     }
