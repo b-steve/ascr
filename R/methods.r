@@ -50,7 +50,7 @@ coef.ascr <- function(object, pars = "fitted", ...){
 #'
 #' @export coef.ascr.boot
 coef.ascr.boot <- function(object, pars = "fitted",
-                               correct.bias = FALSE, ...){
+                           correct.bias = FALSE, ...){
     out <- coef.ascr(object, pars)
     if (correct.bias){
         out <- out - get.bias(object, pars)
