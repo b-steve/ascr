@@ -26,7 +26,7 @@ coef.ascr <- function(object, pars = "fitted", ...){
     }
     if (any(pars == "esa")){
         pars <- pars[-which(pars == "esa")]
-        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+        pars <- c(pars, paste("esa", 1:object$n.sessions, sep = "."))
     }
     par.names <- names(object$coefficients)
     if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
@@ -81,7 +81,7 @@ vcov.ascr <- function(object, pars = "fitted", ...){
     }
     if (any(pars == "esa")){
         pars <- pars[-which(pars == "esa")]
-        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+        pars <- c(pars, paste("esa", 1:object$n.sessions, sep = "."))
     }
     par.names <- names(object$coefficients)
     if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
@@ -123,7 +123,7 @@ vcov.ascr.boot <- function(object, pars = "fitted", ...){
     }
     if (any(pars == "esa")){
         pars <- pars[-which(pars == "esa")]
-        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+        pars <- c(pars, paste("esa", 1:object$n.sessions, sep = "."))
     }
     par.names <- names(object$coefficients)
     if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
@@ -168,7 +168,7 @@ stdEr.ascr <- function(object, pars = "fitted", ...){
     }
     if (any(pars == "esa")){
         pars <- pars[-which(pars == "esa")]
-        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+        pars <- c(pars, paste("esa", 1:object$n.sessions, sep = "."))
     }
     par.names <- names(object$coefficients)
     if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
@@ -206,7 +206,7 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     }
     if (any(pars == "esa")){
         pars <- pars[-which(pars == "esa")]
-        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+        pars <- c(pars, paste("esa", 1:object$n.sessions, sep = "."))
     }
     par.names <- names(object$coefficients)
     if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
@@ -382,7 +382,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
     }
     if (any(all.parm == "esa")){
         all.parm <- all.parm[-which(all.parm == "esa")]
-        all.parm <- c(all.parm, paste("esa", 1:fit$n.sessions, sep = "."))
+        all.parm <- c(all.parm, paste("esa", 1:object$n.sessions, sep = "."))
     }
     if (method == "default" | method == "default.bc"){
         mat <- cbind(coef(object, pars = "all")[all.parm],
