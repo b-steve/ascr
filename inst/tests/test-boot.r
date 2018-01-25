@@ -46,9 +46,14 @@ test_that("cue-rate model bootstrapping", {
                     cue.rates = lightfooti$freqs, survey.length = 1/5,
                     ss.opts = list(cutoff = lightfooti$cutoff))
     boot.fit <- boot.ascr(fit = fit, N = 10, prog = FALSE)
-    ses.test <- c(61.0933446423395, 5.03346486642733, 0.861437539078998, 
-                  1.2439428882348, 0.000288758114691158, 0.0196418550329597)
-    ses <- stdEr(boot.fit)
+    ses.test <- c(305.466627386732, 5.03347019909088,
+                  0.861438881545055, 1.24394224402644,
+                  0.00028875810159441, 0.0982092751647983,
+                  0.0384548858779046, 45.1831254619258,
+                  305.466627386732, 0.399775773640889,
+                  0.0291562697985857, 0.223637444167788,
+                  0.108387339783415, 0.350108662810472)
+    ses <- stdEr(boot.fit, "all")
     relative.error <- max(abs((ses - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
 })
