@@ -3,6 +3,8 @@
 #' Plots the mask points and trap locations used in a model fitted
 #' with the function \link{fit.ascr}.
 #'
+#' @param session The session for which the mask point and trap
+#'     locations are to be plotted.
 #' @param ... Further arguments to be passed to \link{plot}.
 #' @inheritParams locations
 #'
@@ -10,9 +12,9 @@
 #' show.survey(example$fits$simple.hn)
 #'
 #' @export
-show.survey <- function(fit, ...){
-    plot(fit$args$mask, pch = ".", cex = 3, asp = 1, ...)
-    points(fit$args$traps, pch = 16, col = "red")
+show.survey <- function(fit, session = 1, ...){
+    plot(get.mask(fit, session), pch = ".", cex = 3, asp = 1, ...)
+    points(get.traps(fit, session), pch = 16, col = "red")
 }
 
 #' Plotting the detection probability surface
