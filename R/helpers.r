@@ -162,13 +162,18 @@ read.ascr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #'
 #' @export
 get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
-    allpar.names <- c("D", fit$detpars, fit$suppars, "esa")
+    esa.names <- paste("esa", 1:fit$n.sessions, sep = ".")
+    allpar.names <- c("D", fit$detpars, fit$suppars, esa.names)
     if (length(pars) == 1){
         if (pars == "all"){
             pars <- allpar.names
         } else if (pars == "fitted"){
-            pars <- allpar.names[allpar.names != "esa"]
+            pars <- allpar.names[substr(allpar.names, 1, 3) != "esa"]
         }
+    }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, esa.names)
     }
     ## Error checking.
     legal.names <- pars %in% allpar.names
@@ -197,7 +202,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     supp.index <- which(fit$suppars %in% pars)
     ## Logical vector indicating parameters that weren't estimated.
     phases <- fit$phases
-    phases$esa <- 0
+    phases[esa.names] <- 0
     fixed.pars <- phases[pars] == -1
     ## Putting in fixed parameter values.
     if (sum(fixed.pars) > 0){
