@@ -67,7 +67,7 @@ test_that("bootstrapping helpers", {
                 equals(sort(example$fits$boot.simple.hn$boot$vcov)))
     ## Extraction of bias.
     expect_that(get.bias(example$fits$boot.simple.hn, c("D", "esa")),
-                equals(example$fits$boot.simple.hn$boot$bias[c("D", "esa")]))
+                equals(example$fits$boot.simple.hn$boot$bias[c("D", "esa.1")]))
     ## Coefficient extraction with bias correction.
     expect_that(coef(example$fits$boot.simple.hn, correct.bias = TRUE),
                 equals(coef(example$fits$boot.simple.hn) - get.bias(example$fits$boot.simple.hn)))
