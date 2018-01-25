@@ -1063,6 +1063,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("Fitting of signal strength models with heterogeneity in source signal strength is only implemented with an identity link function.")
         }
     }
+    if (first.calls){
+        vectorise <- function(x) x[[1]]
+    } else {
+        vectorise <- list.to.vector
+    }
     ## Stuff for the .dat file.
     data.list <- list(n_sessions = n.sessions,
                       survey_length = survey.length,
@@ -1078,9 +1083,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       suppars_ub = suppars.ub, suppars_phase = suppars.phase,
                       suppars_sf = suppars.sf, suppars_linkfns = suppars.link,
                       detfn_id = detfn.id, trace = as.numeric(trace),
-                      dbl_min = dbl.min, n_per_sess= n, n_traps_per_sess = n.traps,
+                      dbl_min = dbl.min, n_per_sess = n, n_traps_per_sess = n.traps,
                       n_mask_per_sess = n.mask, A_per_sess = A,
-                      capt_bin_unique = list.to.vector(capt.bin.unique),
+                      capt_bin_unique = vectorise(capt.bin.unique),
                       capt_bin_freqs = c(capt.bin.freqs, recursive = TRUE),
                       fit_angs = as.numeric(fit.bearings),
                       fit_dir = as.numeric(fit.dir),
@@ -1090,17 +1095,17 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       n_het_source_quadpoints = n.het.source.quadpoints,
                       het_source_nodes = het.source.nodes,
                       het_source_weights = het.source.weights,
-                      capt_ang = list.to.vector(capt.bearing),
+                      capt_ang = vectorise(capt.bearing),
                       fit_dists = as.numeric(fit.dists),
-                      capt_dist = list.to.vector(capt.dist),
+                      capt_dist = vectorise(capt.dist),
                       fit_ss = as.numeric(fit.ss),
                       cutoff = cutoff, first_calls = as.numeric(first.calls),
                       lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
-                      linkfn_id = linkfn.id, capt_ss = list.to.vector(capt.ss),
-                      fit_toas = as.numeric(fit.toas), capt_toa = list.to.vector(capt.toa),
-                      fit_mrds = as.numeric(fit.mrds), mrds_dist = list.to.vector(mrds.dist),
-                      dists = list.to.vector(dists), angs = list.to.vector(bearings),
-                      toa_ssq = list.to.vector(toa.ssq)) 
+                      linkfn_id = linkfn.id, capt_ss = vectorise(capt.ss),
+                      fit_toas = as.numeric(fit.toas), capt_toa = vectorise(capt.toa),
+                      fit_mrds = as.numeric(fit.mrds), mrds_dist = vectorise(mrds.dist),
+                      dists = vectorise(dists), angs = vectorise(bearings),
+                      toa_ssq = vectorise(toa.ssq)) 
          ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
         fit.freqs <- any(cue.freqs != 1)
