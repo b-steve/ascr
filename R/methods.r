@@ -24,8 +24,12 @@ coef.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+    }
     par.names <- names(object$coefficients)
-    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+    if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
     if (any(c("fitted", "derived", "linked") %in% pars)){
@@ -75,8 +79,12 @@ vcov.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+    }
     par.names <- names(object$coefficients)
-    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+    if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
     if (any(c("fitted", "derived", "linked") %in% pars)){
@@ -113,8 +121,12 @@ vcov.ascr.boot <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+    }
     par.names <- names(object$coefficients)
-    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+    if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
     if (any(c("fitted", "derived", "linked") %in% pars)){
@@ -154,8 +166,12 @@ stdEr.ascr <- function(object, pars = "fitted", ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+    }
     par.names <- names(object$coefficients)
-    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+    if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
     if (any(c("fitted", "derived", "linked") %in% pars)){
@@ -188,8 +204,12 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+    }
     par.names <- names(object$coefficients)
-    if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
+    if (!all(pars %in% c("fitted", "derived", "linked", "esa", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
     }
     mces <- get.mce(object, estimate = "se")
@@ -359,6 +379,10 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
         all.parm <- c(parm, link.parm)
     } else {
         all.parm <- parm
+    }
+    if (any(all.parm == "esa")){
+        all.parm <- all.parm[-which(all.parm == "esa")]
+        all.parm <- c(all.parm, paste("esa", 1:fit$n.sessions, sep = "."))
     }
     if (method == "default" | method == "default.bc"){
         mat <- cbind(coef(object, pars = "all")[all.parm],
