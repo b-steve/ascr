@@ -127,10 +127,17 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
     ## Function to get fit.boot.
     FUN <- function(i, fit, args, cue.rates, infotypes, seeds, prog){
         set.seed(seeds[i])
-        ## Simulating capture history.
-        args$capt <- sim.capt(fit)[c("bincapt", infotypes)]
+        if (fit$n.sessions > 1){
+            ## Simulating capture history.
+            args$capt <- lapply(sim.capt(fit), function(x) x[c("bincapt", infotypes)])
+            n.dets <- sum(sapply(args$capt, function(x) nrow(x$bincapt)))
+        } else {
+            ## Simulating capture history.
+            args$capt <- sim.capt(fit)[c("bincapt", infotypes)]
+            n.dets <- nrow(args$capt$bincapt)
+        }
         ## If no calls simulated, set density to 0 and other parameters to NA.
-        if (nrow(args$capt$bincapt) == 0){
+        if (n.dets == 0){
             n.par <- length(fit$coefficients)
             out <- rep(NA, n.par + 1)
             out[names(fit$coefficients) %in% c("D", "Da", "Dc")] <- 0
