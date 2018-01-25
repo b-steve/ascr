@@ -465,6 +465,10 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+    }
     par.names <- names(fit$coefficients)
     if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
@@ -473,7 +477,7 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- fit$boot$bias[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da")
         derived <- fit$boot$bias[which.derived]
         fitted <- fit$boot$bias[-c(which.linked, which.derived)]
         out <- mget(pars)
