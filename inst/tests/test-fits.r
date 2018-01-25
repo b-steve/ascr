@@ -270,6 +270,14 @@ test_that("joint bearing/dist fitting", {
 test_that("multiple calls fitting", {
     ## Checking fit works.
     simple.capt <- example$capt["bincapt"]
+    ## Checking things work with survey.length != 1.
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, fix = list(g0 = 1),
+                    cue.rates = c(9, 10, 11), survey.length = 2)
+    pars.test <- c(113.38697377493, 5.39011188311111)
+    n.pars <- length(pars.test)
+    relative.error <- max(abs((coef(fit, c("Da", "sigma")) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1),
                     cue.rates = c(9, 10, 11), survey.length = 1)
@@ -281,15 +289,6 @@ test_that("multiple calls fitting", {
     expect_that(confint(fit),
                 throws_error("Standard errors not calculated; use boot.ascr()"))
     expect_that(summary(fit), is_a("list"))
-    ## Checking things work with survey.length != 1.
-    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, fix = list(g0 = 1),
-                    cue.rates = c(9, 10, 11), survey.length = 2)
-    pars.test <- c(2267.7394754986, 5.39011188311111, 10, 0.0560029, 
-                   226.77394754986, 2267.7394754986)
-    n.pars <- length(pars.test)
-    relative.error <- max(abs((coef(fit, c("fitted", "derived")) - pars.test)/pars.test))
-    expect_that(relative.error < 1e-4, is_true())
     ## Checking hess argument.
     fit.hess <- fit.ascr(capt = simple.capt, traps = example$traps,
                          mask = example$mask, fix = list(g0 = 1),
