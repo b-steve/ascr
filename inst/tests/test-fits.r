@@ -24,9 +24,9 @@ test_that("simple fitting -- half normal", {
     expect_that(get.par(fit, "D"), equals(fit$coefficients["D"]))
     expect_that(get.par(fit, c("D", "sigma")),
                 equals(fit$coefficients[c("D", "sigma")]))
-    expect_that(get.par(fit, "esa"), equals(fit$coefficients["esa"]))
+    expect_that(get.par(fit, "esa"), equals(fit$coefficients["esa.1"]))
     expect_that(get.par(fit, c("D", "esa")),
-                equals(fit$coefficients[c("D", "esa")]))
+                equals(fit$coefficients[c("D", "esa.1")]))
     expect_that(get.par(fit, "all"), equals(coef(fit, c("fitted", "derived"))))
     expect_that(get.par(fit, "fitted"), equals(coef(fit, "fitted")))
     ## Testing some generic functions.
@@ -224,7 +224,7 @@ test_that("toa fitting", {
     ## Checking get.par() with supplementary info parameters.
     expect_that(get.par(fit, "sigma.toa"), equals(fit$coefficients["sigma.toa"]))
     expect_that(get.par(fit, c("esa", "sigma.toa")),
-                equals(fit$coefficients[c("esa", "sigma.toa")]))
+                equals(fit$coefficients[c("sigma.toa", "esa.1")]))
 })
 
 test_that("joint ss/toa fitting", {
@@ -281,6 +281,15 @@ test_that("multiple calls fitting", {
     expect_that(confint(fit),
                 throws_error("Standard errors not calculated; use boot.ascr()"))
     expect_that(summary(fit), is_a("list"))
+    ## Checking things work with survey.length != 1.
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, fix = list(g0 = 1),
+                    cue.rates = c(9, 10, 11), survey.length = 2)
+    pars.test <- c(2267.7394754986, 5.39011188311111, 10, 0.0560029, 
+                   226.77394754986, 2267.7394754986)
+    n.pars <- length(pars.test)
+    relative.error <- max(abs((coef(fit, c("fitted", "derived")) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
     ## Checking hess argument.
     fit.hess <- fit.ascr(capt = simple.capt, traps = example$traps,
                          mask = example$mask, fix = list(g0 = 1),
