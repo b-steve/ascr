@@ -160,8 +160,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     }
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
-        traps <- get.traps(fit)
         mask <- get.mask(fit)
+        traps <- get.traps(fit)
         infotypes <- fit$infotypes
         detfn <- fit$args$detfn
         pars <- get.par(fit, "fitted", as.list = TRUE)
@@ -174,6 +174,22 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             cue.rates <- Inf
             first.only <- TRUE
         }
+    }
+    ## Making sure mask and trap objects are lists for multisession stuff.
+    full.mask <- mask
+    full.traps <- traps
+    if (is.list(full.mask) != is.list(full.traps)){
+        stop("The 'mask' and 'traps' objects must both be lists for multisession data, or both be matrices for single-session data.")
+    }
+    if (is.list(full.mask)){
+        if (length(full.mask) != length(full.traps)){
+            stop("The 'mask' and 'traps' objects must have the same number of components.")
+        }
+        n.sessions <- length(full.mask)
+    } else {
+        n.sessions <- 1
+        full.mask <- list(full.mask)
+        full.traps <- list(full.traps)
     }
     ## Setting up logical indicators for additional information types.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
@@ -277,256 +293,265 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     }
     ## Grabbing detection function parameters.
     detpars <- pars[detpar.names]
-    ## Specifies the area in which animal locations can be generated.
-    core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
-    ## Simulating population.
-    if (is.null(cue.rates)){
-        popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
-        ## Indicates which individual is being detected.
-        individual <- 1:nrow(popn)
-    } else {
-        D <- pars$D
-        if (!first.only){
-            ## This is super messy, but it's scaling D from call
-            ## density to animal density.
-            D <- D/(mean(cue.rates)*survey.length)
-        }
-        if (is.null(popn)){
-            popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
-        }
-        n.a <- nrow(popn)
-        if (freq.dist == "edf"){
-            if (length(cue.rates) == 1){
-                freqs <- rep(cue.rates*survey.length, n.a)
-            } else {
-                freqs <- sample(cue.rates*survey.length, size = n.a, replace = TRUE)
-            }
-        } else if (freq.dist == "norm"){
-            if (diff(range(cue.rates)) == 0){
-                freqs <- rep(unique(cue.rates)*survey.length, n.a)
-            } else {
-                freqs <- rnorm(n.a, mean(cue.rates)*survey.length, sd(cue.rates)*survey.length)
-            }
+    out <- vector(mode = "list", length = n.sessions)
+    for (s in 1:n.sessions){
+        mask <- full.mask[[s]]
+        traps <- full.traps[[s]]
+        ## Specifies the area in which animal locations can be generated.
+        core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
+        ## Simulating population.
+        if (is.null(cue.rates)){
+            popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
+            ## Indicates which individual is being detected.
+            individual <- 1:nrow(popn)
         } else {
-            stop("The argument 'freq.dist' must be either \"edf\" or \"norm\"")
-        }
-        ## Rounding frequencies up and down at random, depending
-        ## on which integer is closer.
-        which.integers <- floor(freqs) == freqs
-        for (i in (1:n.a)[!which.integers]){
-            prob <- freqs[i] - floor(freqs[i])
-            freqs[i] <- floor(freqs[i]) + rbinom(1, 1, prob)
-        }
-        ## Indicates which individual is being detected.
-        if (!first.only){
-            if (n.a == 0){
-                individual <- numeric(0)
-            } else {
-                individual <- rep(1:n.a, times = freqs)
+            D <- pars$D
+            if (!first.only){
+                ## This is super messy, but it's scaling D from call
+                ## density to animal density.
+                D <- D/mean(cue.rates)
             }
-            popn <- popn[individual, , drop=FALSE]
-        } else {
-            individual <- seq_along(numeric(n.a))
-        }
-    }
-    n.popn <- nrow(popn)
-    ## Calculating distances.
-    dists <- distances(popn, traps)
-    n.traps <- nrow(traps)
-    ## Creating empty bincapt if no animals in population.
-    if (n.popn == 0){
-        captures <- numeric(0)
-        bin.capt <- matrix(0, nrow = 0, ncol = n.traps)
-        out <- list(bincapt = bin.capt)
-        if (sim.ss){
-            out$ss <- bin.capt
-        }
-    } else {
-        ## Calculating detection probabilities and simulating captures.
-        if (!sim.ss){
-            det.probs <- calc.detfn(dists, detfn, detpars, ss.link)
-            if (first.only){
-                ## If only first calls are required, simulate each call separately.
-                full.bin.capt <- matrix(0, nrow = n.a, ncol = n.traps)
-                for (i in 1:n.a){
-                    det <- FALSE
-                    j <- 1
-                    while (!det & j <= freqs[i]){
-                        ind.bin.capt <- as.numeric(runif(n.traps) < det.probs[i, ])
-                        if (sum(ind.bin.capt) > 0){
-                            full.bin.capt[i, ] <- ind.bin.capt
-                            det <- TRUE
-                        }
-                        j <- j + 1
-                    }
+            if (is.null(popn)){
+                popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
+            }
+            n.a <- nrow(popn)
+            if (freq.dist == "edf"){
+                if (length(cue.rates) == 1){
+                    freqs <- rep(cue.rates*survey.length, n.a)
+                } else {
+                    freqs <- sample(cue.rates*survey.length, size = n.a, replace = TRUE)
+                }
+            } else if (freq.dist == "norm"){
+                if (diff(range(cue.rates)) == 0){
+                    freqs <- rep(unique(cue.rates)*survey.length, n.a)
+                } else {
+                    freqs <- rnorm(n.a, mean(cue.rates)*survey.length, sd(cue.rates)*survey.length)
                 }
             } else {
-                full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
-                                        nrow = n.popn, ncol = n.traps)
+                stop("The argument 'freq.dist' must be either \"edf\" or \"norm\"")
             }
-            captures <- which(apply(full.bin.capt, 1, sum) > 0)
-            bin.capt <- full.bin.capt[captures, , drop=FALSE]
-            out <- list(bincapt = bin.capt)
+            ## Rounding frequencies up and down at random, depending
+            ## on which integer is closer.
+            which.integers <- floor(freqs) == freqs
+            for (i in (1:n.a)[!which.integers]){
+                prob <- freqs[i] - floor(freqs[i])
+                freqs[i] <- floor(freqs[i]) + rbinom(1, 1, prob)
+            }
+            ## Indicates which individual is being detected.
+            if (!first.only){
+                if (n.a == 0){
+                    individual <- numeric(0)
+                } else {
+                    individual <- rep(1:n.a, times = freqs)
+                }
+                popn <- popn[individual, , drop=FALSE]
+            } else {
+                individual <- seq_along(numeric(n.a))
+            }
+        }
+        n.popn <- nrow(popn)
+        ## Calculating distances.
+        dists <- distances(popn, traps)
+        n.traps <- nrow(traps)
+        ## Creating empty bincapt if no animals in population.
+        if (n.popn == 0){
+            captures <- numeric(0)
+            bin.capt <- matrix(0, nrow = 0, ncol = n.traps)
+            out[[s]] <- list(bincapt = bin.capt)
+            if (sim.ss){
+                out[[s]]$ss <- bin.capt
+            }
         } else {
-            if (ss.link == "identity"){
-                inv.ss.link <- identity
-            } else if (ss.link == "log"){
-                inv.ss.link <- exp
-            } else {
-                stop("Argument 'ss.link' must be \"identity\" or \"log\".")
-            }
-            pars$cutoff <- cutoff
-            detpars$cutoff <- cutoff
-            ## Simulating animal directions and calculating orientations
-            ## to traps.
-            if (pars$b2.ss != 0){
-                if (!is.null(cue.rates) & !first.only){
-                    warning("Call directions are being generated independently.")
-                }
-                popn.dirs <- runif(n.popn, 0, 2*pi)
-                popn.bearings <- t(bearings(traps, popn))
-                popn.orientations <- abs(popn.dirs - popn.bearings)
-            } else {
-                popn.orientations <- 0
-            }
-            ## Expected received strength at each microphone for each call.
-            ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1)/2)*dists)
-            ## Random error at each microphone.
-            sigma.mat <- matrix(pars$sigma.b0.ss^2, nrow = n.traps, ncol = n.traps)
-            diag(sigma.mat) <- diag(sigma.mat) + pars$sigma.ss^2
-            if (first.only){
-                if (pars$sigma.b0.ss > 0){
-                    stop("Simulation of first call data for situations with heterogeneity in source signal strengths is not yet implemented.")
-                    ## Though note that everything is OK for directional calling.
-                }
-                if (inf.calls){
-                    log.det.probs <- pnorm(cutoff, ss.mean, pars$sigma.ss, FALSE, TRUE)
-                    log.evade.probs <- pnorm(cutoff, ss.mean, pars$sigma.ss, TRUE, TRUE)
-                    ## Generating all possible capture histories.
-                    n.combins <- 2^n.traps
-                    combins <- matrix(NA, nrow = n.combins, ncol = n.traps)
-                    for (i in 1:n.traps){
-                        combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
-                    }
+            ## Calculating detection probabilities and simulating captures.
+            if (!sim.ss){
+                det.probs <- calc.detfn(dists, detfn, detpars, ss.link)
+                if (first.only){
+                    ## If only first calls are required, simulate each call separately.
                     full.bin.capt <- matrix(0, nrow = n.a, ncol = n.traps)
                     for (i in 1:n.a){
-                                        #if (sum(det.probs[i, ]) > 0){
-                        log.detprob.mat <- matrix(log.det.probs[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
-                        log.evadeprob.mat <- matrix(log.evade.probs[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
-                        log.prob.mat <- log.detprob.mat
-                        log.prob.mat[combins == 0] <- log.evadeprob.mat[combins == 0]
-                        ## Probabilities of each possible capture history.
-                        log.d.capt <- apply(log.prob.mat, 1, sum)
-                        d.capt <- exp(log.d.capt)
-                        ## Selecting a capture history.
-                        which.capt <- sample(2:n.combins, size = 1, prob = d.capt[2:n.combins])
-                        full.bin.capt[i, ] <- combins[which.capt, ]
-                                        #}
+                        det <- FALSE
+                        j <- 1
+                        while (!det & j <= freqs[i]){
+                            ind.bin.capt <- as.numeric(runif(n.traps) < det.probs[i, ])
+                            if (sum(ind.bin.capt) > 0){
+                                full.bin.capt[i, ] <- ind.bin.capt
+                                det <- TRUE
+                            }
+                            j <- j + 1
+                        }
                     }
-                    full.ss.capt <- full.bin.capt
-                    full.ss.capt[full.ss.capt == 1] <- rtruncnorm(sum(full.bin.capt, na.rm = TRUE), a = cutoff,
-                                                                  mean = ss.mean[full.bin.capt == 1], sd = pars$sigma.ss)
                 } else {
-                    ## If only first calls are required, simulate each call separately.
-                    ## Written in C++ as it was way too slow otherwise.
-                    full.ss.capt <- sim_ss(ss.mean, pars$sigma.ss, cutoff, freqs)
+                    full.bin.capt <- matrix(as.numeric(runif(n.popn*n.traps) < det.probs),
+                                            nrow = n.popn, ncol = n.traps)
                 }
+                captures <- which(apply(full.bin.capt, 1, sum) > 0)
+                bin.capt <- full.bin.capt[captures, , drop=FALSE]
+                out[[s]] <- list(bincapt = bin.capt)
             } else {
-                ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
-                ## Filling ss.error for non-hetergeneity models for consistency with old versions.
-                if (pars$sigma.b0.ss == 0){
-
-                    ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
+                if (ss.link == "identity"){
+                    inv.ss.link <- identity
+                } else if (ss.link == "log"){
+                    inv.ss.link <- exp
+                } else {
+                    stop("Argument 'ss.link' must be \"identity\" or \"log\".")
                 }
-                ## Creating SS capture history.
-                full.ss.capt <- ss.mean + ss.error
+                pars$cutoff <- cutoff
+                detpars$cutoff <- cutoff
+                ## Simulating animal directions and calculating orientations
+                ## to traps.
+                if (pars$b2.ss != 0){
+                    if (!is.null(cue.rates) & !first.only){
+                        warning("Call directions are being generated independently.")
+                    }
+                    popn.dirs <- runif(n.popn, 0, 2*pi)
+                    popn.bearings <- t(bearings(traps, popn))
+                    popn.orientations <- abs(popn.dirs - popn.bearings)
+                } else {
+                    popn.orientations <- 0
+                }
+                ## Expected received strength at each microphone for each call.
+                ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1)/2)*dists)
+                ## Random error at each microphone.
+                sigma.mat <- matrix(pars$sigma.b0.ss^2, nrow = n.traps, ncol = n.traps)
+                diag(sigma.mat) <- diag(sigma.mat) + pars$sigma.ss^2
+                if (first.only){
+                    if (pars$sigma.b0.ss > 0){
+                        stop("Simulation of first call data for situations with heterogeneity in source signal strengths is not yet implemented.")
+                        ## Though note that everything is OK for directional calling.
+                    }
+                    if (inf.calls){
+                        log.det.probs <- pnorm(cutoff, ss.mean, pars$sigma.ss, FALSE, TRUE)
+                        log.evade.probs <- pnorm(cutoff, ss.mean, pars$sigma.ss, TRUE, TRUE)
+                        ## Generating all possible capture histories.
+                        n.combins <- 2^n.traps
+                        combins <- matrix(NA, nrow = n.combins, ncol = n.traps)
+                        for (i in 1:n.traps){
+                            combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
+                        }
+                        full.bin.capt <- matrix(0, nrow = n.a, ncol = n.traps)
+                        for (i in 1:n.a){
+                                        #if (sum(det.probs[i, ]) > 0){
+                            log.detprob.mat <- matrix(log.det.probs[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+                            log.evadeprob.mat <- matrix(log.evade.probs[i, ], nrow = n.combins, ncol = n.traps, byrow = TRUE)
+                            log.prob.mat <- log.detprob.mat
+                            log.prob.mat[combins == 0] <- log.evadeprob.mat[combins == 0]
+                            ## Probabilities of each possible capture history.
+                            log.d.capt <- apply(log.prob.mat, 1, sum)
+                            d.capt <- exp(log.d.capt)
+                            ## Selecting a capture history.
+                            which.capt <- sample(2:n.combins, size = 1, prob = d.capt[2:n.combins])
+                            full.bin.capt[i, ] <- combins[which.capt, ]
+                                        #}
+                        }
+                        full.ss.capt <- full.bin.capt
+                        full.ss.capt[full.ss.capt == 1] <- rtruncnorm(sum(full.bin.capt, na.rm = TRUE), a = cutoff,
+                                                                      mean = ss.mean[full.bin.capt == 1], sd = pars$sigma.ss)
+                    } else {
+                        ## If only first calls are required, simulate each call separately.
+                        ## Written in C++ as it was way too slow otherwise.
+                        full.ss.capt <- sim_ss(ss.mean, pars$sigma.ss, cutoff, freqs)
+                    }
+                } else {
+                    ss.error <- rmvnorm(n.popn, sigma = sigma.mat)
+                    ## Filling ss.error for non-hetergeneity models for consistency with old versions.
+                    if (pars$sigma.b0.ss == 0){
+                        
+                        ss.error <- matrix(t(ss.error), nrow = n.popn, ncol = n.traps)
+                    }
+                    ## Creating SS capture history.
+                    full.ss.capt <- ss.mean + ss.error
+                }
+                captures <- which(apply(full.ss.capt, 1,
+                                        function(x, cutoff) any(x > cutoff),
+                                        cutoff = cutoff))
+                full.bin.capt <- ifelse(full.ss.capt > cutoff, 1, 0)
+                ss.capt <- full.ss.capt[captures, , drop=FALSE]
+                if (length(captures) == 0){
+                    bin.capt <- ss.capt
+                } else {
+                    bin.capt <- ifelse(ss.capt > cutoff, 1, 0)
+                }
+                ss.capt[ss.capt < cutoff] <- 0
+                out[[s]] <- list(bincapt = bin.capt, ss = ss.capt)
             }
-            captures <- which(apply(full.ss.capt, 1,
-                                    function(x, cutoff) any(x > cutoff),
-                                    cutoff = cutoff))
-            full.bin.capt <- ifelse(full.ss.capt > cutoff, 1, 0)
-            ss.capt <- full.ss.capt[captures, , drop=FALSE]
-            if (length(captures) == 0){
-                bin.capt <- ss.capt
-            } else {
-                bin.capt <- ifelse(ss.capt > cutoff, 1, 0)
-            }
-            ss.capt[ss.capt < cutoff] <- 0
-            out <- list(bincapt = bin.capt, ss = ss.capt)
         }
-    }
-    ## Plot to test correct detection simulation.
-    if (test.detfn){
-        if (!is.null(het.source)){
-            if (het.source){
-                warning("Detection function testing for models with heterogeity in source strengths is not yet implemented.")
-                test.detfn <- FALSE
+        
+        ## Plot to test correct detection simulation.
+        if (test.detfn){
+            if (!is.null(het.source)){
+                if (het.source){
+                    warning("Detection function testing for models with heterogeity in source strengths is not yet implemented.")
+                    test.detfn <- FALSE
+                }
             }
         }
-    }
-    if (test.detfn & n.popn != 0){
-        capt.dists <- dists[full.bin.capt == 1]
-        evade.dists <- dists[full.bin.capt == 0]
-        all.dists <- c(capt.dists, evade.dists)
-        capt.dummy <- c(rep(1, length(capt.dists)),
-                        rep(0, length(evade.dists)))
-        breaks <- seq(0, max(all.dists), length.out = 100)
-        mids <- breaks[-length(breaks)] + 0.5*diff(breaks)
-        breaks[1] <- 0
-        split.dummy <- split(capt.dummy,
-                             f = cut(all.dists, breaks = breaks))
-        props <- sapply(split.dummy, mean)
-        plot(mids, props, type = "l", xlim = c(0, max(all.dists)),
-             ylim = c(0, 1))
-        xx <- seq(0, max(all.dists), length.out = 100)
-        lines(xx, calc.detfn(xx, detfn, detpars, ss.link), col = "blue")
-    }
-    ## Total number of detections.
-    n.dets <- sum(bin.capt)
-    ## Keeping identities of captured individuals.
-    capt.ids <- individual[captures]
-    ## Locations of captured individuals.
-    capt.popn <- popn[captures, ]
-    ## IDs of captured individuals.
-    ## Capture distances.
-    capt.dists <- dists[captures, ]
-    ## Simulating additional information.
-    if (sim.bearings){
-        bearings <- t(bearings(traps, capt.popn))
-        bearing.capt <- matrix(0, nrow = nrow(bin.capt),
-                           ncol = ncol(bin.capt))
-        bearing.capt[bin.capt == 1] <- (bearings[bin.capt == 1] +
-                     rvm(n.dets, mean = 0, k = pars$kappa)) %% (2*pi)
-        out$bearing <- bearing.capt
-    }
-    if (sim.dists){
-        dist.capt <- matrix(0, nrow = nrow(bin.capt),
-                            ncol = ncol(bin.capt))
-        betas <- pars$alpha/capt.dists[bin.capt == 1]
-        dist.capt[bin.capt == 1] <- rgamma(n.dets, shape = pars$alpha,
-                      rate = betas)
-        out$dist <- dist.capt
-    }
-    if (sim.toas){
-        ## Time taken for sound to travel from source to detector.
-        toa.capt <- capt.dists/sound.speed*bin.capt
-        ## Adding in TOA error.
-        toa.capt[bin.capt == 1] <-
-            toa.capt[bin.capt == 1] + rnorm(n.dets, sd = pars$sigma.toa)
-        out$toa <- toa.capt
-    }
-    if (sim.mrds){
-        out$mrds <- capt.dists
-    }
-    if (keep.locs | keep.ids){
-        out <- list(capt = out)
-        if (keep.locs){
-            out[["capt.locs"]] <- capt.popn
-            out[["popn.locs"]] <- popn
+        if (test.detfn & n.popn != 0){
+            capt.dists <- dists[full.bin.capt == 1]
+            evade.dists <- dists[full.bin.capt == 0]
+            all.dists <- c(capt.dists, evade.dists)
+            capt.dummy <- c(rep(1, length(capt.dists)),
+                            rep(0, length(evade.dists)))
+            breaks <- seq(0, max(all.dists), length.out = 100)
+            mids <- breaks[-length(breaks)] + 0.5*diff(breaks)
+            breaks[1] <- 0
+            split.dummy <- split(capt.dummy,
+                                 f = cut(all.dists, breaks = breaks))
+            props <- sapply(split.dummy, mean)
+            plot(mids, props, type = "l", xlim = c(0, max(all.dists)),
+                 ylim = c(0, 1))
+            xx <- seq(0, max(all.dists), length.out = 100)
+            lines(xx, calc.detfn(xx, detfn, detpars, ss.link), col = "blue")
         }
-        if (keep.ids){
-            out[["capt.ids"]] <- capt.ids
+        ## Total number of detections.
+        n.dets <- sum(bin.capt)
+        ## Keeping identities of captured individuals.
+        capt.ids <- individual[captures]
+        ## Locations of captured individuals.
+        capt.popn <- popn[captures, ]
+        ## IDs of captured individuals.
+        ## Capture distances.
+        capt.dists <- dists[captures, ]
+        ## Simulating additional information.
+        if (sim.bearings){
+            bearings <- t(bearings(traps, capt.popn))
+            bearing.capt <- matrix(0, nrow = nrow(bin.capt),
+                                   ncol = ncol(bin.capt))
+            bearing.capt[bin.capt == 1] <- (bearings[bin.capt == 1] +
+                                            rvm(n.dets, mean = 0, k = pars$kappa)) %% (2*pi)
+            out[[s]]$bearing <- bearing.capt
         }
+        if (sim.dists){
+            dist.capt <- matrix(0, nrow = nrow(bin.capt),
+                                ncol = ncol(bin.capt))
+            betas <- pars$alpha/capt.dists[bin.capt == 1]
+            dist.capt[bin.capt == 1] <- rgamma(n.dets, shape = pars$alpha,
+                                               rate = betas)
+            out[[s]]$dist <- dist.capt
+        }
+        if (sim.toas){
+            ## Time taken for sound to travel from source to detector.
+            toa.capt <- capt.dists/sound.speed*bin.capt
+            ## Adding in TOA error.
+            toa.capt[bin.capt == 1] <-
+                toa.capt[bin.capt == 1] + rnorm(n.dets, sd = pars$sigma.toa)
+            out[[s]]$toa <- toa.capt
+        }
+        if (sim.mrds){
+            out[[s]]$mrds <- capt.dists
+        }
+        if (keep.locs | keep.ids){
+            out[[s]] <- list(capt = out[[s]])
+            if (keep.locs){
+                out[[s]][["capt.locs"]] <- capt.popn
+                out[[s]][["popn.locs"]] <- popn
+            }
+            if (keep.ids){
+                out[[s]][["capt.ids"]] <- capt.ids
+            }
+        }
+    }
+    if (n.sessions == 1){
+        out <- out[[1]]
     }
     out
 }

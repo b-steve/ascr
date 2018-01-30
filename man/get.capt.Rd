@@ -2,16 +2,19 @@
 % Please edit documentation in R/helpers.r
 \name{get.capt}
 \alias{get.capt}
-\title{Extracting capture history object}
+\title{Extracting the capture histories}
 \usage{
-get.capt(fit)
+get.capt(fit, session = NULL)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
+
+\item{session}{The session from which to extract the capture
+histories.}
 }
 \value{
-A capture history object.
+A capture histories object.
 }
 \description{
-Extracts the capture history object used in an ascr fit.
+Extracts the capture histories from an ascr fit.
 }

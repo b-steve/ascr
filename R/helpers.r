@@ -162,13 +162,18 @@ read.ascr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #'
 #' @export
 get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
-    allpar.names <- c("D", fit$detpars, fit$suppars, "esa")
+    esa.names <- paste("esa", 1:fit$n.sessions, sep = ".")
+    allpar.names <- c("D", fit$detpars, fit$suppars, esa.names)
     if (length(pars) == 1){
         if (pars == "all"){
             pars <- allpar.names
         } else if (pars == "fitted"){
-            pars <- allpar.names[allpar.names != "esa"]
+            pars <- allpar.names[substr(allpar.names, 1, 3) != "esa"]
         }
+    }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, esa.names)
     }
     ## Error checking.
     legal.names <- pars %in% allpar.names
@@ -197,7 +202,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     supp.index <- which(fit$suppars %in% pars)
     ## Logical vector indicating parameters that weren't estimated.
     phases <- fit$phases
-    phases$esa <- 0
+    phases[esa.names] <- 0
     fixed.pars <- phases[pars] == -1
     ## Putting in fixed parameter values.
     if (sum(fixed.pars) > 0){
@@ -226,17 +231,44 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     out
 }
 
+#' Extracting the capture histories
+#'
+#' Extracts the capture histories from an ascr fit.
+#'
+#' @inheritParams locations
+#' @param session The session from which to extract the capture
+#'     histories.
+#'
+#' @return A capture histories object.
+#'
+#' @export
+get.capt <- function(fit, session = NULL){
+    if (is.null(session) | !is.list(fit$args$capt)){
+        out <- fit$args$capt
+    } else {
+        out <- fit$args$capt[[session]]
+    }
+    out
+}
+
+
 #' Extracting mask point locations
 #'
 #' Extracts the mask used in an ascr fit.
 #'
 #' @inheritParams locations
+#' @param session The session from which to extract the mask.
 #'
 #' @return A mask object.
 #'
 #' @export
-get.mask <- function(fit){
-    fit$args$mask
+get.mask <- function(fit, session = NULL){
+    if (is.null(session) | !is.list(fit$args$mask)){
+        out <- fit$args$mask
+    } else {
+        out <- fit$args$mask[[session]]
+    }
+    out
 }
 
 #' Extracting trap locations
@@ -244,25 +276,19 @@ get.mask <- function(fit){
 #' Extracts the trap locations used in an ascr fit.
 #'
 #' @inheritParams locations
-#'
+#' @param session The session from which to extract the trap
+#'     locations.
+#' 
 #' @return A traps object.
-#'
+#' 
 #' @export
-get.traps <- function(fit){
-    fit$args$traps
-}
-
-#' Extracting capture history object
-#'
-#' Extracts the capture history object used in an ascr fit.
-#'
-#' @inheritParams locations
-#'
-#' @return A capture history object.
-#'
-#' @export
-get.capt <- function(fit){
-    fit$args$capt
+get.traps <- function(fit, session = NULL){
+    if (is.null(session) | !is.list(fit$args$traps)){
+        out <- fit$args$traps
+    } else {
+        out <- fit$args$traps[[session]]
+    }
+    out
 }
 
 ## Error function.
@@ -276,6 +302,8 @@ erf <- function(x){
 #' for specific locations in the survey area.
 #'
 #' @param fit A fitted model from \link{fit.ascr}.
+#' @param session For multisession models, the session from which the
+#'     trap locations should be taken.
 #' @param esa Logical, if \code{TRUE} the effective sampling area is
 #'     returned instead of capture probabilities.
 #' @param points A matrix with two columns. Each row provides
@@ -305,10 +333,12 @@ erf <- function(x){
 #'     location in \code{points}.
 #'
 #' @export
-p.dot <- function(fit = NULL, esa = FALSE, points = get.mask(fit), traps = NULL,
-                  detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8){
+p.dot <- function(fit = NULL, session = 1, esa = FALSE, points = get.mask(fit, session),
+                  traps = NULL, detfn = NULL, ss.link = NULL, pars = NULL, n.quadpoints = 8){
     if (!is.null(fit)){
-        traps <- get.traps(fit)
+        if (is.null(traps)){
+            traps <- get.traps(fit, session)
+        }
         detfn <- fit$args$detfn
         pars <- get.par(fit, fit$detpars, cutoff = fit$fit.types["ss"], as.list = TRUE)
         ss.link <- fit$args$ss.opts$ss.link
@@ -440,6 +470,10 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
     if ("all" %in% pars){
         pars <- c("fitted", "derived", "linked")
     }
+    if (any(pars == "esa")){
+        pars <- pars[-which(pars == "esa")]
+        pars <- c(pars, paste("esa", 1:fit$n.sessions, sep = "."))
+    }
     par.names <- names(fit$coefficients)
     if (!all(pars %in% c("fitted", "derived", "linked", par.names))){
         stop("Argument 'pars' must either contain a vector of parameter names, or a subset of \"fitted\", \"derived\", \"linked\", and \"all\".")
@@ -448,7 +482,7 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- fit$boot$bias[which.linked]
-        which.derived <- which(par.names == "esa" | par.names == "Da")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da")
         derived <- fit$boot$bias[which.derived]
         fitted <- fit$boot$bias[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -466,3 +500,18 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
     out
 }
 
+## Helper function for passing lists as 3D arrays to ADMB.
+list.to.vector <- function(x){
+    c(lapply(x, function(m) c(t(m))), recursive = TRUE)
+}
+
+## Calculates the `effective listening area', assuming perfect
+## detection within some fixed radius of the traps.
+calc.ela <- function(traps, radius, mask = NULL, ...){
+    if (is.null(mask)){
+        mask <- create.mask(traps, buffer = 1.1*radius, ...)
+    }
+    a <- attr(mask, "area")
+    in.area <- apply(distances(mask, as.matrix(traps)), 1, function(x) min(x) < radius)
+    a*sum(in.area)
+}

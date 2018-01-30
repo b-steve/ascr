@@ -340,12 +340,20 @@
 #' @param capt A list with named components, containing the capture
 #'     history and supplementary information. The function
 #'     \link{create.capt} will return a suitable object. See 'Details'
-#'     below.
+#'     below. Alternatively, this can be a list of such lists if
+#'     detections from multiple detector arrays are being used to fit
+#'     a single model.
 #' @param traps A matrix with two columns. Each row provides Cartesian
-#'     coordinates for the location of a trap (or detector).
+#'     coordinates for the location of a trap (or
+#'     detector). Alternatively, this can be a list of such matrices
+#'     if detections from multiple detector arrays are being used to
+#'     fit a single model.
 #' @param mask A matrix with two columns. Each row provides Cartesian
 #'     coordinates for the location of a mask point. The function
-#'     \link{create.mask} will return a suitable object.
+#'     \link{create.mask} will return a suitable
+#'     object. Alternatively, this can be a list of such matrices if
+#'     detections from multiple detector arrays are being used to fit
+#'     a single model.
 #' @param detfn A character string specifying the detection function
 #'     to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
 #'     (threshold), "lth" (log-link threshold), or "ss" (signal
@@ -372,13 +380,15 @@
 #'     on convergence below.
 #' @param ss.opts Options for models using the signal strength
 #'     detection function. See 'Details' below.
-#' @param cue.rates A vector of call frequencies collected
-#'     independently of the main acoustic survey. This must be
-#'     measured in calls per unit time, where the time units are
-#'     equivalent to those used by \code{survey.length}.
+#' @param cue.rates A vector of call rates collected independently of
+#'     the main acoustic survey. This must be measured in calls per
+#'     unit time, where the time units are equivalent to those used by
+#'     \code{survey.length}.
 #' @param survey.length The length of a cue-based survey. If provided,
 #'     the estimated density \code{Dc} is measured in cues per unit
-#'     time (using the same units as \code{survey.length}).
+#'     time (using the same units as \code{survey.length}). For
+#'     multi-session data, this must be a vector, giving the survey
+#'     lengths for each session.
 #' @param sound.speed The speed of sound in metres per second,
 #'     defaults to 330 (the speed of sound in air). Only used when
 #'     \code{"toa"} is a component name of \code{capt}.
@@ -436,6 +446,33 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      clean = TRUE, optim.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
+    ## Sorting out multi-session stuff.
+    multi.session <- ifelse(is.list(traps) & is.list(mask), TRUE, FALSE)
+    ## If only a single session, just make multi-session objects with a single component.
+    if (!multi.session){
+        if (is.list(traps) | is.list(mask)){
+            stop("For multi-session models, both `traps' and `mask' must be lists.")
+        }
+        capt <- list(capt)
+        traps <- list(traps)
+        mask <- list(mask)
+    }
+    if (!is.list(capt[[1]])){
+        capt <- list(capt)
+    }
+    if (length(traps) != length(mask)){
+        stop("For multi-session models, both `traps' and `mask' must have the same number of components.")
+    }
+    n.sessions <- length(traps)
+    if (length(capt) != n.sessions){
+        stop("For multi-session models, `capt' must have a component for each session.")
+    }
+    capt.names <- names(capt[[1]])
+    for (i in 1:length(capt)){
+        if (!all(names(capt[[i]]) == capt.names)){
+            stop("For multi-session models, all components of `capt' must have the same data types.")
+        }
+    }
     if (any(names(extra.args) == "call.freqs")){
         if (!missing(cue.rates)){
             stop("The argument `cue.rates' has replaced `call.freqs'; use only the former.")
@@ -443,9 +480,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         warning("The argument `call.freqs' is deprecated; please rename to `cue.rates' instead.")
         cue.rates <- extra.args[["call.freqs"]]
     }
-    ## TODO: Sort out how to determine supplementary parameter names.
+    ## Determining supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
-    fit.types <- supp.types %in% names(capt)
+    fit.types <- supp.types %in% capt.names
     names(fit.types) <- supp.types
     ## Logical indicators for additional information types.
     fit.bearings <- fit.types["bearing"]
@@ -453,20 +490,15 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
-    ## Warning from survey.length without cue.rates.
-    if (is.null(cue.rates)){
-        if (!is.null(survey.length)){
-            warning("The `survey.length' argument is being ignored, as `cue.rates' has not been provided.")
-        }
-    }
     ## Warning from cue.rates without survey.length.
     if (is.null(survey.length)){
+        survey.length <- rep(1, n.sessions)
         if (!is.null(cue.rates)){
             stop("The use of `cue.rates' without `survey.length' is no longer supported. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
         }
     } else {
-        if (length(survey.length) != 1){
-            stop("The argument `survey.length' must be scalar.")
+        if (length(survey.length) != n.sessions){
+            stop("The argument `survey.length' must have a value for each session.")
         }
     }
     ## Sorting out cues per survey.
@@ -517,36 +549,42 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             lower.cutoff <- NULL
         }
         ## Removing detections below the cutoff.
-        rem <- capt$ss < cutoff
-        capt <- lapply(capt, function(x, rem){
-            x[rem] <- 0
-            x
-        }, rem = rem)
-        keep <- apply(capt$bincapt, 1, sum) > 0
-        capt <- lapply(capt, function(x, keep) x[keep, ], keep = keep)
-        n.removed <- sum(!keep)
+        n.removed <- 0
+        for (i in 1:n.sessions){
+            rem <- capt[[i]]$ss < cutoff
+            capt[[i]] <- lapply(capt[[i]], function(x, rem){
+                x[rem] <- 0
+                x
+            }, rem = rem)
+            keep <- apply(capt[[i]]$bincapt, 1, sum) > 0
+            capt[[i]] <- lapply(capt[[i]], function(x, keep) x[keep, ], keep = keep)
+            n.removed <- n.removed + sum(!keep)
+        }
         if (trace & n.removed > 0){
             message(n.removed, " capture history entries have no received signal strengths above the cutoff and have therefore been removed.\n", sep = "")
         }
     }
-    capt.bin <- capt$bincapt
-    ## Checking for bincapt.
-    if (is.null(capt.bin)){
-        stop("The binary capture history must be provided as a component of 'capt'.")
-    }
-    ## Checking for correct number of trap locations.
-    if (ncol(capt.bin) != nrow(traps)){
-        stop("There must be a trap location for each column in the components of 'capt'.")
-    }
-    ## Checking that each component of 'capt' is a matrix.
-    if (any(!laply(capt, is.matrix))){
-        stop("At least one component of 'capt' is not a matrix.")
-    }
-    ## Checking for agreement in matrix dimensions.
-    if (length(capt) > 1){
-        all.dims <- laply(capt, dim)
-        if (any(aaply(all.dims, 2, function(x) diff(range(x))) != 0)){
-            stop("Components of 'capt' object have different dimensions.")
+    capt.bin <- vector(mode = "list", length = n.sessions)
+    for (i in 1:n.sessions){
+        ## Checking for bincapt.
+        if (!any(names(capt[[i]]) == "bincapt")){
+            stop("The binary capture history must be provided as a component of 'capt'.")
+        }
+        capt.bin[[i]] <- capt[[i]]$bincapt
+        ## Checking for correct number of trap locations.
+        if (ncol(capt.bin[[i]]) != nrow(traps[[i]])){
+            stop("There must be a trap location for each column in the components of 'capt'.")
+        }
+        ## Checking that each component of 'capt' is a matrix.
+        if (any(!laply(capt[[i]], is.matrix))){
+            stop("At least one component of 'capt' is not a matrix.")
+        }
+        ## Checking for agreement in matrix dimensions.
+        if (length(capt[[i]]) > 1){
+            all.dims <- laply(capt[[i]], dim)
+            if (any(aaply(all.dims, 2, function(x) diff(range(x))) != 0)){
+                stop("Components of 'capt' object within a session have different dimensions.")
+            }
         }
     }
     ## Various checks for other arguments.
@@ -567,16 +605,18 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (!is.list(fix) & !is.null(fix)){
         stop("The 'fix' argument must be 'NULL' or a list.")
     }
-    n <- nrow(capt.bin)
-    n.traps <- nrow(traps)
-    n.mask <- nrow(mask)
-    A <- attr(mask, "area")
-    buffer <- attr(mask, "buffer")
+    n <- sapply(capt.bin, nrow)
+    n.traps <- sapply(traps, nrow)
+    n.mask <- sapply(mask, nrow)
+    A <- sapply(mask, function(x) attr(x, "area"))
+    buffer <- sapply(mask, function(x) attr(x, "buffer"))
     ## Removing attributes from mask.
-    mask <- as.matrix(mask)
-    traps <- as.matrix(traps)
-    attr(mask, "area") <- A
-    attr(mask, "buffer") <- buffer
+    for (i in 1:n.sessions){
+        mask[[i]] <- as.matrix(mask[[i]])
+        traps[[i]] <- as.matrix(traps[[i]])
+        attr(mask[[i]], "area") <- A[i]
+        attr(mask[[i]], "buffer") <- buffer[i]
+    }
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
@@ -703,26 +743,38 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (fit.dir & first.calls){
         stop("Models with both first calls and directional calling are not yet implemented.")
     }
-    ## Generating ordered binary capture history.
-    capt.bin.order <- do.call(order, as.data.frame(capt.bin))
-    capt.bin.unique <- capt.bin[capt.bin.order, ]
-    capt.bin.freqs <- as.vector(table(apply(capt.bin.unique, 1, paste, collapse = "")))
-    names(capt.bin.freqs) <- NULL
-    capt.bin.unique <- capt.bin.unique[!duplicated(as.data.frame(capt.bin.unique)), , drop = FALSE]
-    n.unique <- nrow(capt.bin.unique)
-    unique.changes <- cumsum(c(0, capt.bin.freqs[-n.unique])) + 1
-    ## Reordering all capture history components.
-    capt.ord <- capt
-    for (i in 1:length(capt)){
-        capt.ord[[i]] <- capt[[i]][capt.bin.order, ]
-    }
-    ## Capture histories for additional information types (if they exist)
-    capt.bearing <- if (fit.bearings) capt.ord$bearing else 0
-    capt.dist <- if (fit.dists) capt.ord$dist else 0
-    capt.ss <- if (fit.ss) capt.ord$ss else 0
-    capt.toa <- if (fit.toas) capt.ord$toa else 0
-    mrds.dist <- if (fit.mrds) capt.ord$mrds else 0
+    ## Supplementary parameter names.
     suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("bearing", "dist", "toa")]]
+    ## Generating ordered binary capture history.
+    capt.bin.order <- vector(mode = "list", length = n.sessions)
+    capt.bin.unique <- vector(mode = "list", length = n.sessions)
+    capt.bin.freqs <- vector(mode = "list", length = n.sessions)
+    n.unique <- numeric(n.sessions)
+    capt.bearing <- vector(mode = "list", length = n.sessions)
+    capt.dist <- vector(mode = "list", length = n.sessions)
+    capt.ss <- vector(mode = "list", length = n.sessions)
+    capt.toa <- vector(mode = "list", length = n.sessions)
+    mrds.dist <- vector(mode = "list", length = n.sessions)
+    capt.ord <- vector(mode = "list", length = n.sessions)
+    for (i in 1:n.sessions){
+        capt.bin.order[[i]] <- do.call(order, as.data.frame(capt.bin[[i]]))
+        capt.bin.unique[[i]] <- capt.bin[[i]][capt.bin.order[[i]], ]
+        capt.bin.freqs[[i]] <- as.vector(table(apply(capt.bin.unique[[i]], 1, paste, collapse = "")))
+        names(capt.bin.freqs[[i]]) <- NULL
+        capt.bin.unique[[i]] <- capt.bin.unique[[i]][!duplicated(as.data.frame(capt.bin.unique[[i]])), , drop = FALSE]
+        n.unique[i] <- nrow(capt.bin.unique[[i]])
+        ## Reordering all capture history components.
+        capt.ord[[i]] <- capt[[i]]
+        for (j in 1:length(capt[[i]])){
+            capt.ord[[i]][[j]] <- capt[[i]][[j]][capt.bin.order[[i]], ]
+        }
+        ## Capture histories for additional information types (if they exist)
+        capt.bearing[[i]] <- if (fit.bearings) capt.ord[[i]]$bearing else 0
+        capt.dist[[i]] <- if (fit.dists) capt.ord[[i]]$dist else 0
+        capt.ss[[i]] <- if (fit.ss) capt.ord[[i]]$ss else 0
+        capt.toa[[i]] <- if (fit.toas) capt.ord[[i]]$toa else 0
+        mrds.dist[[i]] <- if (fit.mrds) capt.ord[[i]]$mrds else 0
+    }
     if (fit.ss){
         if (!missing(detfn) & detfn != "ss"){
             warning("Argument 'detfn' is being ignored as signal strength information is provided in 'capt'. A signal strength detection function has been fitted instead.")
@@ -809,16 +861,20 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     sv.link[names(fix)] <- fix
     auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
-    same.traplocs <- all(distances(traps, traps) == 0)
-    ## Done in reverse so that D is calculated last (requires detfn parameters).
-    ## D not moved to front as it should appear as the first parameter in any output.
+    same.traplocs <-  all(distances(traps[[1]], traps[[1]]) == 0)
+    ## Done in reverse so that D is calculated last (requires detfn
+    ## parameters). D not moved to front as it should appear as the
+    ## first parameter in any output.  Note that start value
+    ## parameters are automatically generated only from the first
+    ## session's data.
     for (i in rev(seq(1, length(auto.names), length.out = length(auto.names)))){
         sv.link[auto.names[i]] <- eval(call(sv.funs[i],
-                                       list(capt = capt, detfn = detfn,
+                                       list(capt = capt[[1]], detfn = detfn,
                                             detpar.names = detpar.names,
-                                            mask = mask, traps = traps,
+                                            mask = mask[[1]], traps = traps[[1]],
                                             sv = sv.link, ss.opts = ss.opts,
-                                            A = A, same.traplocs = same.traplocs)))
+                                            A = A[1], survey.length = survey.length[1],
+                                            same.traplocs = same.traplocs)))
     }
     ## Converting start values to link scale.
     sv <- sv.link
@@ -826,7 +882,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sv.link[[i]] <- link.list[[links[[i]]]](sv.link[[i]])
     }
     ## Sorting out phases.
-    ## TODO: Add phases parameter so that these can be controlled by user.
     phases.save <- phases
     phases <- vector("list", length = n.pars)
     names(phases) <- par.names
@@ -851,7 +906,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
-    default.bounds <- list(D = c(n/(A*n.mask), 1e8),
+    default.bounds <- list(D = c(n[1]/(A[1]*n.mask[1]*survey.length[1]), 1e8),
                            g0 = c(0, 1),
                            sigma = c(0, 1e8),
                            shape = c(-100, 100),
@@ -933,16 +988,21 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## does not affect estimation.
     dbl.min <- 1e-150
     ## Calculating distances and angles.
-    dists <- distances(traps, mask)
-    if (fit.bearings | fit.dir){
-        bearings <- bearings(traps, mask)
-    } else {
-        bearings <- 0
-    }
-    if (fit.toas){
-        toa.ssq <- make_toa_ssq(capt.ord$toa, dists, sound.speed)
-    } else {
-        toa.ssq <- 0
+    dists <- vector(mode = "list", length = n.sessions)
+    bearings <- vector(mode = "list", length = n.sessions)
+    toa.ssq <- vector(mode = "list", length = n.sessions)
+    for (i in 1:n.sessions){
+        dists[[i]] <- distances(traps[[i]], mask[[i]])
+        if (fit.bearings | fit.dir){
+            bearings[[i]] <- bearings(traps[[i]], mask[[i]])
+        } else {
+            bearings[[i]] <- 0
+        }
+        if (fit.toas){
+            toa.ssq[[i]] <- make_toa_ssq(capt.ord[[i]]$toa, dists[[i]], sound.speed)
+        } else {
+            toa.ssq <- 0
+        }
     }
     if (is.null(cutoff)){
         cutoff <- 0
@@ -954,13 +1014,19 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sv.link$dummy <- 0
     }
     ## Sorting out which mask points are local to each detection.
+    all.which.local <- vector(mode = "list", length = n.sessions)
+    all.n.local <- vector(mode = "list", length = n.sessions)
     if (local){
-        all.which.local <- find_local(capt.bin.unique, dists, buffer)
-        all.n.local <- laply(all.which.local, length)
-        all.which.local <- c(all.which.local, recursive = TRUE)
+        for (i in 1:n.sessions){
+            all.which.local[[i]] <- find_local(capt.bin.unique[[i]], dists[[i]], buffer[i])
+            all.n.local[[i]] <- laply(all.which.local[[i]], length)
+            all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
+        }
     } else {
-        all.n.local <- rep(1, n.unique)
-        all.which.local <- rep(0, n.unique)
+        for (i in 1:n.sessions){
+            all.n.local[[i]] <- rep(1, n.unique[i])
+            all.which.local[[i]] <- rep(0, n.unique[i])
+        }
     }
     ## Sorting out number of quadrature points for directional calling.
     if (fit.dir){
@@ -997,32 +1063,50 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("Fitting of signal strength models with heterogeneity in source signal strength is only implemented with an identity link function.")
         }
     }
+    if (first.calls){
+        vectorise <- function(x) x[[1]]
+    } else {
+        vectorise <- list.to.vector
+    }
     ## Stuff for the .dat file.
-    data.list <- list(
-        n_unique = n.unique, local = as.numeric(local), all_n_local = all.n.local,
-        all_which_local = all.which.local, D_lb = D.lb, D_ub = D.ub, D_phase =
-        D.phase, D_sf = D.sf, n_detpars = n.detpars, detpars_lb = detpars.lb,
-        detpars_ub = detpars.ub, detpars_phase = detpars.phase, detpars_sf =
-        detpars.sf, detpars_linkfns = detpars.link, n_suppars = n.suppars,
-        suppars_lb = suppars.lb, suppars_ub = suppars.ub, suppars_phase =
-        suppars.phase, suppars_sf = suppars.sf, suppars_linkfns =
-        suppars.link, detfn_id = detfn.id, trace =
-        as.numeric(trace), dbl_min = dbl.min, n = n, n_traps = n.traps, n_mask
-        = n.mask, A = A, capt_bin_unique = capt.bin.unique, capt_bin_freqs =
-        capt.bin.freqs, fit_angs = as.numeric(fit.bearings),
-        fit_dir = as.numeric(fit.dir), n_dir_quadpoints = n.dir.quadpoints,
-        fit_het_source = as.numeric(fit.het.source), het_source_gh =
-        as.numeric(het.source.gh), n_het_source_quadpoints =
-        n.het.source.quadpoints, het_source_nodes = het.source.nodes,
-        het_source_weights = het.source.weights, capt_ang = capt.bearing, fit_dists =
-        as.numeric(fit.dists), capt_dist = capt.dist, fit_ss = as.numeric(fit.ss),
-        cutoff = cutoff, first_calls = as.numeric(first.calls),
-        lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
-        linkfn_id = linkfn.id, capt_ss = capt.ss, fit_toas =
-        as.numeric(fit.toas), capt_toa = capt.toa, fit_mrds =
-        as.numeric(fit.mrds), mrds_dist = mrds.dist, dists = dists, angs =
-        bearings, toa_ssq = toa.ssq)
-    ## Determining whether or not standard errors should be calculated.
+    data.list <- list(n_sessions = n.sessions,
+                      survey_length = survey.length,
+                      n_unique_per_sess = n.unique,
+                      local = as.numeric(local),
+                      n_local_per_unique = c(all.n.local, recursive = TRUE),
+                      which_local_per_unique = c(all.which.local, recursive = TRUE),
+                      D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf,
+                      n_detpars = n.detpars, detpars_lb = detpars.lb,
+                      detpars_ub = detpars.ub, detpars_phase = detpars.phase,
+                      detpars_sf = detpars.sf, detpars_linkfns = detpars.link,
+                      n_suppars = n.suppars, suppars_lb = suppars.lb,
+                      suppars_ub = suppars.ub, suppars_phase = suppars.phase,
+                      suppars_sf = suppars.sf, suppars_linkfns = suppars.link,
+                      detfn_id = detfn.id, trace = as.numeric(trace),
+                      dbl_min = dbl.min, n_per_sess = n, n_traps_per_sess = n.traps,
+                      n_mask_per_sess = n.mask, A_per_sess = A,
+                      capt_bin_unique = vectorise(capt.bin.unique),
+                      capt_bin_freqs = c(capt.bin.freqs, recursive = TRUE),
+                      fit_angs = as.numeric(fit.bearings),
+                      fit_dir = as.numeric(fit.dir),
+                      n_dir_quadpoints = n.dir.quadpoints,
+                      fit_het_source = as.numeric(fit.het.source),
+                      het_source_gh = as.numeric(het.source.gh),
+                      n_het_source_quadpoints = n.het.source.quadpoints,
+                      het_source_nodes = het.source.nodes,
+                      het_source_weights = het.source.weights,
+                      capt_ang = vectorise(capt.bearing),
+                      fit_dists = as.numeric(fit.dists),
+                      capt_dist = vectorise(capt.dist),
+                      fit_ss = as.numeric(fit.ss),
+                      cutoff = cutoff, first_calls = as.numeric(first.calls),
+                      lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
+                      linkfn_id = linkfn.id, capt_ss = vectorise(capt.ss),
+                      fit_toas = as.numeric(fit.toas), capt_toa = vectorise(capt.toa),
+                      fit_mrds = as.numeric(fit.mrds), mrds_dist = vectorise(mrds.dist),
+                      dists = vectorise(dists), angs = vectorise(bearings),
+                      toa_ssq = vectorise(toa.ssq)) 
+         ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
         fit.freqs <- any(cue.freqs != 1)
     } else {
@@ -1034,6 +1118,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Using optimx() for first call fits.
     if (first.calls){
+        if (n.sessions > 1){
+            stop("First-call models not yet implemented for multisession data.")
+        }
         ## All possible capture histories.
         n.combins <- 2^n.traps
         combins <- matrix(NA, nrow = n.combins, ncol = n.traps)
@@ -1078,7 +1165,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         rownames(vcov.all) <- colnames(vcov.all) <- rownames(cor.all) <-
             colnames(cor.all) <- names(se.all) <- c(paste("pars_link", 1:n.opars, sep = "."),
                                                     paste("par_ests", 1:n.opars, sep = "."),
-                                                    "esa")
+                                                    paste("esa", 1:n.sessions, sep = "."))
         out$se <- se.all
         out$loglik <- -fit$value
         out$maxgrad <- c(fit$kkt1, fit$kkt2)
@@ -1180,9 +1267,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                        nchar(list.files())) == ".par")]][1]
         }
         out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
-        ## Saving esa to prevent recalculation.
-        rep.string <- readLines("secr.rep")
-        esa <- as.numeric(readLines("secr.rep")[1])
+        ## Getting ESAs from .rep file for better accuracy.
+        esa <- read_rep("secr")$est
+        names(esa) <- NULL
         setwd(curr.dir)
         if (class(out)[1] == "try-error"){
             stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
@@ -1201,8 +1288,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Creating coefficients vector.
     est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
     n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + 1)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, "esa")
+    out$coefficients <- numeric(2*n.est.pars + n.sessions)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))
+    if (hess){
+        names(out$se) <- names(out$coefficients)
+    }
     for (i in 1:n.est.pars){
         out$coefficients[i] <- out$coeflist[[i]]
     }
@@ -1221,6 +1311,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     out$args <- args
+    out$n.sessions <- n.sessions
     out$fit.types <- fit.types
     out$infotypes <- names(fit.types)[fit.types]
     out$detpars <- detpar.names
@@ -1236,14 +1327,14 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     ## Putting in esa estimate.
-    out$coefficients[2*n.est.pars + 1] <- esa
+    out$coefficients[2*n.est.pars + (1:n.sessions)] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
-        mu.freqs <- mean(cue.freqs)
-        Da <- get.par(out, "D")/mu.freqs
-        Dc <- get.par(out, "D")/survey.length
-        names.vec <- c(names(out[["coefficients"]]), "Da", "Dc", "mu.freqs")
-        coefs.updated <- c(out[["coefficients"]], Da, Dc, mu.freqs)
+        mu.rates <- mean(cue.rates)
+        Dc <- get.par(out, "D")
+        Da <- Dc/mu.rates
+        names.vec <- c(names(out[["coefficients"]]), "Da", "Dc", "mu.rates")
+        coefs.updated <- c(out[["coefficients"]], Da, Dc, mu.rates)
         names(coefs.updated) <- names.vec
         out[["coefficients"]] <- coefs.updated
         ## Removing ses, cor, vcov matrices.
@@ -1313,7 +1404,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     class(out) <- c("ascr", "admb")
     out
-}
+    }
 
 ## Aliasing old admbsecr() function name.
 #' @rdname fit.ascr
@@ -1438,6 +1529,28 @@ NULL
 #' @name example
 #' @format A list.
 #' @usage example
+#' @docType data
+#' @keywords datasets
+NULL
+
+#' Multi-array example data
+#'
+#' This object contains simulated data From multiple detector
+#' arrays.
+#'
+#' This object is a list which contains components:
+#' \itemize{
+#' 
+#' \item \code{capt}: A list of capture history objects, one from each
+#' detector array.
+#'
+#' \item \code{traps}: A list of traps objects.
+#' \item \code{mask}: A list of suitable mask objects.
+#' }
+#'
+#' @name multi.example
+#' @format A list.
+#' @usage multi.example
 #' @docType data
 #' @keywords datasets
 NULL

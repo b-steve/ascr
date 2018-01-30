@@ -21,14 +21,22 @@ admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
 \item{capt}{A list with named components, containing the capture
 history and supplementary information. The function
 \link{create.capt} will return a suitable object. See 'Details'
-below.}
+below. Alternatively, this can be a list of such lists if
+detections from multiple detector arrays are being used to fit
+a single model.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or detector).}
+coordinates for the location of a trap (or
+detector). Alternatively, this can be a list of such matrices
+if detections from multiple detector arrays are being used to
+fit a single model.}
 
 \item{mask}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a mask point. The function
-\link{create.mask} will return a suitable object.}
+\link{create.mask} will return a suitable
+object. Alternatively, this can be a list of such matrices if
+detections from multiple detector arrays are being used to fit
+a single model.}
 
 \item{detfn}{A character string specifying the detection function
 to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
@@ -63,14 +71,16 @@ on convergence below.}
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
 
-\item{cue.rates}{A vector of call frequencies collected
-independently of the main acoustic survey. This must be
-measured in calls per unit time, where the time units are
-equivalent to those used by \code{survey.length}.}
+\item{cue.rates}{A vector of call rates collected independently of
+the main acoustic survey. This must be measured in calls per
+unit time, where the time units are equivalent to those used by
+\code{survey.length}.}
 
 \item{survey.length}{The length of a cue-based survey. If provided,
 the estimated density \code{Dc} is measured in cues per unit
-time (using the same units as \code{survey.length}).}
+time (using the same units as \code{survey.length}). For
+multi-session data, this must be a vector, giving the survey
+lengths for each session.}
 
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when

@@ -21,13 +21,13 @@ test_that("error for mismatch in number of individuals or traps", {
     test.capt$bearing <- test.capt$bearing[-1, ]
     expect_that(fit.ascr(capt = test.capt, traps = example$traps,
                          mask = example$mask),
-                throws_error("Components of 'capt' object have different dimensions."))
+                throws_error("Components of 'capt' object within a session have different dimensions."))
     ## Testing error checking for equality in number of columns.
     test.capt <- example$capt[c("bincapt", "bearing", "dist")]
     test.capt$bearing <- test.capt$bincapt[, -1]
     expect_that(fit.ascr(capt = test.capt, traps = example$traps,
                          mask = example$mask),
-                throws_error("Components of 'capt' object have different dimensions."))
+                throws_error("Components of 'capt' object within a session have different dimensions."))
     ## Testing error checking for matching in number of traps.
     test.capt <- example$capt["bincapt"]
     test.capt$bincapt <- test.capt$bincapt[, -1]
@@ -111,9 +111,4 @@ test_that("cue.rates and survey.length arguments set up correctly", {
                     mask = example$mask, fix = list(g0 = 1),
                     cue.rates = c(9, 10, 11)),
                 throws_error("The use of `cue.rates' without `survey.length' is no longer supported. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units."))
-    expect_that(fit <- fit.ascr(capt = test.capt, traps = example$traps,
-                    mask = example$mask, fix = list(g0 = 1),
-                    survey.length = 2),
-                gives_warning("The `survey.length' argument is being ignored, as `cue.rates' has not been provided."))
-                
 })

@@ -4,10 +4,13 @@
 \alias{get.traps}
 \title{Extracting trap locations}
 \usage{
-get.traps(fit)
+get.traps(fit, session = NULL)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
+
+\item{session}{The session from which to extract the trap
+locations.}
 }
 \value{
 A traps object.

@@ -8,7 +8,10 @@ create.mask(traps, buffer, ...)
 }
 \arguments{
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or detector).}
+coordinates for the location of a trap (or
+detector). Alternatively, this can be a list of such matrices
+if detections from multiple detector arrays are being used to
+fit a single model.}
 
 \item{buffer}{The minimum distance between trap locations and the
 edge of the generated mask.}

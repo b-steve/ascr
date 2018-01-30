@@ -7,6 +7,8 @@
 #' @param id A numeric vector with row numbers from
 #'     \code{fit$args$capt}, indicating which individuals' locations
 #'     are to be plotted.
+#' @param session The session with the detector array and invidual(s)
+#'     to be plotted (for multi-session models only).
 #' @param infotypes A character vector indicating the type(s) of
 #'     information to be used when plotting the estimated density of
 #'     location.  Elements can be a subset of \code{"capt"},
@@ -102,9 +104,8 @@
 #' }
 #'
 #' @export
-locations <- function(fit, id, infotypes = NULL, combine = FALSE,
-                      xlim = range(mask[, 1]),
-                      ylim = range(mask[, 2]), mask = get.mask(fit),
+locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
+                      xlim = NULL, ylim = NULL, mask = get.mask(fit, session),
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
                           ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
@@ -118,6 +119,14 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                       plot.circles = "dist" %in% fit$infotypes & !("bearing" %in% fit$infotypes),
                       arrow.length = NULL,
                       show.legend = FALSE, show.axes = TRUE, add = FALSE){
+    ## Error if session argument is too large.
+    if (session > fit$n.sessions){
+        if (fit$n.sessions == 1){
+            stop(paste("Argument 'session' too large; there was only ", fit$n.sessions, " session.", sep = ""))
+        } else {
+            stop(paste("Argument 'session' too large; there were only ", fit$n.sessions, " sessions.", sep = ""))
+        }
+    }
     ## Error for locations() with a directional model.
     if (!is.null(fit$args$ss.opts$directional)){
         if (fit$args$ss.opts$directional){
@@ -140,6 +149,13 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
     if (keep.estlocs){
         estlocs <- matrix(0, nrow = length(id), ncol = 2)
         j <- 1
+    }
+    ## Sorting out limits.
+    if (is.null(xlim)){
+        xlim <- range(mask[, 1])
+    }
+    if (is.null(ylim)){
+        ylim <- range(mask[, 2])
     }
     ## Setting up plotting area.
     if (!add){
@@ -217,15 +233,17 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
             plot.types[i] <- FALSE
         }
     }
-    traps <- get.traps(fit)
+    traps <- get.traps(fit, session)
     detfn <- fit$args$detfn
     ss.link <- fit$args$ss.opts$ss.link
     dists <- distances(traps, mask)
     ## Calculating density due to animal locations.
-    p.det <- p.dot(fit = fit, points = mask)
+    p.det <- p.dot(fit = fit, session = session, points = mask)
     ## Divide by normalising constant; not conversion to square metres.
     a <- attr(mask, "area")
     f.x <- p.det/(a*sum(p.det))
+    ## Extracting the session's capture history.
+    capt.all <- get.capt(fit, session)
     ## Calculating conditional density of capture history, given location.
     for (i in id){
         if (plot.types["combined"]){
@@ -235,7 +253,7 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                 f.combined <- 0*f.x + 1
             }
         }
-        capt <- fit$args$capt$bincapt[i, ]
+        capt <- capt.all$bincapt[i, ]
         ## Contour due to capture history.
         if (plot.types["capt"] | plot.types["combined"] | plot.types["ss"]){
             det.pars <- get.par(fit, fit$detpars, as.list = TRUE)
@@ -253,7 +271,7 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                 }
             }
             if (fit$fit.types["ss"]){
-                f.ss.capt <- ss.density(fit, i, mask, dists)
+                f.ss.capt <- ss.density(fit, i, session, mask, dists)
                 f.ss <- f.ss.capt/f.capt
                 ## Such a hack, but this keeps f.combined correct,
                 ## below.
@@ -289,7 +307,7 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
         }
         ## Contour due to estimated bearings.
         if (plot.types["bearing"] | plot.types["combined"] & fit$fit.types["bearing"]){
-            f.bearing <- bearing.density(fit, i, mask)
+            f.bearing <- bearing.density(fit, i, session, mask)
             if (plot.types["bearing"]){
                 if (!combine){
                     show.contour(mask = mask, dens = f.x*f.bearing, levels = levels,
@@ -306,7 +324,7 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
         }
         ## Contour due to estimated distances.
         if (plot.types["dist"] | plot.types["combined"] & fit$fit.types["dist"]){
-            f.dist <- dist.density(fit, i, mask, dists)
+            f.dist <- dist.density(fit, i, mask, session, dists)
             if (plot.types["dist"]){
                 if (!combine){
                     show.contour(mask = mask, dens = f.x*f.dist, levels = levels,
@@ -321,13 +339,13 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
                 }
             }
             if (plot.circles){
-                show.circles(fit, i, trap.col)
+                show.circles(fit, i, session, trap.col)
             }
         }
         ## Contour due to measured times of arrival.
         if (plot.types["toa"] | plot.types["combined"] &
             fit$fit.types["toa"] & sum(capt) > 1){
-            f.toa <- toa.density(fit, i, mask, dists)
+            f.toa <- toa.density(fit, i, session, mask, dists)
             if (plot.types["toa"]){
                 if (!combine){
                     show.contour(mask = mask, dens = f.x*f.toa, levels = levels,
@@ -375,9 +393,9 @@ locations <- function(fit, id, infotypes = NULL, combine = FALSE,
     if (fit$fit.types["bearing"]){
         if (plot.arrows){
             if (fit$fit.types["dist"]){
-                arrow.length <- fit$args$capt$dist[i, capt == 1]
+                arrow.length <- capt.all$dist[i, capt == 1]
             }
-            show.arrows(fit, i, arrow.length, trap.col)
+            show.arrows(fit, i, session, arrow.length, trap.col)
         }
     }
     ## Making legend.
@@ -443,11 +461,12 @@ show.contour <- function(mask, dens, nlevels, levels, prob, col = "black", lty =
 }
 
 ## Calculating density due to estimated bearings.
-bearing.density <- function(fit, id, mask){
-    capt <- fit$args$capt$bincapt[id, ]
-    bearing.capt <- fit$args$capt$bearing[id, capt == 1]
+bearing.density <- function(fit, id, session, mask){
+    capt.all <- get.capt(fit, session)
+    capt <- capt.all$bincapt[id, ]
+    bearing.capt <- capt.all$bearing[id, capt == 1]
     kappa <- get.par(fit, "kappa")
-    mask.bearings <- bearings(get.traps(fit)[capt == 1, , drop = FALSE], mask)
+    mask.bearings <- bearings(get.traps(fit, session)[capt == 1, , drop = FALSE], mask)
     mask.dens <- matrix(0, nrow = sum(capt), ncol = nrow(mask))
     for (i in 1:sum(capt)){
         mask.dens[i, ] <- dvm(bearing.capt[i], mu = mask.bearings[i, ], kappa = kappa)
@@ -457,10 +476,11 @@ bearing.density <- function(fit, id, mask){
 }
 
 ## Calculating density due to estimated distances.
-dist.density <- function(fit, id, mask, dists){
-    capt <- fit$args$capt$bincapt[id, ]
+dist.density <- function(fit, id, session, mask, dists){
+    capt.all <- get.capt(fit, session)
+    capt <- capt.all$bincapt[id, ]
     dists <- dists[capt == 1, , drop = FALSE]
-    dist.capt <- fit$args$capt$dist[id, capt == 1]
+    dist.capt <- capt.all$dist[id, capt == 1]
     alpha <- get.par(fit, "alpha")
     mask.dens <- matrix(0, nrow = sum(capt), ncol = nrow(mask))
     betas <- alpha/dists
@@ -471,13 +491,14 @@ dist.density <- function(fit, id, mask, dists){
     colProds(mask.dens)
 }
 
-ss.density <- function(fit, id, mask, dists){
-    capt <- fit$args$capt$bincapt[id, ]
-    ss.capt <- fit$args$capt$ss[id, ]
+ss.density <- function(fit, id, session, mask, dists){
+    capt.all <- get.capt(fit, session)
+    capt <- capt.all$bincapt[id, ]
+    ss.capt <- capt.all$ss[id, ]
     det.pars <- get.par(fit, fit$detpars, cutoff = TRUE, as.list = TRUE)
     detfn <- fit$args$detfn
     ss.link <- fit$args$ss.opts$ss.link
-    n.traps <- nrow(get.traps(fit))
+    n.traps <- nrow(get.traps(fit, session))
     mask.dens <- matrix(0, nrow = n.traps, ncol = nrow(mask))
     for (i in 1:n.traps){
         if (capt[i] == 0){
@@ -492,10 +513,11 @@ ss.density <- function(fit, id, mask, dists){
     colProds(mask.dens)
 }
 
-toa.density <- function(fit, id, mask, dists){
-    capt <- fit$args$capt$bincapt[id, ]
+toa.density <- function(fit, id, session, mask, dists){
+    capt.all <- get.capt(fit, session)
+    capt <- capt.all$bincapt[id, ]
     dists <- dists[capt == 1, ]
-    toa.capt <- fit$args$capt$toa[id, capt == 1]
+    toa.capt <- capt.all$toa[id, capt == 1]
     sigma.toa <- get.par(fit, "sigma.toa")
     prod.times <- toa.capt - dists/fit$args$sound.speed
     toa.ssq <- aaply(prod.times, 2, function(x) sum((x - mean(x))^2))
@@ -504,15 +526,16 @@ toa.density <- function(fit, id, mask, dists){
 }
 
 ## Plots arrows on traps where a detection was made, showing estimated bearing.
-show.arrows <- function(fit, id, arrow.length = NULL, trap.col){
+show.arrows <- function(fit, id, session, arrow.length = NULL, trap.col){
     xlim <- par("usr")[c(1, 2)]
     ylim <- par("usr")[c(3, 4)]
     if (is.null(arrow.length)){
         arrow.length <- 0.05*min(c(diff(range(xlim)), diff(range(ylim))))
     }
-    capt <- fit$args$capt$bincapt[id, ]
-    bearing.capt <- fit$args$capt$bearing[id, capt == 1]
-    trappos <- get.traps(fit)[which(capt == 1), , drop = FALSE]
+    capt.all <- get.capt(fit, session)
+    capt <- capt.all$bincapt[id, ]
+    bearing.capt <- capt.all$bearing[id, capt == 1]
+    trappos <- get.traps(fit, session)[which(capt == 1), , drop = FALSE]
     sinb <- sin(bearing.capt)*arrow.length
     cosb <- cos(bearing.capt)*arrow.length
     arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
@@ -520,10 +543,11 @@ show.arrows <- function(fit, id, arrow.length = NULL, trap.col){
 }
 
 ## Plots circles around traps where a detection was made, showing estimated distance.
-show.circles <- function(fit, id, trap.col){
-    capt <- fit$args$capt$bincapt[id, ]
-    dist.capt <- fit$args$capt$dist[id, capt == 1]
-    trappos <- get.traps(fit)[which(capt == 1), , drop = FALSE]
+show.circles <- function(fit, id, session, trap.col){
+    capt.all <- get.capt(fit, session)
+    capt <- capt.all$bincapt[id, ]
+    dist.capt <- capt.all$dist[id, capt == 1]
+    trappos <- get.traps(fit, session)[which(capt == 1), , drop = FALSE]
     for (i in 1:nrow(trappos)){
         centre <- trappos[i, ]
         radius <- dist.capt[i]

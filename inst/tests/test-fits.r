@@ -24,9 +24,9 @@ test_that("simple fitting -- half normal", {
     expect_that(get.par(fit, "D"), equals(fit$coefficients["D"]))
     expect_that(get.par(fit, c("D", "sigma")),
                 equals(fit$coefficients[c("D", "sigma")]))
-    expect_that(get.par(fit, "esa"), equals(fit$coefficients["esa"]))
+    expect_that(get.par(fit, "esa"), equals(fit$coefficients["esa.1"]))
     expect_that(get.par(fit, c("D", "esa")),
-                equals(fit$coefficients[c("D", "esa")]))
+                equals(fit$coefficients[c("D", "esa.1")]))
     expect_that(get.par(fit, "all"), equals(coef(fit, c("fitted", "derived"))))
     expect_that(get.par(fit, "fitted"), equals(coef(fit, "fitted")))
     ## Testing some generic functions.
@@ -224,7 +224,7 @@ test_that("toa fitting", {
     ## Checking get.par() with supplementary info parameters.
     expect_that(get.par(fit, "sigma.toa"), equals(fit$coefficients["sigma.toa"]))
     expect_that(get.par(fit, c("esa", "sigma.toa")),
-                equals(fit$coefficients[c("esa", "sigma.toa")]))
+                equals(fit$coefficients[c("sigma.toa", "esa.1")]))
 })
 
 test_that("joint ss/toa fitting", {
@@ -270,6 +270,14 @@ test_that("joint bearing/dist fitting", {
 test_that("multiple calls fitting", {
     ## Checking fit works.
     simple.capt <- example$capt["bincapt"]
+    ## Checking things work with survey.length != 1.
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, fix = list(g0 = 1),
+                    cue.rates = c(9, 10, 11), survey.length = 2)
+    pars.test <- c(113.38697377493, 5.39011188311111)
+    n.pars <- length(pars.test)
+    relative.error <- max(abs((coef(fit, c("Da", "sigma")) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1),
                     cue.rates = c(9, 10, 11), survey.length = 1)
@@ -369,7 +377,8 @@ test_that("first-call signal strength models", {
                      cue.rates = Inf, first.only = TRUE)
     fit <-  fit.ascr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
-                         lower.cutoff = lower.cutoff), hess = FALSE)
+                                    lower.cutoff = lower.cutoff),
+                     hess = FALSE)
     pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
                    6.24489981755584)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
@@ -379,4 +388,11 @@ test_that("first-call signal strength models", {
                      ss.opts = list(cutoff = cutoff,
                          lower.cutoff = lower.cutoff, ss.link = "log"), hess = FALSE),
                 throws_error("First-call models are only implemented for ss.link = \"identity\"."))
+})
+
+test_that("Multi-session models", {
+    fit <- fit.ascr(multi.example$capt, multi.example$traps, multi.example$mask)
+    pars.test <- c(2525.4060484, 0.9849349, 2.8395646, 120.0353505)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-3, is_true())
 })

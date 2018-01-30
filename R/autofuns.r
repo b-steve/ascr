@@ -42,6 +42,7 @@ autoD <- function(args){
     sv <- args$sv
     detpar.names <- args$detpar.names
     ss.link <- args$ss.opts$ss.link
+    survey.length <- args$survey.length
     pars <- sv[detpar.names]
     if (any(detpar.names == "sigma.b0.ss")){
         pars$sigma.b0.ss <- 0
@@ -53,7 +54,7 @@ autoD <- function(args){
     esa <- p.dot(points = mask, esa = TRUE, traps = traps, detfn = detfn,
                  ss.link = ss.link, pars = pars, n.quadpoints = 8)
     ## HT-like estimator for D is n/esa.
-    nrow(args$capt$bincapt)/esa
+    nrow(args$capt$bincapt)/(esa*survey.length)
 }
 
 autog0 <- function(args){
@@ -106,11 +107,26 @@ autoalpha <- function(args){
     2
 }
 
-
 autoshape <- function(args){
-    autosigma(args)/args$sv[["scale"]]
+    2
 }
 
 autoscale <- function(args){
-    sqrt(autosigma(args))
+    if (args$detfn == "th"){
+        out <- autosigma(args)
+    } else if (args$detfn == "lth") {
+        out <- (log(autoshape.1(args)) - log(autoshape.1(args) - 0.5))/autosigma(args)
+    } else {
+        stop("Detection function not recognised.")
+    }
+    out
+}
+
+autoshape.1 <- function(args){
+    ## Magic number based on clever maths.
+    0.809017
+}
+
+autoshape.2 <- function(args){
+    log(autoshape.1(args) + autoscale(args)*autosigma(args))
 }

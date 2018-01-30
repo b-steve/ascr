@@ -11,7 +11,7 @@ test_that("testing get.par", {
     expect_that(get.par(example$fits$simple.hn, c("sigma", "g0")),
                 is_equivalent_to(c(coef(example$fits$simple.hn)[2], 1)))
     ## Supplementary parameters.
-    expect_that(get.par(example$fits$bearing.hn, c("kappa", "D", "esa", "g0")),
+    expect_that(get.par(example$fits$bearing.hn, c("kappa", "D", "esa.1", "g0")),
                 is_equivalent_to(c(coef(example$fits$bearing.hn, "all")[c(3, 1, 4)], 1)))
 })
 

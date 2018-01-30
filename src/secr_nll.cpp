@@ -35,10 +35,10 @@ double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get
   double b0_ss = exp(link_pars[1]);
   double b1_ss = exp(link_pars[2]);
   double sigma_ss = exp(link_pars[3]);
-  int n_unique = as<int>(dat["n_unique"]);
-  int n = as<int>(dat["n"]);
-  int n_traps = as<int>(dat["n_traps"]);
-  int n_mask = as<int>(dat["n_mask"]);
+  int n_unique = as<int>(dat["n_unique_per_sess"]);
+  int n = as<int>(dat["n_per_sess"]);
+  int n_traps = as<int>(dat["n_traps_per_sess"]);
+  int n_mask = as<int>(dat["n_mask_per_sess"]);
   IntegerMatrix capt_bin_unique = as<IntegerMatrix>(dat["capt_bin_unique"]);
   IntegerVector capt_bin_freqs = as<IntegerVector>(dat["capt_bin_freqs"]);
   double cutoff = as<double>(dat["cutoff"]);
@@ -50,7 +50,7 @@ double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get
   NumericMatrix capt_ss = as<NumericMatrix>(dat["capt_ss"]);
   NumericMatrix dists = as<NumericMatrix>(dat["dists"]);
   int trace = as<int>(dat["trace"]);
-  double A = as<double>(dat["A"]);
+  double A = as<double>(dat["A_per_sess"]);
   double dbl_min = as<double>(dat["dbl_min"]);
   int i, j;
   double sum_det_probs = 0;
@@ -131,8 +131,8 @@ List calc_probsurf(const NumericVector& link_pars, const List& dat)
   double b0_ss = exp(link_pars[1]);
   double b1_ss = exp(link_pars[2]);
   double sigma_ss = exp(link_pars[3]);
-  int n_mask = as<int>(dat["n_mask"]);
-  int n_traps = as<int>(dat["n_traps"]);
+  int n_mask = as<int>(dat["n_mask_per_sess"]);
+  int n_traps = as<int>(dat["n_traps_per_sess"]);
   NumericVector cutoff = as<NumericVector>(dat["cutoff"]);
   NumericVector lower_cutoff = as<NumericVector>(dat["lower_cutoff"]);
   NumericMatrix dists = as<NumericMatrix>(dat["dists"]);
