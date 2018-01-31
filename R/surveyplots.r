@@ -39,7 +39,7 @@ show.survey <- function(fit, session = 1, ...){
 #' @param levels A numeric vector giving the values to be associated
 #'     with the plotted contours. Alternatively, this can be the
 #'     character string "esa", which results in a contour
-#'     encapsulating an area equal to the estimates effective sampling
+#'     encapsulating an area equal to the estimated effective sampling
 #'     area.
 #' @param show.labels Logical, if \code{TRUE}, contours are labelled
 #'     with the appropriate probability.
