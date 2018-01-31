@@ -16,18 +16,18 @@ test_that("location plotting", {
 })
 
 test_that("detection function plotting", {
-    expect_that(show.detfn(example$fits$simple.hn), is_null())
-    expect_that(show.detfn(example$fits$simple.hr, add = TRUE), is_null())
-    expect_that(show.detfn(example$fits$bearing.hn, main = "A title"), is_null())
+    expect_null(show.detfn(example$fits$simple.hn))
+    expect_null(show.detfn(example$fits$simple.hr, add = TRUE))
+    expect_null(show.detfn(example$fits$bearing.hn, main = "A title"))
 })
 
 test_that("survey plotting", {
-    expect_that(show.survey(example$fits$simple.hn), is_null())
-    expect_that(show.survey(example$fits$bearing.hn), is_null())
+    expect_null(show.survey(example$fits$simple.hn), is_null())
+    expect_null(show.survey(example$fits$bearing.hn), is_null())
 })
 
 test_that("detection surface plotting", {
-    expect_that(show.detsurf(example$fits$simple.hn), is_null())
-    expect_that(show.detsurf(example$fits$simple.hr), is_null())
-    expect_that(show.detsurf(example$fits$bearing.hn), is_null())
+    expect_null(show.detsurf(example$fits$simple.hn), is_null())
+    expect_null(show.detsurf(example$fits$simple.hr), is_null())
+    expect_null(show.detsurf(example$fits$bearing.hn), is_null())
 })
