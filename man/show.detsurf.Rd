@@ -30,7 +30,7 @@ need to be plotted to a higher resolution than this.}
 \item{levels}{A numeric vector giving the values to be associated
 with the plotted contours. Alternatively, this can be the
 character string "esa", which results in a contour
-encapsulating an area equal to the estimates effective sampling
+encapsulating an area equal to the estimated effective sampling
 area.}
 
 \item{xlim}{A numeric vector of length 2, giving the x coordinate
