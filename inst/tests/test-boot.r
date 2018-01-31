@@ -38,6 +38,7 @@ test_that("simple model bootstrapping", {
 })
 
 ## Note bootstrapping of multiple-cue models is in test-fits.r
+## Also bootstrapping of multiple-session models is there too.
 
 test_that("cue-rate model bootstrapping", {
     set.seed(6324)          

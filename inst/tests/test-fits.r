@@ -395,4 +395,14 @@ test_that("Multi-session models", {
     pars.test <- c(2525.4060484, 0.9849349, 2.8395646, 120.0353505)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
+    set.seed(2987)
+    boot.fit <- boot.ascr(fit, N = 10, prog = FALSE)
+    ses <- stdEr(boot.fit, "all")
+    ses.test <- c(325.117478519735, 0.0708827203892855,
+                  0.182620462431981, 14.6858294081973,
+                  0.00190046466718596, 0.00137547230211622,
+                  0.121005593019781, 7.11535542935065,
+                  0.0650552705835956, 0.233809510854561)
+    relative.error <- max(abs((ses - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
 })
