@@ -447,6 +447,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
     ## Sorting out multi-session stuff.
+    if (is.data.frame(traps)){
+        traps <- as.matrix(traps)
+    }
+    if (is.data.frame(mask)){
+        mask <- as.matrix(mask)
+    }
     multi.session <- ifelse(is.list(traps) & is.list(mask), TRUE, FALSE)
     ## If only a single session, just make multi-session objects with a single component.
     if (!multi.session){
