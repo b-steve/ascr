@@ -273,7 +273,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         } else if (ss.link == "log"){
             detfn <- "log.ss"
         } else if (ss.link == "spherical"){
-            stop("Simulation for spherical spreading models is not yet implemented.")
+            detfn <- "spherical.ss"
         } else {
             stop("The argument 'ss.link' must be either \"identity\" or \"log\"")
         }
@@ -284,7 +284,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),
                            ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
-                           log.ss = c("b0.ss", "b1.ss", "sigma.ss"))
+                           log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
+                           spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
     if (!identical(sort(par.names), sort(names(pars)))){
         msg <- paste("The following must be named components of the list 'pars': ",
@@ -392,8 +393,8 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                     inv.ss.link <- identity
                 } else if (ss.link == "log"){
                     inv.ss.link <- exp
-                } else {
-                    stop("Argument 'ss.link' must be \"identity\" or \"log\".")
+                } else if (ss.link != "spherical"){
+                    stop("Argument 'ss.link' must be \"identity\", \"log\", or \"spherical\".")
                 }
                 pars$cutoff <- cutoff
                 detpars$cutoff <- cutoff
@@ -410,7 +411,12 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                     popn.orientations <- 0
                 }
                 ## Expected received strength at each microphone for each call.
-                ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1)/2)*dists)
+                if (ss.link %in% c("identity", "log")){
+                    ## No idea why something is being divided by 2 in here but I'll assume it's sensible.
+                    ss.mean <- inv.ss.link(pars$b0.ss - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1)/2)*dists)
+                } else if (ss.link == "spherical"){
+                    ss.mean <- pars$b0.ss - 10*log10(dists^2) - (pars$b1.ss - pars$b2.ss*(cos(popn.orientations) - 1)/2)*(dists - 1)
+                }
                 ## Random error at each microphone.
                 sigma.mat <- matrix(pars$sigma.b0.ss^2, nrow = n.traps, ncol = n.traps)
                 diag(sigma.mat) <- diag(sigma.mat) + pars$sigma.ss^2
@@ -491,7 +497,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             all.dists <- c(capt.dists, evade.dists)
             capt.dummy <- c(rep(1, length(capt.dists)),
                             rep(0, length(evade.dists)))
-            breaks <- seq(0, max(all.dists), length.out = 100)
+            breaks <- seq(0, max(all.dists), length.out = 1000)
             mids <- breaks[-length(breaks)] + 0.5*diff(breaks)
             breaks[1] <- 0
             split.dummy <- split(capt.dummy,
