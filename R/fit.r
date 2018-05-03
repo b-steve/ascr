@@ -1282,7 +1282,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         ## Warning for non-convergence.
         if (out$maxgrad < -0.1){
-            warning("Failed convergence -- maximum gradient component is large.")
+            warning("Failed convergence -- maximum gradient component is too large.")
         }
         ## Moving back to original working directory.
         setwd(curr.dir)
