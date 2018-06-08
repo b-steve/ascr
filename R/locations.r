@@ -324,7 +324,7 @@ locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
         }
         ## Contour due to estimated distances.
         if (plot.types["dist"] | plot.types["combined"] & fit$fit.types["dist"]){
-            f.dist <- dist.density(fit, i, mask, session, dists)
+            f.dist <- dist.density(fit, i, session, mask, dists)
             if (plot.types["dist"]){
                 if (!combine){
                     show.contour(mask = mask, dens = f.x*f.dist, levels = levels,
