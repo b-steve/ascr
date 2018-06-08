@@ -867,7 +867,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     sv.link[names(fix)] <- fix
     auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
-    same.traplocs <-  all(distances(traps[[1]], traps[[1]]) == 0)
+    ## Use the first session with detections to generate start values.
+    sess.to.use <- which(n > 0)[1]
+    same.traplocs <-  all(distances(traps[[sess.to.use]], traps[[sess.to.use]]) == 0)
     ## Done in reverse so that D is calculated last (requires detfn
     ## parameters). D not moved to front as it should appear as the
     ## first parameter in any output.  Note that start value
@@ -875,9 +877,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## session's data.
     for (i in rev(seq(1, length(auto.names), length.out = length(auto.names)))){
         sv.link[auto.names[i]] <- eval(call(sv.funs[i],
-                                       list(capt = capt[[1]], detfn = detfn,
+                                       list(capt = capt[[sess.to.use]], detfn = detfn,
                                             detpar.names = detpar.names,
-                                            mask = mask[[1]], traps = traps[[1]],
+                                            mask = mask[[sess.to.use]], traps = traps[[sess.to.use]],
                                             sv = sv.link, ss.opts = ss.opts,
                                             A = A[1], survey.length = survey.length[1],
                                             same.traplocs = same.traplocs)))
