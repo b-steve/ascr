@@ -764,7 +764,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     capt.ord <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
         capt.bin.order[[i]] <- do.call(order, as.data.frame(capt.bin[[i]]))
-        capt.bin.unique[[i]] <- capt.bin[[i]][capt.bin.order[[i]], ]
+        capt.bin.unique[[i]] <- capt.bin[[i]][capt.bin.order[[i]], , drop = FALSE]
         capt.bin.freqs[[i]] <- as.vector(table(apply(capt.bin.unique[[i]], 1, paste, collapse = "")))
         names(capt.bin.freqs[[i]]) <- NULL
         capt.bin.unique[[i]] <- capt.bin.unique[[i]][!duplicated(as.data.frame(capt.bin.unique[[i]])), , drop = FALSE]
@@ -772,7 +772,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Reordering all capture history components.
         capt.ord[[i]] <- capt[[i]]
         for (j in 1:length(capt[[i]])){
-            capt.ord[[i]][[j]] <- capt[[i]][[j]][capt.bin.order[[i]], ]
+            capt.ord[[i]][[j]] <- capt[[i]][[j]][capt.bin.order[[i]], , drop = FALSE]
         }
         ## Capture histories for additional information types (if they exist)
         capt.bearing[[i]] <- if (fit.bearings) capt.ord[[i]]$bearing else 0
