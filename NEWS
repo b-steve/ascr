@@ -5,8 +5,8 @@ ascr 2.1.2
   contours for models with estimated distances.
 
 * Fixed bug in fit.ascr() for multi-session models, so that it
-  correctly estimates parameters when one or more sessions have no
-  detections.
+  correctly estimates parameters when one or more sessions have zero
+  or one detections.
 
 ascr 2.1.1
 ----------
