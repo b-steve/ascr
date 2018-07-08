@@ -486,6 +486,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         warning("The argument `call.freqs' is deprecated; please rename to `cue.rates' instead.")
         cue.rates <- extra.args[["call.freqs"]]
     }
+    if (any(names(extra.args) == "dists")){
+        dists <- extra.args$dists
+        dists.provided <- TRUE
+    } else {
+        dists.provided <- FALSE
+    }
     ## Determining supplementary parameter names.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
     fit.types <- supp.types %in% capt.names
@@ -996,11 +1002,15 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## does not affect estimation.
     dbl.min <- 1e-150
     ## Calculating distances and angles.
-    dists <- vector(mode = "list", length = n.sessions)
+    if (!dists.provided){
+        dists <- vector(mode = "list", length = n.sessions)
+    }
     bearings <- vector(mode = "list", length = n.sessions)
     toa.ssq <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
-        dists[[i]] <- distances(traps[[i]], mask[[i]])
+        if (!dists.provided){
+            dists[[i]] <- distances(traps[[i]], mask[[i]])
+        }
         if (fit.bearings | fit.dir){
             bearings[[i]] <- bearings(traps[[i]], mask[[i]])
         } else {
