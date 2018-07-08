@@ -443,7 +443,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      cue.rates = NULL, survey.length = NULL, sound.speed = 330,
                      local = FALSE, hess = NULL, trace = FALSE,
-                     clean = TRUE, optim.opts = NULL, noneuc.model = NULL, ...){
+                     clean = TRUE, optim.opts = NULL, noneuc.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
     ## Sorting out multi-session stuff.
@@ -503,7 +503,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
     ## Logical indicator for non-Euclidean distances.
-    fit.noneuc <- !is.null(noneuc.model)
+    fit.noneuc <- !is.null(noneuc.opts)
     ## Warning from cue.rates without survey.length.
     if (is.null(survey.length)){
         survey.length <- rep(1, n.sessions)
@@ -1199,7 +1199,26 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out$eratio <- as.logical(NA)
         esa <- secr_nll(coef(fit), data.list, TRUE)
     } else if (fit.noneuc){
-        ## Non-Euclidean stuff to go in here.
+        ## Extracting non-Euclidean model statment.
+        noneuc.model <- noneuc.opts$model
+        ## Extracting raster.
+        noneuc.raster <- noneuc.opts$raster
+        ## Create non-Euclidean distance matrix here.
+        ## dists <- ...
+        ## Getting original arguments.
+        args <- vector(mode = "list", length = length(arg.names))
+        names(args) <- arg.names
+        for (i in arg.names){
+            if (!is.null(get(i))){
+                args[[i]] <- get(i)
+            }
+        }
+        ## Removing the noneuc.model argument.
+        args$noneuc.model <- NULL
+        ## Adding non-Euclidean distances.
+        args$dists <- dists
+        ## Running fit.ascr() with the original user-supplied arguments.
+        do.call("fit.ascr", args)$loglik
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
