@@ -443,7 +443,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      cue.rates = NULL, survey.length = NULL, sound.speed = 330,
                      local = FALSE, hess = NULL, trace = FALSE,
-                     clean = TRUE, optim.opts = NULL, ...){
+                     clean = TRUE, optim.opts = NULL, noneuc.model = NULL, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
     ## Sorting out multi-session stuff.
@@ -502,6 +502,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     fit.ss <- fit.types["ss"]
     fit.toas <- fit.types["toa"]
     fit.mrds <- fit.types["mrds"]
+    ## Logical indicator for non-Euclidean distances.
+    fit.noneuc <- !is.null(noneuc.model)
     ## Warning from cue.rates without survey.length.
     if (is.null(survey.length)){
         survey.length <- rep(1, n.sessions)
@@ -1196,6 +1198,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out$npar_total <- out$npar + out$npar_re + out$npar_sdrpt + out$npar_rep
         out$eratio <- as.logical(NA)
         esa <- secr_nll(coef(fit), data.list, TRUE)
+    } else if (fit.noneuc){
+        ## Non-Euclidean stuff to go in here.
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
