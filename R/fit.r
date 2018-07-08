@@ -1204,7 +1204,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Extracting raster.
         noneuc.raster <- noneuc.opts$raster
         ## Create non-Euclidean distance matrix here.
-        ## dists <- ...
+        ##dists <- 
         ## Getting original arguments.
         args <- vector(mode = "list", length = length(arg.names))
         names(args) <- arg.names
@@ -1214,11 +1214,34 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             }
         }
         ## Removing the noneuc.model argument.
-        args$noneuc.model <- NULL
+        args$noneuc.opts <- NULL
         ## Adding non-Euclidean distances.
-        args$dists <- dists
+        #args$dists <- dists
         ## Running fit.ascr() with the original user-supplied arguments.
-        do.call("fit.ascr", args)$loglik
+        
+        ## optim stuff here
+        
+        ascr.opt<-function(par,traps,mask,trans.fn,raster){
+          MM<-model.matrix(noneuc.model,attr(mask,"covariates"))
+          npar<-length(attr(MM,"assign"))
+          parameters<-c()
+          for (i in 1:npar){
+            parameters[i]<-par[i]
+          }
+          conductance<-1/exp(MM%*%parameters)
+          args$dists<-myDist(from = traps,mask = mask,trans.fn = trans.fn,conductance = conductance,raster=raster)
+          fit<-do.call("fit.ascr", args)$loglik
+          return(fit)
+        }
+        
+        opt<-optim(par = rep(1,length(attr(model.matrix(model,attr(mask,"covariates")),"assign"))),fn = ascr.opt,control=list(fnscale=-1,reltol=NULL),trans.fn=myTrans,traps=traps,mask=mask,raster=noneuc.raster)
+        
+        MM<-model.matrix(noneuc.model,attr(mymask,"covariates"))
+        conductance<-1/exp(MM%*%opt$par)
+        arg$dists<-myDist(from = traps,mask = mask,trans.fn = myTrans,conductance = conductance,raster=noneuc.raster)
+        
+        out<-do.call("fit.ascr", args)
+          
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.

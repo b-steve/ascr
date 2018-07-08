@@ -524,3 +524,15 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
     in.area <- apply(distances(mask, as.matrix(traps)), 1, function(x) min(x) < radius)
     a*sum(in.area)
 }
+
+
+#Non-euclidean stuff
+myTrans<-function(x) exp(apply(log(x), 2, mean, na.rm = TRUE))
+
+myDist<-function(from,mask,trans.fn,conductance,raster){
+  ras.perm<-rasterize(mask[,1:2],raster,field=conductance)
+  tr<-transition(ras.perm,transitionFunction = trans.fn,16) 
+  tr<-geoCorrection(tr,scl=FALSE)
+  dist<-costDistance(x = tr,fromCoords = from,toCoords = mask[,1:2])
+  return(dist)
+}
