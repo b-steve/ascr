@@ -103,6 +103,21 @@
 #'
 #'
 #' }
+#'
+#' @section The \code{ihd.opts} argument:
+#'
+#' This argument allows the user to select options for the fitting on
+#' inhomogeneous density surfaces.
+#'
+#' The argument \code{ihd.opts} is a list with two components:
+#' \itemize{
+#'    \item \code{model}: An equation for the relationship between
+#'          covariates and the log of the density surface.
+#'    \item \code{covariates}: A list of data frames, one for each
+#'    session. Each data frame provides covariate values at each mask
+#'    point.
+#'
+#' }
 #' @section The \code{optim.opts} argument:
 #'
 #' This argument allows the user to select options for the
@@ -395,6 +410,8 @@
 #' @param local Logical, if \code{TRUE} integration over unobserved
 #'     animal activity centres is only carried out in a region local
 #'     to detectors that detected individuals. See 'Details'.
+#' @param ihd.opts Options for inhomogeneous density. See 'Details'
+#'     below.
 #' @param hess Logical, if \code{TRUE} the Hessian is estimated,
 #'     allowing for calculation of standard errors, the
 #'     variance-covariance matrix, and the correlation matrix, at the
@@ -442,7 +459,7 @@
 fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-                     local = FALSE, hess = NULL, trace = FALSE,
+                     ihd.opts = NULL, local = FALSE, hess = NULL, trace = FALSE,
                      clean = TRUE, optim.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
@@ -622,6 +639,23 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         traps[[i]] <- as.matrix(traps[[i]])
         attr(mask[[i]], "area") <- A[i]
         attr(mask[[i]], "buffer") <- buffer[i]
+    }
+    ## Sorting out inhomogeneous density stuff.
+    if (is.null(ihd.opts)){
+        fit.ihd <- FALSE
+        D.mask <- list(0)
+        mm.ihd <- list(0)
+        D.betapar.names <- NULL
+    } else {
+        fit.ihd <- TRUE
+        D.mask <- list()
+        mm.ihd <- list()
+        for (i in 1:n.sessions){
+            D.mask[[i]] <- rep(0, n.mask)
+            mm.ihd[[i]] <- model.matrix(ihd.opts$model, ihd.opts$covariates[[i]])[, -1, drop = FALSE]
+        }
+        n.D.betas <- ncol(mm.ihd[[1]])
+        D.betapar.names <- paste("D.beta.", colnames(mm.ihd[[1]]), sep = "")
     }
     ## Sorting out signal strength options.
     if (fit.ss){
@@ -816,10 +850,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
-    par.names <- c("D", detpar.names, suppar.names)
+    par.names <- c("D", detpar.names, suppar.names, D.betapar.names)
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
+    n.D.betapars <- length(D.betapar.names)
     any.suppars <- n.suppars > 0
+    any.D.betapars <- n.D.betapars > 0
     n.pars <- length(par.names)
     ## Checking par.names against names of sv, fix, bounds, and sf.
     for (i in c("sv", "fix", "bounds", "phases", "sf")){
@@ -838,22 +874,28 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## 1 = identity
     ## 2 = log
     ## 3 = logit
-    links <- list(D = 2,
-                  g0 = 3,
-                  sigma = 2,
-                  shape = 1,
-                  shape.1 = 2,
-                  shape.2 = 1,
-                  scale = 2,
-                  b0.ss = 2,
-                  b1.ss = 2,
-                  b2.ss = 2,
-                  sigma.b0.ss = 2,
-                  sigma.ss = 2,
-                  z = 2,
-                  sigma.toa = 2,
-                  kappa = 2,
-                  alpha = 2)[par.names]
+    parlinks.list <- list(D = 2,
+                          g0 = 3,
+                          sigma = 2,
+                          shape = 1,
+                          shape.1 = 2,
+                          shape.2 = 1,
+                          scale = 2,
+                          b0.ss = 2,
+                          b1.ss = 2,
+                          b2.ss = 2,
+                          sigma.b0.ss = 2,
+                          sigma.ss = 2,
+                          z = 2,
+                          sigma.toa = 2,
+                          kappa = 2,
+                          alpha = 2)
+    if (fit.ihd){
+        for (i in D.betapar.names){
+            parlinks.list[i] <- 1
+        }
+    }
+    links <- parlinks.list[par.names]
     link.list <- list(identity, log.link, logit.link)
     unlink.list <- list(identity, exp, inv.logit)
     par.links <- llply(links, function(x, link.list) link.list[[x]], link.list)
@@ -865,6 +907,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     names(sv.link) <- par.names
     sv.link[names(sv)] <- sv
     sv.link[names(fix)] <- fix
+    sv.link[names(D.betapar.names)] <- 0
     auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
     ## Use the first session with detections to generate start values.
@@ -914,7 +957,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
-    default.bounds <- list(D = c(n[1]/(A[1]*n.mask[1]*survey.length[1]), 1e8),
+    default.bounds <- list(D = c(ifelse(fit.ihd, 0, n[1]/(A[1]*n.mask[1]*survey.length[1])), 1e8),
                            g0 = c(0, 1),
                            sigma = c(0, 1e8),
                            shape = c(-100, 100),
@@ -1113,7 +1156,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       fit_toas = as.numeric(fit.toas), capt_toa = vectorise(capt.toa),
                       fit_mrds = as.numeric(fit.mrds), mrds_dist = vectorise(mrds.dist),
                       dists = vectorise(dists), angs = vectorise(bearings),
-                      toa_ssq = vectorise(toa.ssq)) 
+                      toa_ssq = vectorise(toa.ssq), fit_ihd = as.numeric(fit.ihd),
+                      mm_ihd = vectorise(mm.ihd))
+    browser()
          ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
         fit.freqs <- any(cue.freqs != 1)
