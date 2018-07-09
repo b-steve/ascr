@@ -656,9 +656,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         D.mask <- list()
         mm.ihd <- list()
         for (i in 1:n.sessions){
-            mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])[, -1, drop = FALSE]
+            mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
         }
-        D.betapars.names <- paste("D.beta.", colnames(mm.ihd[[1]]), sep = "")
+        D.betapars.names <- paste("D.beta.", colnames(mm.ihd[[1]][, -1, drop = FALSE]), sep = "")
     }
     ## Sorting out signal strength options.
     if (fit.ss){

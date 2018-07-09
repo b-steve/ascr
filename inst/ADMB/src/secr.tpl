@@ -242,6 +242,7 @@ DATA_SECTION
   !!   nr_ihd = 1;
   !!   nc_ihd = 1;
   !! }
+  !! cout << fit_ihd << endl;
   init_3darray mm_ihd(1,n_sessions,1,nr_ihd,1,nc_ihd)
   // Setting n_local permanently if local integration is disabled.
   int nr_localmats
@@ -264,7 +265,8 @@ PARAMETER_SECTION
   // Linked supplementary information parameters.
   init_bounded_number_vector suppars_link(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
   // Beta parameters for inhomogeneous density.
-  init_bounded_number_vector D_betapars(1,n_D_betapars,D_betapars_ub,D_betapars_ub,D_betapars_phase)
+  init_bounded_number_vector D_betapars(1,n_D_betapars,D_betapars_lb,D_betapars_ub,D_betapars_phase)
+  vector D_ihdpars(1,n_D_betapars+1);
   !! D_link.set_scalefactor(D_sf);
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
@@ -311,6 +313,13 @@ PROCEDURE_SECTION
     par_ests(j) = D;
     j++;
   }
+  // Sorting out inhomogeneous density parameter vector.
+  if (fit_ihd){
+    D_ihdpars(1) = D_link;
+    for (i = 2; i <= n_D_betapars + 1; i++){
+      D_ihdpars(i) = D_betapars(i - 1);
+    }
+  }
   // Converting parameters from their link scales.
   invlinkfn_pointer invlinkfn;
   for (i = 1; i <= n_detpars; i++){
@@ -345,7 +354,7 @@ PROCEDURE_SECTION
   // Calculating density at each mask point.
   if (fit_ihd){
     for (s = 1; s <= n_sessions; s++){
-      D_mask.rowfill(s, mm_ihd(s)*D_betapars);
+      D_mask.rowfill(s, mm_ihd(s)*D_ihdpars);
     }
   }
   // Calculating mask detection probabilities and expected signal strengths...
@@ -699,6 +708,7 @@ PROCEDURE_SECTION
   if (fit_dir){
     f -= sum(log(fs + dbl_min));
   }
+  cout << "f: " << f << endl;
   for (s = 1; s <= n_sessions; s++){
     // Calculating ESAs.
     esa(s) = A_per_sess(s)*sum_det_probs(s);
@@ -710,9 +720,9 @@ PROCEDURE_SECTION
     }
     // Extra bit that falls out of log-likelihood.
     if (fit_ihd){
-      f -= -n_per_sess(s)*log(sum_det_probs(s));
-    } else {
       f -= -n_per_sess(s)*log(sum_D_det_probs(s));
+    } else {
+      f -= -n_per_sess(s)*log(sum_det_probs(s));
     }
   }
   // Printing trace.
@@ -724,6 +734,11 @@ PROCEDURE_SECTION
     if (any_suppars){
       for (i = 1; i <= n_suppars; i++){
         cerr << "Supp Par " << i << ": " << suppars(i) << ", ";
+      }
+    }
+    if (fit_ihd){
+      for (i = 1; i <= n_D_betapars; i++){
+        cerr << "D par " << i << ": " << D_betapars(i) << ", ";
       }
     }
     cerr << "LL: " << -f << ", ESA: " << esa << endl;
