@@ -26,6 +26,11 @@ DATA_SECTION
   init_ivector suppars_phase(1,n_suppars)
   init_vector suppars_sf(1,n_suppars)
   init_ivector suppars_linkfns(1,n_suppars)
+  // Inhomogeneous density parameter details.
+  init_int n_D_betapars
+  vector D_betapars_lb(1,n_D_betapars)
+  vector D_betapars_ub(1,n_D_betapars)
+  init_ivector D_betapars_phase(1,n_D_betapars)
   // Declaring indices.
   int i
   int j
@@ -52,6 +57,13 @@ DATA_SECTION
   !! }
   !! for (i = 1; i <= n_suppars; i++){
   !!   if (suppars_phase(i) > -1){
+  !!     n_ests++;
+  !!   }
+  !! }
+  !! for (i = 1; i <= n_D_betapars; i++){
+  !!   D_betapars_lb(i) = -1e8;
+  !!   D_betapars_ub(i) = 1e8;
+  !!   if (D_betapars_phase(i) > -1){
   !!     n_ests++;
   !!   }
   !! }
@@ -218,6 +230,19 @@ DATA_SECTION
   !! if (fit_toas){
   !!   sigma_toa_ind = curr_ind;
   !! }
+  // Sorting out density covariates.
+  init_int fit_ihd
+  ivector nr_ihd(1,n_sessions)
+  int nc_ihd
+  int length_local_D_mask
+  !! if (fit_ihd){
+  !!   nr_ihd = n_mask_per_sess;
+  !!   nc_ihd = n_D_betapars;
+  !! } else {
+  !!   nr_ihd = 1;
+  !!   nc_ihd = 1;
+  !! }
+  init_3darray mm_ihd(1,n_sessions,1,nr_ihd,1,nc_ihd)
   // Setting n_local permanently if local integration is disabled.
   int nr_localmats
   int nc_localmats
@@ -238,6 +263,8 @@ PARAMETER_SECTION
   init_bounded_number_vector detpars_link(1,n_detpars,detpars_lb,detpars_ub,detpars_phase)
   // Linked supplementary information parameters.
   init_bounded_number_vector suppars_link(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
+  // Beta parameters for inhomogeneous density.
+  init_bounded_number_vector D_betapars(1,n_D_betapars,D_betapars_ub,D_betapars_ub,D_betapars_phase)
   !! D_link.set_scalefactor(D_sf);
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
@@ -263,6 +290,8 @@ PARAMETER_SECTION
   // A bunch of variables that are used for stuff.
   number det_prob
   vector sum_det_probs(1,n_sessions)
+  vector sum_D_det_probs(1,n_sessions)
+  matrix D_mask(1,n_sessions,1,nr_ihd)
   number undet_prob
   number undet_lower_prob
   number capt_prob
@@ -300,6 +329,10 @@ PROCEDURE_SECTION
       j++;
     }
   }
+  for (i = 1; i <= n_D_betapars; i++){
+    par_ests(j) = D_betapars(i);
+    j++;
+  }
   // Generating variance-covariance matrix and correlation matrix for fits with heterogeneity in source strength.
   if (fit_het_source){
     diag_sigma_ss = square(detpars(4)) + square(detpars(5));
@@ -309,8 +342,15 @@ PROCEDURE_SECTION
   // Start of likelihood calculation.
   f = 0.0;
   fs = 0.0;
+  // Calculating density at each mask point.
+  if (fit_ihd){
+    for (s = 1; s <= n_sessions; s++){
+      D_mask.rowfill(s, mm_ihd(s)*D_betapars);
+    }
+  }
   // Calculating mask detection probabilities and expected signal strengths...
   sum_det_probs = 0;
+  sum_D_det_probs = 0;
   // ... for a directional model...
   if (fit_dir){
     for (s = 1; s <= n_sessions; s++){
@@ -348,6 +388,9 @@ PROCEDURE_SECTION
           }
           point_capt = 1 - point_evade;
           sum_det_probs(s) += point_capt/n_dir_quadpoints;
+	  if (fit_ihd){
+	    sum_D_det_probs(s) += D_mask(s, i)*sum_det_probs(s);
+	  }
         }
       }
     }
@@ -389,6 +432,9 @@ PROCEDURE_SECTION
         }
         det_prob = 1 - undet_prob;
         sum_det_probs(s) += det_prob + dbl_min;
+	if (fit_ihd){
+	    sum_D_det_probs(s) += D_mask(s, i)*det_prob + dbl_min;
+	}
       }
     }
   }
@@ -465,6 +511,22 @@ PROCEDURE_SECTION
           toa_ssq_pointer = &local_toa_ssq;
         } else {
           toa_ssq_pointer = &toa_ssq(s);
+        }
+      }
+      // If dealing with inhomogeneous density, filling local densities.
+      if (fit_ihd){
+        length_local_D_mask = n_local;
+      } else {
+        length_local_D_mask = 1;
+      }
+      dvar_vector * D_mask_pointer;
+      dvar_vector local_D_mask(1, length_local_D_mask);
+      if (fit_ihd){
+        if (local){
+          local_D_mask = D_mask(s)(which_local_per_unique(s, u, j));
+	  D_mask_pointer = &local_D_mask;
+	} else {
+          D_mask_pointer = &D_mask(s);
         }
       }
       // Getting capture probabilities at local mask points.
@@ -581,6 +643,10 @@ PROCEDURE_SECTION
               bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
             }
           }
+          // If we are dealing with inhomogeneous density, add effect of density to bincapt_contrib.
+	  if (fit_ihd){
+              bincapt_contrib += log(*D_mask_pointer + dbl_min);
+          }
           if (any_suppars){
             dvar_vector supp_contrib(1,n_local);
             supp_contrib = 0;
@@ -637,9 +703,17 @@ PROCEDURE_SECTION
     // Calculating ESAs.
     esa(s) = A_per_sess(s)*sum_det_probs(s);
     // Adding contribution from ns.
-    f -= log_dpois(n_per_sess(s), D*survey_length(s)*esa(s));
+    if (fit_ihd){
+      f -= log_dpois(n_per_sess(s), survey_length(s)*A_per_sess(s)*sum_D_det_probs(s));
+    } else {
+      f -= log_dpois(n_per_sess(s), D*survey_length(s)*esa(s));
+    }
     // Extra bit that falls out of log-likelihood.
-    f -= -n_per_sess(s)*log(sum_det_probs(s));
+    if (fit_ihd){
+      f -= -n_per_sess(s)*log(sum_det_probs(s));
+    } else {
+      f -= -n_per_sess(s)*log(sum_D_det_probs(s));
+    }
   }
   // Printing trace.
   if (trace){
