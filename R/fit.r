@@ -1330,8 +1330,14 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
         ## Getting ESAs from .rep file for better accuracy.
-        esa <- read_rep("secr")$est
+        rep.pars <- read_rep("secr")$est
+        esa <- rep.pars[substr(names(rep.pars), 1, 3) == "esa"]
         names(esa) <- NULL
+        D.mask <- vector(mode = "list", length = n.sessions)
+        for (i in 1:n.sessions){
+            D.mask[[i]] <- rep.pars[substr(names(rep.pars), 1, 8 + nchar(i)) == paste("D_mask[", i, "]", sep = "")]
+        }
+        out$D.mask <- D.mask
         setwd(curr.dir)
         if (class(out)[1] == "try-error"){
             stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")

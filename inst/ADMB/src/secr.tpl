@@ -74,6 +74,8 @@ DATA_SECTION
   init_ivector n_per_sess(1,n_sessions)
   init_ivector n_traps_per_sess(1,n_sessions)
   init_ivector n_mask_per_sess(1,n_sessions)
+  int n_mask_total
+  !! n_mask_total = sum(n_mask_per_sess);
   init_vector A_per_sess(1,n_sessions)
   // Initialising capture histories and frequencies.
   init_3darray capt_bin_unique(1,n_sessions,1,n_unique_per_sess,1,n_traps_per_sess)
@@ -235,14 +237,8 @@ DATA_SECTION
   ivector nr_ihd(1,n_sessions)
   int nc_ihd
   int length_local_D_mask
-  !! if (fit_ihd){
   !!   nr_ihd = n_mask_per_sess;
-  !!   nc_ihd = n_D_betapars;
-  !! } else {
-  !!   nr_ihd = 1;
-  !!   nc_ihd = 1;
-  !! }
-  !! cout << fit_ihd << endl;
+  !!   nc_ihd = n_D_betapars + 1;
   init_3darray mm_ihd(1,n_sessions,1,nr_ihd,1,nc_ihd)
   // Setting n_local permanently if local integration is disabled.
   int nr_localmats
@@ -270,6 +266,7 @@ PARAMETER_SECTION
   !! D_link.set_scalefactor(D_sf);
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
+  !! D_betapars.set_scalefactor(100000000);
   // Collection of parameter estimates.
   sdreport_vector par_ests(1,n_ests)
   // Effective sampling area.
@@ -294,6 +291,7 @@ PARAMETER_SECTION
   vector sum_det_probs(1,n_sessions)
   vector sum_D_det_probs(1,n_sessions)
   matrix D_mask(1,n_sessions,1,nr_ihd)
+  vector D_mask_vec(1,n_mask_total)
   number undet_prob
   number undet_lower_prob
   number capt_prob
@@ -354,9 +352,18 @@ PROCEDURE_SECTION
   // Calculating density at each mask point.
   if (fit_ihd){
     for (s = 1; s <= n_sessions; s++){
-      D_mask.rowfill(s, mm_ihd(s)*D_ihdpars);
-    }
+      D_mask.rowfill(s, mfexp(mm_ihd(s)*D_ihdpars));
+    }  
+  } else {
+    D_mask = D;
   }
+  i = 1;
+  for (s = 1; s <= n_sessions; s++){
+    for (j = 1; j <= n_mask_per_sess(s); j++){
+      D_mask_vec(i) = D_mask(s, j);
+      i++;
+    }
+  } 
   // Calculating mask detection probabilities and expected signal strengths...
   sum_det_probs = 0;
   sum_D_det_probs = 0;
@@ -398,7 +405,7 @@ PROCEDURE_SECTION
           point_capt = 1 - point_evade;
           sum_det_probs(s) += point_capt/n_dir_quadpoints;
 	  if (fit_ihd){
-	    sum_D_det_probs(s) += D_mask(s, i)*sum_det_probs(s);
+	    sum_D_det_probs(s) += D_mask(s, i)*point_capt/n_dir_quadpoints;
 	  }
         }
       }
@@ -530,13 +537,16 @@ PROCEDURE_SECTION
       }
       dvar_vector * D_mask_pointer;
       dvar_vector local_D_mask(1, length_local_D_mask);
+      dvar_vector D_contrib(1, length_local_D_mask);
       if (fit_ihd){
+
         if (local){
           local_D_mask = D_mask(s)(which_local_per_unique(s, u, j));
 	  D_mask_pointer = &local_D_mask;
 	} else {
           D_mask_pointer = &D_mask(s);
         }
+	D_contrib = log(*D_mask_pointer + dbl_min);
       }
       // Getting capture probabilities at local mask points.
       dvar_matrix * log_capt_probs_pointer;
@@ -652,10 +662,6 @@ PROCEDURE_SECTION
               bincapt_contrib = capt_hist*local_log_ss_density + evade_contrib;
             }
           }
-          // If we are dealing with inhomogeneous density, add effect of density to bincapt_contrib.
-	  if (fit_ihd){
-              bincapt_contrib += log(*D_mask_pointer + dbl_min);
-          }
           if (any_suppars){
             dvar_vector supp_contrib(1,n_local);
             supp_contrib = 0;
@@ -688,9 +694,17 @@ PROCEDURE_SECTION
               // Try saving sigma_toa separately.
               supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row((*toa_ssq_pointer), i)/(2*square(suppars(sigma_toa_ind))));
             }
-            f_ind = sum(mfexp(bincapt_contrib + supp_contrib));
+	    if (fit_ihd){
+	      f_ind = sum(mfexp(bincapt_contrib + supp_contrib + D_contrib));
+	    } else {
+              f_ind = sum(mfexp(bincapt_contrib + supp_contrib));
+	    }
           } else {
-            f_ind = sum(mfexp(bincapt_contrib));
+	    if (fit_ihd){
+              f_ind = sum(mfexp(bincapt_contrib + D_contrib));
+            } else {
+              f_ind = sum(mfexp(bincapt_contrib));
+	    }
           }
           // For directional calling, save components due to each
           // direction for each individual.
@@ -699,6 +713,7 @@ PROCEDURE_SECTION
           } else {
             f -= log(f_ind + dbl_min);
           }
+	  //cout << "f_ind(" << i << "): " << log(f_ind) << endl;
         }
       }
     }
@@ -708,7 +723,7 @@ PROCEDURE_SECTION
   if (fit_dir){
     f -= sum(log(fs + dbl_min));
   }
-  cout << "f: " << f << endl;
+  //cout << "f1: " << f << endl;
   for (s = 1; s <= n_sessions; s++){
     // Calculating ESAs.
     esa(s) = A_per_sess(s)*sum_det_probs(s);
@@ -718,12 +733,14 @@ PROCEDURE_SECTION
     } else {
       f -= log_dpois(n_per_sess(s), D*survey_length(s)*esa(s));
     }
+    //cout << "f2: " << f << endl;
     // Extra bit that falls out of log-likelihood.
     if (fit_ihd){
       f -= -n_per_sess(s)*log(sum_D_det_probs(s));
     } else {
       f -= -n_per_sess(s)*log(sum_det_probs(s));
     }
+    //cout << "f3: " << f << endl;
   }
   // Printing trace.
   if (trace){
@@ -748,6 +765,10 @@ REPORT_SECTION
   // Writing ESAs to report file.
   for (i = 1; i <= n_sessions; i++){
     report << "# esa[" << i << "]:" << endl << esa(i) << endl;
+  }
+  // Writing D_mask to report file.
+  for (i= 1; i <= n_sessions; i++){
+    report << "# D_mask[" << i << "]:" << endl << D_mask(i) << endl;
   }
   
 GLOBALS_SECTION
