@@ -980,7 +980,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            sigma.toa = c(0, 1e8),
                            kappa = c(0, 700),
                            alpha = c(0, 1e8))
-    default.bounds.list[[D.betapars.names]] <- c(-1e8, 1e8)
+    for (i in D.betapars.names){
+        default.bounds.list[[i]] <- c(-1e8, 1e8)
+    }
     default.bounds <- default.bounds.list[par.names]
     bound.changes <- bounds
     bounds <- default.bounds
