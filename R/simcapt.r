@@ -187,7 +187,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         }
         popn.provided <- FALSE
     } else {
-        if (in.null(popn)){
+        if (is.null(popn)){
             popn.provided <- FALSE
         } else {
             popn.provided <- TRUE
