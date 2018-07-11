@@ -1,6 +1,8 @@
 ascr 2.1.2
 ----------
 
+* Implemented inhomogeneous density surfaces.
+
 * Fixed bug in locations() so that is correctly plots location
   contours for models with estimated distances.
 
