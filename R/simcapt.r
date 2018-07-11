@@ -185,6 +185,13 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         } else {
             ihd.surf <- NULL
         }
+        popn.provided <- FALSE
+    } else {
+        if (in.null(popn)){
+            popn.provided <- FALSE
+        } else {
+            popn.provided <- TRUE
+        }
     }
     ## Making sure mask and trap objects are lists for multisession stuff.
     full.mask <- mask
@@ -319,7 +326,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
         ## Simulating population.
         if (is.null(cue.rates)){
-            if (is.null(popn)){
+            if (!popn.provided){
                 if (sim.ihd){
                     popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask, buffer = 0,
                                                model2D = "IHP"))
@@ -340,7 +347,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                     D <- D/mean(cue.rates)
                 }
             }
-            if (is.null(popn)){
+            if (!popn.provided){
                 if (sim.ihd){
                     popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask,
                                                buffer = 0, model2D = "IHP"))
