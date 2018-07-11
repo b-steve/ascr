@@ -109,13 +109,17 @@
 #' This argument allows the user to select options for the fitting on
 #' inhomogeneous density surfaces.
 #'
-#' The argument \code{ihd.opts} is a list with two components:
+#' The argument \code{ihd.opts} is a list with up to three components:
 #' \itemize{
-#'    \item \code{model}: An equation for the relationship between
+#'    \item \code{model}: Compulsory. An equation for the relationship between
 #'          covariates and the log of the density surface.
-#'    \item \code{covariates}: A list of data frames, one for each
-#'    session. Each data frame provides covariate values at each mask
-#'    point.
+#'    \item \code{covariates}: Compulsory. A list of data frames, one
+#'          for each session. Each data frame provides covariate
+#'          values at each mask point.
+#'    \item \code{scale}: Optional. If \code{TRUE}, covariates are
+#'          scaled. This does not affect model inference and improves
+#'          optimisation stability, but makes it more difficult to
+#'          interpret estimated coefficients.
 #'
 #' }
 #' @section The \code{optim.opts} argument:
@@ -652,10 +656,18 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else {
             covariates <- ihd.opts$covariates
         }
+        if (is.null(ihd.opts$scale)){
+            cov.scale <- TRUE
+        } else {
+            cov.scale <- ihd.opts$scale
+        }
         fit.ihd <- TRUE
         D.mask <- list()
         mm.ihd <- list()
         for (i in 1:n.sessions){
+            if (cov.scale){
+                covariates[[i]] <- as.data.frame(apply(covariates[[i]], 2, function(x) (x - mean(x))/sd(x)))
+            }
             mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
         }
         D.betapars.names <- paste("D.beta.", colnames(mm.ihd[[1]][, -1, drop = FALSE]), sep = "")
@@ -957,7 +969,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         suppars.phase <- -1
     }
     if (fit.ihd){
-        D.betapars.phase <- rep(max(c(phases, recursive = TRUE)) + 1, n.D.betapars)
+        ##D.betapars.phase <- rep(max(c(phases, recursive = TRUE)) + 1, n.D.betapars)
+        D.betapars.phase <- rep(1, n.D.betapars)
     } else {
         D.betapars.phase <- rep(-1, n.D.betapars)
     }
@@ -1337,7 +1350,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                        nchar(list.files())) == ".par")]][1]
         }
         out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
-        ## Getting ESAs from .rep file for better accuracy.
+        ## Getting ESAs from .rep file for better accuracy. Also getting mask densities.
         rep.pars <- read_rep("secr")$est
         esa <- rep.pars[substr(names(rep.pars), 1, 3) == "esa"]
         names(esa) <- NULL
@@ -1362,7 +1375,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     ## Creating coefficients vector.
-    est.pars <- c("D", detpar.names, suppar.names)[c(D.phase, detpars.phase, suppars.phase) > -1]
+    est.pars <- c("D", detpar.names, suppar.names, D.betapars.names)[c(D.phase, detpars.phase, suppars.phase, D.betapars.phase) > -1]
     n.est.pars <- length(est.pars)
     out$coefficients <- numeric(2*n.est.pars + n.sessions)
     names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))

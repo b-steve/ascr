@@ -269,7 +269,7 @@ PARAMETER_SECTION
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
   // I don't know why this scalefactor has to be so big but it just seems to work OK?
-  !! D_betapars.set_scalefactor(100000000000);
+  !! D_betapars.set_scalefactor(10000000);
   // Collection of parameter estimates.
   sdreport_vector par_ests(1,n_ests)
   // Effective sampling area.
