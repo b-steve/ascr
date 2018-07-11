@@ -1099,6 +1099,13 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Reordering sv.link. Matters when there is no supplementary information.
     sv.link <- sv.link[c("D", detpar.names, suppar.names, D.betapars.names)]
+    ## ... And resetting suppar.names and D.betapars.names to NULL if required.
+    if (!any.suppars){
+        suppar.names <- NULL
+    }
+    if (!fit.ihd){
+        D.betapars.names <- NULL
+    }
     ## Sorting out which mask points are local to each detection.
     all.which.local <- vector(mode = "list", length = n.sessions)
     all.n.local <- vector(mode = "list", length = n.sessions)
