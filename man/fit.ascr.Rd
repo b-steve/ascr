@@ -238,13 +238,17 @@ The argument \code{ss.opts} is a list with up to seven components:
 This argument allows the user to select options for the fitting on
 inhomogeneous density surfaces.
 
-The argument \code{ihd.opts} is a list with two components:
+The argument \code{ihd.opts} is a list with up to three components:
 \itemize{
-   \item \code{model}: An equation for the relationship between
+   \item \code{model}: Compulsory. An equation for the relationship between
          covariates and the log of the density surface.
-   \item \code{covariates}: A list of data frames, one for each
-   session. Each data frame provides covariate values at each mask
-   point.
+   \item \code{covariates}: Compulsory. A list of data frames, one
+         for each session. Each data frame provides covariate
+         values at each mask point.
+   \item \code{scale}: Optional. If \code{TRUE}, covariates are
+         scaled. This does not affect model inference and improves
+         optimisation stability, but makes it more difficult to
+         interpret estimated coefficients.
 
 }
 }
