@@ -319,7 +319,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
         ## Simulating population.
         if (is.null(cue.rates)){
-            if (!is.null(popn)){
+            if (is.null(popn)){
                 if (sim.ihd){
                     popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask, buffer = 0,
                                                model2D = "IHP"))
