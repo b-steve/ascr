@@ -31,6 +31,7 @@ DATA_SECTION
   vector D_betapars_lb(1,n_D_betapars)
   vector D_betapars_ub(1,n_D_betapars)
   init_ivector D_betapars_phase(1,n_D_betapars)
+  init_vector D_betapars_sf(1,n_D_betapars)
   // Declaring indices.
   int i
   int j
@@ -262,11 +263,13 @@ PARAMETER_SECTION
   init_bounded_number_vector suppars_link(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
   // Beta parameters for inhomogeneous density.
   init_bounded_number_vector D_betapars(1,n_D_betapars,D_betapars_lb,D_betapars_ub,D_betapars_phase)
+  //init_number_vector D_betapars(1,n_D_betapars)
   vector D_ihdpars(1,n_D_betapars+1);
   !! D_link.set_scalefactor(D_sf);
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
-  !! D_betapars.set_scalefactor(100000000);
+  // I don't know why this scalefactor has to be so big but it just seems to work OK?
+  !! D_betapars.set_scalefactor(100000000000);
   // Collection of parameter estimates.
   sdreport_vector par_ests(1,n_ests)
   // Effective sampling area.

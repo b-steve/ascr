@@ -957,13 +957,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         suppars.phase <- -1
     }
     if (fit.ihd){
-        D.betapars.phase <- c(phases[D.betapars.names], recursive = TRUE)
+        D.betapars.phase <- rep(max(c(phases, recursive = TRUE)) + 1, n.D.betapars)
     } else {
         D.betapars.phase <- rep(-1, n.D.betapars)
     }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
-    #browser()
     default.bounds.list <- list(D = c(ifelse(fit.ihd, 0, n[1]/(A[1]*n.mask[1]*survey.length[1])), 1e8),
                            g0 = c(0, 1),
                            sigma = c(0, 1e8),
@@ -1039,6 +1038,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         suppars.sf <- 1
     }
+    if (fit.ihd){
+        D.betapars.sf <- c(sf[D.betapars.names], recursive = TRUE)
+    }
     ## Creating link objects to pass to ADMB.
     detpars.link <- c(links[detpar.names], recursive = TRUE)
     if (any.suppars){
@@ -1074,7 +1076,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (!any.suppars){
         n.suppars <- max(c(n.suppars, 1))
         sv.link$dummy <- 0
+        suppar.names <- "dummy"
     }
+    ## Reordering sv.link. Matters when there is no supplementary information.
+    sv.link <- sv.link[c("D", detpar.names, suppar.names, D.betapars.names)]
     ## Sorting out which mask points are local to each detection.
     all.which.local <- vector(mode = "list", length = n.sessions)
     all.n.local <- vector(mode = "list", length = n.sessions)
@@ -1145,6 +1150,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       suppars_ub = suppars.ub, suppars_phase = suppars.phase,
                       suppars_sf = suppars.sf, suppars_linkfns = suppars.link,
                       n_D_betapars = n.D.betapars, D_betapars_phase = D.betapars.phase,
+                      D_betapars_sf = D.betapars.sf,
                       detfn_id = detfn.id, trace = as.numeric(trace),
                       dbl_min = dbl.min, n_per_sess = n, n_traps_per_sess = n.traps,
                       n_mask_per_sess = n.mask, A_per_sess = A,
