@@ -1388,7 +1388,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     ## Creating coefficients vector.
-    est.pars <- c("D", detpar.names, suppar.names, D.betapars.names)[c(D.phase, detpars.phase, suppars.phase, D.betapars.phase) > -1]
+    est.pars <- c("D", detpar.names, suppar.names, D.betapars.names)[c(D.phase, detpars.phase, suppars.phase[any.suppars], D.betapars.phase[fit.ihd]) > -1]
     n.est.pars <- length(est.pars)
     out$coefficients <- numeric(2*n.est.pars + n.sessions)
     names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))
