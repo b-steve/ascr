@@ -1493,6 +1493,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             out[["vcov"]] <- vcov.updated
         }
     }
+    out$fit.ihd <- fit.ihd
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
     if (out$fn == "secr"){
