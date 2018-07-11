@@ -322,10 +322,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             if (!is.null(popn)){
                 if (sim.ihd){
                     popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask, buffer = 0,
-                                               model2D = "IHP")
-                    } else {
-                        popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
-                    }
+                                               model2D = "IHP"))
+                } else {
+                    popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
                 }
             }
             ## Indicates which individual is being detected.
