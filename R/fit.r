@@ -648,7 +648,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (is.null(ihd.opts)){
         fit.ihd <- FALSE
         mm.ihd <- list(0)
-        D.betapars.names <- "D.beta.dummy"
+        D.betapars.names <- NULL
     } else {
         if (is.data.frame(ihd.opts$covariates)){
             covariates <- list()
@@ -969,10 +969,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         suppars.phase <- -1
     }
     if (fit.ihd){
-        ##D.betapars.phase <- rep(max(c(phases, recursive = TRUE)) + 1, n.D.betapars)
         D.betapars.phase <- rep(1, n.D.betapars)
     } else {
-        D.betapars.phase <- rep(-1, n.D.betapars)
+        D.betapars.phase <- -1
     }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
@@ -1053,6 +1052,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (fit.ihd){
         D.betapars.sf <- c(sf[D.betapars.names], recursive = TRUE)
+    } else {
+        D.betapars.sf <- 1
     }
     ## Creating link objects to pass to ADMB.
     detpars.link <- c(links[detpar.names], recursive = TRUE)
@@ -1090,6 +1091,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         n.suppars <- max(c(n.suppars, 1))
         sv.link$dummy <- 0
         suppar.names <- "dummy"
+    }
+    if (!fit.ihd){
+        n.D.betapars <- max(c(n.D.betapars, 1))
+        sv.link$D.beta.dummy <- 0
+        D.betapars.names <- "D.beta.dummy"
     }
     ## Reordering sv.link. Matters when there is no supplementary information.
     sv.link <- sv.link[c("D", detpar.names, suppar.names, D.betapars.names)]
@@ -1371,7 +1377,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         setwd(curr.dir)
         ## Removing fixed coefficients from list.
         if (!hess){
-            out$coeflist[c(D.phase, detpars.phase, suppars.phase) == -1] <- NULL
+            out$coeflist[c(D.phase, detpars.phase, suppars.phase, D.betapars.phase) == -1] <- NULL
         }
     }
     ## Creating coefficients vector.
@@ -1405,6 +1411,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$infotypes <- names(fit.types)[fit.types]
     out$detpars <- detpar.names
     out$suppars <- suppar.names
+    out$D.betapars <- D.betapars.names
     out$phases <- phases
     out$par.links <- par.links
     out$par.unlinks <- par.unlinks
