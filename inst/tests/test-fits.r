@@ -406,3 +406,14 @@ test_that("Multi-session models", {
     relative.error <- max(abs((ses - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
 })
+
+test_that("Inhomogeneous density estimation", {
+    simple.capt <- example$capt[1]
+    df <- data.frame(x = example$mask[, 1]/1000, y = example$mask[, 2]/1000)
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, fix = list(g0 = 1),
+                    ihd.opts = list(model = ~ x + y, covariates = df))
+    pars.test <- c(2.267107e+03, 5.387570e+00, 5.629925e-02, 8.838071e-02)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-3, is_true())
+})
