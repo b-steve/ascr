@@ -241,7 +241,11 @@ locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
     p.det <- p.dot(fit = fit, session = session, points = mask)
     ## Divide by normalising constant; not conversion to square metres.
     a <- attr(mask, "area")
-    f.x <- p.det/(a*sum(p.det))
+    if (fit$fit.ihd){
+        f.x <- p.det*fit$D.mask[[session]]/(a*sum(p.det*fit$D.mask[[session]]))
+    } else {
+        f.x <- p.det/(a*sum(p.det))
+    }
     ## Extracting the session's capture history.
     capt.all <- get.capt(fit, session)
     ## Calculating conditional density of capture history, given location.
