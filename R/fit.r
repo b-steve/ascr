@@ -488,6 +488,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (any(names(extra.args) == "dists")){
         dists <- extra.args$dists
+        if (!is.list(dists)){
+          dists <- list(dists)
+        }
+        if (length(dists) != n.sessions){
+          stop("Distance object provided must be a list with a component for each session.")
+        }
         dists.provided <- TRUE
     } else {
         dists.provided <- FALSE
@@ -1137,7 +1143,56 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         hess <- !fit.freqs
     }
     ## Using optimx() for first call fits.
-    if (first.calls){
+    if (fit.noneuc){
+      ## Extracting non-Euclidean model statment.
+      noneuc.model <- noneuc.opts$model
+      ## Extracting raster.
+      noneuc.raster <- noneuc.opts$raster
+      ## Create non-Euclidean distance matrix here.
+      ##dists <- 
+      ## Getting original arguments.
+      args <- vector(mode = "list", length = length(arg.names))
+      names(args) <- arg.names
+      for (i in arg.names){
+        if (!is.null(get(i))){
+          args[[i]] <- get(i)
+        }
+      }
+      ## Removing the noneuc.model argument.
+      args$noneuc.opts <- NULL
+      ## Adding non-Euclidean distances.
+      #args$dists <- dists
+      ## Running fit.ascr() with the original user-supplied arguments.
+      
+      ## optim stuff here
+      
+      ascr.opt<-function(par,traps,mask,trans.fn,model){
+        MM<-model.matrix(model,attr(mask[[1]],"covariates"))
+        npar<-length(attr(MM,"assign"))
+        parameters<-c()
+        for (i in 1:npar){
+          parameters[i]<-par[i]
+        }
+        conductance<-1/exp(MM%*%parameters)
+        dists<-myDist(from = traps[[1]],mask = mask,trans.fn = trans.fn,conductance = conductance,raster=noneuc.raster)
+        args$dists<-dists
+        args$hess=FALSE
+        fit<-do.call("fit.ascr", args)$loglik
+        return(fit)
+      }
+      
+      opt<-optim(par = rep(0,length(attr(model.matrix(noneuc.model,attr(mask[[1]],"covariates")),"assign"))),fn = ascr.opt,control=list(fnscale=-1,reltol=10^-5),trans.fn=myTrans,traps=traps,mask=mask,model=noneuc.model)
+      
+      MM<-model.matrix(noneuc.model,attr(mask[[1]],"covariates"))
+      conductance<-1/exp(MM%*%opt$par)
+      args$dists<-myDist(from = traps[[1]],mask = mask,trans.fn = myTrans,conductance = conductance,raster=noneuc.raster)
+      
+      out<-do.call("fit.ascr", args)
+      out$noneuc.coefficients <- opt$par
+      print(out)
+      
+    } else { 
+      if (first.calls){
         if (n.sessions > 1){
             stop("First-call models not yet implemented for multisession data.")
         }
@@ -1198,50 +1253,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out$npar_total <- out$npar + out$npar_re + out$npar_sdrpt + out$npar_rep
         out$eratio <- as.logical(NA)
         esa <- secr_nll(coef(fit), data.list, TRUE)
-    } else if (fit.noneuc){
-        ## Extracting non-Euclidean model statment.
-        noneuc.model <- noneuc.opts$model
-        ## Extracting raster.
-        noneuc.raster <- noneuc.opts$raster
-        ## Create non-Euclidean distance matrix here.
-        ##dists <- 
-        ## Getting original arguments.
-        args <- vector(mode = "list", length = length(arg.names))
-        names(args) <- arg.names
-        for (i in arg.names){
-            if (!is.null(get(i))){
-                args[[i]] <- get(i)
-            }
-        }
-        ## Removing the noneuc.model argument.
-        args$noneuc.opts <- NULL
-        ## Adding non-Euclidean distances.
-        #args$dists <- dists
-        ## Running fit.ascr() with the original user-supplied arguments.
-        
-        ## optim stuff here
-        
-        ascr.opt<-function(par,traps,mask,trans.fn,raster){
-          MM<-model.matrix(noneuc.model,attr(mask,"covariates"))
-          npar<-length(attr(MM,"assign"))
-          parameters<-c()
-          for (i in 1:npar){
-            parameters[i]<-par[i]
-          }
-          conductance<-1/exp(MM%*%parameters)
-          args$dists<-myDist(from = traps,mask = mask,trans.fn = trans.fn,conductance = conductance,raster=raster)
-          fit<-do.call("fit.ascr", args)$loglik
-          return(fit)
-        }
-        
-        opt<-optim(par = rep(1,length(attr(model.matrix(model,attr(mask,"covariates")),"assign"))),fn = ascr.opt,control=list(fnscale=-1,reltol=NULL),trans.fn=myTrans,traps=traps,mask=mask,raster=noneuc.raster)
-        
-        MM<-model.matrix(noneuc.model,attr(mymask,"covariates"))
-        conductance<-1/exp(MM%*%opt$par)
-        arg$dists<-myDist(from = traps,mask = mask,trans.fn = myTrans,conductance = conductance,raster=noneuc.raster)
-        
-        out<-do.call("fit.ascr", args)
-          
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
@@ -1467,6 +1478,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     class(out) <- c("ascr", "admb")
+    }
     out
     }
 
