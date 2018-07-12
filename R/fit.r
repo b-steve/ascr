@@ -1148,6 +1148,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       noneuc.model <- noneuc.opts$model
       ## Extracting raster.
       noneuc.raster <- noneuc.opts$raster
+      ## Extracting optimization tolerance
+      noneuc.tol <- noneuc.opts$tol
+      ## Extracting transition function
+      noneuc.trans <- noneuc.opts$tran.fn
       ## Getting original arguments.
       args <- vector(mode = "list", length = length(arg.names))
       names(args) <- arg.names
@@ -1179,10 +1183,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
           return(fit)
         }
         
-        opt<-optim(par = rep(0,length(noneuc.model[1,])),fn = ascr.opt,control=list(fnscale=-1,reltol=10^-5),trans.fn=myTrans,traps=traps,mask=mask,model=noneuc.model)
+        opt<-optim(par = rep(0,length(noneuc.model[1,])),fn = ascr.opt,control=list(fnscale=-1,reltol=noneuc.tol),trans.fn=noneuc.trans,traps=traps,mask=mask,model=noneuc.model)
         
         conductance<-1/exp(noneuc.model%*%opt$par)
-        args$dists<-myDist(from = traps[[1]],mask = mask,trans.fn = myTrans,conductance = conductance,raster=noneuc.raster)
+        args$dists<-myDist(from = traps[[1]],mask = mask,trans.fn = noneuc.trans,conductance = conductance,raster=noneuc.raster)
         
       } else {
         
@@ -1201,11 +1205,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
           return(fit)
         }
         
-        opt<-optim(par = rep(0,length(attr(model.matrix(noneuc.model,attr(mask[[1]],"covariates")),"assign"))),fn = ascr.opt,control=list(fnscale=-1,reltol=10^-5),trans.fn=myTrans,traps=traps,mask=mask,model=noneuc.model)
+        opt<-optim(par = rep(0,length(attr(model.matrix(noneuc.model,attr(mask[[1]],"covariates")),"assign"))),fn = ascr.opt,control=list(fnscale=-1,reltol=noneuc.tol),trans.fn=noneuc.trans,traps=traps,mask=mask,model=noneuc.model)
         
         MM<-model.matrix(noneuc.model,attr(mask[[1]],"covariates"))
         conductance<-1/exp(MM%*%opt$par)
-        args$dists<-myDist(from = traps[[1]],mask = mask,trans.fn = myTrans,conductance = conductance,raster=noneuc.raster)
+        args$dists<-myDist(from = traps[[1]],mask = mask,trans.fn = noneuc.trans,conductance = conductance,raster=noneuc.raster)
         
       }
       
