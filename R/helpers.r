@@ -527,12 +527,12 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
 
 
 #Non-euclidean stuff
-myTrans<-function(x) exp(apply(log(x), 2, mean, na.rm = TRUE))
+myTrans<-function(x) psych::geometric.mean(x)
 
 myDist<-function(from,mask,trans.fn,conductance,raster){
-  ras.perm<-rasterize(mask[,1:2],raster,field=conductance)
-  tr<-transition(ras.perm,transitionFunction = trans.fn,16) 
-  tr<-geoCorrection(tr,scl=FALSE)
-  dist<-costDistance(x = tr,fromCoords = from,toCoords = mask[,1:2])
+  ras.perm<-rasterize(mask[[1]][,1:2],raster,field=conductance)
+  tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
+  tr<-gdistance::geoCorrection(tr,scl=FALSE)
+  dist<-gdistance::costDistance(x = tr,fromCoords = from,toCoords = mask[[1]][,1:2])
   return(dist)
 }
