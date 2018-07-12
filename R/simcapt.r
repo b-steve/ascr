@@ -71,6 +71,9 @@
 #'     this is ignored, and all individuals make the same number of
 #'     calls. See 'Details' below for information on how call
 #'     frequencies are rounded.
+#' @param ihd.surf A list with a vector for each session containing a
+#'     value for animal density at each mask point. Only required to
+#'     simulate inhomogeneous density surfaces.
 #' @param test.detfn Logical value, if \code{TRUE}, tests detection
 #'     function to aid debugging.
 #' @param first.only Only keep the first detection for each
@@ -111,7 +114,7 @@
 sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                      infotypes = character(0), detfn = "hn",
                      pars = NULL, ss.opts = NULL, cue.rates = NULL, survey.length = NULL,
-                     freq.dist = "edf", sound.speed = 330, test.detfn = FALSE,
+                     freq.dist = "edf", sound.speed = 330, ihd.surf = NULL, test.detfn = FALSE,
                      first.only = FALSE, keep.locs = FALSE, keep.ids = FALSE, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
@@ -158,6 +161,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     if (!missing(sound.speed) & !missing(fit)){
         warning("Argument 'sound.speed' is being ignored as 'fit' was provided.")
     }
+    if (!missing(ihd.surf) & !missing(fit)){
+        warning("Argument 'ihd.surf' is being ignored as 'fit' was provided.")
+    }
     ## Grabbing values from fit if required.
     if (!is.null(fit)){
         mask <- get.mask(fit)
@@ -173,6 +179,18 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         if (!is.null(ss.opts$lower.cutoff)){
             cue.rates <- Inf
             first.only <- TRUE
+        }
+        if (fit$fit.ihd){
+            ihd.surf <- fit$D.mask
+        } else {
+            ihd.surf <- NULL
+        }
+        popn.provided <- FALSE
+    } else {
+        if (is.null(popn)){
+            popn.provided <- FALSE
+        } else {
+            popn.provided <- TRUE
         }
     }
     ## Making sure mask and trap objects are lists for multisession stuff.
@@ -190,6 +208,12 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         n.sessions <- 1
         full.mask <- list(full.mask)
         full.traps <- list(full.traps)
+    }
+    ## Setting up inhomogeneous density stuff.
+    if (is.null(ihd.surf)){
+        sim.ihd <- FALSE
+    } else {
+        sim.ihd <- TRUE
     }
     ## Setting up logical indicators for additional information types.
     supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
@@ -302,7 +326,14 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
         ## Simulating population.
         if (is.null(cue.rates)){
-            popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
+            if (!popn.provided){
+                if (sim.ihd){
+                    popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask, buffer = 0,
+                                               model2D = "IHP"))
+                } else {
+                    popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
+                }
+            }
             ## Indicates which individual is being detected.
             individual <- 1:nrow(popn)
         } else {
@@ -310,10 +341,19 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             if (!first.only){
                 ## This is super messy, but it's scaling D from call
                 ## density to animal density.
-                D <- D/mean(cue.rates)
+                if (sim.ihd){
+                    ihd.surf[[s]] <- ihd.surf[[s]]/mean(cue.rates)
+                } else {
+                    D <- D/mean(cue.rates)
+                }
             }
-            if (is.null(popn)){
-                popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
+            if (!popn.provided){
+                if (sim.ihd){
+                    popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask,
+                                               buffer = 0, model2D = "IHP"))
+                } else {
+                    popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
+                }
             }
             n.a <- nrow(popn)
             if (freq.dist == "edf"){

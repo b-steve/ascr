@@ -7,8 +7,8 @@
 sim.capt(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
   cue.rates = NULL, survey.length = NULL, freq.dist = "edf",
-  sound.speed = 330, test.detfn = FALSE, first.only = FALSE,
-  keep.locs = FALSE, keep.ids = FALSE, ...)
+  sound.speed = 330, ihd.surf = NULL, test.detfn = FALSE,
+  first.only = FALSE, keep.locs = FALSE, keep.ids = FALSE, ...)
 }
 \arguments{
 \item{fit}{A fitted \code{ascr} model object which provides the
@@ -74,6 +74,10 @@ frequencies are rounded.}
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
 \code{"toa"} is a component name of \code{capt}.}
+
+\item{ihd.surf}{A list with a vector for each session containing a
+value for animal density at each mask point. Only required to
+simulate inhomogeneous density surfaces.}
 
 \item{test.detfn}{Logical value, if \code{TRUE}, tests detection
 function to aid debugging.}
