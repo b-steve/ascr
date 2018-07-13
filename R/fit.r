@@ -1172,7 +1172,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       ## Running fit.ascr() with the original user-supplied arguments.
       
       ## Using the fisrt argument extracted above to fork linear and gam fits
-      if (!inherits(errorIfNotGAM,"error")) { ## this is for gam
+      if (!inherits(errorIfNotGAM,"error")) { ## this is for GAM
         
         ##Constructing matrix with all basis functions for all smooth terms
         nsmooths<-unlist(strsplit(as.character(noneuc.model)[[2]],split="[+]"))
@@ -1183,7 +1183,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         des.mat<-do.call(cbind,cons.smooths)
         
-        ##Specifying the function (gam version) to feed into the optim algorithm
+        ##Specifying the function (GAM version) to feed into the optim algorithm
         ascr.opt<-function(par,traps,mask,trans.fn,des.mat){
           npar<-length(des.mat[1,])
           parameters<-c()
@@ -1207,6 +1207,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         
       } else {
         
+        ##Specifying function for non-GAM version
         ascr.opt<-function(par,traps,mask,trans.fn,model){
           MM<-model.matrix(model,attr(mask[[1]],"covariates"))
           npar<-length(attr(MM,"assign"))
@@ -1222,8 +1223,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
           return(fit)
         }
         
+        ##Running optimization algorithm
         opt<-optim(par = rep(0,length(attr(model.matrix(noneuc.model,attr(mask[[1]],"covariates")),"assign"))),fn = ascr.opt,control=list(fnscale=-1,reltol=noneuc.tol),trans.fn=noneuc.trans,traps=traps,mask=mask,model=noneuc.model)
         
+        ##Recalculating conductance and noneuc distances with optimized parameters
         MM<-model.matrix(noneuc.model,attr(mask[[1]],"covariates"))
         conductance<-1/exp(MM%*%opt$par)
         args$dists<-myDist(from = traps[[1]],mask = mask,trans.fn = noneuc.trans,conductance = conductance,raster=noneuc.raster)
