@@ -1146,6 +1146,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (fit.noneuc){
       ## Extracting non-Euclidean model statment.
       noneuc.model <- noneuc.opts$model
+      ## Extracting user-defined knot locations (if any)
+      noneuc.knots <- noneuc.opts$knots
       ## Extracting raster.
       noneuc.raster <- noneuc.opts$raster
       ## Extracting optimization tolerance
@@ -1162,20 +1164,33 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       }
       ## Removing the noneuc.model argument.
       args$noneuc.opts <- NULL
+      ## Extract the first argument of the model (this will be used to detect if gam or not!)
+      errorIfNotGAM<-tryCatch({
+        fist.arg<-eval(as.formula(paste("~",unlist(strsplit(as.character(noneuc.model)[[2]],split="[+]"))[1]))[[2]])
+      },error=function(e) e)
       
       ## Running fit.ascr() with the original user-supplied arguments.
       
-      ## Specifying optimisation functon for noneuc fit (linear and splines). This includes the generation of noneuc distances too.
-      
-      if (is.matrix(noneuc.model)) {
+      ## Using the fisrt argument extracted above to fork linear and gam fits
+      if (!inherits(errorIfNotGAM,"error")) { ## this is for gam
         
-        ascr.opt<-function(par,traps,mask,trans.fn,model){
-          npar<-length(model[1,])
+        ##Constructing matrix with all basis functions for all smooth terms
+        nsmooths<-unlist(strsplit(as.character(noneuc.model)[[2]],split="[+]"))
+        cons.smooths<-list()
+        for (i in 1:length(nsmooths)){
+          smooths<-as.formula(paste("~",nsmooths[i]))
+          cons.smooths[[i]]<-smooth.construct(eval(smooths[[2]]),data=attr(mask[[1]],"covariates"),knots=noneuc.knots)$X
+        }
+        des.mat<-do.call(cbind,cons.smooths)
+        
+        ##Specifying the function (gam version) to feed into the optim algorithm
+        ascr.opt<-function(par,traps,mask,trans.fn,des.mat){
+          npar<-length(des.mat[1,])
           parameters<-c()
           for (i in 1:npar){
             parameters[i]<-par[i]
           }
-          conductance<-1/exp(model%*%parameters)
+          conductance<-1/exp(des.mat%*%parameters)
           dists<-myDist(from = traps[[1]],mask = mask,trans.fn = trans.fn,conductance = conductance,raster=noneuc.raster)
           args$dists<-dists
           args$hess=FALSE
@@ -1183,9 +1198,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
           return(fit)
         }
         
-        opt<-optim(par = rep(0,length(noneuc.model[1,])),fn = ascr.opt,control=list(fnscale=-1,reltol=noneuc.tol),trans.fn=noneuc.trans,traps=traps,mask=mask,model=noneuc.model)
+        ##Running optimization algorithm
+        opt<-optim(par = rep(0,length(des.mat[1,])),fn = ascr.opt,control=list(fnscale=-1,reltol=noneuc.tol),trans.fn=noneuc.trans,traps=traps,mask=mask,des.mat=des.mat)
         
-        conductance<-1/exp(noneuc.model%*%opt$par)
+        ##Recalculating conductance and noneuc distances with optimized parameters
+        conductance<-1/exp(des.mat%*%opt$par)
         args$dists<-myDist(from = traps[[1]],mask = mask,trans.fn = noneuc.trans,conductance = conductance,raster=noneuc.raster)
         
       } else {
@@ -1578,6 +1595,7 @@ par.admbsecr <- par.fit.ascr
 #' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom matrixStats colProds
+#' @importFrom mgcv smooth.construct s te ti t2
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @importFrom utils example setTxtProgressBar txtProgressBar
