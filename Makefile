@@ -1,4 +1,3 @@
-SHELL := /bin/bash
 ALL:
 	make compile
 	make nocompile
@@ -23,6 +22,7 @@ compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr
 	if [ $(shell hostname) == "sc-stat-369411" ]; then cd inst/ADMB/src; LDFLAGS=-static admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/linux; rm -rfv secr; mv ../../src/secr ./secr; fi
 	if [ $(shell hostname) == "darwen" ]; then cd inst/ADMB/src; LDFLAGS=-static admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/linux; rm -rfv secr; mv ../../src/secr ./secr; fi
 	if [ $(shell hostname) == "darwen-win" ]; then export OLDPATH=$$PATH; export PATH=/c/admb:/c/admb/utilities/mingw64/bin:$$PATH; echo $$PATH; cd inst/ADMB/src; cmd //c admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; export PATH=$$OLDPATH; fi
+	if [ $(shell hostname) == "fygwyd-win" ]; then cd inst/ADMB/src; cmd //c admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/windows; rm -rfv secr.exe; mv ../../src/secr.exe ./secr.exe; fi
 	if [ $(shell hostname) == "Olivers-MBP.station" ]; then export OLDPATH=$$PATH; export PATH=/Applications/ADMBTerminal.app/admb/bin/:/Applications/ADMBTerminal.app/admb/utilities:$$PATH; echo $$PATH; cd inst/ADMB/src; admb -f secr.tpl; rm -rfv secr.cpp secr.htp secr.o secr.obj; cd ../bin/mac; rm -rfv secr; mv ../../src/secr ./secr; fi
 
 prepare:
