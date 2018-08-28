@@ -5,8 +5,8 @@
 \title{Calculating detection probabilities.}
 \usage{
 p.dot(fit = NULL, session = 1, esa = FALSE, points = get.mask(fit,
-  session), traps = NULL, detfn = NULL, ss.link = NULL, pars = NULL,
-  n.quadpoints = 8)
+  session), traps = NULL, detfn = NULL, ss.link = NULL,
+  pars = NULL, n.quadpoints = 8)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
