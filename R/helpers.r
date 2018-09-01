@@ -528,6 +528,17 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
 
 #Non-euclidean stuff
 
+make.dm<-function(model,data,knots){
+  nsmooths<-unlist(strsplit(as.character(model)[[2]], split="[+]"))
+  cons.smooths<-list()
+  for (i in 1:length(nsmooths)){
+    smooths<-as.formula(paste("~", nsmooths[i]))
+    cons.smooths[[i]]<-smooth.construct(eval(smooths[[2]]), data=data, knots=knots)$X
+  }
+  des.mat<-do.call(cbind, cons.smooths)
+  return(des.mat)
+}
+
 myDist<-function(from,mask,trans.fn,conductance,raster){
   ras.perm<-rasterize(mask[[1]][,1:2],raster,field=conductance)
   tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
