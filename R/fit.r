@@ -1169,28 +1169,16 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         fist.arg<-eval(as.formula(paste("~",unlist(strsplit(as.character(noneuc.model)[[2]],split="[+]"))[1]))[[2]])
       },error=function(e) e)
       
-      ## Running fit.ascr() with the original user-supplied arguments.
-      
-      ## Using the fisrt argument extracted above to fork linear and gam fits
+      ## Design matrices for gam and linear models
       if (!inherits(errorIfNotGAM, "error")) { ## this is for GAM
+        des.mat<-make.dm(model = noneuc.model,data = attr(mask[[1]], "covariates"),knots = noneuc.knots)
+      } else {
+        des.mat<-model.matrix(noneuc.model, attr(mask[[1]], "covariates"))
+      }
         
-        ##Constructing matrix with all basis functions for all smooth terms
-        nsmooths<-unlist(strsplit(as.character(noneuc.model)[[2]], split="[+]"))
-        cons.smooths<-list()
-        for (i in 1:length(nsmooths)){
-          smooths<-as.formula(paste("~", nsmooths[i]))
-          cons.smooths[[i]]<-smooth.construct(eval(smooths[[2]]), data=attr(mask[[1]], "covariates"), knots=noneuc.knots)$X
-        }
-        des.mat<-do.call(cbind, cons.smooths)
-        
-        ##Specifying the function (GAM version) to feed into the optim algorithm
+        ##Specifying the function to feed into the optim algorithm
         ascr.opt<-function(par, traps, mask, trans.fn, des.mat){
-          npar<-length(des.mat[1,])
-          parameters<-c()
-          for (i in 1:npar){
-            parameters[i]<-par[i]
-          }
-          conductance<-1/exp(des.mat%*%parameters)
+          conductance<-1/exp(des.mat%*%par)
           dists<-myDist(from = traps[[1]], mask = mask, trans.fn = trans.fn, conductance = conductance, raster=noneuc.raster)
           args$dists<-dists
           args$hess=FALSE
@@ -1205,34 +1193,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         conductance<-1/exp(des.mat%*%opt$par)
         args$dists<-myDist(from = traps[[1]], mask = mask, trans.fn = noneuc.trans, conductance = conductance, raster=noneuc.raster)
         
-      } else {
         
-        ##Specifying function for non-GAM version
-        ascr.opt<-function(par, traps, mask, trans.fn, model){
-          MM<-model.matrix(model, attr(mask[[1]], "covariates"))
-          npar<-length(attr(MM,"assign"))
-          parameters<-c()
-          for (i in 1:npar){
-            parameters[i]<-par[i]
-          }
-          conductance<-1/exp(MM%*%parameters)
-          dists<-myDist(from = traps[[1]], mask = mask, trans.fn = trans.fn, conductance = conductance, raster=noneuc.raster)
-          args$dists<-dists
-          args$hess=FALSE
-          fit<-do.call("fit.ascr", args)$loglik
-          return(fit)
-        }
-        
-        ##Running optimization algorithm
-        opt<-optim(par = rep(0,length(attr(model.matrix(noneuc.model, attr(mask[[1]], "covariates")), "assign"))), fn = ascr.opt, control=list(fnscale=-1, reltol=noneuc.tol), trans.fn=noneuc.trans, traps=traps, mask=mask, model=noneuc.model, hessian = TRUE)
-        
-        ##Recalculating conductance and noneuc distances with optimized parameters
-        MM<-model.matrix(noneuc.model, attr(mask[[1]], "covariates"))
-        conductance<-1/exp(MM%*%opt$par)
-        args$dists<-myDist(from = traps[[1]], mask = mask, trans.fn = noneuc.trans, conductance = conductance, raster=noneuc.raster)
-        
-      }
-      
       out<-do.call("fit.ascr", args)
       if (!inherits(errorIfNotGAM, "error")){
         out$noneuc.model.matrix <- des.mat
