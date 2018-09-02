@@ -553,43 +553,50 @@ polygonize<-function(traps,mask,crop,resolution,raster,plot=FALSE){
 }
 
 
-myDist<-function(par,from,mask,trans.fn,raster,model,knots=NULL,comm.dist=FALSE,parallel=FALSE,ncores=NULL){
+expand.polygons<-function(from, mask, raster){
+  
+  resolution<-sqrt(attr(mask,"area")*10^4)
+  crop<-0.05*(attr(mask,"buffer")/resolution)*resolution
+  
+  buff.mask<-polygonize(traps = from,mask = mask,crop = -crop,resolution = resolution,raster = raster[[1]])
+  mask.clone<-polygonize(traps = from,mask = mask,crop = 0,resolution = resolution,raster = raster[[1]])
+  
+  diff<-rgeos::gDifference(buff.mask,rgeos::gUnion(mask.clone,mask.clone),byid = TRUE)
+  mask.clone<-mask.clone[-1]
+  mask.clone@data<-attr(mask,"covariates")
+  diff.cov<-matrix(ncol=length(raster),nrow=length(diff))
+  for (i in 1:length(length(diff))){
+    diff.cov[,i]<-extract(raster[[i]],diff,mean,na.rm=TRUE)/10^3
+  }
+  diff.cov<-as.data.frame(diff.cov)
+  colnames(diff.cov)<-colnames(attr(mask,"covariates"))
+  diff<-SpatialPolygonsDataFrame(Sr = diff,data = diff.cov,match.ID = FALSE)
+  un<-bind(mask.clone,diff)
+  return(un)
+}
+
+
+myDist<-function(par,exp.poly=NULL,from,mask,trans.fn,raster,model,knots=NULL,comm.dist=FALSE,parallel=FALSE,ncores=NULL){
   
   errorIfNotGAM<-tryCatch({
     fist.arg<-eval(as.formula(paste("~",unlist(strsplit(as.character(model)[[2]],split="[+]"))[1]))[[2]])
   },error=function(e) e)
   
   resolution<-sqrt(attr(mask,"area")*10^4)
-  crop<-0.05*(attr(mask,"buffer")/resolution)*resolution
   
   if(comm.dist){
     
-    buff.mask<-polygonize(traps = from,mask = mask,crop = -crop,resolution = resolution,raster = raster[[1]])
-    mask.clone<-polygonize(traps = from,mask = mask,crop = 0,resolution = resolution,raster = raster[[1]])
-    
-    diff<-rgeos::gDifference(buff.mask,rgeos::gUnion(mask.clone,mask.clone),byid = TRUE)
-    mask.clone<-mask.clone[-1]
-    mask.clone@data<-attr(mask,"covariates")
-    diff.cov<-matrix(ncol=length(raster),nrow=length(diff))
-    for (i in 1:length(length(diff))){
-      diff.cov[,i]<-extract(raster[[i]],diff,mean,na.rm=TRUE)/10^3
-    }
-    diff.cov<-as.data.frame(diff.cov)
-    colnames(diff.cov)<-colnames(attr(mask,"covariates"))
-    diff<-SpatialPolygonsDataFrame(Sr = diff,data = diff.cov,match.ID = FALSE)
-    un<-bind(mask.clone,diff)
-    
     ## Design matrices for gam and linear models
     if (!inherits(errorIfNotGAM, "error")) { ## this is for GAM
-      des.mat<-make.dm(model = model,data = un@data,knots = knots)
+      des.mat<-make.dm(model = model,data = exp.poly@data,knots = knots)
     } else {
-      des.mat<-model.matrix(model, un@data)
+      des.mat<-model.matrix(model, exp.poly@data)
     }
     
     ## Conductance
     conductance<-1/exp(des.mat%*%par)
     
-    ras.perm<-rasterize(coordinates(un),raster(resolution=resolution,ext=extent(un),crs=crs(raster[[1]])),field=conductance)
+    ras.perm<-rasterize(coordinates(exp.poly),raster(resolution=resolution,ext=extent(exp.poly),crs=crs(raster[[1]])),field=conductance)
     tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
     tr<-gdistance::geoCorrection(tr,scl=FALSE)
     xy<-mask[,1:2]
