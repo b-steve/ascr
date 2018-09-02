@@ -539,10 +539,114 @@ make.dm<-function(model,data,knots){
   return(des.mat)
 }
 
-myDist<-function(from,mask,trans.fn,conductance,raster){
-  ras.perm<-rasterize(mask[[1]][,1:2],raster,field=conductance)
-  tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
-  tr<-gdistance::geoCorrection(tr,scl=FALSE)
-  dist<-gdistance::costDistance(x = tr,fromCoords = from,toCoords = mask[[1]][,1:2])
-  return(dist)
+
+polygonize<-function(traps,mask,crop,resolution,raster,plot=FALSE){
+  region<-create.mask(traps,attr(mask,"buffer")-crop,spacing=resolution)
+  region.grid<-SpatialGrid(points2grid(SpatialPoints(region[,1:2],proj4string = crs(raster))),proj4string = crs(raster))
+  region.grid<-sp::SpatialGridDataFrame(region.grid,data=data.frame(id=c(1:length(region.grid))))
+  region.grid<-inlmisc::Grid2Polygons(region.grid,zcol = "id",level = FALSE)
+  names(region.grid)<-c("id")
+  region.poly<-region.grid[(sp::over(SpatialPoints(region[,1:2],proj4string = crs(raster)),region.grid))$id,]
+  
+  return(region.poly)
+  
 }
+
+
+myDist<-function(par,from,mask,trans.fn,raster,model,knots=NULL,comm.dist=FALSE,parallel=FALSE,ncores=NULL){
+  
+  errorIfNotGAM<-tryCatch({
+    fist.arg<-eval(as.formula(paste("~",unlist(strsplit(as.character(model)[[2]],split="[+]"))[1]))[[2]])
+  },error=function(e) e)
+  
+  resolution<-sqrt(attr(mask,"area")*10^4)
+  crop<-0.05*(attr(mask,"buffer")/resolution)*resolution
+  
+  if(comm.dist){
+    
+    buff.mask<-polygonize(traps = from,mask = mask,crop = -crop,resolution = resolution,raster = raster[[1]])
+    mask.clone<-polygonize(traps = from,mask = mask,crop = 0,resolution = resolution,raster = raster[[1]])
+    
+    diff<-rgeos::gDifference(buff.mask,rgeos::gUnion(mask.clone,mask.clone),byid = TRUE)
+    mask.clone<-mask.clone[-1]
+    mask.clone@data<-attr(mask,"covariates")
+    diff.cov<-matrix(ncol=length(raster),nrow=length(diff))
+    for (i in 1:length(length(diff))){
+      diff.cov[,i]<-extract(raster[[i]],diff,mean,na.rm=TRUE)/10^3
+    }
+    diff.cov<-as.data.frame(diff.cov)
+    colnames(diff.cov)<-colnames(attr(mask,"covariates"))
+    diff<-SpatialPolygonsDataFrame(Sr = diff,data = diff.cov,match.ID = FALSE)
+    un<-bind(mask.clone,diff)
+    
+    ## Design matrices for gam and linear models
+    if (!inherits(errorIfNotGAM, "error")) { ## this is for GAM
+      des.mat<-make.dm(model = model,data = un@data,knots = knots)
+    } else {
+      des.mat<-model.matrix(model, un@data)
+    }
+    
+    ## Conductance
+    conductance<-1/exp(des.mat%*%par)
+    
+    ras.perm<-rasterize(coordinates(un),raster(resolution=resolution,ext=extent(un),crs=crs(raster[[1]])),field=conductance)
+    tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
+    tr<-gdistance::geoCorrection(tr,scl=FALSE)
+    xy<-mask[,1:2]
+    
+    dist<-gdistance::costDistance(x = tr,fromCoords = from,toCoords = xy)
+    scale_dist<-dist
+    
+    tr<-gdistance::geoCorrection(tr,scl=TRUE,type="r")
+    
+    if (parallel){
+      
+      if(Sys.info()[[1]]=="Windows"){
+        cl<-parallel::makeCluster(ncores)
+        doParallel::registerDoParallel(cl)
+      } else {
+        cl<-doMC::registerDoMC(ncores) #register cores
+      }
+      
+      `%dopar%` <- foreach::`%dopar%`
+      dist <- foreach::foreach(i = 1:length(from[,1]),.combine = cbind) %dopar% {
+        cmdist<-gdistance::commuteDistance(tr,rbind(from[i,],xy))
+        cmdist<-as.matrix(cmdist)[,1]
+        cmdist<-cmdist[-1]
+        cmdist<-matrix(cmdist/max(cmdist,na.rm = TRUE)*max(scale_dist[i,],na.rm = TRUE))
+        return(cmdist)
+      }
+      
+      dist<-t(dist)
+      
+    } else {
+      dist<-matrix(ncol = length(xy)/2,nrow = length(from[,1]))
+      for (i in 1:length(from[,1])){
+        cmdist<-gdistance::commuteDistance(tr,rbind(from[i,],xy))
+        cmdist<-as.matrix(cmdist)[,1]
+        cmdist<-cmdist[-1]
+        cmdist<-matrix(cmdist/max(cmdist,na.rm = TRUE)*max(scale_dist[i,],na.rm = TRUE))
+        dist[i,]<-cmdist
+      }
+    }
+    
+  } else {
+    
+    if (!inherits(errorIfNotGAM, "error")) { ## this is for GAM
+      des.mat<-make.dm(model = model,data = attr(mask,"covariates"),knots = knots)
+    } else {
+      des.mat<-model.matrix(model, attr(mask,"covariates"))
+    }
+    conductance<-1/exp(des.mat%*%par)
+    
+    ras.perm<-rasterize(coordinates(mask),raster(resolution=resolution,ext=extent(mask),crs=crs(raster[[1]])),field=conductance)
+    tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
+    tr<-gdistance::geoCorrection(tr,scl=FALSE)
+    xy<-mask[,1:2]
+    dist<-gdistance::costDistance(x = tr,fromCoords = from,toCoords = xy)
+  }
+  
+  return(dist)
+  
+}
+
