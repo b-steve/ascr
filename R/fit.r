@@ -1154,6 +1154,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       noneuc.tol <- noneuc.opts$tol
       ## Extracting transition function
       noneuc.trans <- noneuc.opts$tran.fn
+      ## Option for commute distances
+      noneuc.commute <- noneuc.opts$is.commute
+      ## Option for parallelization
+      noneuc.parallel <- noneuc.opts$parallel
+      ## Defining cores
+      noneuc.ncores <- noneuc.opts$ncores
       ## Getting original arguments.
       args <- vector(mode = "list", length = length(arg.names))
       names(args) <- arg.names
@@ -1177,9 +1183,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       }
         
         ##Specifying the function to feed into the optim algorithm
-        ascr.opt<-function(par, traps, mask, trans.fn, des.mat){
-          conductance<-1/exp(des.mat%*%par)
-          dists<-myDist(from = traps[[1]], mask = mask, trans.fn = trans.fn, conductance = conductance, raster=noneuc.raster)
+        ascr.opt<-function(par, traps, mask, trans.fn, raster,model,knots,comm.dist,parallel,ncores){
+          
+          dists<-myDist(par = par,from = traps,mask = mask,trans.fn = trans.fn,raster = raster,model = model,knots = knots,comm.dist = comm.dist,parallel = parallel,ncores = ncores)
+          
           args$dists<-dists
           args$hess=FALSE
           fit<-do.call("fit.ascr", args)$loglik
@@ -1187,12 +1194,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         
         ##Running optimization algorithm
-        opt<-optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, control=list(fnscale=-1,reltol=noneuc.tol), trans.fn=noneuc.trans, traps=traps, mask=mask, des.mat=des.mat, hessian = TRUE)
+        opt<-optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, control=list(fnscale=-1,reltol=noneuc.tol), trans.fn=noneuc.trans, traps=traps[[1]], mask=mask[[1]],raster=noneuc.raster,model=noneuc.model,knots=noneuc.knots,comm.dist=noneuc.commute,parallel=noneuc.parallel,ncores=noneuc.ncores, hessian = TRUE)
         
-        ##Recalculating conductance and noneuc distances with optimized parameters
-        conductance<-1/exp(des.mat%*%opt$par)
-        args$dists<-myDist(from = traps[[1]], mask = mask, trans.fn = noneuc.trans, conductance = conductance, raster=noneuc.raster)
-        
+        args$dists<-myDist(par = opt$par,from = traps[[1]],mask = mask[[1]],trans.fn = noneuc.trans,raster = noneuc.raster,model = noneuc.model,knots = noneuc.knots,comm.dist = noneuc.commute,parallel = noneuc.parallel,ncores = noneuc.ncores)
         
       out<-do.call("fit.ascr", args)
       if (!inherits(errorIfNotGAM, "error")){
