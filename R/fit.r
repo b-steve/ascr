@@ -1181,11 +1181,17 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       } else {
         des.mat<-model.matrix(noneuc.model, attr(mask[[1]], "covariates"))
       }
-        
+      
+      if (noneuc.commute){
+        exp.poly<-expand.polygons(from = traps[[1]],mask = mask[[1]],raster = noneuc.raster)
+      } else {
+        exp.poly<-NULL
+      }
+      
         ##Specifying the function to feed into the optim algorithm
-        ascr.opt<-function(par, traps, mask, trans.fn, raster,model,knots,comm.dist,parallel,ncores){
+        ascr.opt<-function(par, exp.poly, traps, mask, trans.fn, raster,model,knots,comm.dist,parallel,ncores){
           
-          dists<-myDist(par = par,from = traps,mask = mask,trans.fn = trans.fn,raster = raster,model = model,knots = knots,comm.dist = comm.dist,parallel = parallel,ncores = ncores)
+          dists<-myDist(par = par,exp.poly = exp.poly,from = traps,mask = mask,trans.fn = trans.fn,raster = raster,model = model,knots = knots,comm.dist = comm.dist,parallel = parallel,ncores = ncores)
           
           args$dists<-dists
           args$hess=FALSE
@@ -1194,9 +1200,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         
         ##Running optimization algorithm
-        opt<-optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, control=list(fnscale=-1,reltol=noneuc.tol), trans.fn=noneuc.trans, traps=traps[[1]], mask=mask[[1]],raster=noneuc.raster,model=noneuc.model,knots=noneuc.knots,comm.dist=noneuc.commute,parallel=noneuc.parallel,ncores=noneuc.ncores, hessian = TRUE)
+        opt<-optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, control=list(fnscale=-1,reltol=noneuc.tol), trans.fn=noneuc.trans, exp.poly=exp.poly, traps=traps[[1]], mask=mask[[1]],raster=noneuc.raster,model=noneuc.model,knots=noneuc.knots,comm.dist=noneuc.commute,parallel=noneuc.parallel,ncores=noneuc.ncores, hessian = TRUE)
         
-        args$dists<-myDist(par = opt$par,from = traps[[1]],mask = mask[[1]],trans.fn = noneuc.trans,raster = noneuc.raster,model = noneuc.model,knots = noneuc.knots,comm.dist = noneuc.commute,parallel = noneuc.parallel,ncores = noneuc.ncores)
+        args$dists<-myDist(par = opt$par,exp.poly = exp.poly,from = traps[[1]],mask = mask[[1]],trans.fn = noneuc.trans,raster = noneuc.raster,model = noneuc.model,knots = noneuc.knots,comm.dist = noneuc.commute,parallel = noneuc.parallel,ncores = noneuc.ncores)
         
       out<-do.call("fit.ascr", args)
       if (!inherits(errorIfNotGAM, "error")){
