@@ -1152,6 +1152,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
       noneuc.raster <- noneuc.opts$raster
       ## Extracting optimization tolerance
       noneuc.tol <- noneuc.opts$tol
+      ## Extracting the optimization method
+      noneuc.method <- noneuc.opts$method
       ## Extracting transition function
       noneuc.trans <- noneuc.opts$tran.fn
       ## Option for commute distances
@@ -1200,7 +1202,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         
         ##Running optimization algorithm
-        opt<-optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, control=list(fnscale=-1,reltol=noneuc.tol), trans.fn=noneuc.trans, exp.poly=exp.poly, traps=traps[[1]], mask=mask[[1]],raster=noneuc.raster,model=noneuc.model,knots=noneuc.knots,comm.dist=noneuc.commute,parallel=noneuc.parallel,ncores=noneuc.ncores, hessian = TRUE)
+        opt<-optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, method=noneuc.method,control=list(fnscale=-1,reltol=noneuc.tol), trans.fn=noneuc.trans, exp.poly=exp.poly, traps=traps[[1]], mask=mask[[1]],raster=noneuc.raster,model=noneuc.model,knots=noneuc.knots,comm.dist=noneuc.commute,parallel=noneuc.parallel,ncores=noneuc.ncores, hessian = TRUE)
         
         args$dists<-myDist(par = opt$par,exp.poly = exp.poly,from = traps[[1]],mask = mask[[1]],trans.fn = noneuc.trans,raster = noneuc.raster,model = noneuc.model,knots = noneuc.knots,comm.dist = noneuc.commute,parallel = noneuc.parallel,ncores = noneuc.ncores)
         
