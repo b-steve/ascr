@@ -1207,9 +1207,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         args$dists<-myDist(par = opt$par,exp.poly = exp.poly,from = traps[[1]],mask = mask[[1]],trans.fn = noneuc.trans,raster = noneuc.raster,model = noneuc.model,knots = noneuc.knots,comm.dist = noneuc.commute,parallel = noneuc.parallel,ncores = noneuc.ncores)
         
       out<-do.call("fit.ascr", args)
-      if (!inherits(errorIfNotGAM, "error")){
-        out$noneuc.model.matrix <- des.mat
-      }
+      out$noneuc.model.matrix <- des.mat
       out$noneuc.coefficients <- opt$par
       out$noneuc.hessian <- opt$hessian
       print(out)
