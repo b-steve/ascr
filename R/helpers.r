@@ -556,7 +556,7 @@ polygonize<-function(traps,mask,crop,resolution,raster,plot=FALSE){
 expand.polygons<-function(from, mask, raster){
   
   resolution<-sqrt(attr(mask,"area")*10^4)
-  crop<-0.05*(attr(mask,"buffer")/resolution)*resolution
+  crop<-3*resolution
   
   buff.mask<-polygonize(traps = from,mask = mask,crop = -crop,resolution = resolution,raster = raster[[1]])
   mask.clone<-polygonize(traps = from,mask = mask,crop = 0,resolution = resolution,raster = raster[[1]])
