@@ -123,6 +123,22 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
     }
 }
 
+#' Plotting an estimated density surface.
+#'
+#' Plots density surface estimated by a model fitted with the function
+#' \link{fit.ascr}.
+#'
+#' @inheritParams locations
+#'
+#' @export
+#'
+#' @examples
+#' simple.capt <- example$capt[1]
+#' cov.df <- data.frame(x = example$mask[, 1]/1000, y = example$mask[, 2]/1000)
+#' fit <- fit.ascr(capt = simple.capt, traps = example$traps, mask = example$mask,
+#'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
+#'                                                     covariates = cov.df))
+#' show.Dsurf(fit)
 show.Dsurf <- function(fit, session = 1){
     D.mask <- fit$D.mask[[session]]
     mask <- get.mask(fit, session)
