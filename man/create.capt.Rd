@@ -31,15 +31,15 @@ use the same \code{captures} data frame with \code{create.capt} and
 the \code{ascr} and \link{secr} packages respectively.
 
 As such, the first, second, and fourth columns should provide the
-session, the identification of the detected animal or call, and the
-trap number of the trap which made the detection (where the trap
-number is the row number of the corresponding trap in the matrix of
-trap locations), respectively. Note that, for the \link{secr}
-package, the third column of the \code{captures} data frame
-provides the 'occassion' of the detection for \link{make.capthist}.
-However, the ascr package does not presently have the capabilities
-to deal with multi-occassion data, so the third column is ignored
-by \code{create.capt}.
+session, the identification number of the detected animal or call,
+and the trap number of the trap which made the detection (where the
+trap number is the row number of the corresponding trap in the
+matrix of trap locations), respectively. Note that, for the
+\link{secr} package, the third column of the \code{captures} data
+frame provides the 'occassion' of the detection for
+\link{make.capthist}.  However, the ascr package does not presently
+have the capabilities to deal with multi-occassion data, so the
+third column is ignored by \code{create.capt}.
 
 Additional optional columns can specify the additional information
 collected over the course of the survey:
