@@ -829,6 +829,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         capt.ss[[i]] <- if (fit.ss) capt.ord[[i]]$ss else 0
         capt.toa[[i]] <- if (fit.toas) capt.ord[[i]]$toa else 0
         mrds.dist[[i]] <- if (fit.mrds) capt.ord[[i]]$mrds else 0
+        ## Data check for bearings.
+        if (any(capt.bearing[[i]] < 0 | capt.bearing[[i]] > 2*pi)){
+            warning("Some estimated bearings are not in the interval [0, 2*pi)")
+        }
     }
     if (fit.ss){
         if (!missing(detfn) & detfn != "ss"){
