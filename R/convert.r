@@ -42,15 +42,16 @@ create.mask <- function(traps, buffer, ...){
 #' \code{make.capthist}, which generate capture histories for use with
 #' the \code{ascr} and \link{secr} packages respectively.
 #'
-#' As such, the second and fourth columns should provide the ID of the
-#' detection and the trap number of the trap which made the detection
-#' (where the trap number is the row number of the corresponding trap
-#' in the matrix of trap locations). Note that the first and third
-#' columns provide the 'session' and 'occassion' of the detection for
-#' \link{make.capthist}, but as the ascr package does not
-#' presently have the capabilities to deal with multi-session or
-#' multi-occassion data, these columns are ignored by
-#' \code{create.capt}.
+#' As such, the first, second, and fourth columns should provide the
+#' session, the identification of the detected animal or call, and the
+#' trap number of the trap which made the detection (where the trap
+#' number is the row number of the corresponding trap in the matrix of
+#' trap locations), respectively. Note that, for the \link{secr}
+#' package, the third column of the \code{captures} data frame
+#' provides the 'occassion' of the detection for \link{make.capthist}.
+#' However, the ascr package does not presently have the capabilities
+#' to deal with multi-occassion data, so the third column is ignored
+#' by \code{create.capt}.
 #'
 #' Additional optional columns can specify the additional information
 #' collected over the course of the survey:
