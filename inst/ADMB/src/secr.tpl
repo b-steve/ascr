@@ -8,10 +8,11 @@ DATA_SECTION
   init_imatrix n_local_per_unique(1,n_sessions,1,n_unique_per_sess)
   init_3darray which_local_per_unique(1,n_sessions,1,n_unique_per_sess,1,n_local_per_unique)
   // Density parameter details.
-  init_number D_lb
-  init_number D_ub
-  init_number D_phase
-  init_number D_sf
+  init_int n_D_betapars
+  init_vector D_betapars_lb(1,n_D_betapars)
+  init_vector D_betapars_ub(1,n_D_betapars)
+  init_ivector D_betapars_phase(1,n_D_betapars)
+  init_vector D_betapars_sf(1,n_D_betapars)
   // Detection function parameter details.
   init_int n_detpars
   init_vector detpars_lb(1,n_detpars)
@@ -26,12 +27,6 @@ DATA_SECTION
   init_ivector suppars_phase(1,n_suppars)
   init_vector suppars_sf(1,n_suppars)
   init_ivector suppars_linkfns(1,n_suppars)
-  // Inhomogeneous density parameter details.
-  init_int n_D_betapars
-  vector D_betapars_lb(1,n_D_betapars)
-  vector D_betapars_ub(1,n_D_betapars)
-  init_ivector D_betapars_phase(1,n_D_betapars)
-  init_vector D_betapars_sf(1,n_D_betapars)
   // Declaring indices.
   int i
   int j
@@ -48,8 +43,10 @@ DATA_SECTION
   // Calculating total number of estimated parameters.
   int n_ests
   !! n_ests = 0;
-  !! if (D_phase > -1){
-  !!   n_ests++;
+  !! for (i = 1; i <= n_D_betapars; i++){
+  !!   if (D_betapars_phase(i) > -1){
+  !!     n_ests++;
+  !!   }
   !! }
   !! for (i = 1; i <= n_detpars; i++){
   !!   if (detpars_phase(i) > -1){
@@ -58,13 +55,6 @@ DATA_SECTION
   !! }
   !! for (i = 1; i <= n_suppars; i++){
   !!   if (suppars_phase(i) > -1){
-  !!     n_ests++;
-  !!   }
-  !! }
-  !! for (i = 1; i <= n_D_betapars; i++){
-  !!   D_betapars_lb(i) = -1e8;
-  !!   D_betapars_ub(i) = 1e8;
-  !!   if (D_betapars_phase(i) > -1){
   !!     n_ests++;
   !!   }
   !! }
@@ -255,21 +245,18 @@ PARAMETER_SECTION
   number f_ind
   // Something-or-other required for directional calling.
   matrix fs(1,n_sessions,1,length_fs)
-  // Linked density parameter.
-  init_bounded_number D_link(D_lb,D_ub,D_phase)
+  // Linked density parameters.
+  init_bounded_number_vector D_betapars_link(1,n_D_betapars,D_betapars_lb,D_betapars_ub,D_betapars_phase)
   // Linked detection function parameters.
   init_bounded_number_vector detpars_link(1,n_detpars,detpars_lb,detpars_ub,detpars_phase)
   // Linked supplementary information parameters.
   init_bounded_number_vector suppars_link(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
-  // Beta parameters for inhomogeneous density.
-  init_bounded_number_vector D_betapars(1,n_D_betapars,D_betapars_lb,D_betapars_ub,D_betapars_phase)
-  //init_number_vector D_betapars(1,n_D_betapars)
   vector D_ihdpars(1,n_D_betapars+1);
-  !! D_link.set_scalefactor(D_sf);
+  !! D_betapars_link.set_scalefactor(D_betapars_sf);
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
   // I don't know why this scalefactor has to be so big but it just seems to work OK?
-  !! D_betapars.set_scalefactor(10000000);
+  //!! D_betapars.set_scalefactor(10000000); Uh I'm commenting this out because the comment above is weird.
   // Collection of parameter estimates.
   sdreport_vector par_ests(1,n_ests)
   // Effective sampling area.
@@ -308,18 +295,10 @@ PROCEDURE_SECTION
   // Grabbing detection function.
   detfn_pointer detfn = get_detfn(detfn_id);
   // Converting linked parameters to real parameters and setting up par_ests vector.
-  D = mfexp(D_link);
   j = 1;
-  if (D_phase > -1){
-    par_ests(j) = D;
+  for (i = 1; i <= n_D_betapars; i++){
+    par_ests(j) = D_betapars_link(i);
     j++;
-  }
-  // Sorting out inhomogeneous density parameter vector.
-  if (fit_ihd){
-    D_ihdpars(1) = D_link;
-    for (i = 2; i <= n_D_betapars + 1; i++){
-      D_ihdpars(i) = D_betapars(i - 1);
-    }
   }
   // Converting parameters from their link scales.
   invlinkfn_pointer invlinkfn;
@@ -339,10 +318,6 @@ PROCEDURE_SECTION
       j++;
     }
   }
-  for (i = 1; i <= n_D_betapars; i++){
-    par_ests(j) = D_betapars(i);
-    j++;
-  }
   // Generating variance-covariance matrix and correlation matrix for fits with heterogeneity in source strength.
   if (fit_het_source){
     diag_sigma_ss = square(detpars(4)) + square(detpars(5));
@@ -355,7 +330,7 @@ PROCEDURE_SECTION
   // Calculating density at each mask point.
   if (fit_ihd){
     for (s = 1; s <= n_sessions; s++){
-      D_mask.rowfill(s, mfexp(mm_ihd(s)*D_ihdpars));
+      D_mask.rowfill(s, mfexp(mm_ihd(s)*D_betapars_link));
     }  
   } else {
     D_mask = D;
@@ -726,39 +701,29 @@ PROCEDURE_SECTION
   if (fit_dir){
     f -= sum(log(fs + dbl_min));
   }
-  //cout << "f1: " << f << endl;
   for (s = 1; s <= n_sessions; s++){
     // Calculating ESAs.
     esa(s) = A_per_sess(s)*sum_det_probs(s);
     // Adding contribution from ns.
-    if (fit_ihd){
-      f -= log_dpois(n_per_sess(s), survey_length(s)*A_per_sess(s)*sum_D_det_probs(s));
-    } else {
-      f -= log_dpois(n_per_sess(s), D*survey_length(s)*esa(s));
-    }
-    //cout << "f2: " << f << endl;
+    f -= log_dpois(n_per_sess(s), survey_length(s)*A_per_sess(s)*sum_D_det_probs(s));
     // Extra bit that falls out of log-likelihood.
     if (fit_ihd){
       f -= -n_per_sess(s)*log(sum_D_det_probs(s));
     } else {
       f -= -n_per_sess(s)*log(sum_det_probs(s));
     }
-    //cout << "f3: " << f << endl;
   }
   // Printing trace.
   if (trace){
-    cerr << "D: " << D << ", ";
+    for (i = 1; i <= n_D_betapars; i++){
+      cerr << "D par " << i << ": " << D_betapars_link(i) << ", ";
+    }
     for (i = 1; i <= n_detpars; i++){
       cerr << "DF Par " << i << ": " << detpars(i) << ", ";
     }
     if (any_suppars){
       for (i = 1; i <= n_suppars; i++){
         cerr << "Supp Par " << i << ": " << suppars(i) << ", ";
-      }
-    }
-    if (fit_ihd){
-      for (i = 1; i <= n_D_betapars; i++){
-        cerr << "D par " << i << ": " << D_betapars(i) << ", ";
       }
     }
     cerr << "LL: " << -f << ", ESA: " << esa << endl;
