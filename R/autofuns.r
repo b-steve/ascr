@@ -54,8 +54,10 @@ autoD <- function(args){
     esa <- p.dot(points = mask, esa = TRUE, traps = traps, detfn = detfn,
                  ss.link = ss.link, pars = pars, n.quadpoints = 8)
     ## HT-like estimator for D is n/esa.
-    nrow(args$capt$bincapt)/(esa*survey.length)
+    log(nrow(args$capt$bincapt)/(esa*survey.length))
 }
+
+`autoD.(Intercept)` <- autoD
 
 autog0 <- function(args){
     0.95

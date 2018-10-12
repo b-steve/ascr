@@ -646,32 +646,34 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out inhomogeneous density stuff.
     if (is.null(ihd.opts)){
+        ihd.opts$model <- ~ 1
+        ihd.opts$covariates <- data.frame(mask)
         fit.ihd <- FALSE
-        mm.ihd <- list(0)
-        D.betapars.names <- "D"
     } else {
-        if (is.data.frame(ihd.opts$covariates)){
-            covariates <- list()
-            covariates[[1]] <- data.frame(ihd.opts$covariates)
-        } else {
-            covariates <- ihd.opts$covariates
-        }
-        if (is.null(ihd.opts$scale)){
-            cov.scale <- TRUE
-        } else {
-            cov.scale <- ihd.opts$scale
-        }
         fit.ihd <- TRUE
-        D.mask <- list()
-        mm.ihd <- list()
-        for (i in 1:n.sessions){
-            if (cov.scale){
-                covariates[[i]] <- as.data.frame(apply(covariates[[i]], 2, function(x) (x - mean(x))/sd(x)))
-            }
-            mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
-        }
-        D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
     }
+    if (is.data.frame(ihd.opts$covariates)){
+        covariates <- list()
+        covariates[[1]] <- data.frame(ihd.opts$covariates)
+    } else {
+        covariates <- ihd.opts$covariates
+    }
+    if (is.null(ihd.opts$scale)){
+        cov.scale <- TRUE
+    } else {
+        cov.scale <- ihd.opts$scale
+    }
+    D.mask <- list()
+    mm.ihd <- list()
+    for (i in 1:n.sessions){
+        if (cov.scale){
+            covariates[[i]] <- as.data.frame(apply(covariates[[i]], 2, function(x) (x - mean(x))/sd(x)))
+        }
+        mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
+    }
+    #if (ncol(mm.ihd[[1]]) > 1){
+        D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
+    #}
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
@@ -918,7 +920,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     names(sv.link) <- par.names
     sv.link[names(sv)] <- sv
     sv.link[names(fix)] <- fix
-    sv.link[D.betapars.names] <- 1
+    #sv.link[D.betapars.names] <- 1
     auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
     ## Use the first session with detections to generate start values.
@@ -984,7 +986,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                 kappa = c(0, 700),
                                 alpha = c(0, 1e8))
     for (i in D.betapars.names){
-        default.bounds.list[[i]] <- c(-1e8, 1e8)
+        default.bounds.list[[i]] <- c(-log(1e20), log(1e20))
     }
     default.bounds <- default.bounds.list[par.names]
     bound.changes <- bounds
@@ -999,7 +1001,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     for (i in names(bounds)){
         bounds.link[[i]] <- link.list[[links[[i]]]](bounds[[i]])
     }
-    D.betapars.bounds <- bounds.link[[D.betapars.names]]
+    D.betapars.bounds <- bounds.link[D.betapars.names]
     D.betapars.lb <- sapply(D.betapars.bounds, function(x) x[1])
     D.betapars.ub <- sapply(D.betapars.bounds, function(x) x[2])
     detpar.bounds <- bounds.link[detpar.names]
@@ -1192,7 +1194,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       dists = vectorise(dists),
                       angs = vectorise(bearings),
                       toa_ssq = vectorise(toa.ssq),
-                      fit_ihd = as.numeric(fit.ihd),
                       mm_ihd = vectorise(mm.ihd))
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
@@ -1376,20 +1377,21 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         setwd(curr.dir)
         ## Removing fixed coefficients from list.
         if (!hess){
-            out$coeflist[c(D.phase, detpars.phase, suppars.phase, D.betapars.phase) == -1] <- NULL
+            out$coeflist[c(D.betapars.phase, detpars.phase, suppars.phase, D.betapars.phase) == -1] <- NULL
         }
     }
     ## Creating coefficients vector.
-    est.pars <- c("D", detpar.names, suppar.names, D.betapars.names)[c(D.phase, detpars.phase, suppars.phase[any.suppars], D.betapars.phase[fit.ihd]) > -1]
+    est.pars <- c(D.betapars.names, detpar.names, suppar.names)[c(D.betapars.phase, detpars.phase, suppars.phase[any.suppars]) > -1]
     n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + n.sessions)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))
+    out$coefficients <- numeric(2*n.est.pars + n.sessions + 1)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""), "D")
     if (hess){
         names(out$se) <- names(out$coefficients)
     }
     for (i in 1:n.est.pars){
         out$coefficients[i] <- out$coeflist[[i]]
     }
+    out$coefficients["D"] <- exp(out$coefficients[D.betapars.phase[1]])
     for (i in 1:n.est.pars){
         out$coefficients[n.est.pars + i] <-
             unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
@@ -1485,7 +1487,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             out[["vcov"]] <- vcov.updated
         }
     }
-    out$fit.ihd <- fit.ihd
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
     if (out$fn == "secr"){
