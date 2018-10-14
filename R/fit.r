@@ -116,11 +116,11 @@
 #'    \item \code{covariates}: Compulsory. A list of data frames, one
 #'          for each session. Each data frame provides covariate
 #'          values at each mask point.
-#'    \item \code{scale}: Optional. If \code{TRUE}, covariates are
-#'          scaled. This does not affect model inference and improves
-#'          optimisation stability, but makes it more difficult to
-#'          interpret estimated coefficients.
-#'
+#'    \item \code{scale}: Optional. If \code{TRUE}, the default,
+#'          covariates are scaled by subtracting the mean and dividing
+#'          by the standard deviaton. This does not affect model
+#'          inference and improves optimisation stability, but makes
+#'          it more difficult to interpret estimated coefficients.
 #' }
 #' @section The \code{optim.opts} argument:
 #'
@@ -646,32 +646,34 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Sorting out inhomogeneous density stuff.
     if (is.null(ihd.opts)){
+        ihd.opts$model <- ~ 1
+        ihd.opts$covariates <- data.frame(mask)
         fit.ihd <- FALSE
-        mm.ihd <- list(0)
-        D.betapars.names <- NULL
     } else {
-        if (is.data.frame(ihd.opts$covariates)){
-            covariates <- list()
-            covariates[[1]] <- data.frame(ihd.opts$covariates)
-        } else {
-            covariates <- ihd.opts$covariates
-        }
-        if (is.null(ihd.opts$scale)){
-            cov.scale <- TRUE
-        } else {
-            cov.scale <- ihd.opts$scale
-        }
         fit.ihd <- TRUE
-        D.mask <- list()
-        mm.ihd <- list()
-        for (i in 1:n.sessions){
-            if (cov.scale){
-                covariates[[i]] <- as.data.frame(apply(covariates[[i]], 2, function(x) (x - mean(x))/sd(x)))
-            }
-            mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
-        }
-        D.betapars.names <- paste("D.beta.", colnames(mm.ihd[[1]][, -1, drop = FALSE]), sep = "")
     }
+    if (is.data.frame(ihd.opts$covariates)){
+        covariates <- list()
+        covariates[[1]] <- data.frame(ihd.opts$covariates)
+    } else {
+        covariates <- ihd.opts$covariates
+    }
+    if (is.null(ihd.opts$scale)){
+        cov.scale <- TRUE
+    } else {
+        cov.scale <- ihd.opts$scale
+    }
+    D.mask <- list()
+    mm.ihd <- list()
+    for (i in 1:n.sessions){
+        if (cov.scale){
+            covariates[[i]] <- as.data.frame(apply(covariates[[i]], 2, function(x) (x - mean(x))/sd(x)))
+        }
+        mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
+    }
+    #if (ncol(mm.ihd[[1]]) > 1){
+        D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
+    #}
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
@@ -865,12 +867,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
-    par.names <- c("D", detpar.names, suppar.names, D.betapars.names)
+    par.names <- c(D.betapars.names, detpar.names, suppar.names)
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
     n.D.betapars <- length(D.betapars.names)
     any.suppars <- n.suppars > 0
-    any.D.betapars <- n.D.betapars > 0
     n.pars <- length(par.names)
     ## Checking par.names against names of sv, fix, bounds, and sf.
     for (i in c("sv", "fix", "bounds", "phases", "sf")){
@@ -889,22 +890,21 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## 1 = identity
     ## 2 = log
     ## 3 = logit
-    parlinks.list <- list(D = 2,
-                          g0 = 3,
-                          sigma = 2,
-                          shape = 1,
-                          shape.1 = 2,
-                          shape.2 = 1,
-                          scale = 2,
-                          b0.ss = 2,
-                          b1.ss = 2,
-                          b2.ss = 2,
-                          sigma.b0.ss = 2,
-                          sigma.ss = 2,
-                          z = 2,
-                          sigma.toa = 2,
-                          kappa = 2,
-                          alpha = 2)
+        parlinks.list <- list(g0 = 3,
+                              sigma = 2,
+                              shape = 1,
+                              shape.1 = 2,
+                              shape.2 = 1,
+                              scale = 2,
+                              b0.ss = 2,
+                              b1.ss = 2,
+                              b2.ss = 2,
+                              sigma.b0.ss = 2,
+                              sigma.ss = 2,
+                              z = 2,
+                              sigma.toa = 2,
+                              kappa = 2,
+                              alpha = 2)
     for (i in D.betapars.names){
         parlinks.list[i] <- 1
     }
@@ -920,7 +920,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     names(sv.link) <- par.names
     sv.link[names(sv)] <- sv
     sv.link[names(fix)] <- fix
-    sv.link[D.betapars.names] <- 0
+    #sv.link[D.betapars.names] <- 1
     auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
     ## Use the first session with detections to generate start values.
@@ -961,38 +961,32 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             }
         }
     }
-    D.phase <- phases[["D"]]
+    D.betapars.phase <- phases[[D.betapars.names]]
     detpars.phase <- c(phases[detpar.names], recursive = TRUE)
     if (any.suppars){
         suppars.phase <- c(phases[suppar.names], recursive = TRUE)
     } else {
         suppars.phase <- -1
     }
-    if (fit.ihd){
-        D.betapars.phase <- rep(1, n.D.betapars)
-    } else {
-        D.betapars.phase <- -1
-    }
     ## Sorting out bounds.
     ## Below bounds are the defaults.
-    default.bounds.list <- list(D = c(ifelse(fit.ihd, 0, n[1]/(A[1]*n.mask[1]*survey.length[1])), 1e8),
-                           g0 = c(0, 1),
-                           sigma = c(0, 1e8),
-                           shape = c(-100, 100),
-                           shape.1 = c(0, 1e8),
-                           shape.2 = c(-100, 100),
-                           scale = c(0, 1e8),
-                           b0.ss = c(0, 1e8),
-                           b1.ss = c(0, 1e8),
-                           b2.ss = c(0, 1e8),
-                           sigma.b0.ss = c(0, 1e8),
-                           sigma.ss = c(0, 1e8),
-                           z = c(0, 1e8),
-                           sigma.toa = c(0, 1e8),
-                           kappa = c(0, 700),
-                           alpha = c(0, 1e8))
+    default.bounds.list <- list(g0 = c(0, 1),
+                                sigma = c(0, 1e8),
+                                shape = c(-100, 100),
+                                shape.1 = c(0, 1e8),
+                                shape.2 = c(-100, 100),
+                                scale = c(0, 1e8),
+                                b0.ss = c(0, 1e8),
+                                b1.ss = c(0, 1e8),
+                                b2.ss = c(0, 1e8),
+                                sigma.b0.ss = c(0, 1e8),
+                                sigma.ss = c(0, 1e8),
+                                z = c(0, 1e8),
+                                sigma.toa = c(0, 1e8),
+                                kappa = c(0, 700),
+                                alpha = c(0, 1e8))
     for (i in D.betapars.names){
-        default.bounds.list[[i]] <- c(-1e8, 1e8)
+        default.bounds.list[[i]] <- c(-log(1e20), log(1e20))
     }
     default.bounds <- default.bounds.list[par.names]
     bound.changes <- bounds
@@ -1007,9 +1001,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     for (i in names(bounds)){
         bounds.link[[i]] <- link.list[[links[[i]]]](bounds[[i]])
     }
-    D.bounds <- bounds.link[["D"]]
-    D.lb <- D.bounds[1]
-    D.ub <- D.bounds[2]
+    D.betapars.bounds <- bounds.link[D.betapars.names]
+    D.betapars.lb <- sapply(D.betapars.bounds, function(x) x[1])
+    D.betapars.ub <- sapply(D.betapars.bounds, function(x) x[2])
     detpar.bounds <- bounds.link[detpar.names]
     detpars.lb <- sapply(detpar.bounds, function(x) x[1])
     detpars.ub <- sapply(detpar.bounds, function(x) x[2])
@@ -1043,17 +1037,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     ## Replacing infinite scalefactors.
     sf[!is.finite(sf)] <- 1
-    D.sf <- sf[["D"]]
+    D.betapars.sf <- c(sf[D.betapars.names], recursive = TRUE)
     detpars.sf <- c(sf[detpar.names], recursive = TRUE)
     if (any.suppars){
         suppars.sf <- c(sf[suppar.names], recursive = TRUE)
     } else {
         suppars.sf <- 1
-    }
-    if (fit.ihd){
-        D.betapars.sf <- c(sf[D.betapars.names], recursive = TRUE)
-    } else {
-        D.betapars.sf <- 1
     }
     ## Creating link objects to pass to ADMB.
     detpars.link <- c(links[detpar.names], recursive = TRUE)
@@ -1092,19 +1081,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sv.link$dummy <- 0
         suppar.names <- "dummy"
     }
-    if (!fit.ihd){
-        n.D.betapars <- max(c(n.D.betapars, 1))
-        sv.link$D.beta.dummy <- 0
-        D.betapars.names <- "D.beta.dummy"
-    }
     ## Reordering sv.link. Matters when there is no supplementary information.
-    sv.link <- sv.link[c("D", detpar.names, suppar.names, D.betapars.names)]
-    ## ... And resetting suppar.names and D.betapars.names to NULL if required.
+    sv.link <- sv.link[c(D.betapars.names, detpar.names, suppar.names)]
+    ## ... And resetting suppar.names to NULL if required.
     if (!any.suppars){
         suppar.names <- NULL
-    }
-    if (!fit.ihd){
-        D.betapars.names <- NULL
     }
     ## Sorting out which mask points are local to each detection.
     all.which.local <- vector(mode = "list", length = n.sessions)
@@ -1168,17 +1149,25 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       local = as.numeric(local),
                       n_local_per_unique = c(all.n.local, recursive = TRUE),
                       which_local_per_unique = c(all.which.local, recursive = TRUE),
-                      D_lb = D.lb, D_ub = D.ub, D_phase = D.phase, D_sf = D.sf,
-                      n_detpars = n.detpars, detpars_lb = detpars.lb,
-                      detpars_ub = detpars.ub, detpars_phase = detpars.phase,
-                      detpars_sf = detpars.sf, detpars_linkfns = detpars.link,
-                      n_suppars = n.suppars, suppars_lb = suppars.lb,
-                      suppars_ub = suppars.ub, suppars_phase = suppars.phase,
-                      suppars_sf = suppars.sf, suppars_linkfns = suppars.link,
-                      n_D_betapars = n.D.betapars, D_betapars_phase = D.betapars.phase,
+                      n_D_betapars = n.D.betapars,
+                      D_betapars_lb = D.betapars.lb,
+                      D_betapars_ub = D.betapars.ub,
+                      D_betapars_phase = D.betapars.phase,
                       D_betapars_sf = D.betapars.sf,
+                      n_detpars = n.detpars,
+                      detpars_lb = detpars.lb,
+                      detpars_ub = detpars.ub,
+                      detpars_phase = detpars.phase,
+                      detpars_sf = detpars.sf,
+                      detpars_linkfns = detpars.link,
+                      n_suppars = n.suppars, suppars_lb = suppars.lb,
+                      suppars_ub = suppars.ub,
+                      suppars_phase = suppars.phase,
+                      suppars_sf = suppars.sf,
+                      suppars_linkfns = suppars.link,
                       detfn_id = detfn.id, trace = as.numeric(trace),
-                      dbl_min = dbl.min, n_per_sess = n, n_traps_per_sess = n.traps,
+                      dbl_min = dbl.min, n_per_sess = n,
+                      n_traps_per_sess = n.traps,
                       n_mask_per_sess = n.mask, A_per_sess = A,
                       capt_bin_unique = vectorise(capt.bin.unique),
                       capt_bin_freqs = c(capt.bin.freqs, recursive = TRUE),
@@ -1193,14 +1182,18 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       capt_ang = vectorise(capt.bearing),
                       fit_dists = as.numeric(fit.dists),
                       capt_dist = vectorise(capt.dist),
-                      fit_ss = as.numeric(fit.ss),
-                      cutoff = cutoff, first_calls = as.numeric(first.calls),
+                      fit_ss = as.numeric(fit.ss), cutoff = cutoff,
+                      first_calls = as.numeric(first.calls),
                       lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
-                      linkfn_id = linkfn.id, capt_ss = vectorise(capt.ss),
-                      fit_toas = as.numeric(fit.toas), capt_toa = vectorise(capt.toa),
-                      fit_mrds = as.numeric(fit.mrds), mrds_dist = vectorise(mrds.dist),
-                      dists = vectorise(dists), angs = vectorise(bearings),
-                      toa_ssq = vectorise(toa.ssq), fit_ihd = as.numeric(fit.ihd),
+                      linkfn_id = linkfn.id,
+                      capt_ss = vectorise(capt.ss),
+                      fit_toas = as.numeric(fit.toas),
+                      capt_toa = vectorise(capt.toa),
+                      fit_mrds = as.numeric(fit.mrds),
+                      mrds_dist = vectorise(mrds.dist),
+                      dists = vectorise(dists),
+                      angs = vectorise(bearings),
+                      toa_ssq = vectorise(toa.ssq),
                       mm_ihd = vectorise(mm.ihd))
     ## Determining whether or not standard errors should be calculated.
     if (!is.null(cue.rates)){
@@ -1384,20 +1377,21 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         setwd(curr.dir)
         ## Removing fixed coefficients from list.
         if (!hess){
-            out$coeflist[c(D.phase, detpars.phase, suppars.phase, D.betapars.phase) == -1] <- NULL
+            out$coeflist[c(D.betapars.phase, detpars.phase, suppars.phase, D.betapars.phase) == -1] <- NULL
         }
     }
     ## Creating coefficients vector.
-    est.pars <- c("D", detpar.names, suppar.names, D.betapars.names)[c(D.phase, detpars.phase, suppars.phase[any.suppars], D.betapars.phase[fit.ihd]) > -1]
+    est.pars <- c(D.betapars.names, detpar.names, suppar.names)[c(D.betapars.phase, detpars.phase, suppars.phase[any.suppars]) > -1]
     n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + n.sessions)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""))
+    out$coefficients <- numeric(2*n.est.pars + n.sessions + 1)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""), "D")
     if (hess){
         names(out$se) <- names(out$coefficients)
     }
     for (i in 1:n.est.pars){
         out$coefficients[i] <- out$coeflist[[i]]
     }
+    out$coefficients["D"] <- exp(out$coefficients[D.betapars.phase[1]])
     for (i in 1:n.est.pars){
         out$coefficients[n.est.pars + i] <-
             unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
@@ -1493,7 +1487,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             out[["vcov"]] <- vcov.updated
         }
     }
-    out$fit.ihd <- fit.ihd
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
     if (out$fn == "secr"){

@@ -8,10 +8,11 @@ DATA_SECTION
   init_imatrix n_local_per_unique(1,n_sessions,1,n_unique_per_sess)
   init_3darray which_local_per_unique(1,n_sessions,1,n_unique_per_sess,1,n_local_per_unique)
   // Density parameter details.
-  init_number D_lb
-  init_number D_ub
-  init_number D_phase
-  init_number D_sf
+  init_int n_D_betapars
+  init_vector D_betapars_lb(1,n_D_betapars)
+  init_vector D_betapars_ub(1,n_D_betapars)
+  init_ivector D_betapars_phase(1,n_D_betapars)
+  init_vector D_betapars_sf(1,n_D_betapars)
   // Detection function parameter details.
   init_int n_detpars
   init_vector detpars_lb(1,n_detpars)
@@ -26,12 +27,6 @@ DATA_SECTION
   init_ivector suppars_phase(1,n_suppars)
   init_vector suppars_sf(1,n_suppars)
   init_ivector suppars_linkfns(1,n_suppars)
-  // Inhomogeneous density parameter details.
-  init_int n_D_betapars
-  vector D_betapars_lb(1,n_D_betapars)
-  vector D_betapars_ub(1,n_D_betapars)
-  init_ivector D_betapars_phase(1,n_D_betapars)
-  init_vector D_betapars_sf(1,n_D_betapars)
   // Declaring indices.
   int i
   int j
@@ -48,8 +43,10 @@ DATA_SECTION
   // Calculating total number of estimated parameters.
   int n_ests
   !! n_ests = 0;
-  !! if (D_phase > -1){
-  !!   n_ests++;
+  !! for (i = 1; i <= n_D_betapars; i++){
+  !!   if (D_betapars_phase(i) > -1){
+  !!     n_ests++;
+  !!   }
   !! }
   !! for (i = 1; i <= n_detpars; i++){
   !!   if (detpars_phase(i) > -1){
@@ -58,13 +55,6 @@ DATA_SECTION
   !! }
   !! for (i = 1; i <= n_suppars; i++){
   !!   if (suppars_phase(i) > -1){
-  !!     n_ests++;
-  !!   }
-  !! }
-  !! for (i = 1; i <= n_D_betapars; i++){
-  !!   D_betapars_lb(i) = -1e8;
-  !!   D_betapars_ub(i) = 1e8;
-  !!   if (D_betapars_phase(i) > -1){
   !!     n_ests++;
   !!   }
   !! }
@@ -234,12 +224,11 @@ DATA_SECTION
   !!   sigma_toa_ind = curr_ind;
   !! }
   // Sorting out density covariates.
-  init_int fit_ihd
   ivector nr_ihd(1,n_sessions)
   int nc_ihd
   int length_local_D_mask
   !!   nr_ihd = n_mask_per_sess;
-  !!   nc_ihd = n_D_betapars + 1;
+  !!   nc_ihd = n_D_betapars;
   init_3darray mm_ihd(1,n_sessions,1,nr_ihd,1,nc_ihd)
   // Setting n_local permanently if local integration is disabled.
   int nr_localmats
@@ -255,21 +244,18 @@ PARAMETER_SECTION
   number f_ind
   // Something-or-other required for directional calling.
   matrix fs(1,n_sessions,1,length_fs)
-  // Linked density parameter.
-  init_bounded_number D_link(D_lb,D_ub,D_phase)
+  // Linked density parameters.
+  init_bounded_number_vector D_betapars_link(1,n_D_betapars,D_betapars_lb,D_betapars_ub,D_betapars_phase)
   // Linked detection function parameters.
   init_bounded_number_vector detpars_link(1,n_detpars,detpars_lb,detpars_ub,detpars_phase)
   // Linked supplementary information parameters.
   init_bounded_number_vector suppars_link(1,n_suppars,suppars_lb,suppars_ub,suppars_phase)
-  // Beta parameters for inhomogeneous density.
-  init_bounded_number_vector D_betapars(1,n_D_betapars,D_betapars_lb,D_betapars_ub,D_betapars_phase)
-  //init_number_vector D_betapars(1,n_D_betapars)
   vector D_ihdpars(1,n_D_betapars+1);
-  !! D_link.set_scalefactor(D_sf);
+  !! D_betapars_link.set_scalefactor(D_betapars_sf);
   !! detpars_link.set_scalefactor(detpars_sf);
   !! suppars_link.set_scalefactor(suppars_sf);
   // I don't know why this scalefactor has to be so big but it just seems to work OK?
-  !! D_betapars.set_scalefactor(10000000);
+  //!! D_betapars.set_scalefactor(10000000); Uh I'm commenting this out because the comment above is weird.
   // Collection of parameter estimates.
   sdreport_vector par_ests(1,n_ests)
   // Effective sampling area.
@@ -281,13 +267,16 @@ PARAMETER_SECTION
   // Expected received signal strength at each detector by a sound emitted at each mask point.
   4darray expected_ss(1,n_sessions,1,dummy_n_dir_quadpoints,1,nr_expected_ss,1,nc_expected_ss)
   // Some parameters or something.
-  number D
+  sdreport_number D
   number corr_ss
   number cond_corr_ss
   vector detpars(1,n_detpars)
   vector suppars(1,n_suppars)
-  // Keep this here. It seems like you don't need it, but if you delete it you get a compilation error on Macs.
-  // NOTE: I've commented it out because with multi-session n_traps is not constant. If compilation fails on Mac this might be why.
+  // It seems like you don't need the following line, but if you
+  // delete it you get a compilation error on Macs. NOTE: I've
+  // commented it out because with multi-session models n_traps is not
+  // constant. If compilation fails on Mac this might be why. Filippo
+  // reported no problems so it's probably fine!
   //matrix capt_hist(1,n_sessions,1,n_traps)
   // A bunch of variables that are used for stuff.
   number det_prob
@@ -308,19 +297,13 @@ PROCEDURE_SECTION
   // Grabbing detection function.
   detfn_pointer detfn = get_detfn(detfn_id);
   // Converting linked parameters to real parameters and setting up par_ests vector.
-  D = mfexp(D_link);
   j = 1;
-  if (D_phase > -1){
-    par_ests(j) = D;
+  for (i = 1; i <= n_D_betapars; i++){
+    par_ests(j) = D_betapars_link(i);
     j++;
   }
-  // Sorting out inhomogeneous density parameter vector.
-  if (fit_ihd){
-    D_ihdpars(1) = D_link;
-    for (i = 2; i <= n_D_betapars + 1; i++){
-      D_ihdpars(i) = D_betapars(i - 1);
-    }
-  }
+  // Getting D for homogeneous density models.
+  D = mfexp(D_betapars_link(1));
   // Converting parameters from their link scales.
   invlinkfn_pointer invlinkfn;
   for (i = 1; i <= n_detpars; i++){
@@ -339,10 +322,6 @@ PROCEDURE_SECTION
       j++;
     }
   }
-  for (i = 1; i <= n_D_betapars; i++){
-    par_ests(j) = D_betapars(i);
-    j++;
-  }
   // Generating variance-covariance matrix and correlation matrix for fits with heterogeneity in source strength.
   if (fit_het_source){
     diag_sigma_ss = square(detpars(4)) + square(detpars(5));
@@ -353,13 +332,9 @@ PROCEDURE_SECTION
   f = 0.0;
   fs = 0.0;
   // Calculating density at each mask point.
-  if (fit_ihd){
-    for (s = 1; s <= n_sessions; s++){
-      D_mask.rowfill(s, mfexp(mm_ihd(s)*D_ihdpars));
-    }  
-  } else {
-    D_mask = D;
-  }
+  for (s = 1; s <= n_sessions; s++){
+    D_mask.rowfill(s, mfexp(mm_ihd(s)*D_betapars_link));
+  }  
   i = 1;
   for (s = 1; s <= n_sessions; s++){
     for (j = 1; j <= n_mask_per_sess(s); j++){
@@ -407,9 +382,7 @@ PROCEDURE_SECTION
           }
           point_capt = 1 - point_evade;
           sum_det_probs(s) += point_capt/n_dir_quadpoints;
-	  if (fit_ihd){
-	    sum_D_det_probs(s) += D_mask(s, i)*point_capt/n_dir_quadpoints;
-	  }
+	  sum_D_det_probs(s) += D_mask(s, i)*point_capt/n_dir_quadpoints;
         }
       }
     }
@@ -451,9 +424,7 @@ PROCEDURE_SECTION
         }
         det_prob = 1 - undet_prob;
         sum_det_probs(s) += det_prob + dbl_min;
-	if (fit_ihd){
-	    sum_D_det_probs(s) += D_mask(s, i)*det_prob + dbl_min;
-	}
+        sum_D_det_probs(s) += D_mask(s, i)*det_prob + dbl_min;
       }
     }
   }
@@ -533,24 +504,17 @@ PROCEDURE_SECTION
         }
       }
       // If dealing with inhomogeneous density, filling local densities.
-      if (fit_ihd){
-        length_local_D_mask = n_local;
-      } else {
-        length_local_D_mask = 1;
-      }
+      length_local_D_mask = n_local;
       dvar_vector * D_mask_pointer;
       dvar_vector local_D_mask(1, length_local_D_mask);
       dvar_vector D_contrib(1, length_local_D_mask);
-      if (fit_ihd){
-
-        if (local){
-          local_D_mask = D_mask(s)(which_local_per_unique(s, u, j));
-	  D_mask_pointer = &local_D_mask;
-	} else {
-          D_mask_pointer = &D_mask(s);
-        }
-	D_contrib = log(*D_mask_pointer + dbl_min);
+      if (local){
+        local_D_mask = D_mask(s)(which_local_per_unique(s, u, j));
+        D_mask_pointer = &local_D_mask;
+      } else {
+        D_mask_pointer = &D_mask(s);
       }
+      D_contrib = log(*D_mask_pointer + dbl_min);
       // Getting capture probabilities at local mask points.
       dvar_matrix * log_capt_probs_pointer;
       dvar_matrix * log_evade_probs_pointer;
@@ -697,17 +661,9 @@ PROCEDURE_SECTION
               // Try saving sigma_toa separately.
               supp_contrib += (1 - sum(capt_hist))*log(suppars(sigma_toa_ind)) - (row((*toa_ssq_pointer), i)/(2*square(suppars(sigma_toa_ind))));
             }
-	    if (fit_ihd){
-	      f_ind = sum(mfexp(bincapt_contrib + supp_contrib + D_contrib));
-	    } else {
-              f_ind = sum(mfexp(bincapt_contrib + supp_contrib));
-	    }
+	    f_ind = sum(mfexp(bincapt_contrib + supp_contrib + D_contrib));
           } else {
-	    if (fit_ihd){
-              f_ind = sum(mfexp(bincapt_contrib + D_contrib));
-            } else {
-              f_ind = sum(mfexp(bincapt_contrib));
-	    }
+            f_ind = sum(mfexp(bincapt_contrib + D_contrib));
           }
           // For directional calling, save components due to each
           // direction for each individual.
@@ -726,28 +682,19 @@ PROCEDURE_SECTION
   if (fit_dir){
     f -= sum(log(fs + dbl_min));
   }
-  //cout << "f1: " << f << endl;
   for (s = 1; s <= n_sessions; s++){
     // Calculating ESAs.
     esa(s) = A_per_sess(s)*sum_det_probs(s);
     // Adding contribution from ns.
-    if (fit_ihd){
-      f -= log_dpois(n_per_sess(s), survey_length(s)*A_per_sess(s)*sum_D_det_probs(s));
-    } else {
-      f -= log_dpois(n_per_sess(s), D*survey_length(s)*esa(s));
-    }
-    //cout << "f2: " << f << endl;
+    f -= log_dpois(n_per_sess(s), survey_length(s)*A_per_sess(s)*sum_D_det_probs(s));
     // Extra bit that falls out of log-likelihood.
-    if (fit_ihd){
-      f -= -n_per_sess(s)*log(sum_D_det_probs(s));
-    } else {
-      f -= -n_per_sess(s)*log(sum_det_probs(s));
-    }
-    //cout << "f3: " << f << endl;
+    f -= -n_per_sess(s)*log(sum_D_det_probs(s));
   }
   // Printing trace.
   if (trace){
-    cerr << "D: " << D << ", ";
+    for (i = 1; i <= n_D_betapars; i++){
+      cerr << "D par " << i << ": " << D_betapars_link(i) << ", ";
+    }
     for (i = 1; i <= n_detpars; i++){
       cerr << "DF Par " << i << ": " << detpars(i) << ", ";
     }
@@ -756,15 +703,12 @@ PROCEDURE_SECTION
         cerr << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
-    if (fit_ihd){
-      for (i = 1; i <= n_D_betapars; i++){
-        cerr << "D par " << i << ": " << D_betapars(i) << ", ";
-      }
-    }
     cerr << "LL: " << -f << ", ESA: " << esa << endl;
   }
 
 REPORT_SECTION
+  // Writing D to report file.
+  report << "# D:" << endl << D << endl;
   // Writing ESAs to report file.
   for (i = 1; i <= n_sessions; i++){
     report << "# esa[" << i << "]:" << endl << esa(i) << endl;
