@@ -41,7 +41,7 @@ coef.ascr <- function(object, pars = "fitted", ...){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
-        if (!fit$fit.ihd){
+        if (!object$fit.ihd){
             out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
         }
     } else {
@@ -107,7 +107,7 @@ vcov.ascr <- function(object, pars = "fitted", ...){
     } else {
         keep <- pars
     }
-    if (!fit$fit.ihd){
+    if (!object$fit.ihd){
         keep <- keep[par.names[keep] != "D.(Intercept)"]
         keep <- keep[c(which(par.names[keep] == "D"), which(par.names[keep] != "D"))]
     }
@@ -153,7 +153,7 @@ vcov.ascr.boot <- function(object, pars = "fitted", ...){
     } else {
         keep <- pars
     }
-    if (!fit$fit.ihd){
+    if (!object$fit.ihd){
         keep <- keep[par.names[keep] != "D.(Intercept)"]
         keep <- keep[c(which(par.names[keep] == "D"), which(par.names[keep] != "D"))]
     }
@@ -194,7 +194,7 @@ stdEr.ascr <- function(object, pars = "fitted", ...){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
-        if (!fit$fit.ihd){
+        if (!object$fit.ihd){
             out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
         }
     } else {
@@ -236,7 +236,7 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
-        if (!fit$fit.ihd){
+        if (!object$fit.ihd){
             out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
         }
     } else {
