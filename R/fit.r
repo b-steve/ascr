@@ -1467,14 +1467,14 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         if (hess){
             ## Putting correct parameter names into se, cor, vcov.
-            replace <- substr(names(out$se), 1, 8) == "par_ests"
-            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+            replace <- substr(rownames(out$vcov), 1, 8) == "par_ests"
+            rownames(out$vcov)[replace] <-
                 colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                    colnames(out$cor)[replace] <- est.pars
+                colnames(out$cor)[replace] <- est.pars
             replace <- 1:length(est.pars)
-            names(out$se)[replace] <- rownames(out$vcov)[replace] <-
+            rownames(out$vcov)[replace] <-
                 colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                    colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
+                colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
         } else {
             ## Filling se, cor, vcov with NAs.
             names.vec <- names(out[["coefficients"]])
@@ -1493,6 +1493,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
+    out$fit.ihd <- fit.ihd
     if (out$fn == "secr"){
         if (out$maxgrad < -0.01){
             warning("Maximum gradient component is large.")
