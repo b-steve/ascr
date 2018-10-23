@@ -9,7 +9,7 @@ test_that("fixing parameters", {
     ## Checkint that phase is set to -1.
     expect_that(fit$phases$g0, is_equivalent_to(-1))
     ## Checking that all parameters have a phase.
-    all.pars <- c("D", fit$detpars, fit$suppars, fit$D.betapars)
+    all.pars <- c(fit$D.betapars, fit$detpars, fit$suppars)
     phase.pars <- names(fit$phases)
     expect_that(sort(phase.pars), equals(sort(all.pars)))
     ## Checking that no other parameters are set to -1.

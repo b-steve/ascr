@@ -881,7 +881,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     for (i in c("sv", "fix", "bounds", "phases", "sf")){
         obj <- get(i)
         if (!is.null(obj)){
-            obj.fitted <- names(obj) %in% par.names
+            obj.fitted <- names(obj) %in% c("D", par.names)
             if(!all(obj.fitted)){
                 msg <- paste("Some parameters listed in '", i, "' are not being used. These are being removed.",
                              sep = "")
@@ -922,9 +922,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## autofuns.r.
     sv.link <- vector("list", length = n.pars)
     names(sv.link) <- par.names
+    if (any(names(sv) == "D")){
+        sv[["D"]] <- log(sv[["D"]])
+        names(sv)[names(sv) == "D"] <- "D.(Intercept)"
+    }
     sv.link[names(sv)] <- sv
     sv.link[names(fix)] <- fix
-    #sv.link[D.betapars.names] <- 1
     auto.names <- par.names[sapply(sv.link, is.null)]
     sv.funs <- paste("auto", auto.names, sep = "")
     ## Use the first session with detections to generate start values.
