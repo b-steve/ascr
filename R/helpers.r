@@ -163,7 +163,7 @@ read.ascr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' @export
 get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     esa.names <- paste("esa", 1:fit$n.sessions, sep = ".")
-    pars.D <- any(pars == "D")
+    pars.D <- any((pars == "D" | pars == "all" | pars == "fitted") & !fit$fit.ihd)
     if (pars.D){
         pars[pars == "D"] <- "D.(Intercept)"
     }
@@ -180,7 +180,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
         pars <- c(pars, esa.names)
     }
     ## Error checking.
-    legal.names <- pars %in% allpar.names
+    legal.names <- pars %in% c("D"[pars.D], allpar.names)
     if (!all(legal.names)){
         illegal.pars <- pars[!legal.names]
         if (sum(!legal.names) == 1){

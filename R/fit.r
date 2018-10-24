@@ -645,18 +645,26 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         attr(mask[[i]], "buffer") <- buffer[i]
     }
     ## Sorting out inhomogeneous density stuff.
-    if (is.null(ihd.opts)){
-        ihd.opts$model <- ~ 1
-        ihd.opts$covariates <- data.frame(mask)
-        fit.ihd <- FALSE
+    if (!is.null(ihd.opts)){
+        if (ihd.opts$model != ~1){
+            fit.ihd <- TRUE
+        } else {
+            fit.ihd <- FALSE
+        }
     } else {
-        fit.ihd <- TRUE
+        ihd.opts$model <- ~ 1
+        fit.ihd <- FALSE
     }
     if (is.data.frame(ihd.opts$covariates)){
         covariates <- list()
-        covariates[[1]] <- data.frame(ihd.opts$covariates)
-    } else {
-        covariates <- ihd.opts$covariates
+        covariates[[1]] <- data.frame(mask[[1]], ihd.opts$covariates)
+    } else if (is.list(ihd.opts$covariates)){
+        covariates <- list()
+        for (i in 1:n.sessions){
+            covariates[[i]] <- data.frame(mask[[i]], ihd.opts$covariates[[i]])
+        }
+    } else if (is.null(ihd.opts$covariates)){
+        covariates <- mask
     }
     if (is.null(ihd.opts$scale)){
         cov.scale <- TRUE
@@ -671,9 +679,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
     }
-    #if (ncol(mm.ihd[[1]]) > 1){
-        D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
-    #}
+    ##if (ncol(mm.ihd[[1]]) > 1){
+    D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
+    ##}
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
@@ -930,6 +938,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         sv[["D"]] <- log(sv[["D"]])
         names(sv)[names(sv) == "D"] <- "D.(Intercept)"
     }
+    autoD.generic <- function(args) 0
+    for (i in D.betapars.names){
+        if (i != "autoD.(Intercept)"){
+            assign(paste0("auto", i), autoD.generic)
+        }
+    }
     sv.link[names(sv)] <- sv
     sv.link[names(fix)] <- fix
     auto.names <- par.names[sapply(sv.link, is.null)]
@@ -972,7 +986,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             }
         }
     }
-    D.betapars.phase <- phases[[D.betapars.names]]
+    D.betapars.phase <- c(phases[D.betapars.names], recursive = TRUE)
     detpars.phase <- c(phases[detpar.names], recursive = TRUE)
     if (any.suppars){
         suppars.phase <- c(phases[suppar.names], recursive = TRUE)
@@ -1235,7 +1249,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
         }
         data.list$combins <- combins
-        fit <- optimx(c(sv.link[c("D", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
+        fit <- optimx(c(sv.link[c("D.(Intercept)", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
                       secr_nll, dat = data.list, get_esa = FALSE, method = "nmkb",
                       hessian = hess)
         out <- vector("list", 15)
@@ -1263,10 +1277,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             vcov.all <- cbind(vcov.all, NA)
             cor.all <- rbind(cor.all, NA)
             cor.all <- cbind(cor.all, NA)
-            se.all <- sqrt(diag(vcov.all))
+            se.all <- c(sqrt(diag(vcov.all)), NA)
         } else {
             vcov.all <- matrix(NA, nrow = 2*n.opars + 1, ncol = 2*n.opars + 1)
-            se.all <- rep(NA, 2*length(coeflist) + 1)
+            se.all <- rep(NA, 2*length(coeflist) + 2)
             cor.all <- matrix(NA, nrow = 2*n.opars + 1, ncol = 2*n.opars + 1)
         }
         rownames(vcov.all) <- colnames(vcov.all) <- rownames(cor.all) <-
@@ -1274,6 +1288,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                     paste("par_ests", 1:n.opars, sep = "."),
                                                     paste("esa", 1:n.sessions, sep = "."))
         out$se <- se.all
+        out$se[length(out$se)] <- out$se[n.opars + 1]
         out$loglik <- -fit$value
         out$maxgrad <- c(fit$kkt1, fit$kkt2)
         out$cor <- cor.all
@@ -1401,8 +1416,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Creating coefficients vector.
     est.pars <- c(D.betapars.names, detpar.names, suppar.names)[c(D.betapars.phase, detpars.phase, suppars.phase[any.suppars]) > -1]
     n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + n.sessions + 1)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""), "D")
+    out$coefficients <- numeric(2*n.est.pars + n.sessions + !fit.ihd)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""), "D"[!fit.ihd])
     if (hess){
         names(out$se) <- names(out$coefficients)
     }
@@ -1434,6 +1449,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$phases <- phases
     out$par.links <- par.links
     out$par.unlinks <- par.unlinks
+    out$fit.ihd <- fit.ihd
     ## Logical value for random effects in the detection function.
     out$re.detfn <- FALSE
     if (detfn == "ss"){
@@ -1507,7 +1523,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
-    out$fit.ihd <- fit.ihd
     if (out$fn == "secr"){
         if (out$maxgrad < -0.01){
             warning("Maximum gradient component is large.")
