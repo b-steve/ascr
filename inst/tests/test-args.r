@@ -31,7 +31,7 @@ test_that("start values", {
                               coef(fit)))
     expect_that(relative.error < 1e-4, is_true())
     ## Check start value is passed correctly.
-    expect_that(fit$args$sv$D, is_equivalent_to(2145))
+    expect_that(fit$args$sv$`D.(Intercept)`, is_equivalent_to(log(2145)))
 })
 
 test_that("parameter bounds", {
@@ -41,7 +41,7 @@ test_that("parameter bounds", {
     ## Check that bounds object is a list.
     expect_that(is.list(fit$args$bounds), is_true())
     ## Check that bounds for D set appropriately.
-    expect_that(fit$args$bounds$D, equals(c(0, 5000)))
+    expect_that(fit$args$bounds$`D.(Intercept)`, equals(c(log(1e-20), log(5000))))
     ## Check that bounds for g0 still set to defaults.
     expect_that(fit$args$bounds$g0, equals(c(0, 1)))
 })

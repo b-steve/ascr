@@ -881,7 +881,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     for (i in c("sv", "fix", "bounds", "phases", "sf")){
         obj <- get(i)
         if (!is.null(obj)){
-            obj.fitted <- names(obj) %in% c("D", par.names)
+            if (i == "sv"){
+                obj.fitted <- names(obj) %in% c("D", par.names)
+            } else {
+                obj.fitted <- names(obj) %in% c("D", par.names)
+            }
             if(!all(obj.fitted)){
                 msg <- paste("Some parameters listed in '", i, "' are not being used. These are being removed.",
                              sep = "")
@@ -996,6 +1000,13 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         default.bounds.list[[i]] <- c(-log(1e20), log(1e20))
     }
     default.bounds <- default.bounds.list[par.names]
+    if (any(names(bounds) == "D")){
+        if (bounds[["D"]][1] == 0){
+            bounds[["D"]][1] <- 1e-20
+        }
+        bounds[["D"]] <- log(bounds[["D"]])
+        names(bounds)[names(bounds) == "D"] <- "D.(Intercept)"
+    }
     bound.changes <- bounds
     bounds <- default.bounds
     for (i in names(default.bounds)){
