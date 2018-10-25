@@ -1389,6 +1389,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                        nchar(list.files())) == ".par")]][1]
         }
         out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
+        if (fit.ihd){
+            out$se <- out$se[names(out$se) != "D"]
+        }
         ## Getting ESAs from .rep file for better accuracy. Also getting mask densities.
         rep.pars <- read_rep("secr")$est
         esa <- rep.pars[substr(names(rep.pars), 1, 3) == "esa"]
@@ -1412,6 +1415,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (!hess){
             out$coeflist[c(D.betapars.phase, detpars.phase, suppars.phase, D.betapars.phase) == -1] <- NULL
         }
+        if (fit.ihd){
+            out$coeflist <- out$coeflist[names(out$coeflist) != "D"]
+        }
     }
     ## Creating coefficients vector.
     est.pars <- c(D.betapars.names, detpar.names, suppar.names)[c(D.betapars.phase, detpars.phase, suppars.phase[any.suppars]) > -1]
@@ -1424,7 +1430,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     for (i in 1:n.est.pars){
         out$coefficients[i] <- out$coeflist[[i]]
     }
-    out$coefficients["D"] <- exp(out$coefficients[D.betapars.phase[1]])
+    if (!fit.ihd){
+        out$coefficients["D"] <- exp(out$coefficients[D.betapars.phase[1]])
+    }
     for (i in 1:n.est.pars){
         out$coefficients[n.est.pars + i] <-
             unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])

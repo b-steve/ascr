@@ -392,6 +392,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
         fitted.names <- names(coef(object, "fitted")[parm])
         fitted.names <- fitted.names[fitted.names != "mu.rates"]
         linked.names <- paste(fitted.names, "_link", sep = "")
+        linked.names[linked.names == "D_link"] <- "D.(Intercept)_link"
         link.parm <- linked.names[!(linked.names %in% parm)]
         all.parm <- c(parm, link.parm)
     } else {
@@ -444,6 +445,10 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
     if (linked){
         for (i in fitted.names){
             linked.name <- paste(i, "_link", sep = "")
+            if (linked.name == "D_link"){
+                linked.name <- "D.(Intercept)_link"
+                object$par.unlinks[[i]] <- exp
+            }
             out[i, ] <- object$par.unlinks[[i]](out[linked.name, ])
         }
         out <- out[parm, , drop = FALSE]

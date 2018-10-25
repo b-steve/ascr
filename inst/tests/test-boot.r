@@ -5,8 +5,8 @@ test_that("simple model bootstrapping", {
     ## Carrying out bootstrap.
     boot.fit <- boot.ascr(example$fits$simple.hn, N = 5, prog = FALSE)
     ## Mean bootstrap parmeter values.
-    means.test <- c(7.84545538086, 1.645086180732, 2579.83220808339, 
-                    5.19314953374907, 0.0528957)
+    means.test <- c(7.84545539423, 1.645086151006, 7.84545539423, 5.19314936078642, 
+                    0.05289568, 2579.83223503568)
     boot.means <- apply(boot.fit$boot$boots, 2, mean)
     relative.error <- max(abs((boot.means - means.test)/means.test))
     expect_that(relative.error < 1e-4, is_true())
@@ -19,13 +19,13 @@ test_that("simple model bootstrapping", {
     relative.error <- max(abs((boot.ses - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Monte Carlo error calculation.
-    se.mces.test <- c(0.042142082322081, 0.0190421611021184, 99.0170655539726, 
-                      0.10204528215025, 0.00173379575479256)
+    se.mces.test <- c(0.0421420801420685, 0.0190421463886411, 0.0421420801420685, 
+                      0.102045193521712, 0.00173380322371648, 99.0170592323127)
     boot.se.mces <- ascr:::get.mce(boot.fit, "se")
     relative.error <- max(abs((boot.se.mces - se.mces.test)/se.mces.test))
     expect_that(relative.error < 1e-4, is_true())
-    bias.mces.test <- c(0.0636401709223068, 0.0298418201304415, 158.490243744029, 
-                        0.156547191920974, 0.00259993989006947)
+    bias.mces.test <- c(0.0636401620654382, 0.0298417966775328, 0.0636401620654382, 
+                        0.156547059873566, 0.002599935557669, 158.490221019319)
     boot.bias.mces <- ascr:::get.mce(boot.fit, "bias")
     relative.error <- max(abs((boot.bias.mces - bias.mces.test)/bias.mces.test))
     expect_that(relative.error < 1e-4, is_true())
@@ -64,7 +64,7 @@ test_that("bootstrapping helpers", {
     expect_that(ascr:::get.mce(example$fits$boot.simple.hn, "se"),
                 equals(example$fits$boot.simple.hn$boot$se.mce))
     ## Variance-covariance matrix extraction.
-    expect_that(sort(vcov(example$fits$boot.simple.hn, "all")),
+    expect_that(sort(vcov(example$fits$boot.simple.hn, "all")[c(4, 5, 4, 2, 3, 1), c(4, 5, 4, 2, 3, 1)]),
                 equals(sort(example$fits$boot.simple.hn$boot$vcov)))
     ## Extraction of bias.
     expect_that(get.bias(example$fits$boot.simple.hn, c("D", "esa")),

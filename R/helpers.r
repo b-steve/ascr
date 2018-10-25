@@ -505,6 +505,9 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
+        if (!fit$fit.ihd){
+            out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
+        }
     } else {
         out <- fit$boot$bias[pars]
     }
