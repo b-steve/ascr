@@ -940,7 +940,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     autoD.generic <- function(args) 0
     for (i in D.betapars.names){
-        if (i != "autoD.(Intercept)"){
+        if (i != "D.(Intercept)"){
             assign(paste0("auto", i), autoD.generic)
         }
     }
