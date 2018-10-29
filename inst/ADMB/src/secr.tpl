@@ -509,7 +509,9 @@ PROCEDURE_SECTION
       dvar_vector local_D_mask(1, length_local_D_mask);
       dvar_vector D_contrib(1, length_local_D_mask);
       if (local){
-        local_D_mask = D_mask(s)(which_local_per_unique(s, u, j));
+        for (j = 1; j <= n_local; j++){
+          local_D_mask(j) = D_mask(s, which_local_per_unique(s, u, j));
+        }
         D_mask_pointer = &local_D_mask;
       } else {
         D_mask_pointer = &D_mask(s);
