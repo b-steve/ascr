@@ -317,11 +317,11 @@ test_that("directional call fitting", {
                     mask = example$mask, ss.opts = list(cutoff = 60))
     ## Checking parameter values.
     pars.test <- c(339.357584343541, 89.7928412454349, 3.56047013041414, 
-                   4.17445710438718e-05, 8.22625124933556, 0.00186058803701272)
+                   1.363056e-05, 8.22625124933556, 0.00186058803701272)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(87.157, 3.1701, 0.64092, 0.86546, 1.0747, 0.0004036)
+    ses.test <- c(87.157, 3.1701, 0.6174500, 0.79429, 1.0747, 0.0004036)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -376,7 +376,7 @@ test_that("first-call signal strength models", {
                     ss.opts = list(cutoff = cutoff,
                                    lower.cutoff = lower.cutoff),
                     hess = TRUE)
-    pars.test <- c(2.6095607546467, 62.0208816041957, 0.11497237446662, 
+    pars.test <- c(2.6061075, 62.0208816041957, 0.11497237446662, 
                    6.24356345437168)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
