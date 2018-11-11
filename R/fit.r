@@ -677,11 +677,15 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (cov.scale){
             covariates[[i]] <- as.data.frame(apply(covariates[[i]], 2, function(x) (x - mean(x))/sd(x)))
         }
-        mm.ihd[[i]] <- model.matrix(ihd.opts$model, covariates[[i]])
+        ## Extracting the formula.
+        model.formula <- ihd.opts$model
+        ## Need a response variable for gam() to work.
+        model.formula <- as.formula(paste("y", paste(as.character(model.formula), collapse="")))
+        fgam <- gam(model.formula, data = covariates[[i]], fit = FALSE)
+        mm.ihd[[i]] <- fgam$X
+        colnames(mm.ihd[[i]]) <- fgam$term.names
     }
-    ##if (ncol(mm.ihd[[1]]) > 1){
     D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
-    ##}
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
@@ -1615,6 +1619,7 @@ par.admbsecr <- par.fit.ascr
 #' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom matrixStats colProds
+#' @importFrom mgcv gam
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @importFrom utils example setTxtProgressBar txtProgressBar
