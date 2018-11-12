@@ -128,6 +128,8 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #' Plots density surface estimated by a model fitted with the function
 #' \link{fit.ascr}.
 #'
+#' @param zlim A numberic vector of length 2, giving the range of
+#'     density contours.
 #' @inheritParams locations
 #'
 #' @export
