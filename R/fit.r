@@ -1405,6 +1405,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             D.mask[[i]] <- rep.pars[substr(names(rep.pars), 1, 8 + nchar(i)) == paste("D_mask[", i, "]", sep = "")]
         }
         out$D.mask <- D.mask
+        out$mm.ihd <- mm.ihd
         setwd(curr.dir)
         if (class(out)[1] == "try-error"){
             stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
