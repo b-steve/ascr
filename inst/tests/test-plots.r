@@ -31,3 +31,11 @@ test_that("detection surface plotting", {
     expect_null(show.detsurf(example$fits$simple.hr), is_null())
     expect_null(show.detsurf(example$fits$bearing.hn), is_null())
 })
+
+test_that("inhomogeneous density surface plotting", {
+    simple.capt <- example$capt[1]
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, fix = list(g0 = 1),
+                    ihd.opts = list(model = ~ x + y))
+    expect_null(show.Dsurf(fit), is_null())
+}
