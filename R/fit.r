@@ -680,7 +680,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Extracting the formula.
         model.formula <- ihd.opts$model
         ## Need a response variable for gam() to work.
-        model.formula <- as.formula(paste("y", paste(as.character(model.formula), collapse="")))
+        model.formula <- as.formula(paste("rep(0, nrow(covariates[[i]]))", paste(as.character(model.formula), collapse="")))
         fgam <- gam(model.formula, data = covariates[[i]], fit = FALSE)
         mm.ihd[[i]] <- fgam$X
         colnames(mm.ihd[[i]]) <- fgam$term.names

@@ -139,9 +139,18 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
-show.Dsurf <- function(fit, session = 1){
+show.Dsurf <- function(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL){
     D.mask <- fit$D.mask[[session]]
     mask <- get.mask(fit, session)
+    if (is.null(xlim)){
+        xlim <- range(mask[, 1])
+    }
+    if (is.null(ylim)){
+        ylim <- range(mask[, 2])
+    }
+    mask.keep <- xlim[1] <= mask[, 1] & xlim[2] >= mask[, 1] &
+        ylim[1] <= mask[, 2] & ylim[2] >= mask[, 2]
+    mask <- mask[mask.keep, ]
     traps <- get.traps(fit, session)
     unique.x <- sort(unique(mask[, 1]))
     unique.y <- sort(unique(mask[, 2]))
@@ -153,11 +162,14 @@ show.Dsurf <- function(fit, session = 1){
         y <- mask[i, 2]
         index.x <- which(x == unique.x)
         index.y <- which(y == unique.y)
-        z[index.x, index.y] <- D.mask[i]
+        z[index.x, index.y] <- D.mask[mask.keep][i]
     }
-    levels <- pretty(range(z, finite = TRUE), 10)
+    if (is.null(zlim)){
+        zlim <- c(0, max(z, na.rm = TRUE))
+    }
+    levels <- pretty(zlim, 10)
     plot(mask, type = "n", asp = 1, xlab = "", ylab = "")
-    image(x = unique.x, y = unique.y, z = z, zlim = c(0, max(z, na.rm = TRUE)), add = TRUE)
+    image(x = unique.x, y = unique.y, z = z, zlim = zlim, add = TRUE)
     points(traps, col = "black", pch = 4, lwd = 2)
     contour(x = unique.x, y = unique.y, z = z, levels = levels,
             drawlabels = TRUE, add = TRUE)
