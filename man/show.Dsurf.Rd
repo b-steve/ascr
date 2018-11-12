@@ -4,13 +4,22 @@
 \alias{show.Dsurf}
 \title{Plotting an estimated density surface.}
 \usage{
-show.Dsurf(fit, session = 1)
+show.Dsurf(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{session}{The session with the detector array and invidual(s)
 to be plotted (for multi-session models only).}
+
+\item{xlim}{A numeric vector of length 2, giving the x coordinate
+range.}
+
+\item{ylim}{A numeric vector of length 2, giving the y coordinate
+range.}
+
+\item{zlim}{A numberic vector of length 2, giving the range of
+density contours.}
 }
 \description{
 Plots density surface estimated by a model fitted with the function
