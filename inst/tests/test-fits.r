@@ -414,4 +414,10 @@ test_that("Inhomogeneous density estimation", {
     pars.test <- c(7.72626004368, 0.0562992293496, 0.088380677303, 5.3875700735678)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, ihd.opts = list(model = ~ s(x, k = 3)))
+    pars.test <- c(5.00442908703, 12.0411342793, 0.0626406907173, 0.999999999974208,
+                   5.08547672171856)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-3, is_true())
 })
