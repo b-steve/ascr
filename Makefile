@@ -40,13 +40,13 @@ roxygen:
 build:
 	R CMD build --resave-data .
 	mkdir -p package-build
-	mv ascr_2.1.1.tar.gz package-build/
+	mv ascr_2.2.0.tar.gz package-build/
 
 check:
-	R CMD check package-build/ascr_2.1.1.tar.gz --no-tests --no-examples
+	R CMD check package-build/ascr_2.2.0.tar.gz --no-tests --no-examples
 
 install:
-	R CMD INSTALL package-build/ascr_2.1.1.tar.gz --install-tests
+	R CMD INSTALL package-build/ascr_2.2.0.tar.gz --install-tests
 
 pdf:
 	R CMD Rd2pdf --pdf . &

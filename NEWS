@@ -1,7 +1,9 @@
-ascr 2.1.2
+ascr 2.2.0
 ----------
 
-* Implemented inhomogeneous density surfaces.
+* Implemented inhomogeneous density surfaces via the fit.ascr()
+  argument ihd.opts. Density can be fitted as a smooth function of
+  spatial covariates using mgcv syntax like s() and te().
 
 * Fixed bug in locations() so that is correctly plots location
   contours for models with estimated distances.
