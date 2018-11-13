@@ -40,4 +40,4 @@ Description: This package allows for the fitting of spatial capture-recapture
 License: GPL
 URL: https://github.com/b-steve/ascr
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
