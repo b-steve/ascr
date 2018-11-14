@@ -155,14 +155,14 @@ void consider(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& all
   copy_matrix(allocated, allocated_copy);
   bool abort = false;
   // If up to fourth skip make a decision based on true/false scores.
-  if (skip(a, b) == 4 & score_true(a, b) <= score_false(a, b)){
+  if (skip(a, b) == 4 & (score_true(a, b) <= score_false(a, b))){
     set_false(a, b, out_copy, allocated_copy, reqss, abort, a, b, skip(a, b), score_true, score_false);
     abort = false;
   } else {
     // Otherwise do as usual.
     set_true(a, b, out_copy, allocated_copy, reqss, abort, a, b, skip(a, b), score_true, score_false);
     // If up to third skip, overwrite abort if winning on score.
-    if (skip(a, b) == 3 & score_true(a, b) > score_false(a, b)){
+    if (skip(a, b) == 3 & (score_true(a, b) > score_false(a, b))){
       abort = false;
     }
   }
@@ -288,7 +288,7 @@ NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& a
   // If not up to fourth skip, choose largest reqss.
   for (i = 0; i < n - 1; i++){
     for (j = i + 1; j < n; j++){
-      if (reqss(i, j) >= current_max & skip(i, j) == min_skip & !allocated(i, j)){
+      if ((reqss(i, j) >= current_max & skip(i, j) == min_skip) & !allocated(i, j)){
 	out(0) = i;
 	out(1) = j;
 	current_max = reqss(i, j);
@@ -302,7 +302,7 @@ NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& a
     double current_min = current_max;
     for (i = 0; i < n - 1; i++){
       for (j = i + 1; j < n; j++){
-	if (reqss(i, j) <= current_min & skip(i, j) == min_skip & !allocated(i, j)){
+	if ((reqss(i, j) <= current_min) & (skip(i, j) == min_skip) & !allocated(i, j)){
 	  out(0) = i;
 	  out(1) = j;
 	  current_min = reqss(i, j);
@@ -343,7 +343,7 @@ int min_skip_matrix(const IntegerMatrix& skip, const LogicalMatrix& allocated){
   for (i = 0; i < n - 1; i++){
     for (j = i + 1; j < n; j++){
       if (initial_found){
-	if (skip(i, j) < out & !allocated(i, j)){
+	if ((skip(i, j) < out) & !allocated(i, j)){
 	  out = skip(i, j);
 	}
       } else {
