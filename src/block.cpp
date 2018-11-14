@@ -288,7 +288,7 @@ NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& a
   // If not up to fourth skip, choose largest reqss.
   for (i = 0; i < n - 1; i++){
     for (j = i + 1; j < n; j++){
-      if ((reqss(i, j) >= current_max & skip(i, j) == min_skip) & (!allocated(i, j))){
+      if ((reqss(i, j) >= current_max) & (skip(i, j) == min_skip) & (!allocated(i, j))){
 	out(0) = i;
 	out(1) = j;
 	current_max = reqss(i, j);
