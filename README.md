@@ -60,7 +60,7 @@ The ascr package also implements methods that are not currently published, but c
 
 ## Contact
 
-Ben Stevenson, ben.stevenson[at]auckland.ac.uk
+Ben Stevenson, ben.stevenson[at]auckland.ac.nz
 
 ## Acknowledgements
 
