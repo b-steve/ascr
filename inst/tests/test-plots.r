@@ -38,4 +38,4 @@ test_that("inhomogeneous density surface plotting", {
                     mask = example$mask, fix = list(g0 = 1),
                     ihd.opts = list(model = ~ x + y))
     expect_null(show.Dsurf(fit), is_null())
-}
+})
