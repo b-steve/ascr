@@ -9,7 +9,8 @@
   linked = FALSE, ...)
 
 \method{confint}{ascr.boot}(object, parm = "fitted", level = 0.95,
-  method = "default", linked = FALSE, qqplot = FALSE, ask = TRUE, ...)
+  method = "default", linked = FALSE, qqplot = FALSE, ask = TRUE,
+  ...)
 }
 \arguments{
 \item{object}{A fitted model from \link[ascr]{fit.ascr}.}

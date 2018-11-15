@@ -41,6 +41,9 @@ coef.ascr <- function(object, pars = "fitted", ...){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
+        if (!object$fit.ihd){
+            out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
+        }
     } else {
         out <- object$coefficients[pars]
     }
@@ -104,6 +107,10 @@ vcov.ascr <- function(object, pars = "fitted", ...){
     } else {
         keep <- pars
     }
+    if (!object$fit.ihd){
+        keep <- keep[par.names[keep] != "D.(Intercept)"]
+        keep <- keep[c(which(par.names[keep] == "D"), which(par.names[keep] != "D"))]
+    }
     object$vcov[keep, keep, drop = FALSE]
 }
 
@@ -146,6 +153,10 @@ vcov.ascr.boot <- function(object, pars = "fitted", ...){
     } else {
         keep <- pars
     }
+    if (!object$fit.ihd){
+        keep <- keep[par.names[keep] != "D.(Intercept)"]
+        keep <- keep[c(which(par.names[keep] == "D"), which(par.names[keep] != "D"))]
+    }
     object$boot$vcov[keep, keep, drop = FALSE]
 }
 
@@ -183,6 +194,9 @@ stdEr.ascr <- function(object, pars = "fitted", ...){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
+        if (!object$fit.ihd){
+            out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
+        }
     } else {
         out <- object$se[pars]
     }
@@ -222,6 +236,9 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
+        if (!object$fit.ihd){
+            out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
+        }
     } else {
         out <- object$boot$se[pars]
     }
@@ -375,6 +392,7 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
         fitted.names <- names(coef(object, "fitted")[parm])
         fitted.names <- fitted.names[fitted.names != "mu.rates"]
         linked.names <- paste(fitted.names, "_link", sep = "")
+        linked.names[linked.names == "D_link"] <- "D.(Intercept)_link"
         link.parm <- linked.names[!(linked.names %in% parm)]
         all.parm <- c(parm, link.parm)
     } else {
@@ -427,6 +445,10 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
     if (linked){
         for (i in fitted.names){
             linked.name <- paste(i, "_link", sep = "")
+            if (linked.name == "D_link"){
+                linked.name <- "D.(Intercept)_link"
+                object$par.unlinks[[i]] <- exp
+            }
             out[i, ] <- object$par.unlinks[[i]](out[linked.name, ])
         }
         out <- out[parm, , drop = FALSE]

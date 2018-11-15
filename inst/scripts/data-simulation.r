@@ -13,7 +13,7 @@ bearing.capt <- example.capt[c("bincapt", "bearing")]
 simple.hn.fit <- fit.ascr(capt = simple.capt, traps = example.traps,
                           mask = example.mask, fix = list(g0 = 1))
 simple.hr.fit <- fit.ascr(capt = simple.capt, traps = example.traps,
-                          mask = example.mask, detfn = "hr")
+                          mask = example.mask, detfn = "hr", sv = list(z = 5))
 bearing.hn.fit <- fit.ascr(capt = bearing.capt, traps = example.traps,
                            mask = example.mask, fix = list(g0 = 1))
 boot.simple.hn.fit <- boot.ascr(simple.hn.fit, N = 500, n.cores = 4)

@@ -63,18 +63,15 @@ test_that("simple fitting -- half normal", {
     expect_that(relative.error < 1e-4, is_true())
     ## Checking parallel function.
     fits <- par.fit.ascr(n.cores = 2, args.simple, args.loc)
-    expect_that(fits[[1]], is_identical_to(fit))
-    expect_that(fits[[2]], is_identical_to(fit.loc))
-    fits.list <- par.fit.ascr(n.cores = 2,
-                              arg.list = list(args.simple, args.loc))
-    expect_that(fits.list, is_identical_to(fits))
+    expect_that(summary(fits[[1]]), is_identical_to(summary(fit)))
+    expect_that(summary(fits[[2]]), is_identical_to(summary(fit.loc)))
 })
 
 test_that("simple fitting -- hazard rate", {
     ## Fitting model.
     simple.capt <- example$capt["bincapt"]
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, detfn = "hr")
+                    mask = example$mask, detfn = "hr", sv = list(z = 5))
     ## Checking parameter values.
     pars.test <- c(2665.01820347807, 0.879169466112046, 7.04615764143495, 
                    7.47669207224367)
@@ -319,12 +316,12 @@ test_that("directional call fitting", {
                     sv = list(b0.ss = 90, b1.ss = 4, b2.ss = 0.1, sigma.ss = 10),
                     mask = example$mask, ss.opts = list(cutoff = 60))
     ## Checking parameter values.
-    pars.test <- c(339.357586915871, 89.7928396498161, 3.56048335373993, 
-                   1.368912e-05, 8.22625149900229, 0.00186058818783199)
+    pars.test <- c(339.357584343541, 89.7928412454349, 3.56047013041414, 
+                   1.363056e-05, 8.22625124933556, 0.00186058803701272)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking standard errors.
-    ses.test <- c(87.157, 3.1701, 0.6173900, 0.7940900, 1.0747, 0.0004036)
+    ses.test <- c(87.157, 3.1701, 0.6174500, 0.79429, 1.0747, 0.0004036)
     relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
     ## Checking detection parameters.
@@ -375,12 +372,12 @@ test_that("first-call signal strength models", {
                      ss.opts = list(cutoff = lower.cutoff,
                          ss.link = "identity"),
                      cue.rates = Inf, first.only = TRUE)
-    fit <-  fit.ascr(capt = capt, traps = traps, mask = mask,
-                     ss.opts = list(cutoff = cutoff,
-                                    lower.cutoff = lower.cutoff),
-                     hess = FALSE)
-    pars.test <- c(2.6065027247974, 62.0210456595469, 0.114942741665371,
-                   6.24489981755584)
+    fit <- fit.ascr(capt = capt, traps = traps, mask = mask,
+                    ss.opts = list(cutoff = cutoff,
+                                   lower.cutoff = lower.cutoff),
+                    hess = TRUE)
+    pars.test <- c(2.6061075, 62.0208816041957, 0.11497237446662, 
+                   6.24356345437168)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
     ## Testing for an error if identity ss.link is not used.
@@ -391,18 +388,19 @@ test_that("first-call signal strength models", {
 })
 
 test_that("Multi-session models", {
-    fit <- fit.ascr(multi.example$capt, multi.example$traps, multi.example$mask)
+    fit <- fit.ascr(multi.example$capt, multi.example$traps, multi.example$mask,
+                    sv = list(kappa = 100))
     pars.test <- c(2525.4060484, 0.9849349, 2.8395646, 120.0353505)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
     set.seed(2987)
     boot.fit <- boot.ascr(fit, N = 10, prog = FALSE)
     ses <- stdEr(boot.fit, "all")
-    ses.test <- c(325.117478519735, 0.0708827203892855,
-                  0.182620462431981, 14.6858294081973,
+    ses.test <- c(325.117358182622, 0.0708826944902274,
+                  0.182620570101098, 14.6858155989752,
                   0.00190046466718596, 0.00137547230211622,
-                  0.121005593019781, 7.11535542935065,
-                  0.0650552705835956, 0.233809510854561)
+                  0.121005550405832, 7.78842978292226,
+                  0.0650553077849548, 0.233809361964724)
     relative.error <- max(abs((ses - ses.test)/ses.test))
     expect_that(relative.error < 1e-4, is_true())
 })
@@ -413,7 +411,13 @@ test_that("Inhomogeneous density estimation", {
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1),
                     ihd.opts = list(model = ~ x + y, covariates = df))
-    pars.test <- c(2.267107e+03, 5.387570e+00, 5.629925e-02, 8.838071e-02)
+    pars.test <- c(7.72626004368, 0.0562992293496, 0.088380677303, 5.3875700735678)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-3, is_true())
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, ihd.opts = list(model = ~ s(x, k = 3)))
+    pars.test <- c(5.00442908703, 12.0411342793, 0.0626406907173, 0.999999999974208,
+                   5.08547672171856)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_that(relative.error < 1e-3, is_true())
 })

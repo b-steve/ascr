@@ -155,14 +155,14 @@ void consider(const int& a, const int& b, LogicalMatrix& out, LogicalMatrix& all
   copy_matrix(allocated, allocated_copy);
   bool abort = false;
   // If up to fourth skip make a decision based on true/false scores.
-  if (skip(a, b) == 4 & score_true(a, b) <= score_false(a, b)){
+  if ((skip(a, b) == 4) & (score_true(a, b) <= score_false(a, b))){
     set_false(a, b, out_copy, allocated_copy, reqss, abort, a, b, skip(a, b), score_true, score_false);
     abort = false;
   } else {
     // Otherwise do as usual.
     set_true(a, b, out_copy, allocated_copy, reqss, abort, a, b, skip(a, b), score_true, score_false);
     // If up to third skip, overwrite abort if winning on score.
-    if (skip(a, b) == 3 & score_true(a, b) > score_false(a, b)){
+    if ((skip(a, b) == 3) & (score_true(a, b) > score_false(a, b))){
       abort = false;
     }
   }
@@ -188,7 +188,6 @@ LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
   IntegerMatrix score_true(n, n);
   IntegerMatrix score_false(n, n);
   NumericVector candidate(2);
-  bool set_to;
   int i, j;
   // Allocating diagonal to TRUE and reqss < lower_limit as FALSE.
   for (i = 0; i < n; i++){
@@ -206,7 +205,6 @@ LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
     }
   }
   bool cont = true;
-  bool print = false;
   while(cont){
     candidate = which_max_reqss(reqss, allocated, skip);
     int a, b;
@@ -220,7 +218,6 @@ LogicalMatrix blockify(const LogicalMatrix& block, const NumericMatrix& reqss){
 
 // Finds the earliest unallocated cue.
 int min_unallocated(const LogicalVector& allocated){
-  int n = allocated.size();
   int i = -1;
   bool cont = true;
   while (cont){
@@ -235,7 +232,7 @@ void add_to_block(const int& i, LogicalVector& in_block, const LogicalMatrix& ma
   int n = mat.nrow();
   in_block(i) = true;
   for (int j = 0; j < n; j++){
-    if (!in_block(j) & mat(i, j)){
+    if ((!in_block(j)) & mat(i, j)){
       add_to_block(j, in_block, mat);
     }
   }
@@ -282,31 +279,27 @@ NumericVector which_max_reqss(const NumericMatrix& reqss, const LogicalMatrix& a
   int n = reqss.nrow();
   NumericVector out(2);
   int i, j;
-  bool complete = false;
   int min_skip = min_skip_matrix(skip, allocated);
   double current_max = 0;
   // If not up to fourth skip, choose largest reqss.
   for (i = 0; i < n - 1; i++){
     for (j = i + 1; j < n; j++){
-      if (reqss(i, j) >= current_max & skip(i, j) == min_skip & !allocated(i, j)){
+      if ((reqss(i, j) >= current_max) & (skip(i, j) == min_skip) & (!allocated(i, j))){
 	out(0) = i;
 	out(1) = j;
 	current_max = reqss(i, j);
-	complete = true;
       }
     }
   }
   // Otherwise choose smallest largest reqss.
   if (min_skip == 4){
-    complete = false;
     double current_min = current_max;
     for (i = 0; i < n - 1; i++){
       for (j = i + 1; j < n; j++){
-	if (reqss(i, j) <= current_min & skip(i, j) == min_skip & !allocated(i, j)){
+	if ((reqss(i, j) <= current_min) & (skip(i, j) == min_skip) & !allocated(i, j)){
 	  out(0) = i;
 	  out(1) = j;
 	  current_min = reqss(i, j);
-	  complete = true;
 	}
       }
     }
@@ -338,12 +331,12 @@ void copy_matrix(const LogicalMatrix& from, LogicalMatrix& to){
 int min_skip_matrix(const IntegerMatrix& skip, const LogicalMatrix& allocated){
   int n = skip.nrow();
   int i, j;
-  int out;
+  int out = 0;
   bool initial_found = false;
   for (i = 0; i < n - 1; i++){
     for (j = i + 1; j < n; j++){
       if (initial_found){
-	if (skip(i, j) < out & !allocated(i, j)){
+	if ((skip(i, j) < out) & !allocated(i, j)){
 	  out = skip(i, j);
 	}
       } else {

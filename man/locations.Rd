@@ -6,15 +6,16 @@
 \usage{
 locations(fit, id, session = 1, infotypes = NULL, combine = FALSE,
   xlim = NULL, ylim = NULL, mask = get.mask(fit, session),
-  levels = NULL, nlevels = 10, density = FALSE, cols = list(combined =
-  "black", capt = "purple", ss = "orange", bearing = "green", dist = "brown",
-  toa = "blue"), ltys = list(combined = "solid", capt = "solid", ss = "solid",
-  bearing = "solid", dist = "solid", toa = "solid"), trap.col = "red",
-  circle.traps = TRUE, show.labels = TRUE, plot.contours = TRUE,
-  plot.estlocs = FALSE, keep.estlocs = FALSE, plot.arrows = "bearing"
-  \%in\% fit$infotypes, plot.circles = "dist" \%in\% fit$infotypes &
-  !("bearing" \%in\% fit$infotypes), arrow.length = NULL,
-  show.legend = FALSE, show.axes = TRUE, add = FALSE)
+  levels = NULL, nlevels = 10, density = FALSE,
+  cols = list(combined = "black", capt = "purple", ss = "orange", bearing
+  = "green", dist = "brown", toa = "blue"), ltys = list(combined =
+  "solid", capt = "solid", ss = "solid", bearing = "solid", dist = "solid",
+  toa = "solid"), trap.col = "red", circle.traps = TRUE,
+  show.labels = TRUE, plot.contours = TRUE, plot.estlocs = FALSE,
+  keep.estlocs = FALSE, plot.arrows = "bearing" \%in\% fit$infotypes,
+  plot.circles = "dist" \%in\% fit$infotypes & !("bearing" \%in\%
+  fit$infotypes), arrow.length = NULL, show.legend = FALSE,
+  show.axes = TRUE, add = FALSE)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}

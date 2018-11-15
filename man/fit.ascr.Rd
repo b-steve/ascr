@@ -245,11 +245,11 @@ The argument \code{ihd.opts} is a list with up to three components:
    \item \code{covariates}: Compulsory. A list of data frames, one
          for each session. Each data frame provides covariate
          values at each mask point.
-   \item \code{scale}: Optional. If \code{TRUE}, covariates are
-         scaled. This does not affect model inference and improves
-         optimisation stability, but makes it more difficult to
-         interpret estimated coefficients.
-
+   \item \code{scale}: Optional. If \code{TRUE}, the default,
+         covariates are scaled by subtracting the mean and dividing
+         by the standard deviaton. This does not affect model
+         inference and improves optimisation stability, but makes
+         it more difficult to interpret estimated coefficients.
 }
 }
 

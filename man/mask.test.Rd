@@ -5,7 +5,8 @@
 \title{Testing the mask object for a first calls model.}
 \usage{
 mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
-  surface = FALSE, col = c("black", "blue", "red"), pincol = "red", ...)
+  surface = FALSE, col = c("black", "blue", "red"), pincol = "red",
+  ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}

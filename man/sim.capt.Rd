@@ -5,10 +5,11 @@
 \title{Simulating SECR data}
 \usage{
 sim.capt(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
-  infotypes = character(0), detfn = "hn", pars = NULL, ss.opts = NULL,
-  cue.rates = NULL, survey.length = NULL, freq.dist = "edf",
-  sound.speed = 330, ihd.surf = NULL, test.detfn = FALSE,
-  first.only = FALSE, keep.locs = FALSE, keep.ids = FALSE, ...)
+  infotypes = character(0), detfn = "hn", pars = NULL,
+  ss.opts = NULL, cue.rates = NULL, survey.length = NULL,
+  freq.dist = "edf", sound.speed = 330, ihd.surf = NULL,
+  test.detfn = FALSE, first.only = FALSE, keep.locs = FALSE,
+  keep.ids = FALSE, ...)
 }
 \arguments{
 \item{fit}{A fitted \code{ascr} model object which provides the

@@ -163,7 +163,11 @@ read.ascr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #' @export
 get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     esa.names <- paste("esa", 1:fit$n.sessions, sep = ".")
-    allpar.names <- c("D", fit$detpars, fit$suppars, esa.names)
+    pars.D <- any((pars == "D" | pars == "all" | pars == "fitted") & !fit$fit.ihd)
+    if (pars.D){
+        pars[pars == "D"] <- "D.(Intercept)"
+    }
+    allpar.names <- c(fit$D.betapars, fit$detpars, fit$suppars, esa.names)
     if (length(pars) == 1){
         if (pars == "all"){
             pars <- allpar.names
@@ -176,7 +180,7 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
         pars <- c(pars, esa.names)
     }
     ## Error checking.
-    legal.names <- pars %in% allpar.names
+    legal.names <- pars %in% c("D"[pars.D], allpar.names)
     if (!all(legal.names)){
         illegal.pars <- pars[!legal.names]
         if (sum(!legal.names) == 1){
@@ -218,6 +222,10 @@ get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){
     if (cutoff){
         out <- c(out, fit$args$ss.opts$cutoff)
         names(out) <- c(pars, "cutoff")
+    }
+    if (pars.D){
+        names(out)[names(out) == "D.(Intercept)"] <- "D"
+        out["D"] <- exp(out["D"])
     }
     if (as.list){
         out.vec <- out
@@ -497,6 +505,9 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
         out <- mget(pars)
         names(out) <- NULL
         out <- c(out, recursive = TRUE)
+        if (!fit$fit.ihd){
+            out <- out[c("D", names(out)[!(names(out) %in% c("D.(Intercept)", "D"))])]
+        }
     } else {
         out <- fit$boot$bias[pars]
     }
