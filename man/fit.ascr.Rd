@@ -8,14 +8,14 @@
 fit.ascr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
   cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
-  optim.opts = NULL, ...)
+  ihd.opts = NULL, local = FALSE, hess = NULL, trace = FALSE,
+  clean = TRUE, optim.opts = NULL, ...)
 
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
   fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
   cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
-  optim.opts = NULL, ...)
+  ihd.opts = NULL, local = FALSE, hess = NULL, trace = FALSE,
+  clean = TRUE, optim.opts = NULL, ...)
 }
 \arguments{
 \item{capt}{A list with named components, containing the capture
@@ -85,6 +85,9 @@ lengths for each session.}
 \item{sound.speed}{The speed of sound in metres per second,
 defaults to 330 (the speed of sound in air). Only used when
 \code{"toa"} is a component name of \code{capt}.}
+
+\item{ihd.opts}{Options for inhomogeneous density. See 'Details'
+below.}
 
 \item{local}{Logical, if \code{TRUE} integration over unobserved
 animal activity centres is only carried out in a region local
@@ -225,6 +228,27 @@ The argument \code{ss.opts} is a list with up to seven components:
         signal strength detection function in the section 'Fitted
         parameters' below. Defaults to \code{"identity"}.
 
+
+}
+}
+
+\section{The \code{ihd.opts} argument}{
+
+
+This argument allows the user to select options for the fitting on
+inhomogeneous density surfaces.
+
+The argument \code{ihd.opts} is a list with up to three components:
+\itemize{
+   \item \code{model}: Compulsory. An equation for the relationship between
+         covariates and the log of the density surface.
+   \item \code{covariates}: Compulsory. A list of data frames, one
+         for each session. Each data frame provides covariate
+         values at each mask point.
+   \item \code{scale}: Optional. If \code{TRUE}, covariates are
+         scaled. This does not affect model inference and improves
+         optimisation stability, but makes it more difficult to
+         interpret estimated coefficients.
 
 }
 }

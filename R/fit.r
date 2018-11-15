@@ -488,6 +488,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (any(names(extra.args) == "dists")){
         dists <- extra.args$dists
+        if (!is.list(dists)){
+          dists <- list(dists)
+        }
+        if (length(dists) != n.sessions){
+          stop("Distance object provided must be a list with a component for each session.")
+        }
         dists.provided <- TRUE
     } else {
         dists.provided <- FALSE
@@ -1137,7 +1143,77 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         hess <- !fit.freqs
     }
     ## Using optimx() for first call fits.
-    if (first.calls){
+    if (fit.noneuc){
+      ## Extracting non-Euclidean model statment.
+      noneuc.model <- noneuc.opts$model
+      ## Extracting user-defined knot locations (if any)
+      noneuc.knots <- noneuc.opts$knots
+      ## Extracting raster.
+      noneuc.raster <- noneuc.opts$raster
+      ## Extracting optimization tolerance
+      noneuc.tol <- noneuc.opts$tol
+      ## Extracting the optimization method
+      noneuc.method <- noneuc.opts$method
+      ## Extracting transition function
+      noneuc.trans <- noneuc.opts$tran.fn
+      ## Option for commute distances
+      noneuc.commute <- noneuc.opts$is.commute
+      ## Option for parallelization
+      noneuc.parallel <- noneuc.opts$parallel
+      ## Defining cores
+      noneuc.ncores <- noneuc.opts$ncores
+      ## Getting original arguments.
+      args <- vector(mode = "list", length = length(arg.names))
+      names(args) <- arg.names
+      for (i in arg.names){
+        if (!is.null(get(i))){
+          args[[i]] <- get(i)
+        }
+      }
+      ## Removing the noneuc.model argument.
+      args$noneuc.opts <- NULL
+      ## Extract the first argument of the model (this will be used to detect if gam or not!)
+      errorIfNotGAM<-tryCatch({
+        fist.arg<-eval(as.formula(paste("~",unlist(strsplit(as.character(noneuc.model)[[2]],split="[+]"))[1]))[[2]])
+      },error=function(e) e)
+      
+      ## Design matrices for gam and linear models
+      if (!inherits(errorIfNotGAM, "error")) { ## this is for GAM
+        des.mat<-make.dm(model = noneuc.model,data = attr(mask[[1]], "covariates"),knots = noneuc.knots)
+      } else {
+        des.mat<-model.matrix(noneuc.model, attr(mask[[1]], "covariates"))
+      }
+      
+      if (noneuc.commute){
+        exp.poly<-expand.polygons(from = traps[[1]],mask = mask[[1]],raster = noneuc.raster)
+      } else {
+        exp.poly<-NULL
+      }
+      
+        ##Specifying the function to feed into the optim algorithm
+        ascr.opt<-function(par, exp.poly, traps, mask, trans.fn, raster,model,knots,comm.dist,parallel,ncores){
+          
+          dists<-myDist(par = par,exp.poly = exp.poly,from = traps,mask = mask,trans.fn = trans.fn,raster = raster,model = model,knots = knots,comm.dist = comm.dist,parallel = parallel,ncores = ncores)
+          
+          args$dists<-dists
+          args$hess=FALSE
+          fit<-do.call("fit.ascr", args)$loglik
+          return(fit)
+        }
+        
+        ##Running optimization algorithm
+        opt<-optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, method=noneuc.method,control=list(fnscale=-1,reltol=noneuc.tol), trans.fn=noneuc.trans, exp.poly=exp.poly, traps=traps[[1]], mask=mask[[1]],raster=noneuc.raster,model=noneuc.model,knots=noneuc.knots,comm.dist=noneuc.commute,parallel=noneuc.parallel,ncores=noneuc.ncores, hessian = TRUE)
+        
+        args$dists<-myDist(par = opt$par,exp.poly = exp.poly,from = traps[[1]],mask = mask[[1]],trans.fn = noneuc.trans,raster = noneuc.raster,model = noneuc.model,knots = noneuc.knots,comm.dist = noneuc.commute,parallel = noneuc.parallel,ncores = noneuc.ncores)
+        
+      out<-do.call("fit.ascr", args)
+      out$noneuc.model.matrix <- des.mat
+      out$noneuc.coefficients <- opt$par
+      out$noneuc.hessian <- opt$hessian
+      print(out)
+      
+    } else { 
+      if (first.calls){
         if (n.sessions > 1){
             stop("First-call models not yet implemented for multisession data.")
         }
@@ -1198,27 +1274,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         out$npar_total <- out$npar + out$npar_re + out$npar_sdrpt + out$npar_rep
         out$eratio <- as.logical(NA)
         esa <- secr_nll(coef(fit), data.list, TRUE)
-    } else if (fit.noneuc){
-        ## Extracting non-Euclidean model statment.
-        noneuc.model <- noneuc.opts$model
-        ## Extracting raster.
-        noneuc.raster <- noneuc.opts$raster
-        ## Create non-Euclidean distance matrix here.
-        ## dists <- ...
-        ## Getting original arguments.
-        args <- vector(mode = "list", length = length(arg.names))
-        names(args) <- arg.names
-        for (i in arg.names){
-            if (!is.null(get(i))){
-                args[[i]] <- get(i)
-            }
-        }
-        ## Removing the noneuc.model argument.
-        args$noneuc.model <- NULL
-        ## Adding non-Euclidean distances.
-        args$dists <- dists
-        ## Running fit.ascr() with the original user-supplied arguments.
-        do.call("fit.ascr", args)$loglik
     } else {
         ## Idea of running executable as below taken from glmmADMB.
         ## Working out correct command to run from command line.
@@ -1444,6 +1499,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
     }
     class(out) <- c("ascr", "admb")
+    }
     out
     }
 
@@ -1517,6 +1573,7 @@ par.admbsecr <- par.fit.ascr
 #' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom matrixStats colProds
+#' @importFrom mgcv smooth.construct s te ti t2
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @importFrom utils example setTxtProgressBar txtProgressBar

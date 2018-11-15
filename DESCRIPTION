@@ -17,6 +17,7 @@ Imports:
     graphics,
     grDevices,
     matrixStats,
+    mgcv,
     mvtnorm,
     parallel,
     optimx,
