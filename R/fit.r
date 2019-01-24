@@ -449,14 +449,23 @@
 #'
 #' @examples
 #' \dontrun{
+#' ## Getting some data.
 #' simple.capt <- example$capt["bincapt"]
+#' ## A simple model.
 #' simple.hn.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
 #'                           mask = example$mask, fix = list(g0 = 1))
+#' ## A simple model with a hazard-rate detection function.
 #' simple.hr.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
 #'                           mask = example$mask, detfn = "hr")
+#' ## Including some bearing information.
 #' bearing.capt <- example$capt[c("bincapt", "bearing")]
+#' ## Fitting a model with bearing information.
 #' bearing.hn.fit <- fit.ascr(capt = bearing.capt, traps = example$traps,
 #'                            mask = example$mask, fix = list(g0 = 1))
+#' ## Getting some multi-session data.
+#' multi.capt <- lapply(multi.example$capt, function(x) x[1])
+#' multi.fit <- fit.ascr(multi.capt, multi.example$traps,
+#'                       multi.example$mask)
 #' }
 #'
 #' @export
