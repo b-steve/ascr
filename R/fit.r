@@ -471,7 +471,7 @@
 fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
                      cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-                     local = FALSE, hess = NULL, trace = FALSE,
+                     ihd.opts = NULL, local = FALSE, hess = NULL, trace = FALSE,
                      clean = TRUE, optim.opts = NULL, noneuc.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
@@ -908,6 +908,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     par.names <- c(D.betapars.names, detpar.names, suppar.names)
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
+    n.D.betapars <- length(D.betapars.names)
     any.suppars <- n.suppars > 0
     n.pars <- length(par.names)
     ## Checking par.names against names of sv, fix, bounds, and sf.
@@ -1319,10 +1320,11 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                             trans.fn = trans.fn, raster = raster, model = model,
                             knots = knots, comm.dist = comm.dist, parallel = parallel,
                             ncores = ncores)        
-          args$dists <- dists
-          args$hess <- FALSE
-          fit <- do.call("fit.ascr", args)$loglik
-          fit
+            args$dists <- dists
+            args$hess <- FALSE
+            fit <- do.call("fit.ascr", args)$loglik
+            cat("Non-Euclidean parameters: ", paste(par, collapse = " "), "; LL: ", fit, "\n", sep = "")
+            fit
         }
         ## Running optimization algorithm
         opt <- optim(par = rep(0, length(des.mat[1,])), fn = ascr.opt, method = noneuc.method,
@@ -1719,7 +1721,6 @@ par.admbsecr <- par.fit.ascr
 #' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
 #' @importFrom matrixStats colProds
-#' @importFrom mgcv smooth.construct s te ti t2
 #' @importFrom mgcv gam s smooth.construct te ti t2
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
