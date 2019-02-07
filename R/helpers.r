@@ -537,9 +537,18 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
 }
 
 
-# Functions for noneuc.opts
+# Functions used for noneuc.opts
 
-#' Function to create the design matrix for GAM models. The function uses information about the model structure to create a smooth object through the mgcv Package.
+#' Function to create the design matrix for GAM models. 
+#' 
+#' The function uses information about the model structure to create a smooth object through the mgcv Package.
+#' 
+#' @param model A GAM model to be specified as a combination of covariates.
+#' @param data Dataframe of covariate values. Note that each column of the Dataframe should be a covariate and column name should correspond to the name spacified in \code{model}.
+#' @param knots A list of knot positions for each covariate. For more information visit \code{\link[mgcv]{smooth.construct}}.
+#' 
+#' @return A Dataframe of smooth terms for each covariate.
+#' 
 make.dm<-function(model,data,knots){
   nsmooths<-unlist(strsplit(as.character(model)[[2]], split="[+]"))
   cons.smooths<-list()
@@ -552,9 +561,20 @@ make.dm<-function(model,data,knots){
 }
 
 
-#' Function to polygonize the mask. This function is compulsory for the calculation of commute distances. It basically gives the possibility to create a buffered grid as SpatialPolygons.
-polygonize<-function(traps,mask,crop,resolution,raster){
-  region<-create.mask(traps,attr(mask,"buffer")-crop,spacing=resolution)
+#' Function to buffer and polygonize the mask. 
+#' 
+#' This function is compulsory for the calculation of commute distances. It creates a buffered grid as SpatialPolygons.
+#' 
+#' @param traps Dataframe of trap locations.
+#' @param mask A mask object created with \code{\link{create.mask}}.
+#' @param buffer Distance in meters to buffer the mask.
+#' @param resolution Resolution in meters of the mask cells.
+#' @param raster A raster object with information about CRS and extent.
+#' 
+#' @return A buffered mask as SpatialPolygons.
+#' 
+polygonize<-function(traps,mask,buffer,resolution,raster){
+  region<-create.mask(traps,attr(mask,"buffer")+buffer,spacing=resolution)
   region.grid<-SpatialGrid(points2grid(SpatialPoints(region[,1:2],proj4string = crs(raster))),proj4string = crs(raster))
   region.grid<-SpatialGridDataFrame(region.grid,data=data.frame(id=c(1:length(region.grid))))
   region.grid<-Grid2Polygons(region.grid,zcol = "id",level = FALSE)
@@ -563,15 +583,23 @@ polygonize<-function(traps,mask,crop,resolution,raster){
   return(region.poly)
 }
 
-#' Function to add covariates for each Polygon created by the polygonize function. 
-#' In order to be efficient the fucntion creates the buffered grid and a clone of the grid. It pastes covariates of the mask in the grid, it calculates the difference between grid and buffered grid, and calcultes covariate values only for the difference. Buffer is set to 3x the grid resolution.
+#' Function to add covariates for each polygon created by the polygonize function. 
+#' 
+#' The function extracts mean covariate values for each grid cell of the buffered spatial grid. In order to be efficient the function creates the buffered grid and a clone of the unbuffered grid. It pastes covariates of the mask in the unbuffered grid, it calculates the difference between unbuffered grid and buffered grid, and calcultes covariate values only for that difference. It then merges the unbuffered grid with the difference to get final buffered grid with associated covariate values. Buffer is set to 3x the grid resolution.
+#' 
+#' @param from Dataframe of trap locations.
+#' @param mask A mask object created with \code{\link{create.mask}}.
+#' @param raster A list of raster object to calculate covariate statistics for each grid cell.
+#' 
+#' @return Buffered grid with covariate values for each grid cell (i.e. SpatialPolygonsDataFrame).
+#' 
 expand.polygons<-function(from, mask, raster){
   
   resolution<-sqrt(attr(mask,"area")*10^4)
-  crop<-3*resolution
+  buffer<-3*resolution
   
-  buff.mask<-polygonize(traps = from,mask = mask,crop = -crop,resolution = resolution,raster = raster[[1]])
-  mask.clone<-polygonize(traps = from,mask = mask,crop = 0,resolution = resolution,raster = raster[[1]])
+  buff.mask<-polygonize(traps = from,mask = mask,buffer = buffer,resolution = resolution,raster = raster[[1]])
+  mask.clone<-polygonize(traps = from,mask = mask,buffer = 0,resolution = resolution,raster = raster[[1]])
   
   diff<-gDifference(buff.mask,rgeos::gUnion(mask.clone,mask.clone),byid = TRUE)
   mask.clone<-mask.clone[-1]
@@ -587,7 +615,24 @@ expand.polygons<-function(from, mask, raster){
   return(un)
 }
 
-#' Function to calculate cost and commute distances. Commute distance calculation can be parallelized to speed-up the process.
+#' Function to calculate cost and commute distances.
+#' 
+#' This function calculates cost and commute distances that are used to fit ascr models. Commute distances can be calculated on multiple cores to speed up the process.
+#' 
+#' @param par Non-euclidean parameters that are automatically generated by the optimization algorithm \code{\link[stats]{optim}}.
+#' @param exp.poly SpatialPolygonDataFrame generated by \code{\link{expand.polygons}}.
+#' @param from Dataframe of trap locations.
+#' @param mask A mask object created with \code{\link{create.mask}}.
+#' @param trans.fn The transition function for the calculation of cost and commute distances. For more information see \code{\link[gdistance]{transition}}.
+#' @param raster List of raster objects for each covariate.
+#' @param model A GAM model to be specified as a combination of covariates.
+#' @param knots A list of knot positions for each covariate. For more information visit \code{\link[mgcv]{smooth.construct}}.
+#' @param comm.dist TRUE for the calculation of commute distances. FALSE for the calculation of cost distances. Default is FALSE.
+#' @param parallel TRUE for the parallelization of commute distances calculation. Default is FALSE.
+#' @param ncores Number of cores if \code{parallel=TRUE}.
+#' 
+#' @return An array for distances from each trap to each grid cell.
+#' 
 myDist<-function(par,exp.poly=NULL,from,mask,trans.fn,raster,model,knots=NULL,comm.dist=FALSE,parallel=FALSE,ncores=NULL){
   
   errorIfNotGAM<-tryCatch({
