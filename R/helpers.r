@@ -556,10 +556,10 @@ make.dm<-function(model,data,knots){
 polygonize<-function(traps,mask,crop,resolution,raster){
   region<-create.mask(traps,attr(mask,"buffer")-crop,spacing=resolution)
   region.grid<-SpatialGrid(points2grid(SpatialPoints(region[,1:2],proj4string = crs(raster))),proj4string = crs(raster))
-  region.grid<-sp::SpatialGridDataFrame(region.grid,data=data.frame(id=c(1:length(region.grid))))
-  region.grid<-inlmisc::Grid2Polygons(region.grid,zcol = "id",level = FALSE)
+  region.grid<-SpatialGridDataFrame(region.grid,data=data.frame(id=c(1:length(region.grid))))
+  region.grid<-Grid2Polygons(region.grid,zcol = "id",level = FALSE)
   names(region.grid)<-c("id")
-  region.poly<-region.grid[(sp::over(SpatialPoints(region[,1:2],proj4string = crs(raster)),region.grid))$id,]
+  region.poly<-region.grid[(over(SpatialPoints(region[,1:2],proj4string = crs(raster)),region.grid))$id,]
   return(region.poly)
 }
 
@@ -573,7 +573,7 @@ expand.polygons<-function(from, mask, raster){
   buff.mask<-polygonize(traps = from,mask = mask,crop = -crop,resolution = resolution,raster = raster[[1]])
   mask.clone<-polygonize(traps = from,mask = mask,crop = 0,resolution = resolution,raster = raster[[1]])
   
-  diff<-rgeos::gDifference(buff.mask,rgeos::gUnion(mask.clone,mask.clone),byid = TRUE)
+  diff<-gDifference(buff.mask,rgeos::gUnion(mask.clone,mask.clone),byid = TRUE)
   mask.clone<-mask.clone[-1]
   mask.clone@data<-attr(mask,"covariates")
   diff.cov<-matrix(ncol=length(raster),nrow=length(diff))
@@ -609,27 +609,26 @@ myDist<-function(par,exp.poly=NULL,from,mask,trans.fn,raster,model,knots=NULL,co
     conductance<-1/exp(des.mat%*%par)
     
     ras.perm<-rasterize(coordinates(exp.poly),raster(resolution=resolution,ext=extent(exp.poly),crs=crs(raster[[1]])),field=conductance)
-    tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
-    tr<-gdistance::geoCorrection(tr,scl=FALSE)
+    tr<-transition(ras.perm,transitionFunction = trans.fn,16) 
+    tr<-geoCorrection(tr,scl=FALSE)
     xy<-mask[,1:2]
     
-    dist<-gdistance::costDistance(x = tr,fromCoords = from,toCoords = xy)
+    dist<-costDistance(x = tr,fromCoords = from,toCoords = xy)
     scale_dist<-dist
     
-    tr<-gdistance::geoCorrection(tr,scl=TRUE,type="r")
+    tr<-geoCorrection(tr,scl=TRUE,type="r")
     
     if (parallel){
       
       if(Sys.info()[[1]]=="Windows"){
-        cl<-parallel::makeCluster(ncores)
-        doParallel::registerDoParallel(cl)
+        cl<-makeCluster(ncores)
+        registerDoParallel(cl)
       } else {
-        cl<-doMC::registerDoMC(ncores) #register cores
+        cl<-registerDoMC(ncores) #register cores
       }
       
-      `%dopar%` <- foreach::`%dopar%`
-      dist <- foreach::foreach(i = 1:length(from[,1]),.combine = cbind) %dopar% {
-        cmdist<-gdistance::commuteDistance(tr,rbind(from[i,],xy))
+      dist <- foreach(i = 1:length(from[,1]),.combine = cbind) %dopar% {
+        cmdist<-commuteDistance(tr,rbind(from[i,],xy))
         cmdist<-as.matrix(cmdist)[,1]
         cmdist<-cmdist[-1]
         cmdist<-matrix(cmdist/max(cmdist,na.rm = TRUE)*max(scale_dist[i,],na.rm = TRUE))
@@ -641,7 +640,7 @@ myDist<-function(par,exp.poly=NULL,from,mask,trans.fn,raster,model,knots=NULL,co
     } else {
       dist<-matrix(ncol = length(xy)/2,nrow = length(from[,1]))
       for (i in 1:length(from[,1])){
-        cmdist<-gdistance::commuteDistance(tr,rbind(from[i,],xy))
+        cmdist<-commuteDistance(tr,rbind(from[i,],xy))
         cmdist<-as.matrix(cmdist)[,1]
         cmdist<-cmdist[-1]
         cmdist<-matrix(cmdist/max(cmdist,na.rm = TRUE)*max(scale_dist[i,],na.rm = TRUE))
@@ -659,10 +658,10 @@ myDist<-function(par,exp.poly=NULL,from,mask,trans.fn,raster,model,knots=NULL,co
     conductance<-1/exp(des.mat%*%par)
     
     ras.perm<-rasterize(coordinates(mask),raster(resolution=resolution,ext=extent(mask),crs=crs(raster[[1]])),field=conductance)
-    tr<-gdistance::transition(ras.perm,transitionFunction = trans.fn,16) 
-    tr<-gdistance::geoCorrection(tr,scl=FALSE)
+    tr<-transition(ras.perm,transitionFunction = trans.fn,16) 
+    tr<-geoCorrection(tr,scl=FALSE)
     xy<-mask[,1:2]
-    dist<-gdistance::costDistance(x = tr,fromCoords = from,toCoords = xy)
+    dist<-costDistance(x = tr,fromCoords = from,toCoords = xy)
   }
   
   return(dist)

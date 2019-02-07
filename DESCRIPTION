@@ -25,7 +25,15 @@ Imports:
     secr,
     stats,
     truncnorm,
-    utils
+    utils,
+    sp,
+    inlmisc,
+    raster,
+    rgeos,
+    gdistance,
+    doParallel,
+    doMC,
+    foreach
 Suggests:
     knitr,
     xtable
