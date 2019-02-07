@@ -1725,6 +1725,15 @@ par.admbsecr <- par.fit.ascr
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @importFrom utils example setTxtProgressBar txtProgressBar
+#' @importFrom sp SpatialGrid SpatialGridDataFrame SpatialPoints SpatialPolygonsDataFrame over coordinates
+#' @importFrom inlmisc Grid2Polygons
+#' @importFrom raster crs extract rasterize raster extent
+#' @importFrom rgeos gDifference gUnion
+#' @importFrom gdistance transition geoCorrection costDistance commuteDistance
+#' @importFrom parallel makeCluster
+#' @importFrom doParallel registerDoParallel
+#' @importFrom doMC registerDoMC
+#' @importFrom foreach foreach
 #' @useDynLib ascr
 NULL
 
