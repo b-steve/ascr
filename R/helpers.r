@@ -537,8 +537,9 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
 }
 
 
-#Non-euclidean stuff
+# Functions for noneuc.opts
 
+#' Function to create the design matrix for GAM models. The function uses information about the model structure to create a smooth object through the mgcv Package.
 make.dm<-function(model,data,knots){
   nsmooths<-unlist(strsplit(as.character(model)[[2]], split="[+]"))
   cons.smooths<-list()
@@ -551,19 +552,19 @@ make.dm<-function(model,data,knots){
 }
 
 
-polygonize<-function(traps,mask,crop,resolution,raster,plot=FALSE){
+#' Function to polygonize the mask. This function is compulsory for the calculation of commute distances. It basically gives the possibility to create a buffered grid as SpatialPolygons.
+polygonize<-function(traps,mask,crop,resolution,raster){
   region<-create.mask(traps,attr(mask,"buffer")-crop,spacing=resolution)
   region.grid<-SpatialGrid(points2grid(SpatialPoints(region[,1:2],proj4string = crs(raster))),proj4string = crs(raster))
   region.grid<-sp::SpatialGridDataFrame(region.grid,data=data.frame(id=c(1:length(region.grid))))
   region.grid<-inlmisc::Grid2Polygons(region.grid,zcol = "id",level = FALSE)
   names(region.grid)<-c("id")
   region.poly<-region.grid[(sp::over(SpatialPoints(region[,1:2],proj4string = crs(raster)),region.grid))$id,]
-  
   return(region.poly)
-  
 }
 
-
+#' Function to add covariates for each Polygon created by the polygonize function. 
+#' In order to be efficient the fucntion creates the buffered grid and a clone of the grid. It pastes covariates of the mask in the grid, it calculates the difference between grid and buffered grid, and calcultes covariate values only for the difference. Buffer is set to 3x the grid resolution.
 expand.polygons<-function(from, mask, raster){
   
   resolution<-sqrt(attr(mask,"area")*10^4)
@@ -586,7 +587,7 @@ expand.polygons<-function(from, mask, raster){
   return(un)
 }
 
-
+#' Function to calculate cost and commute distances. Commute distance calculation can be parallelized to speed-up the process.
 myDist<-function(par,exp.poly=NULL,from,mask,trans.fn,raster,model,knots=NULL,comm.dist=FALSE,parallel=FALSE,ncores=NULL){
   
   errorIfNotGAM<-tryCatch({
@@ -667,4 +668,3 @@ myDist<-function(par,exp.poly=NULL,from,mask,trans.fn,raster,model,knots=NULL,co
   return(dist)
   
 }
-
