@@ -1,7 +1,7 @@
 Package: ascr
 Type: Package
 Title: Acoustic spatial capture-recapture in AD Model Builder
-Version: 2.2.0
+Version: 2.2.1
 Date: 2018-11-14
 Author: Ben Stevenson <ben.stevenson@auckland.ac.nz>,
     David Borchers <dlb@st-andrews.ac.uk>
