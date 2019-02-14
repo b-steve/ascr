@@ -307,6 +307,12 @@ For \code{detfn = "hn"}:
    \item \eqn{g(d) = g_0\ exp(-d^2/(2\sigma^2))}{g(d) = g0 * exp( -d^2 / (2 * sigma^2 ))}
 }
 
+For \code{detfn = "hhn"}:
+\itemize{
+   \item Estimated paramters are \code{lambda0} and \code{sigma}.
+   \item \eqn{g(d) = 1 - exp(lambda_0\ exp(-d^2/(2\sigma^2))}{g(d) = g0 * exp( -d^2 / (2 * sigma^2 )))}
+}
+
 For \code{detfn = "hr"}:
 \itemize{
    \item Estimated parameters are \code{g0}, \code{sigma}, and
