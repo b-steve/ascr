@@ -67,6 +67,42 @@ test_that("simple fitting -- half normal", {
     expect_that(summary(fits[[2]]), is_identical_to(summary(fit.loc)))
 })
 
+test_that("simple fitting -- hazard halfnormal", {
+    ## Fitting model.
+    simple.capt <- example$capt["bincapt"]
+    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
+                    mask = example$mask, detfn = "hhn", trace = TRUE)
+    ## Checking parameter values.
+    pars.test <- c(2657.78251522212, 4.28858104175813, 3.66110352213979)
+    n.pars <- length(pars.test)
+    relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking standard errors.
+    ses.test <- c(358.88, 0.9112, 0.31103)
+    relative.error <- max(abs((stdEr(fit) - ses.test)/ses.test))
+    expect_that(relative.error < 1e-4, is_true())
+    ## Checking detection parameters.
+    expect_that(fit$detpars, equals(c("lambda0", "sigma")))
+    ## Checking supplementary parameters.
+    expect_that(length(fit$suppars), equals(0))
+    ## Checking estimate equivalence with secr.fit.
+    library(secr)
+    mask.secr <- convert.mask(example$mask)
+    capt.secr <- convert.capt.to.secr(example$capt["bincapt"], example$traps)
+    set.seed(1512)
+    fit.secr <- suppressWarnings(secr.fit(capthist = capt.secr, mask = mask.secr, detectfn = 14,
+                                          trace = FALSE))
+    coefs.secr <- numeric(n.pars)
+    invlog <- function(x) exp(x)
+    for (i in 1:n.pars){
+        coefs.secr[i] <- eval(call(paste("inv", fit.secr$link[[i]], sep = ""),
+                                   fit.secr$fit$par[i]))
+    }
+    relative.error <- max(abs((coef(fit) - coefs.secr)/coefs.secr))
+    expect_that(relative.error < 1e-4, is_true())
+})
+
+
 test_that("simple fitting -- hazard rate", {
     ## Fitting model.
     simple.capt <- example$capt["bincapt"]

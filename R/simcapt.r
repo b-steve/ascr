@@ -304,6 +304,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     }
     detpar.names <- switch(detfn,
                            hn = c("g0", "sigma"),
+                           hhn = c("lambda0", "sigma"),
                            hr = c("g0", "sigma", "z"),
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),

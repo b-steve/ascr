@@ -11,10 +11,10 @@ calc.detfn <- function(d, detfn, pars, ss.link = NULL, orientation = 0){
 
 ## Returns a detection function.
 get.detfn <- function(detfn){
-    if (!(detfn %in% c("hn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss"))){
-        stop("Argument 'detfn' must be \"hn\", \"hr\", \"th\", \"lth\", \"ss\", \"log.ss\", or \"spherical.ss\".")
+    if (!(detfn %in% c("hn", "hhn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss"))){
+        stop("Argument 'detfn' must be \"hn\", \"hhn\", \"hr\", \"th\", \"lth\", \"ss\", \"log.ss\", or \"spherical.ss\".")
     }
-    switch(detfn, hn = calc.hn, hr = calc.hr, th = calc.th,
+    switch(detfn, hn = calc.hn, hhn = calc.hhn, hr = calc.hr, th = calc.th,
            lth = calc.lth, ss = calc.ss, log.ss = calc.ss, spherical.ss = calc.ss)
 }
 
@@ -25,6 +25,15 @@ calc.hn <- function(d, pars){
     g0 <- pars$g0
     sigma <- pars$sigma
     g0*exp(-(d^2/(2*sigma^2)))
+}
+
+calc.hhn <- function(d, pars){
+    if (!identical(sort(names(pars)), c("lambda0", "sigma"))){
+        stop("Argument 'pars' must have named components 'g0' and 'sigma'.")
+    }
+    lambda0 <- pars$lambda0
+    sigma <- pars$sigma
+    1 - dpois(0, lambda0*exp(-(d^2/(2*sigma^2))))
 }
 
 calc.hr <- function(d, pars){

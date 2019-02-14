@@ -305,7 +305,7 @@ print.summary.ascr <- function(x, ...){
     mat[(n.coefs + 2):(n.coefs + n.derived + 1), ] <- c(x$derived, x$derived.se)
     rownames(mat) <- c(names(x$coefs), "---", names(x$derived))
     colnames(mat) <- c("Estimate", "Std. Error")
-    detfn <- c(hn = "Halfnormal", hr = "Hazard rate", th = "Threshold",
+    detfn <- c(hn = "Halfnormal", hhn = "Hazard halfnormal", hr = "Hazard rate", th = "Threshold",
                lth = "Log-link threshold", ss = "Signal strength")[x$detfn]
     infotypes <- c(bearing = "Bearings", dist = "Distances", ss = "Signal strengths",
                    toa = "Times of arrival")[x$infotypes]

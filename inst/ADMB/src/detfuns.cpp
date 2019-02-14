@@ -8,6 +8,14 @@ dvariable detfn_hn (double x, const dvar_vector &detpars, double cutoff, double 
   return detpars(1)*mfexp(-square(x)/(2*square(detpars(2))));
 }
 
+// Hazard half normal.
+// Order of detpars: lambda0, sigma.
+dvariable detfn_hhn (double x, const dvar_vector &detpars, double cutoff, double orientation)
+{
+  return 1 - mfexp(-detpars(1)*mfexp(-square(x)/(2*square(detpars(2)))));
+}
+
+
 // Hazard rate.
 // Order of detpars: g0, sigma, z.
 dvariable detfn_hr (double x, const dvar_vector &detpars, double cutoff, double orientation)
@@ -56,12 +64,13 @@ detfn_pointer get_detfn(int detfn_id)
   detfn_pointer detfn;
   switch(detfn_id){
   case 1: detfn = detfn_hn; break;
-  case 2: detfn = detfn_hr; break;
-  case 3: detfn = detfn_th; break;
-  case 4: detfn = detfn_logth; break;
-  case 5: detfn = detfn_ss; break;
-  case 6: detfn = detfn_logss; break;
-  case 7: detfn = detfn_sphericalss; break;
+  case 2: detfn = detfn_hhn; break;
+  case 3: detfn = detfn_hr; break;
+  case 4: detfn = detfn_th; break;
+  case 5: detfn = detfn_logth; break;
+  case 6: detfn = detfn_ss; break;
+  case 7: detfn = detfn_logss; break;
+  case 8: detfn = detfn_sphericalss; break;
   }
   return(detfn) ;
 }

@@ -173,6 +173,12 @@
 #'    \item \eqn{g(d) = g_0\ exp(-d^2/(2\sigma^2))}{g(d) = g0 * exp( -d^2 / (2 * sigma^2 ))}
 #' }
 #'
+#' For \code{detfn = "hhn"}:
+#' \itemize{
+#'    \item Estimated paramters are \code{lambda0} and \code{sigma}.
+#'    \item \eqn{g(d) = 1 - exp(lambda_0\ exp(-d^2/(2\sigma^2))}{g(d) = g0 * exp( -d^2 / (2 * sigma^2 )))}
+#' }
+#' 
 #' For \code{detfn = "hr"}:
 #' \itemize{
 #'    \item Estimated parameters are \code{g0}, \code{sigma}, and
@@ -866,17 +872,19 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Not sure what a linkfn.id of 4 means? Probably throws an error in ADMB.
         linkfn.id <- 4
     }
-    detfns <- c("hn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss")
+    detfns <- c("hn", "hhn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss")
     ## Sets detection function ID number for use in ADMB:
     ## 1 = Half normal
-    ## 2 = Hazard rate
-    ## 3 = Threshold
-    ## 4 = Log-link threshold
-    ## 5 = Identity-link signal strength
-    ## 6 = Log-link signal strength.
+    ## 2 = Hazard halfnormal
+    ## 3 = Hazard rate
+    ## 4 = Threshold
+    ## 5 = Log-link threshold
+    ## 6 = Identity-link signal strength
+    ## 7 = Log-link signal strength.
     detfn.id <- which(detfn == detfns)
     detpar.names <- switch(detfn,
                            hn = c("g0", "sigma"),
+                           hhn = c("lambda0", "sigma"),
                            hr = c("g0", "sigma", "z"),
                            th = c("shape", "scale"),
                            lth = c("shape.1", "shape.2", "scale"),
@@ -910,21 +918,22 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## 1 = identity
     ## 2 = log
     ## 3 = logit
-        parlinks.list <- list(g0 = 3,
-                              sigma = 2,
-                              shape = 1,
-                              shape.1 = 2,
-                              shape.2 = 1,
-                              scale = 2,
-                              b0.ss = 2,
-                              b1.ss = 2,
-                              b2.ss = 2,
-                              sigma.b0.ss = 2,
-                              sigma.ss = 2,
-                              z = 2,
-                              sigma.toa = 2,
-                              kappa = 2,
-                              alpha = 2)
+    parlinks.list <- list(g0 = 3,
+                          lambda0 = 2,
+                          sigma = 2,
+                          shape = 1,
+                          shape.1 = 2,
+                          shape.2 = 1,
+                          scale = 2,
+                          b0.ss = 2,
+                          b1.ss = 2,
+                          b2.ss = 2,
+                          sigma.b0.ss = 2,
+                          sigma.ss = 2,
+                          z = 2,
+                          sigma.toa = 2,
+                          kappa = 2,
+                          alpha = 2)
     for (i in D.betapars.names){
         parlinks.list[i] <- 1
     }
@@ -1000,6 +1009,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Sorting out bounds.
     ## Below bounds are the defaults.
     default.bounds.list <- list(g0 = c(0, 1),
+                                lambda0 = c(0, 1e8),
                                 sigma = c(0, 1e8),
                                 shape = c(-100, 100),
                                 shape.1 = c(0, 1e8),

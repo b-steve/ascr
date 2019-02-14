@@ -63,6 +63,11 @@ autog0 <- function(args){
     0.95
 }
 
+autolambda0 <- function(args){
+    2
+}
+
+
 autoz <- function(args){
     1
 }
@@ -132,3 +137,4 @@ autoshape.1 <- function(args){
 autoshape.2 <- function(args){
     log(autoshape.1(args) + autoscale(args)*autosigma(args))
 }
+
