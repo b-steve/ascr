@@ -31,7 +31,7 @@ Suggests:
     xtable
 LinkingTo: Rcpp
 VignetteBuilder: knitr
-Description: Test. This package allows for the fitting of spatial capture-recapture
+Description: This package allows for the fitting of spatial capture-recapture
     (SCR) models, primarily to acoustic data. Acoustic surveys are capable of
     collecting auxiliary information in addition to capture histories that is
     informative about the source location of detected cues; examples include signal
