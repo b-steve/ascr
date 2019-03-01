@@ -71,7 +71,7 @@ test_that("simple fitting -- hazard halfnormal", {
     ## Fitting model.
     simple.capt <- example$capt["bincapt"]
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, detfn = "hhn", trace = TRUE)
+                    mask = example$mask, detfn = "hhn")
     ## Checking parameter values.
     pars.test <- c(2657.78251522212, 4.28858104175813, 3.66110352213979)
     n.pars <- length(pars.test)
