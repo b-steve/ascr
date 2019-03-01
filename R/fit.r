@@ -1564,6 +1564,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
+    out$scale.covs <- scale.covs
     if (out$fn == "secr"){
         if (out$maxgrad < -0.01){
             warning("Maximum gradient component is large.")

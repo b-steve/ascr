@@ -457,3 +457,21 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
     colnames(out) <- paste(round(percs, 2), "%")
     out
 }
+
+#' Extract density estimates given a set of covariate values
+#'
+#' Extracts density estimates from a set of supplied parameter values.
+#'
+#' @param object A fitted model from \link[ascr]{fit.ascr}.
+#' @param newdata An optional data frame in which to look for
+#'     variables with which to estimate density. If omitted, something
+#'     else will happen.
+#' @param ... Other parameters (for S3 generic compatibility).
+#'
+#' @examples
+#' 1:4
+#'
+#' @export predict.ascr
+predict.ascr <- function(object, newdata, ...){
+    1
+}
