@@ -689,14 +689,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     all.mask <- do.call("rbind", mask)
     all.covariates <- data.frame(do.call("rbind", covariates))
     which.session <- rep(1:length(mask), times = sapply(mask, nrow))
-    if (cov.scale){
-        for (i in 1:ncol(all.covariates)){
-            if (is.numeric(all.covariates[, i])){
-                all.covariates[, i] <- (all.covariates[, i] - mean(all.covariates[, i]))/
-                    sd(all.covariates[, i])
-            }
-        }
-    }
+    ## Creating covariate scaling function.
+    scale.covs <- scale.closure(all.covariates, cov.scale)
+    ## Scaling covariates.
+    all.covariates <- scale.covs(all.covariates)
     ## Extracting model formula.
     model.formula <- ihd.opts$model
     ## Creating a response because we need one for gam() to work.

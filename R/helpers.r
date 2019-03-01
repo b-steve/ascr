@@ -535,3 +535,25 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
     in.area <- apply(distances(mask, as.matrix(traps)), 1, function(x) min(x) < radius)
     a*sum(in.area)
 }
+
+## A closure for scaling covariates.
+scale.closure <- function(covariates, scale){
+    n.cov <- ncol(covariates)
+    numeric.cov <- sapply(covariates, is.numeric)
+    mean.cov <- numeric(n.cov)
+    sd.cov <- numeric(n.cov)
+    mean.cov[!numeric.cov] <- NA
+    sd.cov[!numeric.cov] <- NA
+    mean.cov[numeric.cov] <- sapply(covariates[, numeric.cov, drop = FALSE], mean)
+    sd.cov[numeric.cov] <- sapply(covariates[, numeric.cov, drop = FALSE], sd)
+    out.fun <- function(covariates){
+        out <- covariates
+        for (i in 1:n.cov){
+            if (scale & numeric.cov[i]){
+                out[, i] <- (out[, i] - mean.cov[i])/sd.cov[i]
+            }
+        }
+        out
+    }
+    out.fun
+}
