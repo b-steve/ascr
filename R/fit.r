@@ -710,7 +710,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     mm.ihd <- list()
     covariates <- list()
     for (i in 1:n.sessions){
-        mm.ihd[[i]] <- all.mm.ihd[which.session == i, ]
+        mm.ihd[[i]] <- all.mm.ihd[which.session == i, , drop = FALSE]
         covariates[[i]] <- all.covariates[which.session == i, ]
     }
     D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
