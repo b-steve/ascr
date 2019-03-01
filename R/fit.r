@@ -686,19 +686,32 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     } else {
         cov.scale <- ihd.opts$scale
     }
-    D.mask <- list()
-    mm.ihd <- list()
-    for (i in 1:n.sessions){
-        if (cov.scale){
-            covariates[[i]] <- as.data.frame(apply(covariates[[i]], 2, function(x) (x - mean(x))/sd(x)))
+    all.mask <- do.call("rbind", mask)
+    all.covariates <- do.call("rbind", covariates)
+    which.session <- rep(1:length(mask), times = sapply(mask, nrow))
+    if (cov.scale){
+        for (i in 1:ncol(all.covariates)){
+            if (is.numeric(all.covariates[, i])){
+                all.covariates[, i] <- (all.covariates[, i] - mean(all.covariates[, i]))/
+                    sd(all.covariates[, i])
+            }
         }
-        ## Extracting the formula.
-        model.formula <- ihd.opts$model
-        ## Need a response variable for gam() to work.
-        model.formula <- as.formula(paste("rep(0, nrow(covariates[[i]]))", paste(as.character(model.formula), collapse="")))
-        fgam <- gam(model.formula, data = covariates[[i]], fit = FALSE)
-        mm.ihd[[i]] <- fgam$X
-        colnames(mm.ihd[[i]]) <- fgam$term.names
+    }
+    ## Extracting model formula.
+    model.formula <- ihd.opts$model
+    ## Creating a response because we need one for gam() to work.
+    gam.resp <- rep(0, nrow(all.covariates))
+    model.formula <- as.formula(paste("gam.resp", as.character(model.formula), collapse = ""))
+    ## Making model matrix.
+    all.fgam <- gam(model.formula, data = all.covariates, fit = FALSE)
+    all.mm.ihd <- all.fgam$X
+    colnames(all.mm.ihd) <- all.fgam$term.names
+    ## Splitting model matrix and covariates into sessions.
+    mm.ihd <- list()
+    covariates <- list()
+    for (i in 1:n.sessions){
+        mm.ihd[[i]] <- all.mm.ihd[which.session == i, ]
+        covariates[[i]] <- all.covariates[ which.session == i, ]
     }
     D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
     ## Sorting out signal strength options.
