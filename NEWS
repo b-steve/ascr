@@ -2,6 +2,9 @@ ascr 2.2.1
 
 * Implemented the hazard halfnormal detection function.
 
+* Fixed bug that prevented factors from being used as explanatory
+  variables for inhomogeneous density.
+
 ascr 2.2.0
 ----------
 
