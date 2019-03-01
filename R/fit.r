@@ -697,11 +697,12 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             }
         }
     }
+    browser()
     ## Extracting model formula.
     model.formula <- ihd.opts$model
     ## Creating a response because we need one for gam() to work.
     gam.resp <- rep(0, nrow(all.covariates))
-    model.formula <- as.formula(paste("gam.resp", as.character(model.formula), collapse = ""))
+    model.formula <- as.formula(paste("gam.resp", paste(as.character(model.formula), collapse = "")))
     ## Making model matrix.
     all.fgam <- gam(model.formula, data = all.covariates, fit = FALSE)
     all.mm.ihd <- all.fgam$X
@@ -711,7 +712,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     covariates <- list()
     for (i in 1:n.sessions){
         mm.ihd[[i]] <- all.mm.ihd[which.session == i, ]
-        covariates[[i]] <- all.covariates[ which.session == i, ]
+        covariates[[i]] <- all.covariates[which.session == i, ]
     }
     D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
     ## Sorting out signal strength options.
