@@ -687,7 +687,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         cov.scale <- ihd.opts$scale
     }
     all.mask <- do.call("rbind", mask)
-    all.covariates <- do.call("rbind", covariates)
+    all.covariates <- data.frame(do.call("rbind", covariates))
     which.session <- rep(1:length(mask), times = sapply(mask, nrow))
     if (cov.scale){
         for (i in 1:ncol(all.covariates)){
@@ -697,7 +697,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             }
         }
     }
-    browser()
     ## Extracting model formula.
     model.formula <- ihd.opts$model
     ## Creating a response because we need one for gam() to work.
