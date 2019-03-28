@@ -311,7 +311,25 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                            ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
-    par.names <- c("D", detpar.names, suppar.names)
+    if (sim.ihd) {
+      ## Density is provided with the ihd.surf[[s]] vector
+      if (!is.null(fit)) {
+        ## If a model is provided, pull out the betas for the IHD estimation
+        par.names <- c(names(pars)[grep("D.*", names(pars))], detpar.names, suppar.names)
+      } else {
+        ## Unsure about this as I don't have a case where only the density vector and mask object is provided
+        par.names <- c(detpar.names, suppar.names) 
+      }
+      msg <- ""
+      for (s in 1:n.sessions) {
+        if (nrow(full.mask[[s]]) != length(ihd.surf[[s]])) {
+          msg <- paste0(msg, "Session ", s, " has a density vector whose length is not equal to the number of mask points. ")
+        }
+      }
+      if (msg != "") stop (msg)
+    } else {
+      par.names <- c("D", detpar.names, suppar.names)
+    }
     if (!identical(sort(par.names), sort(names(pars)))){
         msg <- paste("The following must be named components of the list 'pars': ",
                      paste(par.names, collapse = ", "), ".", sep = "")
@@ -329,7 +347,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         if (is.null(cue.rates)){
             if (!popn.provided){
                 if (sim.ihd){
-                    popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask, buffer = 0,
+                    popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = convert.mask(mask), buffer = 0,
                                                model2D = "IHP"))
                 } else {
                     popn <- as.matrix(sim.popn(D = pars$D, core = core, buffer = 0))
@@ -350,7 +368,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
             }
             if (!popn.provided){
                 if (sim.ihd){
-                    popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = mask,
+                    popn <- as.matrix(sim.popn(D = ihd.surf[[s]], core = convert.mask(mask),
                                                buffer = 0, model2D = "IHP"))
                 } else {
                     popn <- as.matrix(sim.popn(D = D, core = core, buffer = 0))
