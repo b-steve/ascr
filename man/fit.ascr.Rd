@@ -303,7 +303,7 @@ Details of the detection functions are as follows:
 
 For \code{detfn = "hn"}:
 \itemize{
-   \item Estimated paramters are \code{g0} and \code{sigma}.
+   \item Estimated parameters are \code{g0} and \code{sigma}.
    \item \eqn{g(d) = g_0\ exp(-d^2/(2\sigma^2))}{g(d) = g0 * exp( -d^2 / (2 * sigma^2 ))}
 }
 
@@ -351,7 +351,7 @@ For \code{detfn = "ss"} in a non-directional model:
 
 For \code{detfn = "ss"} in a directional model:
 \itemize{
-  \item Estimated paramters are \code{b0.ss}, \code{b1.ss}, \code{b2.ss} and
+  \item Estimated parameters are \code{b0.ss}, \code{b1.ss}, \code{b2.ss} and
         \code{sigma.ss}.
   \item The expected signal strength is modelled differently depending on the value of \code{ss.link} in \code{ss.opts}:
   \itemize{
@@ -434,7 +434,7 @@ maximised over, while all others are fixed at their original
 values. Following that, parameters with a phase of 2 are
 introduced, with all parameters with later phases remaining
 fixed. This process continues until all parameters are maximised
-over. Maximising paramters in phases can greatly improve the
+over. Maximising parameters in phases can greatly improve the
 stability of optimisation.
 
 To improve convergence using scalefactors, first identify which
@@ -477,14 +477,23 @@ results.
 
 \examples{
 \dontrun{
+## Getting some data.
 simple.capt <- example$capt["bincapt"]
+## A simple model.
 simple.hn.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                           mask = example$mask, fix = list(g0 = 1))
+## A simple model with a hazard-rate detection function.
 simple.hr.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                           mask = example$mask, detfn = "hr")
+## Including some bearing information.
 bearing.capt <- example$capt[c("bincapt", "bearing")]
+## Fitting a model with bearing information.
 bearing.hn.fit <- fit.ascr(capt = bearing.capt, traps = example$traps,
                            mask = example$mask, fix = list(g0 = 1))
+## Getting some multi-session data.
+multi.capt <- lapply(multi.example$capt, function(x) x[1])
+multi.fit <- fit.ascr(multi.capt, multi.example$traps,
+                      multi.example$mask)
 }
 
 }
