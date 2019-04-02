@@ -141,6 +141,10 @@ locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
     if (fit$first.calls){
         stop("The locations() function has not yet been implemented for first-call models.")
     }
+    ## Error for providing a mask when the model has inhomogeneous density.
+    if (!missing(mask) & fit$fit.ihd){
+        stop("A new mask cannot be provided for inhomogeneous density models.")
+    }
     ## Error if combine specified without infotypes.
     if (missing(infotypes) & combine){
         stop("Argument `combine' is only useful if `infotypes' is provided.")
