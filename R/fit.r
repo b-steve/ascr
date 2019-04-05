@@ -1434,6 +1434,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         out$D.mask <- D.mask
         out$mm.ihd <- mm.ihd
+        if (fit.ihd){
+          ## Extract the smooth constructs for each predictor.
+          out$mm.ihd[[2]] <- all.fgam$smooth
+        }
         setwd(curr.dir)
         if (class(out)[1] == "try-error"){
             stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
