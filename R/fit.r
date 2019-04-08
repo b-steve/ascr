@@ -1437,6 +1437,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (fit.ihd){
           ## Extract the smooth constructs for each predictor.
           out$mm.ihd[[2]] <- all.fgam$smooth
+          out$mm.ihd[[3]] <- cov.scale
         }
         setwd(curr.dir)
         if (class(out)[1] == "try-error"){
@@ -1568,7 +1569,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
-    out$scale.covs <- scale.covs
     if (out$fn == "secr"){
         if (out$maxgrad < -0.01){
             warning("Maximum gradient component is large.")
