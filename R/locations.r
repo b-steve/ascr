@@ -105,7 +105,7 @@
 #'
 #' @export
 locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
-                      xlim = NULL, ylim = NULL, mask = get.mask(fit, session),
+                      xlim = NULL, ylim = NULL, mask = get.mask(fit, session), covariates = NULL,
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
                           ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
@@ -242,7 +242,68 @@ locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
     ## Divide by normalising constant; not conversion to square metres.
     a <- attr(mask, "area")
     if (fit$fit.ihd){
-        f.x <- p.det*fit$D.mask[[session]]/(a*sum(p.det*fit$D.mask[[session]]))
+      if (identical(mask, get.mask(fit, session))) {
+        ## No need to recalculate the estimated modes if the mask object is equal.
+        f.x <- p.det * fit$D.mask[[session]]/(a * sum(p.det * fit$D.mask[[session]]))
+      } else {
+        ## Error checking for the cases I've determined
+        if (nrow(mask) != nrow(covariates)) stop("The size of the mask object is not the same as the provided covariate object.")
+        if (!identical(sort(names(covariates)), sort(names(fit$args$ihd.opts$covariates)))) stop("The provided covariate object has excluded variables used in the model's original covariate object.")
+        
+        ## Determine whether the fitted model has scaled the covariate object
+        if (fit$mm.ihd[[3]]) {
+          if (class(fit$args$ihd.opts$covariates) == "list") {
+            mu <- colMeans(fit$args$ihd.opts$covariates[[session]])
+            std.dev <- sapply(fit$args$ihd.opts$covariates[[session]], sd)
+          } else {
+            mu <- colMeans(fit$args$ihd.opts$covariates)
+            std.dev <- sapply(fit$args$ihd.opts$covariates, sd)  
+          }
+        } else {
+          mu <- sapply(fit$args$ihd.opts$covariates, 0)
+          std.dev <- sapply(fit$args$ihd.opts$covariates, 1)
+        }
+        
+        covariates_Hat <- data.frame(sapply(names(covariates), function (x) {(covariates[, x] - mu[x]) / std.dev[x]}))
+        
+        ## Set up objects for defining the model matrix given the fitted model.
+        gam_terms <- colnames(fit$args$ihd.opts$covariates)
+        if (class(fit$mm.ihd[[1]]) == "list") {
+          fitted_terms <- colnames(fit$mm.ihd[[1]][[session]])
+        } else {
+          fitted_terms <- colnames(fit$mm.ihd[[1]])
+        }
+        
+        if (length(fit$mm.ihd[[2]]) > 0) {
+          smooth_index <- data.frame(A = 1:length(fit$mm.ihd[[2]]), row.names = sapply(fit$mm.ihd[[2]], function (x) {x$term}))
+        } else {
+          smooth_index <- NULL
+        }
+        
+        ## Define the components of the model matrix for the new covariate inputs.
+        id_terms <- sapply(gam_terms, function (x) {
+          local_terms <- grepl(x, x = fitted_terms)
+          if (length(which(local_terms)) > 1 && !is.null(smooth_index)) {
+            mgcv::PredictMat(fit$mm.ihd[[2]][[smooth_index[x, ]]], data = covariates_Hat)
+          } else if (length(which(local_terms)) == 1) {
+            model.matrix(as.formula(paste0("~", x, "-1")), data = covariates_Hat)
+          }
+        })
+        
+        ## Construct the full model matrix.
+        Xp <- do.call(cbind, id_terms)
+        
+        if (!all(!grepl("(Intercept)", fitted_terms))) {
+          Xp <- cbind(1, Xp)
+        }
+        
+        ## Recalculate the IHD surface given the new mask and it's covariates.
+        pars <- get.par(fit, "fitted")
+        
+        D.mask <- exp(Xp %*% pars[grep("D.*", names(pars))])
+        
+        f.x <- p.det * D.mask/(a * sum(p.det * D.mask))
+      }
     } else {
         f.x <- p.det/(a*sum(p.det))
     }
