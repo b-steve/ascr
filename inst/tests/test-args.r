@@ -15,7 +15,7 @@ test_that("fixing parameters", {
     ## Checking that no other parameters are set to -1.
     active.phases <- c(fit$phases[phase.pars != "g0"],
                        recursive = TRUE)
-    expect_that(all(active.phases > -1), is_true())
+    expect_true(all(active.phases > -1))
 })
 
 test_that("start values", {
@@ -29,7 +29,7 @@ test_that("start values", {
     ## Check that estimates are the same.
     relative.error <- max(abs((coef(fit.start) - coef(fit))/
                               coef(fit)))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Check start value is passed correctly.
     expect_that(fit$args$sv$`D.(Intercept)`, is_equivalent_to(log(2145)))
 })
@@ -39,7 +39,7 @@ test_that("parameter bounds", {
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, bounds = list(D = c(0, 5000)))
     ## Check that bounds object is a list.
-    expect_that(is.list(fit$args$bounds), is_true())
+    expect_true(is.list(fit$args$bounds))
     ## Check that bounds for D set appropriately.
     expect_that(fit$args$bounds$`D.(Intercept)`, equals(c(log(1e-20), log(5000))))
     ## Check that bounds for g0 still set to defaults.
@@ -50,5 +50,5 @@ test_that("local integration", {
     simple.capt <- example$capt[c("bincapt", "toa")]
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, local = TRUE)
-    expect_that(fit$args$local, is_true())
+    expect_true(fit$args$local)
 })

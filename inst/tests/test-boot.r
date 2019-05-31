@@ -9,7 +9,7 @@ test_that("simple model bootstrapping", {
                     0.05289568, 2579.83223503568)
     boot.means <- apply(boot.fit$boot$boots, 2, mean)
     relative.error <- max(abs((boot.means - means.test)/means.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Coefficients.
     expect_that(coef(boot.fit), is_identical_to(coef(example$fits$simple.hn)))
     ## Standard errors.
@@ -17,18 +17,18 @@ test_that("simple model bootstrapping", {
                   0.160164821510471, 0.0748244587754581)
     boot.ses <- stdEr(boot.fit, "all")
     relative.error <- max(abs((boot.ses - ses.test)/ses.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Monte Carlo error calculation.
     se.mces.test <- c(0.0421420801420685, 0.0190421463886411, 0.0421420801420685, 
                       0.102045193521712, 0.00173380322371648, 99.0170592323127)
     boot.se.mces <- ascr:::get.mce(boot.fit, "se")
     relative.error <- max(abs((boot.se.mces - se.mces.test)/se.mces.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     bias.mces.test <- c(0.0636401620654382, 0.0298417966775328, 0.0636401620654382, 
                         0.156547059873566, 0.002599935557669, 158.490221019319)
     boot.bias.mces <- ascr:::get.mce(boot.fit, "bias")
     relative.error <- max(abs((boot.bias.mces - bias.mces.test)/bias.mces.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Testing parallel bootstrap.
     library(parallel)
     set.seed(8871)
@@ -56,7 +56,7 @@ test_that("cue-rate model bootstrapping", {
                   0.108387339783415, 0.350108662810472)
     ses <- stdEr(boot.fit, "all")
     relative.error <- max(abs((ses - ses.test)/ses.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
 })
 
 test_that("bootstrapping helpers", {
@@ -78,29 +78,29 @@ test_that("bootstrapping helpers", {
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn)
     relative.error <- max(abs((cis - cis.test)/cis.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Default linked, also making sure qqplot works.
     cis.test <- matrix(c(1559.57881942082, 4.45279026517435, 3297.45586737609, 6.52474165237109),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, linked = TRUE, qqplot = TRUE, ask = FALSE)
     relative.error <- max(abs((cis - cis.test)/cis.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Default with bias correction.
     cis.test <- matrix(c(1402.08499580554, 4.33572108417459, 3096.50101212701, 6.40579519724382),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, method = "default.bc")
     relative.error <- max(abs((cis - cis.test)/cis.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Basic.
     cis.test <- matrix(c(1421.96795794811, 4.2850913343052, 3065.72978328319, 6.31246947068946),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, method = "basic")
     relative.error <- max(abs((cis - cis.test)/cis.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
     ## Percentile.
     cis.test <- matrix(c(1469.74916771401, 4.46775429553276, 3113.51099304909, 6.49513243191702),
                        nrow = 2)
     cis <- confint(example$fits$boot.simple.hn, method = "percentile")
     relative.error <- max(abs((cis - cis.test)/cis.test))
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
 })
