@@ -19,5 +19,5 @@ test_that("testing calculation of probability detection surface", {
     esa.test <- sum(ascr:::p.dot(example$fits$simple.hn))*attr(example$mask, "area")
     esa <- get.par(example$fits$simple.hn, "esa")
     relative.error <- (esa.test - esa)/esa
-    expect_that(relative.error < 1e-4, is_true())
+    expect_true(relative.error < 1e-4)
 })

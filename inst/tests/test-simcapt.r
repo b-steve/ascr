@@ -16,8 +16,8 @@ test_that("simulation produces correct output", {
                                            "dist", "toa")))
     ## Checking dimensions.
     dims <- sapply(test.capt, dim)
-    expect_that(all(dims[1, ] == nrow(example$capt$bincapt)), is_true())
-    expect_that(all(dims[2, ] == nrow(example$traps)), is_true())
+    expect_true(all(dims[1, ] == nrow(example$capt$bincapt)))
+    expect_true(all(dims[2, ] == nrow(example$traps)))
     ## Checking equality with example$capt.
     expect_that(test.capt, equals(example$capt))
     test.ss <- c(61.5810096413274, 85.7765377386673, 71.9380707339211, 0,

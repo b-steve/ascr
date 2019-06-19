@@ -415,7 +415,7 @@ test_that("first-call signal strength models", {
     pars.test <- c(2.6061075, 62.0208816041957, 0.11497237446662, 
                    6.24356345437168)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
-    expect_that(relative.error < 1e-3, is_true())
+    expect_true(relative.error < 1e-3)
     ## Testing for an error if identity ss.link is not used.
     expect_that(fit <-  fit.ascr(capt = capt, traps = traps, mask = mask,
                      ss.opts = list(cutoff = cutoff,
@@ -428,7 +428,7 @@ test_that("Multi-session models", {
                     sv = list(kappa = 100))
     pars.test <- c(2525.4060484, 0.9849349, 2.8395646, 120.0353505)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
-    expect_that(relative.error < 1e-3, is_true())
+    expect_true(relative.error < 1e-3)
     set.seed(2987)
     boot.fit <- boot.ascr(fit, N = 10, prog = FALSE)
     ses <- stdEr(boot.fit, "all")
@@ -449,11 +449,11 @@ test_that("Inhomogeneous density estimation", {
                     ihd.opts = list(model = ~ x + y, covariates = df))
     pars.test <- c(7.72626004368, 0.0562992293496, 0.088380677303, 5.3875700735678)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
-    expect_that(relative.error < 1e-3, is_true())
+    expect_true(relative.error < 1e-3)
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, ihd.opts = list(model = ~ s(x, k = 3)))
     pars.test <- c(5.00442908703, 12.0411342793, 0.0626406907173, 0.999999999974208,
                    5.08547672171856)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
-    expect_that(relative.error < 1e-3, is_true())
+    expect_true(relative.error < 1e-3)
 })

@@ -1282,7 +1282,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         }
         data.list$combins <- combins
         fit <- optimx(c(sv.link[c("D.(Intercept)", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
-                      secr_nll, dat = data.list, get_esa = FALSE, method = "nmkb",
+                      secr_nll, dat = data.list, get_esa = FALSE, method = "BFGS",
                       hessian = hess)
         out <- vector("list", 15)
         names(out) <- c("fn", "coefficients", "coeflist", "se", "loglik", "maxgrad", 

@@ -32,8 +32,10 @@ test.ascr <- function(quick = FALSE){
             }
         }
     } else {
+        suppressWarnings(RNGkind(sample.kind = "Rounding"))
         dir <- paste(system.file(package = "ascr"), "tests", sep = "/")
         test_dir(dir)
+        suppressWarnings(RNGkind(sample.kind = "default"))
     }
 }
 

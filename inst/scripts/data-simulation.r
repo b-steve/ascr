@@ -1,3 +1,4 @@
+RNGkind(sample.kind = "Rounding")
 library(ascr)
 set.seed(8173)
 example.traps <- cbind(rep(c(0, 5), each = 3), rep(c(0, 5, 10), 2))
