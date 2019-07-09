@@ -599,7 +599,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                 x
             }, rem = rem)
             keep <- apply(capt[[i]]$bincapt, 1, sum) > 0
-            capt[[i]] <- lapply(capt[[i]], function(x, keep) x[keep, ], keep = keep)
+            capt[[i]] <- lapply(capt[[i]], function(x, keep) x[keep, , drop = FALSE], keep = keep)
             n.removed <- n.removed + sum(!keep)
         }
         if (trace & n.removed > 0){
