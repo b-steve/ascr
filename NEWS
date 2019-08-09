@@ -1,9 +1,16 @@
 ascr 2.2.1
+----------
 
 * Implemented the hazard halfnormal detection function.
 
 * Fixed bug that prevented factors from being used as explanatory
   variables for inhomogeneous density.
+
+* Fixed bug that prevented the fitting of signal strength models that
+  have sessions with a single capture history.
+
+* Fixed bug that prevented create.mask() from working with
+  multi-session trap objects.
 
 ascr 2.2.0
 ----------
