@@ -253,7 +253,7 @@ convert.capt.to.admbsecr <- convert.capt.to.ascr
 #' @rdname convert.capt
 #' @export
 convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
-    if (is.list(mask)){
+    if (is.list(capt)){
         stop("The convert.capt.to.secr() function will only convert single-session capture history objects.")
     }
     n <- nrow(capt$bincapt)
