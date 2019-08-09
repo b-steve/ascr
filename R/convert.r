@@ -21,12 +21,20 @@
 #'
 #' @export
 create.mask <- function(traps, buffer, ...){
-    traps <- convert.traps(traps)
-    mask <- make.mask(traps, buffer = buffer, type = "trapbuffer", ...)
-    A <- attr(mask, "area")
-    mask <- as.matrix(mask)
-    attr(mask, "area") <- A
-    attr(mask, "buffer") <- buffer
+    if (is.list(traps)){
+        n.sessions <- length(traps)
+        mask <- vector(mode = "list", length = n.sessions)
+        for (i in 1:n.sessions){
+            mask[[i]] <- create.mask(traps[[i]], buffer = buffer, ...)
+        }
+    } else {
+        traps <- convert.traps(traps)
+        mask <- make.mask(traps, buffer = buffer, type = "trapbuffer", ...)
+        A <- attr(mask, "area")
+        mask <- as.matrix(mask)
+        attr(mask, "area") <- A
+        attr(mask, "buffer") <- buffer
+    }
     mask
 }
 
@@ -164,6 +172,9 @@ create.capt <- function(captures, n.traps = NULL, n.sessions = NULL){
 #'
 #' @export
 convert.traps <- function(traps, ss = FALSE){
+    if (is.list(traps)){
+        stop("The convert.traps() function will only convert single-session trap objects.")
+    }
     n.traps <- nrow(traps)
     colnames(traps) <- c("x", "y")
     traps.df <- data.frame(names = 1:n.traps, traps)
@@ -187,6 +198,9 @@ convert.traps <- function(traps, ss = FALSE){
 #'
 #' @export
 convert.mask <- function(mask){
+    if (is.list(mask)){
+        stop("The convert.mask() function will only convert single-session mask objects.")
+    }
     read.mask(data = as.data.frame(mask))
 }
 
@@ -239,6 +253,9 @@ convert.capt.to.admbsecr <- convert.capt.to.ascr
 #' @rdname convert.capt
 #' @export
 convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
+    if (is.list(mask)){
+        stop("The convert.capt.to.secr() function will only convert single-session capture history objects.")
+    }
     n <- nrow(capt$bincapt)
     n.dets <- sum(capt$bincapt)
     session <- rep(1, n.dets)
