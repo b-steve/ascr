@@ -44,7 +44,7 @@ ovenbird.traps <- traps(signalCH)
 An appropriate \texttt{mask} object can be generated using the
 \texttt{create.mask} object, for example
 <<convert-mask, eval = FALSE, tidy = FALSE>>=
-ovenbird.mask <- create.mask(traps = traps, buffer = 200)
+ovenbird.mask <- create.mask(traps = ovenbird.traps, buffer = 200)
 @ 
 
 \section{Capture data format}
@@ -80,19 +80,19 @@ data frame; see the section \emph{Capture data format} in the
   \texttt{secr}}. This is a data frame where each row corresponds to a
 detection of an individual/call at a detector. It has four variables:
 \begin{itemize}
-\item \texttt{Session}: Identifies the session.
+\item \texttt{Session}: Identifies the session (see Section
+  \ref{sec:multi-session} below).
 \item \texttt{ID}: Identifies the individual/call that was detected.
 \item \texttt{Occasion}: Identifies the occasion.
 \item \texttt{Detector}: Identifies which detector detected the
   individual/call.
 \end{itemize}
 
-As \texttt{ascr} does not (yet) support multi-session or
-multi-occasion data, the first and third columns of this data frame
-are ignored. If additional information has been collected by the
-detectors, then this information should appear in subsequent columns
-with the appropriate names (\texttt{bearing}, \texttt{dist},
-\texttt{ss}, or \texttt{toa}).
+The third column of this data frame is ignored because \texttt{ascr}
+does not support multi-occasion data. If additional information has
+been collected by the detectors, then this information should appear
+in subsequent columns with the appropriate names (\texttt{bearing},
+\texttt{dist}, \texttt{ss}, or \texttt{toa}).
 
 \section{Detector location format}
 \label{sec:traps}
@@ -106,10 +106,34 @@ columns. Each row provides the Cartesian coordinates of a detector.
 See the section \emph{Habitat mask} in the \texttt{secr} package
 overview vignette for a brief explanation of the mask object. Mask
 objects created for analysis using the \texttt{secr} package should
-also be compatible with \texttt{ascr}.
+also be compatible with \texttt{ascr}. The functions
+\texttt{create.mask()} (in \texttt{ascr}) and \texttt{make.mask()} (in
+\texttt{secr}) are both capable of creating suitable mask objects.
 
-The functions \texttt{create.mask()} (in \texttt{ascr}) and
-\texttt{make.mask()} (in \texttt{secr}) are both capable of creating
-suitable mask objects.
+\section{Multi-session data}
+\label{sec:multi-session}
+
+Some surveys collect data over multiple `sessions', which are assumed
+to have been carried out independently of one another. For example,
+multiple arrays with different numbers of detectors in different
+spatial configurations may have been deployed at different locations
+in space in such a way that the same individual will not be detected
+by detectors in different arrays.
+
+For surveys with more than one session, the \texttt{capt},
+\texttt{traps}, and \texttt{mask} objects should be lists of the
+matrices described above, one for each session. For example, if
+\texttt{capt1} and \texttt{capt2} contain capture histories in the
+format described above in Section \ref{sec:capt} for two different
+sessions, then an appropriate multi-session object can be created as
+follows:
+<<multi-capt, eval = FALSE, tidy = FALSE>>=
+multi.capt <- list(capt1, capt2)
+@ 
+
+The same approach can be used to construct multi-session
+\texttt{traps} and \texttt{mask} objects, or alternatively the
+\texttt{create.mask()} function can create a multi-session
+\texttt{mask} object from a multi-session \texttt{capt} object.
 
 \end{document}
