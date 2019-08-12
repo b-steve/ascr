@@ -9,6 +9,10 @@ ascr 2.2.1
 * Fixed bug that prevented the fitting of signal strength models that
   have sessions with a single capture history.
 
+* Fixed bug that prevented create.capt() from working with
+  multi-session data when no animals were detected in at least one
+  session.
+
 * Fixed bug that prevented create.mask() from working with
   multi-session trap objects.
 
