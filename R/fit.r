@@ -371,8 +371,8 @@
 #' @param traps A matrix with two columns. Each row provides Cartesian
 #'     coordinates for the location of a trap (or
 #'     detector). Alternatively, this can be a list of such matrices
-#'     if detections from multiple detector arrays are being used to
-#'     fit a single model.
+#'     if detections from multiple detector arrays (or `sessions') are
+#'     being used to fit a single model.
 #' @param mask A matrix with two columns. Each row provides Cartesian
 #'     coordinates for the location of a mask point. The function
 #'     \link{create.mask} will return a suitable
