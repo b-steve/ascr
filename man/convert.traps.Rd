@@ -10,8 +10,8 @@ convert.traps(traps, ss = FALSE)
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or
 detector). Alternatively, this can be a list of such matrices
-if detections from multiple detector arrays are being used to
-fit a single model.}
+if detections from multiple detector arrays (or `sessions') are
+being used to fit a single model.}
 
 \item{ss}{Logical, set to \code{TRUE} if a signal strength
 detection function is to be used.}

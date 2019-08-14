@@ -21,8 +21,8 @@ a single model.}
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a trap (or
 detector). Alternatively, this can be a list of such matrices
-if detections from multiple detector arrays are being used to
-fit a single model.}
+if detections from multiple detector arrays (or `sessions') are
+being used to fit a single model.}
 
 \item{pars}{A named list. Component names are parameter names, and
 components are values of parameters at which the mask is to be

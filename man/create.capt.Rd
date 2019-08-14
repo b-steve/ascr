@@ -4,19 +4,24 @@
 \alias{create.capt}
 \title{Creating capture history object.}
 \usage{
-create.capt(captures, n.traps = NULL, n.sessions = NULL)
+create.capt(captures, n.traps = NULL, n.sessions = NULL,
+  traps = NULL)
 }
 \arguments{
 \item{captures}{A data frame of capture records, see 'Details' for
 the correct format.}
 
-\item{n.traps}{The total number of traps. If \code{NULL} then the
-number of traps is assumed to be the largest value in the
-\code{trap} column of the \code{captures} argument.}
+\item{n.traps}{The number of traps deployed on each session. If the
+number of traps varies between sessions, then this must be a
+vector with the ith element providing the number of traps
+deployed on the ith session.}
 
-\item{n.sessions}{The total number of sessions. If \code{NULL} then
-the number of sessions is assumed to be the largest value in
-the \code{session} column of the \code{captures} argument.}
+\item{n.sessions}{The total number of sessions.}
+
+\item{traps}{A matrix of trap locations, or a list for
+multi-session models (see \link{fit.ascr}). If this argument is
+provided, there is no need to specify \code{n.traps} or
+\code{n.sessions}.}
 }
 \description{
 Creates a capture history object to use with the function
