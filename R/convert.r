@@ -278,8 +278,11 @@ convert.capt.to.admbsecr <- convert.capt.to.ascr
 #' @rdname convert.capt
 #' @export
 convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
-    if (is.list(capt)){
-        stop("The convert.capt.to.secr() function will only convert single-session capture history objects.")
+    if (!any(names(capt) == "bincapt")){
+        if (length(capt) > 1){
+            stop("The convert.capt.to.secr() function will only convert single-session capture history objects.")
+        }
+        capt <- capt[[1]]
     }
     n <- nrow(capt$bincapt)
     n.dets <- sum(capt$bincapt)
@@ -350,7 +353,7 @@ convert.pamguard <- function(dets, mics, time.range = NULL,
     } else {
         captures <- make.acoustic.captures(mics, clicks, sound.speed)
     }
-    create.capt(captures)
+    create.capt(captures, traps = mics)
 }
 
 
