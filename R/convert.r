@@ -82,15 +82,30 @@ create.mask <- function(traps, buffer, ...){
 #'
 #' @param captures A data frame of capture records, see 'Details' for
 #'     the correct format.
-#' @param n.traps The total number of traps. If \code{NULL} then the
-#'     number of traps is assumed to be the largest value in the
-#'     \code{trap} column of the \code{captures} argument.
-#' @param n.sessions The total number of sessions. If \code{NULL} then
-#'     the number of sessions is assumed to be the largest value in
-#'     the \code{session} column of the \code{captures} argument.
-#'
+#' @param n.traps The number of traps deployed on each session. If the
+#'     number of traps varies between sessions, then this must be a
+#'     vector with the ith element providing the number of traps
+#'     deployed on the ith session.
+#' @param n.sessions The total number of sessions.
+#' @param traps A matrix of trap locations, or a list for
+#'     multi-session models (see \link{fit.ascr}). If this argument is
+#'     provided, there is no need to specify \code{n.traps} or
+#'     \code{n.sessions}.
+#' 
 #' @export
-create.capt <- function(captures, n.traps = NULL, n.sessions = NULL){
+create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NULL){
+    if (!missing(n.traps) | !missing(n.sessions)){
+        warning("Arguments 'n.traps' and 'n.sessions' are deprecated. Please provide the the 'traps' argument instead.")
+    }
+    if (missing(traps)){
+        warning("Future versions of ascr will require the 'traps' argument to be provided to the 'create.capt()' function.")
+    } else {
+        if (!is.list(traps)){
+            traps <- list(traps)
+        }
+        n.traps <- sapply(traps, nrow)
+        n.sessions <- length(traps)
+    }
     session.full <- captures[, 1]
     id.full <- captures[, 2]
     trap.full <- captures[, 4]
@@ -99,9 +114,12 @@ create.capt <- function(captures, n.traps = NULL, n.sessions = NULL){
     } else if (any(session.full > n.sessions)){
         stop("Session ID in arguments 'captures' exceeds 'n.sessions'.")
     }
-    if (is.null(n.traps) | length(n.traps) == 1){
+    if (is.null(n.traps)){
+        n.traps <- max(trap.full)
+    }
+    if (length(n.traps) == 1){
         n.traps <- rep(n.traps, n.sessions)
-        if (any(trap.full > n.traps)){
+        if (max(trap.full) > max(n.traps)){
             stop("Trap ID in argument 'captures' exceeds 'n.traps'.")
         }
     } else {
