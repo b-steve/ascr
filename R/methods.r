@@ -468,10 +468,6 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
 #'     else will happen.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
-#' @examples
-#' 1:4
-#'
-#' @export
 predict.ascr <- function(object, newdata, ...){
-    1
+    stop("Not yet implemented")
 }

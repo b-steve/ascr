@@ -18,7 +18,3 @@ else will happen.}
 \description{
 Extracts density estimates from a set of supplied parameter values.
 }
-\examples{
-1:4
-
-}
