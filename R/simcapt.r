@@ -1,6 +1,6 @@
-#' Simulating SECR data
+#' Simulating SCR data
 #'
-#' Simulates SECR capture histories and associated additional
+#' Simulates SCR capture histories and associated additional
 #' information in the correct format for use with the function
 #' \link{fit.ascr}. If \code{fit} is provided then no other arguments
 #' are required. Otherwise, at least \code{traps}, \code{mask}, and
