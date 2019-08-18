@@ -1,4 +1,4 @@
-#' Bootstrapping SECR data
+#' Bootstrapping a fitted ascr model
 #'
 #' Carries out a parametric bootstrap, based on a model fitted using
 #' \link{fit.ascr}.
