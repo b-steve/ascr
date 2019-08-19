@@ -4,7 +4,7 @@
 
  The ascr package fits SCR models to estimate animal density from acoustic surveys. In particular, these models can incorporate additional data like received signal strengths, times of arrival, estimated distances, and estimated bearings, which are informative about animals' locations. Other more general software packages exist for SCR (e.g., the comprehensive secr R package), but they cannot handle all data types listed above.
 
- The models that can be fitted in ascr are described in Efford, Dawson, and Borchers (2009), Borchers et al (2015), and Stevenson (2015). The package also implements some unpublished methods that are described in Stevenson (2016), a PhD thesis.
+ Models that can be fitted in \code{ascr} include those described by Efford, Dawson, and Borchers (2009), Borchers et al (2015), and Stevenson et al (2015). The package also implements some unpublished methods that are described in Stevenson (2016), a PhD thesis.
 
 ## Installation
 
@@ -23,8 +23,6 @@ test.ascr(quick = TRUE)
 If there are any errors with the installation or in the above tests please get in touch using the contact details below.
 
 ## References
-
-Almost all methods presented in the references below have been implemented in the ascr package:
 
 * Borchers, D. L., Stevenson, B. C., Kidney, D., Thomas, L., and Marques, T. A. (2015). A unifying model for capture-recapture and distance sampling surveys of wildlife populations. *Journal of the American Statistical Association*, *110*: 195--204.
 
