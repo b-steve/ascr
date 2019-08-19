@@ -2,7 +2,7 @@
 % Please edit documentation in R/surveyplots.r
 \name{mask.test}
 \alias{mask.test}
-\title{Testing the mask object for a first calls model.}
+\title{Testing the mask object for a first calls model}
 \usage{
 mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
   surface = FALSE, col = c("black", "blue", "red"), pincol = "red",
@@ -11,18 +11,16 @@ mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
 
-\item{mask}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a mask point. The function
-\link{create.mask} will return a suitable
-object. Alternatively, this can be a list of such matrices if
-detections from multiple detector arrays are being used to fit
-a single model.}
+\item{mask}{A matrix with two columns, or a list of such matrices
+for a multi-session model. Each row provides Cartesian
+coordinates for the location of a mask point. It is most easily
+crated using \link{create.mask}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or
-detector). Alternatively, this can be a list of such matrices
-if detections from multiple detector arrays (or `sessions') are
-being used to fit a single model.}
+coordinates for the location of a detector. Alternatively, this
+can be a list of such matrices if detections from multiple
+detector arrays (or `sessions') are being used to fit a single
+model.}
 
 \item{pars}{A named list. Component names are parameter names, and
 components are values of parameters at which the mask is to be

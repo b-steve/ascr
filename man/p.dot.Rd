@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.r
 \name{p.dot}
 \alias{p.dot}
-\title{Calculating detection probabilities.}
+\title{Calculating detection probabilities}
 \usage{
 p.dot(fit = NULL, session = 1, esa = FALSE, points = get.mask(fit,
   session), traps = NULL, detfn = NULL, ss.link = NULL,

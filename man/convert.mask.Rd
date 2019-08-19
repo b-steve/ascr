@@ -7,12 +7,10 @@
 convert.mask(mask)
 }
 \arguments{
-\item{mask}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a mask point. The function
-\link{create.mask} will return a suitable
-object. Alternatively, this can be a list of such matrices if
-detections from multiple detector arrays are being used to fit
-a single model.}
+\item{mask}{A matrix with two columns, or a list of such matrices
+for a multi-session model. Each row provides Cartesian
+coordinates for the location of a mask point. It is most easily
+crated using \link{create.mask}.}
 }
 \value{
 An object of class \code{mask}.

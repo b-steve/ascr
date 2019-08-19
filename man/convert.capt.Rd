@@ -19,10 +19,10 @@ convert.capt.to.secr(capt, traps, capthist = TRUE, cutoff = NULL)
 history object for \code{convert.capt.to.secr}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or
-detector). Alternatively, this can be a list of such matrices
-if detections from multiple detector arrays (or `sessions') are
-being used to fit a single model.}
+coordinates for the location of a detector. Alternatively, this
+can be a list of such matrices if detections from multiple
+detector arrays (or `sessions') are being used to fit a single
+model.}
 
 \item{capthist}{Logical, if \code{TRUE}, a \code{capthist} object
 is returned. Otherwise a data frame is returned, which is

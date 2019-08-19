@@ -17,10 +17,10 @@ additional information types, detection function, and parameter
 values from which to generate capture histories.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or
-detector). Alternatively, this can be a list of such matrices
-if detections from multiple detector arrays (or `sessions') are
-being used to fit a single model.}
+coordinates for the location of a detector. Alternatively, this
+can be a list of such matrices if detections from multiple
+detector arrays (or `sessions') are being used to fit a single
+model.}
 
 \item{mask}{A matrix with two columns, providing x- and
 y-coordinates respectively. The extreme x- and y-coordinates
@@ -72,9 +72,10 @@ this is ignored, and all individuals make the same number of
 calls. See 'Details' below for information on how call
 frequencies are rounded.}
 
-\item{sound.speed}{The speed of sound in metres per second,
-defaults to 330 (the speed of sound in air). Only used when
-\code{"toa"} is a component name of \code{capt}.}
+\item{sound.speed}{The speed of sound in metres per
+second. Defaults to 330 (approximately the speed of sound in
+air). Only used when \code{"toa"} is a component name of
+\code{capt}.}
 
 \item{ihd.surf}{A list with a vector for each session containing a
 value for animal density at each mask point. Only required to

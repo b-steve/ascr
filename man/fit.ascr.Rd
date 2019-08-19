@@ -6,43 +6,39 @@
 \title{Fitting acoustic SCR models}
 \usage{
 fit.ascr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
-  cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-  ihd.opts = NULL, local = FALSE, hess = NULL, trace = FALSE,
-  clean = TRUE, optim.opts = NULL, ...)
+  fix = NULL, ss.opts = NULL, cue.rates = NULL,
+  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
+  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
+  optim.opts = NULL, ...)
 
 admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, phases = NULL, sf = NULL, ss.opts = NULL,
-  cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-  ihd.opts = NULL, local = FALSE, hess = NULL, trace = FALSE,
-  clean = TRUE, optim.opts = NULL, ...)
+  fix = NULL, ss.opts = NULL, cue.rates = NULL,
+  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
+  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
+  optim.opts = NULL, ...)
 }
 \arguments{
-\item{capt}{A list with named components, containing the capture
-history and supplementary information. The function
-\link{create.capt} will return a suitable object. See 'Details'
-below. Alternatively, this can be a list of such lists if
-detections from multiple detector arrays are being used to fit
-a single model.}
+\item{capt}{A list containing capture histories and supplementary
+data for each detected individual. It is most easily created
+using \link{create.capt}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a trap (or
-detector). Alternatively, this can be a list of such matrices
-if detections from multiple detector arrays (or `sessions') are
-being used to fit a single model.}
+coordinates for the location of a detector. Alternatively, this
+can be a list of such matrices if detections from multiple
+detector arrays (or `sessions') are being used to fit a single
+model.}
 
-\item{mask}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a mask point. The function
-\link{create.mask} will return a suitable
-object. Alternatively, this can be a list of such matrices if
-detections from multiple detector arrays are being used to fit
-a single model.}
+\item{mask}{A matrix with two columns, or a list of such matrices
+for a multi-session model. Each row provides Cartesian
+coordinates for the location of a mask point. It is most easily
+crated using \link{create.mask}.}
 
 \item{detfn}{A character string specifying the detection function
-to be used. One of "hn" (halfnormal), "hr" (hazard rate), "th"
-(threshold), "lth" (log-link threshold), or "ss" (signal
-strength). If the latter is used, signal strength information
-must be provided in \code{capt}.}
+to be used. One of "hn" (halfnormal), "hhn" (hazard
+halfnormal), "hr" (hazard rate), "th" (threshold), "lth"
+(log-link threshold), or "ss" (signal strength). If the latter
+is used, signal strength information must be provided in
+\code{capt}.}
 
 \item{sv}{A named list. Component names are parameter names, and
 each component is a start value for the associated
@@ -51,22 +47,11 @@ parameters to be fitted.}
 
 \item{bounds}{A named list. Component names are parameter names,
 and each components is a vector of length two, specifying the
-bounds for the associated parameter.}
+upper and lower bounds for the associated parameter.}
 
 \item{fix}{A named list. Component names are parameter names to be
 fixed, and each component is the fixed value for the associated
 parameter.}
-
-\item{phases}{A named list. Component names are parameter names,
-and each component is a phase for the associated parameter. See
-the section on convergence below for information on parameter
-phases.}
-
-\item{sf}{A named list. Component names are parameter names, and
-each component is a scalefactor for the associated
-parameter. The default behaviour is to automatically select
-scalefactors based on parameter start values. See the section
-on convergence below.}
 
 \item{ss.opts}{Options for models using the signal strength
 detection function. See 'Details' below.}
@@ -74,7 +59,10 @@ detection function. See 'Details' below.}
 \item{cue.rates}{A vector of call rates collected independently of
 the main acoustic survey. This must be measured in calls per
 unit time, where the time units are equivalent to those used by
-\code{survey.length}.}
+\code{survey.length}. For example, if the survey was 30 minutes
+long, the cue rates must be provided in cues per minute if
+\code{survey.length = 30}, but in cues per hour if
+\code{survey.length = 0.5}.}
 
 \item{survey.length}{The length of a cue-based survey. If provided,
 the estimated density \code{Dc} is measured in cues per unit
@@ -82,9 +70,10 @@ time (using the same units as \code{survey.length}). For
 multi-session data, this must be a vector, giving the survey
 lengths for each session.}
 
-\item{sound.speed}{The speed of sound in metres per second,
-defaults to 330 (the speed of sound in air). Only used when
-\code{"toa"} is a component name of \code{capt}.}
+\item{sound.speed}{The speed of sound in metres per
+second. Defaults to 330 (approximately the speed of sound in
+air). Only used when \code{"toa"} is a component name of
+\code{capt}.}
 
 \item{ihd.opts}{Options for inhomogeneous density. See 'Details'
 below.}
@@ -100,7 +89,8 @@ expense of a little processing time. If \code{FALSE}, the
 Hessian is not estimated. Note that if individuals are
 detectable more than once (e.g., by calling more than once on
 an acoustic survey) then parameter uncertainty is not properly
-represented by these calculations.}
+represented by these calculations. As a result, this argument
+defaults to \code{FALSE} if \code{cue.rates} is provided.}
 
 \item{trace}{Logical, if \code{TRUE} parameter values at each step
 of the optimisation algorithm are printed to the R console.}
@@ -130,9 +120,8 @@ likelihood through an AD Model Builder (ADMB) executable.
 ADMB uses a quasi-Newton method to find maximum likelihood
 estimates for the model parameters. Standard errors are calculated
 by taking the inverse of the negative of the
-Hessian. Alternatively, \link{boot.ascr} can be used to carry
-out a parametric bootstrap procedure, from which parameter
-uncertainty can also be inferred.
+Hessian. Alternatively, \link{boot.ascr} can be used to carry out a
+parametric bootstrap procedure.
 
 If the data are from an acoustic survey where individuals call more
 than once (i.e., the argument \code{cue.rates} contains values
@@ -142,47 +131,6 @@ provided in this case. The method used by the function
 \link{boot.ascr} is currently the only way to calculate these
 reliably (see Stevenson et al., 2015, for details)
 }
-\section{The \code{capt} argument}{
-
-
-The \code{capt} argument is a list with named components. Each
-component must be an \eqn{n} by \eqn{k} matrix, where \eqn{n} is
-the number of detections made, and \eqn{k} is the number of traps
-(or detectors) deployed. A component named \code{bincapt} is
-compulsory.
-
-Further optional component names each refer to a type of additional
-information that is informative on animal location collected from
-each detection. Possible choices are: \code{bearing}, \code{dist},
-\code{ss}, \code{toa}, and \code{mrds}.
-
-If the \eqn{i}th individual evaded the \eqn{j}th trap (or
-detector), then the \eqn{j}th element in the \eqn{i}th row should
-be 0 for all components. Otherwise, if the \eqn{i}th individual was
-trapped (or detected) by the \eqn{j}th trap (or detector), then:
-\itemize{
-  \item For the \code{bincapt} component, the element should be 1.
-  \item For the \code{bearing} component, the element should be the
-        estimated bearing from which the detector detected the
-        individual.
-  \item For the \code{dist} component, the element should be the
-        estimated distance between the individual and the detector
-        at the time of the detection.
-  \item For the \code{ss} component, the element should be the
-        measured signal strength of an acoustic signal detected by
-        the detector (only possible when the detectors are
-        microphones).
-  \item For the \code{toa} component, the element should be the
-        measured time of arrival (in seconds) since the start of
-        the survey (or some other reference time) of an acoustic
-        signal detected by the detector (only possible when the
-        detectors are microphones).
-  \item For the \code{mrds} component, the element should be the
-        \emph{known} (not estimated) distance between the individual
-        and the detector at the time of the detection.
-}
-}
-
 \section{The \code{ss.opts} argument}{
 
 
@@ -192,35 +140,17 @@ below on fitted parameters). It is therefore only required if
 signal strength information appears in the \code{capt} argument,
 and is ignored (with a warning) otherwise.
 
-The argument \code{ss.opts} is a list with up to seven components:
+The argument \code{ss.opts} is a list with the following
+components. The first two are relevant to the standard signal
+strength model developed by Efford, Dawson, and Borchers
+(2009). The remaining components are relevant to unpublished
+extensions described in Stevenson (2016), a PhD thesis.
+
 \itemize{
+
   \item \code{cutoff}: Compulsory. The signal strength threshold,
         above which sounds are identified as detections.
-  \item \code{lower.cutoff}: Optional. Used for models where only
-        the first detected call is used in the capture history. The lower
-        cutoff is the signal strength value above which calls can be
-        assumed to have been detected with certainty.
-  \item \code{het.source}: Optional. Logical, if \code{TRUE} a model with
-        heterogeneity in source signal strengths is used. If unspecified,
-        it will default to \code{FALSE}.
-  \item \code{het.source.method}: Optional. A character string, either
-        \code{"GH"} or \code{"rect"}. If "GH", integration over source strengths
-        uses Gauss-Hermite quadrature. If "rect", the rectangle method is used.
-  \item \code{n.het.source.quadpoints}: Optional. An integer, giving the number
-        of quadrature points used for numerical integration over source strengths.
-        Defaults to 15. A larger number of quadrature points leads to more accurate
-        results, but will increase computation time.
-  \item \code{directional}: Optional. Logical, if \code{TRUE} a
-        directional signal strength model is used; see the section below on
-        fitted parameters. If unspecified, it will default to \code{FALSE},
-        unless the \code{b2.ss} parameter is provided in \code{sv} or
-        \code{fix}, in which case it will default to \code{TRUE}.
-  \item \code{n.dir.quadpoints}: Optional. An integer, giving the number of
-        quadrature points used for numerical integration over the possible
-        call directions. Defaults to 8, but needs to be larger when calls are
-        more directional (i.e., b2.ss parameter is large). A larger number of
-        quadrature points leads to more accurate results, but will increase computation
-        time.
+
   \item \code{ss.link}: Optional. A character string, either
         \code{"identity"}, \code{"log"}, or \code{"spherical"}, which
         specifies the relationship between the expected received signal
@@ -228,6 +158,47 @@ The argument \code{ss.opts} is a list with up to seven components:
         signal strength detection function in the section 'Fitted
         parameters' below. Defaults to \code{"identity"}.
 
+  \item \code{lower.cutoff}: Optional. Used for models where only
+        the first detected call is used in the capture history. The
+        lower cutoff is the signal strength value above which calls
+        can be assumed to have been detected with certainty. See
+        Stevenson (2016) for further details about first-call
+        models.
+
+  \item \code{het.source}: Optional. Logical, if \code{TRUE} a
+        model with heterogeneity in source signal strengths is
+        used. If unspecified, it will default to \code{FALSE}. See
+        Stevenson (2016) for further details about models with
+        heterogeneity in source signal strengths.
+
+  \item \code{het.source.method}: Optional. A character string,
+        either \code{"GH"} or \code{"rect"}. If "GH", integration
+        over source strengths uses Gauss-Hermite quadrature, which
+        is recommended and also the default. If "rect", the
+        rectangle method is used.
+
+  \item \code{n.het.source.quadpoints}: Optional. An integer,
+        giving the number of quadrature points used for numerical
+        integration over source strengths for models with
+        heterogeneity in source strengths. Defaults to 15. A larger
+        number of quadrature points leads to more accurate results,
+        but will increase computation time.
+
+  \item \code{directional}: Optional. Logical, if \code{TRUE} a
+        directional signal strength model is used. If unspecified,
+        it will default to \code{FALSE}, unless the \code{b2.ss}
+        parameter (which controls directionality) is provided in
+        \code{sv} or \code{fix}, in which case it will default to
+        \code{TRUE}. See Stevenson (2016) for further details about
+        directional-calling models.
+
+  \item \code{n.dir.quadpoints}: Optional. An integer, giving the
+        number of quadrature points used for numerical integration
+        over the possible call directions. Defaults to 8, but needs
+        to be larger when calls are more directional (i.e., b2.ss
+        parameter is large). A larger number of quadrature points
+        leads to more accurate results, but will increase
+        computation time.
 
 }
 }
@@ -257,30 +228,39 @@ The argument \code{ihd.opts} is a list with up to three components:
 
 
 This argument allows the user to select options for the
-maximisation of the likelihood.
+maximisation of the likelihood. These options can almost always be
+safely ignored, but allow the user a little control over the
+optimisation carried out by the ADMB executable.
 
-The argument \code{optim.opts} is a list with up to four components:
+The argument \code{optim.opts} is a list with up to five components:
 \itemize{
 
-  \item \code{cbs}: Optional. The CMPDIF_BUFFER_SIZE, set using the
-\code{-cbs} option of the executable created by ADMB. This can be
-increased to speed up optimisation if \code{cmpdiff.tmp} gets too
-large (please ignore, unless you are familiar with ADMB and know
-what you are doing).
+\item \code{neld.mead}: Optional. A logical value specifying
+    whether or not to use Nelder-Mead optimisation. Defaults to
+    \code{FALSE}.
 
-  \item \code{gbs}: Optional. The GRADSTACK_BUFFER_SIZE, set using
-the \code{-gbs} option of the executable created by ADMB. This can
-be increased to speed up optimisation if \code{gradfil1.tmp} gets
-too large (please ignore, unless you are familiar with ADMB and
-know what you are doing).
+\item \code{phases}: Optional. A named list. Component names are
+    parameter names, and each component is a phase for the
+    associated parameter. When specified, parameters are maximised
+    over in phases, which can help convergence.
 
-  \item \code{exe.type}: Optional. Character string, either
-\code{"old"} or \code{"new"}, depending on which executable is to
-be used (for development purposes only; please ignore).
+\item \code{sf} A named list. Component names are parameter names,
+    and each component is a scalefactor for the associated
+    parameter. The default behaviour is to automatically select
+    scalefactors based on parameter start values. See the section
+    on convergence below.
 
-  \item \code{neld.mead}: Optional. A logical value specifying
-whether or not to use Nelder-Mead optimisation. Defaults to
-\code{FALSE}, which is recommended.
+\item \code{cbs}: Optional. The CMPDIF_BUFFER_SIZE, set using the
+    \code{-cbs} option of the executable created by ADMB. This can
+    be increased to speed up optimisation if \code{cmpdiff.tmp}
+    gets too large (please ignore, unless you are familiar with
+    ADMB and know what you are doing).
+
+\item \code{gbs}: Optional. The GRADSTACK_BUFFER_SIZE, set using
+    the \code{-gbs} option of the executable created by ADMB. This
+    can be increased to speed up optimisation if
+    \code{gradfil1.tmp} gets too large (please ignore, unless you
+    are familiar with ADMB and know what you are doing).
 
 }
 }
@@ -288,11 +268,16 @@ whether or not to use Nelder-Mead optimisation. Defaults to
 \section{Fitted parameters}{
 
 
-The parameter \code{D}, the density of individuals (or, in an
-acoustic survey, the density of calls) is always fitted. The
-effective survey area, \code{esa}, (see Borchers, 2012, for
-details) is always provided as a derived parameter, with a standard
-error calculated using the delta method.
+For homogeneous density models, the parameter \code{D}, the density
+of individuals (or, in an acoustic survey, the density of calls) is
+always fitted. For inhomogeneous density models, specified via
+\code{ihd.opts}, coefficients for the log-linear relationship
+between covariates and \eqn{log(D)} are fitted.
+
+The effective sampling area area, \code{esa}, (see Borchers, 2012,
+for details) is always provided as a derived parameter, with a
+standard error calculated using the delta method. For multi-session
+models, an effective sampling error is provided for each session.
 
 Further parameters to be fitted depend on the choice of the
 detection function (i.e., the \code{detfn} argument), and the types
@@ -393,70 +378,11 @@ For data type \code{"mrds"}, no extra parameters are
 estimated. Animal location is assumed to be known.
 }
 
-\section{Convergence}{
-
-
-If maximum likelihood estimates could not be found during
-optimisation, then \code{fit.ascr()} will usually show a warning that
-the maximum gradient component is large, or possibly throw an error
-reporting that a \code{.par} file is missing.
-
-The best approach to fixing convergence issues is to re-run the
-\code{fit.ascr()} function with the argument \code{trace} set to
-\code{TRUE}. Parameter values will be printed out for each step of
-the optimisation algorithm.
-
-First, look for a large jump in a parameter to a value far from
-what is feasible. This issue can be fixed by using the
-\code{bounds} argument to restrict the parameter space over which
-ADMB searches for the maximum likelihood estimate.
-
-Alternatively, try a different set of start values using the
-argument \code{sv}; by default \code{fit.ascr()} will choose some
-start values, but these are not necessarily sensible. The start
-values that were used appear as the first line of text when
-\code{trace} is \code{TRUE}.
-
-Sometimes the algorithm appears to converge, but nevertheless
-perseveres reporting the same parameter values again and again for
-a while (prior to the calculation of the Hessian). This is because
-ADMB has failed to detect convergence as at least one of the
-gradient components is still larger than the convergence criterion
-(by default, 0.0001). It is possible to speed things up and help
-ADMB detect convergence earlier by tightening parameter bounds (as
-above), by setting parameter phases, or by setting appropriate
-scalefactors.
-
-To improve convergence using parameter phases use the \code{phases}
-argument. By default all parameters are given a phase of 1, unless
-it is changed. First, all parameters with a phase of 1 will be
-maximised over, while all others are fixed at their original
-values. Following that, parameters with a phase of 2 are
-introduced, with all parameters with later phases remaining
-fixed. This process continues until all parameters are maximised
-over. Maximising parameters in phases can greatly improve the
-stability of optimisation.
-
-To improve convergence using scalefactors, first identify which
-parameters have large gradient components from the "final
-statistics" section of the \code{trace} output. Next, find the
-default settings of the scalefactors by printing the object
-\code{fit$args$sf}, where \code{fit} is the original object
-returned by \code{fit.ascr()}. Finally, rerun \code{fit.ascr()} again,
-but this time set the argument \code{sf} manually. Set scalefactors
-for any parameters with small gradient components to the same as
-the defaults ascertained above, and increase those associated with
-large gradient components by a factor of 10. If the problem
-persists, repeat this process (e.g., if the same parameters still
-have large gradient components, increase the associated
-scalefactors by another factor of 10).
-}
-
 \section{Local integration}{
 
 
-For SECR models, the likelihood is calculated by integrating over
-the unobserved animal activity centres (see Borchers & Efford,
+For SCR models, the likelihood is calculated by integrating over
+the unobserved animal activity centres (see Borchers and Efford,
 2008). Here, the integral is approximated numerically by taking a
 finite sum over the mask points. The integrand is negligible in
 size for mask points far from detectors that detected a particular
