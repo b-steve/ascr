@@ -2,6 +2,8 @@
 
 #' ascr: A package to fit acoustic spatial capture-recapture models
 #'
+#' Functions to fit acoustic spatial capture-recapture models.
+#' 
 #' Spatial capture-recapture (SCR) models estimate animal density from
 #' records of when and were individuals were detected. The first SCR
 #' methods for acoustic data were developed by Efford, Dawson, and
@@ -15,9 +17,9 @@
 #' exist for SCR (e.g., the comprehensive \link{secr} R package), but
 #' they cannot handle all data types listed above.
 #'
-#' The models that can be fitted in \code{ascr} are described in
+#' Models that can be fitted in \code{ascr} include those described by
 #' Efford, Dawson, and Borchers (2009), Borchers et al (2015), and
-#' Stevenson (2015). The package also implements some unpublished
+#' Stevenson et al (2015). The package also implements some unpublished
 #' methods that are described in Stevenson (2016), a PhD thesis.
 #'
 #' @section Data structure:
@@ -45,14 +47,14 @@
 #' probability surface can be obtained using \link{show.detfn} and
 #' \link{show.detsurf}, respectively. For inhomogeneous density
 #' models, \link{show.Dsurf} plots the estimated density surface. The
-#' \link{locations} function will plot estimated locations of
-#' individuals or calls.
+#' \link{locations} function plots estimated locations of individuals
+#' or calls.
 #'
 #' @section Simulation:
 #'
 #' The \link{sim.capt} function can simulate SCR data, either from
-#' user-specified parameter values or estimated parameters from a
-#' fitted model object.
+#' user-specified parameters or estimated parameter values extracted
+#' from a fitted model object.
 #'
 #' @references Borchers, D. L., Stevenson, B. C., Kidney, D., Thomas,
 #'     L., and Marques, T. A. (2015). A unifying model for
