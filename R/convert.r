@@ -21,13 +21,19 @@
 #'
 #' @export
 create.mask <- function(traps, buffer, ...){
+    ## Changing data frame to matrix to avoid is.list() issues.
+    if (is.data.frame(traps)){
+        traps <- as.matrix(traps)
+    }
     if (is.list(traps)){
+        ## Calling create.mask() on each session separately.
         n.sessions <- length(traps)
         mask <- vector(mode = "list", length = n.sessions)
         for (i in 1:n.sessions){
             mask[[i]] <- create.mask(traps[[i]], buffer = buffer, ...)
         }
     } else {
+        ## Creating mask for a single session.
         traps <- convert.traps(traps)
         mask <- make.mask(traps, buffer = buffer, type = "trapbuffer", ...)
         A <- attr(mask, "area")
