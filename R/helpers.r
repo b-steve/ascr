@@ -313,7 +313,7 @@ erf <- function(x){
     2*pnorm(x*sqrt(2)) - 1
 }
 
-#' Calculating detection probabilities.
+#' Calculating detection probabilities
 #'
 #' Calculates the probability of detection by at least one detector
 #' for specific locations in the survey area.

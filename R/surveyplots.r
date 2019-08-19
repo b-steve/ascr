@@ -177,7 +177,7 @@ show.Dsurf <- function(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL){
             drawlabels = TRUE, add = TRUE)
 }
 
-#' Testing the mask object for a first calls model.
+#' Testing the mask object for a first calls model
 #'
 #' Creates a diagnostic plot that can be used to test the adequacy of
 #' a mask for a first calls model.
