@@ -2,7 +2,7 @@
 % Please edit documentation in R/simcapt.r
 \name{sim.capt}
 \alias{sim.capt}
-\title{Simulating SECR data}
+\title{Simulating SCR data}
 \usage{
 sim.capt(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
   infotypes = character(0), detfn = "hn", pars = NULL,
@@ -113,7 +113,7 @@ A list with named components, each corresponding to a data
     \link{fit.ascr}.
 }
 \description{
-Simulates SECR capture histories and associated additional
+Simulates SCR capture histories and associated additional
 information in the correct format for use with the function
 \link{fit.ascr}. If \code{fit} is provided then no other arguments
 are required. Otherwise, at least \code{traps}, \code{mask}, and

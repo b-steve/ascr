@@ -3,7 +3,7 @@
 \name{boot.ascr}
 \alias{boot.ascr}
 \alias{boot.admbsecr}
-\title{Bootstrapping SECR data}
+\title{Bootstrapping a fitted ascr model}
 \usage{
 boot.ascr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
   infotypes = NULL)
