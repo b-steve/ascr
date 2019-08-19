@@ -1,6 +1,8 @@
 ascr 2.2.1
 ----------
 
+* Substantial updates to documentation.
+
 * Implemented the hazard halfnormal detection function.
 
 * Fixed bug that prevented factors from being used as explanatory
