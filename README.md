@@ -20,7 +20,10 @@ library(ascr)
 test.ascr(quick = TRUE)
 ```
 
-If there are any errors with the installation or in the above tests please get in touch using the contact details below.
+If there are any errors with the installation or in the above tests
+please get in touch using the contact details below.
+
+NOTE: Model fitting will not work on OSX in version 2.2.1.
 
 ## References
 
