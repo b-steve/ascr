@@ -471,19 +471,17 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
 #' @export
 predict.ascr <- function(object, newdata, ...){
     ## Filling in x and y if required.
-    if (is.null(newdata[["x"]])){
-        newdata$x <- rep(NA, nrow(newdata))
+    if (!any(colnames(newdata) == "y")){
+        newdata <- data.frame(y = rep(NA, nrow(newdata)), newdata)
     }
-    if (is.null(newdata[["y"]])){
-        newdata$y <- rep(NA, nrow(newdata))
+    if (!any(colnames(newdata) == "x")){
+        newdata <- data.frame(x = rep(NA, nrow(newdata)), newdata)
     }
     ## Scaling data.
     newdata.scaled <- object$scale.covs(newdata)
     ## Creating model matrix.
-    gam.resp <- rep(0, nrow(newdata))
-    fgam <- gam(object$model.formula, data = newdata.scaled, fit = FALSE)
-    mm <- fgam$X
-    mm %*% get.par(object, object$D.betapars)
+    mm <- predict(gam(G = object$fgam), newdata = newdata.scaled, type = "lpmatrix")
+    exp(mm %*% get.par(object, object$D.betapars))
 }
 
 ## fit$fgam$X is model matrix.
