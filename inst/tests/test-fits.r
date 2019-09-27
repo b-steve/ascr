@@ -443,15 +443,15 @@ test_that("Multi-session models", {
 
 test_that("Inhomogeneous density estimation", {
     simple.capt <- example$capt[1]
-    df <- data.frame(x = example$mask[, 1]/1000, y = example$mask[, 2]/1000)
+    df <- data.frame(x1 = example$mask[, 1]/1000, y1 = example$mask[, 2]/1000)
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
                     mask = example$mask, fix = list(g0 = 1),
-                    ihd.opts = list(model = ~ x + y, covariates = df))
+                    ihd.opts = list(model = ~ x1 + y1, covariates = df))
     pars.test <- c(7.72626004368, 0.0562992293496, 0.088380677303, 5.3875700735678)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_true(relative.error < 1e-3)
     fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, ihd.opts = list(model = ~ s(x, k = 3)))
+                    mask = example$mask, ihd.opts = list(model = ~ s(x1, k = 3)))
     pars.test <- c(5.00442908703, 12.0411342793, 0.0626406907173, 0.999999999974208,
                    5.08547672171856)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))

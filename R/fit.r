@@ -606,6 +606,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         fit.ihd <- FALSE
     }
     if (is.data.frame(ihd.opts$covariates)){
+        if (any(names(ihd.opts$covariates) %in% c("x", "y"))){
+            stop("Covariate names 'x' and 'y' are reserved for x- and y-coordiates.")
+        }
         covariates <- list()
         covariates[[1]] <- data.frame(mask[[1]], ihd.opts$covariates)
     } else if (is.list(ihd.opts$covariates)){
@@ -1500,6 +1503,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$fit.freqs <- fit.freqs
     out$first.calls <- first.calls
     out$scale.covs <- scale.covs
+    out$model.formula <- model.formula
+    out$fgam <- all.fgam
+    out$all.covariates <- all.covariates
     if (out$fn == "secr"){
         if (out$maxgrad < -0.01){
             warning("Maximum gradient component is large.")

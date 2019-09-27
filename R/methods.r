@@ -468,6 +468,25 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
 #'     else will happen.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
+#' @export
 predict.ascr <- function(object, newdata, ...){
-    stop("Not yet implemented")
+    ## Filling in x and y if required.
+    if (is.null(newdata[["x"]])){
+        newdata$x <- rep(NA, nrow(newdata))
+    }
+    if (is.null(newdata[["y"]])){
+        newdata$y <- rep(NA, nrow(newdata))
+    }
+    ## Scaling data.
+    newdata.scaled <- object$scale.covs(newdata)
+    ## Creating model matrix.
+    gam.resp <- rep(0, nrow(newdata))
+    fgam <- gam(object$model.formula, data = newdata.scaled, fit = FALSE)
+    mm <- fgam$X
+    mm %*% get.par(object, object$D.betapars)
 }
+
+## fit$fgam$X is model matrix.
+## Try gg <- gam(G = fit$fgam$X); gg$model? Same or diff to all.covariates?
+
+## USE predict(gg, newdata = newdata, type = "lpmatrix")
