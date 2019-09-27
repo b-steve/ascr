@@ -481,10 +481,7 @@ predict.ascr <- function(object, newdata, ...){
     newdata.scaled <- object$scale.covs(newdata)
     ## Creating model matrix.
     mm <- predict(gam(G = object$fgam), newdata = newdata.scaled, type = "lpmatrix")
-    exp(mm %*% get.par(object, object$D.betapars))
+    ## Calculated estimated density.
+    as.vector(exp(mm %*% get.par(object, object$D.betapars)))
 }
 
-## fit$fgam$X is model matrix.
-## Try gg <- gam(G = fit$fgam$X); gg$model? Same or diff to all.covariates?
-
-## USE predict(gg, newdata = newdata, type = "lpmatrix")
