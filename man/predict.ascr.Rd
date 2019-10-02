@@ -4,14 +4,15 @@
 \alias{predict.ascr}
 \title{Extract density estimates given a set of covariate values}
 \usage{
-\method{predict}{ascr}(object, newdata, ...)
+\method{predict}{ascr}(object, newdata = NULL, ...)
 }
 \arguments{
 \item{object}{A fitted model from \link[ascr]{fit.ascr}.}
 
 \item{newdata}{An optional data frame in which to look for
-variables with which to estimate density. If omitted, something
-else will happen.}
+variables with which to estimate density. If omitted, the
+function will return the estimated densities at the mask
+points.}
 
 \item{...}{Other parameters (for S3 generic compatibility).}
 }

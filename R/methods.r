@@ -464,24 +464,30 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
 #'
 #' @param object A fitted model from \link[ascr]{fit.ascr}.
 #' @param newdata An optional data frame in which to look for
-#'     variables with which to estimate density. If omitted, something
-#'     else will happen.
+#'     variables with which to estimate density. If omitted, the
+#'     function will return the estimated densities at the mask
+#'     points.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @export
-predict.ascr <- function(object, newdata, ...){
-    ## Filling in x and y if required.
-    if (!any(colnames(newdata) == "y")){
-        newdata <- data.frame(y = rep(NA, nrow(newdata)), newdata)
+predict.ascr <- function(object, newdata = NULL, ...){
+    if (is.null(newdata)){
+        out <- object$D.mask
+    } else {
+        ## Filling in x and y if required.
+        if (!any(colnames(newdata) == "y")){
+            newdata <- data.frame(y = rep(NA, nrow(newdata)), newdata)
+        }
+        if (!any(colnames(newdata) == "x")){
+            newdata <- data.frame(x = rep(NA, nrow(newdata)), newdata)
+        }
+        ## Scaling data.
+        newdata.scaled <- object$scale.covs(newdata)
+        ## Creating model matrix.
+        mm <- predict(gam(G = object$fgam), newdata = newdata.scaled, type = "lpmatrix")
+        ## Calculated estimated density.
+        out <- as.vector(exp(mm %*% get.par(object, object$D.betapars)))
     }
-    if (!any(colnames(newdata) == "x")){
-        newdata <- data.frame(x = rep(NA, nrow(newdata)), newdata)
-    }
-    ## Scaling data.
-    newdata.scaled <- object$scale.covs(newdata)
-    ## Creating model matrix.
-    mm <- predict(gam(G = object$fgam), newdata = newdata.scaled, type = "lpmatrix")
-    ## Calculated estimated density.
-    as.vector(exp(mm %*% get.par(object, object$D.betapars)))
+    out
 }
 
