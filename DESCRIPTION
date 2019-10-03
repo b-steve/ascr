@@ -6,7 +6,7 @@ Date: 2019-08-19
 Author: Ben Stevenson <ben.stevenson@auckland.ac.nz>
 Maintainer: Ben Stevenson <ben.stevenson@auckland.ac.nz>
 Depends:
-    R (>= 3.5.0),
+    R (>= 3.6.0),
     Rcpp (>= 0.11.5),
     R2admb,
     testthat
