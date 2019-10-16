@@ -336,6 +336,7 @@ convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
 #' @export
 convert.pamguard <- function(dets, mics, time.range = NULL,
                              sound.speed = 330, new.allocation = TRUE){
+    mics <- as.matrix(mics)
     toa.info <- dets$startSeconds
     mic.id <- log2(dets$channelMap) + 1
     ss.info <- dets$amplitude
