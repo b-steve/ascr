@@ -7,8 +7,7 @@
 \usage{
 \method{coef}{ascr}(object, pars = "fitted", ...)
 
-\method{coef}{ascr.boot}(object, pars = "fitted", correct.bias = FALSE,
-  ...)
+\method{coef}{ascr.boot}(object, pars = "fitted", correct.bias = FALSE, ...)
 }
 \arguments{
 \item{object}{A fitted model from \link[ascr]{fit.ascr}.}

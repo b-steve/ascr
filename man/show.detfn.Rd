@@ -4,9 +4,16 @@
 \alias{show.detfn}
 \title{Plotting a detection function.}
 \usage{
-show.detfn(fit, xlim = NULL, ylim = c(0, 1), main = NULL,
-  xlab = "Distance (m)", ylab = "Detection probability", add = FALSE,
-  ...)
+show.detfn(
+  fit,
+  xlim = NULL,
+  ylim = c(0, 1),
+  main = NULL,
+  xlab = "Distance (m)",
+  ylab = "Detection probability",
+  add = FALSE,
+  ...
+)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}

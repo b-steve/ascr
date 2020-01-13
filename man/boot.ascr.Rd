@@ -5,11 +5,9 @@
 \alias{boot.admbsecr}
 \title{Bootstrapping a fitted ascr model}
 \usage{
-boot.ascr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
-  infotypes = NULL)
+boot.ascr(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL)
 
-boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
-  infotypes = NULL)
+boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL)
 }
 \arguments{
 \item{fit}{A fitted \code{ascr} model object.}

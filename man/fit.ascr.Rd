@@ -5,17 +5,47 @@
 \alias{admbsecr}
 \title{Fitting acoustic SCR models}
 \usage{
-fit.ascr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, ss.opts = NULL, cue.rates = NULL,
-  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
-  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
-  optim.opts = NULL, ...)
+fit.ascr(
+  capt,
+  traps,
+  mask,
+  detfn = "hn",
+  sv = NULL,
+  bounds = NULL,
+  fix = NULL,
+  ss.opts = NULL,
+  cue.rates = NULL,
+  survey.length = NULL,
+  sound.speed = 330,
+  ihd.opts = NULL,
+  local = FALSE,
+  hess = NULL,
+  trace = FALSE,
+  clean = TRUE,
+  optim.opts = NULL,
+  ...
+)
 
-admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, ss.opts = NULL, cue.rates = NULL,
-  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
-  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
-  optim.opts = NULL, ...)
+admbsecr(
+  capt,
+  traps,
+  mask,
+  detfn = "hn",
+  sv = NULL,
+  bounds = NULL,
+  fix = NULL,
+  ss.opts = NULL,
+  cue.rates = NULL,
+  survey.length = NULL,
+  sound.speed = 330,
+  ihd.opts = NULL,
+  local = FALSE,
+  hess = NULL,
+  trace = FALSE,
+  clean = TRUE,
+  optim.opts = NULL,
+  ...
+)
 }
 \arguments{
 \item{capt}{A list containing capture histories and supplementary

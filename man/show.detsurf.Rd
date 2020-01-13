@@ -4,9 +4,20 @@
 \alias{show.detsurf}
 \title{Plotting the detection probability surface}
 \usage{
-show.detsurf(fit, session = 1, surface = TRUE, mask = NULL,
-  col = "black", levels = NULL, xlim = NULL, ylim = NULL,
-  show.labels = TRUE, trap.col = "red", add = FALSE, ...)
+show.detsurf(
+  fit,
+  session = 1,
+  surface = TRUE,
+  mask = NULL,
+  col = "black",
+  levels = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  show.labels = TRUE,
+  trap.col = "red",
+  add = FALSE,
+  ...
+)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}

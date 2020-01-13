@@ -4,8 +4,7 @@
 \alias{create.capt}
 \title{Creating capture history object.}
 \usage{
-create.capt(captures, n.traps = NULL, n.sessions = NULL,
-  traps = NULL)
+create.capt(captures, n.traps = NULL, n.sessions = NULL, traps = NULL)
 }
 \arguments{
 \item{captures}{A data frame of capture records, see 'Details' for
