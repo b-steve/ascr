@@ -548,9 +548,10 @@ scale.closure <- function(covariates, scale){
     sd.cov[numeric.cov] <- sapply(covariates[, numeric.cov, drop = FALSE], sd)
     cov.names <- names(covariates)
     out.fun <- function(covariates){
+        cov.names.new <- names(covariates)
         out <- covariates
         for (i in 1:n.cov){
-            if (scale & numeric.cov[i]){
+            if ((scale & numeric.cov[i]) & (cov.names[i] %in% cov.names.new)){
                 out[, cov.names[i]] <- (out[, cov.names[i]] - mean.cov[i])/sd.cov[i]
             }
         }

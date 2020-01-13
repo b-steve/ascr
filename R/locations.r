@@ -37,6 +37,10 @@
 #'     mask used to fit the model \code{fit} will be used by default;
 #'     this argument is usually used when estimated location contours
 #'     need to be plotted to a higher resolution than this.
+#' @param newdata If a new mask is provided in the \code{mask}
+#'     argument, and the model fits an inhomogeneous density surface
+#'     via mask-level covariates, then this argument must provide the
+#'     covariates for the new mask's point locations.
 #' @param levels A numeric vector giving the values to be associated
 #'     with the plotted contours.
 #' @param nlevels The number of contour levels desired. Ignored if
@@ -104,21 +108,22 @@
 #' }
 #'
 #' @export
-locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
-                      xlim = NULL, ylim = NULL, mask = get.mask(fit, session),
+locations <- function(fit, id, session = 1, infotypes = NULL,
+                      combine = FALSE, xlim = NULL, ylim = NULL,
+                      mask = get.mask(fit, session), newdata = NULL,
                       levels = NULL, nlevels = 10, density = FALSE,
                       cols = list(combined = "black", capt = "purple",
-                          ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
+                                  ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
                       ltys = list(combined = "solid", capt = "solid",
-                          ss = "solid", bearing = "solid", dist = "solid", toa = "solid"),
+                                  ss = "solid", bearing = "solid", dist = "solid", toa = "solid"),
                       trap.col = "red", circle.traps = TRUE,
                       show.labels = TRUE, plot.contours = TRUE,
-                      plot.estlocs = FALSE,
-                      keep.estlocs = FALSE,
+                      plot.estlocs = FALSE, keep.estlocs = FALSE,
                       plot.arrows = "bearing" %in% fit$infotypes,
-                      plot.circles = "dist" %in% fit$infotypes & !("bearing" %in% fit$infotypes),
-                      arrow.length = NULL,
-                      show.legend = FALSE, show.axes = TRUE, add = FALSE){
+                      plot.circles = "dist" %in% fit$infotypes &
+                          !("bearing" %in% fit$infotypes),
+                      arrow.length = NULL, show.legend = FALSE,
+                      show.axes = TRUE, add = FALSE){
     ## Error if session argument is too large.
     if (session > fit$n.sessions){
         if (fit$n.sessions == 1){
@@ -141,13 +146,14 @@ locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
     if (fit$first.calls){
         stop("The locations() function has not yet been implemented for first-call models.")
     }
-    ## Error for providing a mask when the model has inhomogeneous density.
-    if (!missing(mask) & fit$fit.ihd){
-        stop("A new mask cannot be provided for inhomogeneous density models.")
-    }
     ## Error if combine specified without infotypes.
     if (missing(infotypes) & combine){
         stop("Argument `combine' is only useful if `infotypes' is provided.")
+    }
+    ## Error if new mask covariates are not provided when they need to be.
+    is.new.mask <- !missing(mask)
+    if (fit$fit.ihd & is.new.mask & is.null(newdata)){
+        stop("Covariate values for the mask object must be provided via the `newdata' argument.")
     }
     ## Saving estimated locations.
     if (keep.estlocs){
@@ -246,7 +252,12 @@ locations <- function(fit, id, session = 1, infotypes = NULL, combine = FALSE,
     ## Divide by normalising constant; not conversion to square metres.
     a <- attr(mask, "area")
     if (fit$fit.ihd){
-        f.x <- p.det*fit$D.mask[[session]]/(a*sum(p.det*fit$D.mask[[session]]))
+        if (is.new.mask){
+            D.mask.sess <- predict(fit, newdata)
+        } else {
+            D.mask.sess <- fit$D.mask[[session]]
+        }
+        f.x <- p.det*D.mask.sess/(a*sum(p.det*D.mask.sess))
     } else {
         f.x <- p.det/(a*sum(p.det))
     }
