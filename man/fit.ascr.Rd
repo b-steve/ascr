@@ -202,10 +202,10 @@ extensions described in Stevenson (2016), a PhD thesis.
         heterogeneity in source signal strengths.
 
   \item \code{het.source.method}: Optional. A character string,
-        either \code{"GH"} or \code{"rect"}. If "GH", integration
-        over source strengths uses Gauss-Hermite quadrature, which
-        is recommended and also the default. If "rect", the
-        rectangle method is used.
+        either \code{"GH"} or \code{"rect"}. If \code{"GH"},
+        integration over source strengths uses Gauss-Hermite
+        quadrature, which is recommended and also the default. If
+        \code{"rect"}, the rectangle method is used.
 
   \item \code{n.het.source.quadpoints}: Optional. An integer,
         giving the number of quadrature points used for numerical
@@ -325,7 +325,6 @@ For \code{detfn = "hn"}:
 For \code{detfn = "hhn"}:
 \itemize{
    \item Estimated paramters are \code{lambda0} and \code{sigma}.
-   \item \eqn{g(d) = 1 - exp(lambda_0\ exp(-d^2/(2\sigma^2))}{g(d) = g0 * exp( -d^2 / (2 * sigma^2 )))}
 }
 
 For \code{detfn = "hr"}:
