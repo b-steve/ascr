@@ -187,14 +187,19 @@ DATA_SECTION
   init_int fit_mrds
   ivector nr_mrds(1,n_sessions)
   ivector nc_mrds(1,n_sessions)
+  ivector nc_mrds_locs(1,n_sessions)
   !! if (fit_mrds == 1){
   !!   nr_mrds = n_per_sess;
   !!   nc_mrds = n_traps_per_sess;
+  !!   nc_mrds_locs = 2;
   !! } else {
   !!   nr_mrds = 1;
   !!   nc_mrds = 1;
+  !!   nc_mrds_locs = 1;
   !! }
   // Expected supplementary information from each mask point.
+  init_3darray mrds_locs(1,n_sessions,1,nr_mrds,1,nc_mrds_locs)
+  //init_3darray mrds_locs(1,n_sessions,1,nr_mrds,1,nc_mrds)
   init_3darray mrds_dist(1,n_sessions,1,nr_mrds,1,nc_mrds)
   init_3darray dists(1,n_sessions,1,n_traps_per_sess,1,n_mask_per_sess)
   init_3darray angs(1,n_sessions,1,nr_angmat,1,nc_angmat)

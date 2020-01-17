@@ -81,10 +81,18 @@ create.mask <- function(traps, buffer, ...){
 #'         arrival (in seconds) since the start of the survey (or some
 #'         other reference time) of the detected acoustic signal (only
 #'         possible when the detectors are microphones).
-#'   \item A column named \code{mrds} containing the \emph{known} (not
-#'         estimated) distance between the individual detected and the
-#'         detector.
 #' }
+#'
+#' If animal locations are known exactly, then a mark-recapture
+#' distance sampling (MRDS) model can be fitted. In this case, for
+#' single-session models the \code{mrds.loc} argument should be a
+#' matrix, where each row corresponds to the known x- and y-coordiates
+#' of an animal. The row number should match with the individual's ID
+#' number in the captures data frame, so for example the animal with
+#' an ID of 5 should have their location's x- and y-coordinates in the
+#' fifth row of code{mrds.loc}. For multi-session models, the
+#' \code{mrds.loc} argument should be a list of such matrices, where
+#' each component is associated with one of the sessions.
 #'
 #' @param captures A data frame of capture records, see 'Details' for
 #'     the correct format.
@@ -97,9 +105,11 @@ create.mask <- function(traps, buffer, ...){
 #'     multi-session models (see \link{fit.ascr}). If this argument is
 #'     provided, there is no need to specify \code{n.traps} or
 #'     \code{n.sessions}.
+#' @param mrds.locs A matrix of animal locations, or a list for
+#'     multi-session models. See 'Details'.
 #' 
 #' @export
-create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NULL){
+create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NULL, mrds.locs = NULL){
     if (!missing(n.traps) | !missing(n.sessions)){
         warning("Arguments 'n.traps' and 'n.sessions' are deprecated. Please provide the the 'traps' argument instead.")
     }
@@ -111,6 +121,15 @@ create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NUL
         }
         n.traps <- sapply(traps, nrow)
         n.sessions <- length(traps)
+    }
+    is.mrds <- !is.null(mrds.locs)
+    if (is.mrds){
+        if (!is.list(mrds.locs)){
+            mrds.locs <- list(mrds.locs)
+        }
+        if (length(mrds.locs) != n.sessions){
+            stop("The argument 'mrds.locs' must have a component for each session.")
+        }
     }
     session.full <- captures[, 1]
     id.full <- captures[, 2]
@@ -133,7 +152,7 @@ create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NUL
             stop("If provided, the argument 'n.traps' must be of length 1, or of length equal to the total number of sessions.")
         }
     }
-    all.types <- c("bearing", "dist", "ss", "toa", "mrds")
+    all.types <- c("bearing", "dist", "ss", "toa")
     info.types <- all.types[all.types %in% colnames(captures)]
     if (n.sessions > 1){
         out.list <- vector(mode = "list", length = n.sessions)
@@ -143,11 +162,16 @@ create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NUL
         captures <- captures.full[session.full == s, ]
         id <- captures[, 2]
         n <- length(unique(id))
-        out <- vector(mode = "list", length = length(info.types) + 1)
+        if (is.mrds){
+            if (nrow(mrds.locs[[s]]) != n){
+                stop("A location must be specified for each detected individual.")
+            }
+        }
+        out <- vector(mode = "list", length = length(info.types) + 1 + as.numeric(is.mrds))
         for (i in 1:length(out)){
             out[[i]] <- matrix(0, nrow = n, ncol = n.traps[s])
         }
-        names(out) <- c("bincapt", info.types)
+        names(out) <- c("bincapt", info.types, "mrds"[is.mrds])
         if (nrow(captures) > 0){
             session <- captures[, 1]
             trap <- captures[, 4]
@@ -164,6 +188,9 @@ create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NUL
                     for (k in trig){
                         out[[j]][i, k] <- captures[id == u.id & trap == k, j][1]
                     }
+                }
+                if (is.mrds){
+                    out[[length(out)]] <- mrds.locs[[s]]
                 }
                 rnames[i] <- u.id
             }

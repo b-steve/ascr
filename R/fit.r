@@ -557,8 +557,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("At least one component of 'capt' is not a matrix.")
         }
         ## Checking for agreement in matrix dimensions.
-        if (length(capt[[i]]) > 1){
+        if (length(capt[[i]][names(capt[[i]]) != "mrds"]) > 1){
             all.dims <- laply(capt[[i]], dim)
+            all.dims <- all.dims[names(capt[[i]]) != "mrds"]
             if (any(aaply(all.dims, 2, function(x) diff(range(x))) != 0)){
                 stop("Components of 'capt' object within a session have different dimensions.")
             }
@@ -785,14 +786,21 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     capt.dist <- vector(mode = "list", length = n.sessions)
     capt.ss <- vector(mode = "list", length = n.sessions)
     capt.toa <- vector(mode = "list", length = n.sessions)
+    mrds.locs <- vector(mode = "list", length = n.sessions)
     mrds.dist <- vector(mode = "list", length = n.sessions)
     capt.ord <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
         capt.bin.order[[i]] <- do.call(order, as.data.frame(capt.bin[[i]]))
         capt.bin.unique[[i]] <- capt.bin[[i]][capt.bin.order[[i]], , drop = FALSE]
-        capt.bin.freqs[[i]] <- as.vector(table(apply(capt.bin.unique[[i]], 1, paste, collapse = "")))
-        names(capt.bin.freqs[[i]]) <- NULL
-        capt.bin.unique[[i]] <- capt.bin.unique[[i]][!duplicated(as.data.frame(capt.bin.unique[[i]])), , drop = FALSE]
+        ## Note that we don't group capture histories for MRDS fits,
+        ## so a "unique" capture history is not truly "unique".
+        if (fit.mrds){
+            capt.bin.freqs[[i]] <- rep(1, nrow(capt.bin.unique[[i]]))
+        } else {
+            capt.bin.freqs[[i]] <- as.vector(table(apply(capt.bin.unique[[i]], 1, paste, collapse = "")))
+            names(capt.bin.freqs[[i]]) <- NULL
+            capt.bin.unique[[i]] <- capt.bin.unique[[i]][!duplicated(as.data.frame(capt.bin.unique[[i]])), , drop = FALSE]
+        }
         n.unique[i] <- nrow(capt.bin.unique[[i]])
         ## Reordering all capture history components.
         capt.ord[[i]] <- capt[[i]]
@@ -804,7 +812,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         capt.dist[[i]] <- if (fit.dists) capt.ord[[i]]$dist else 0
         capt.ss[[i]] <- if (fit.ss) capt.ord[[i]]$ss else 0
         capt.toa[[i]] <- if (fit.toas) capt.ord[[i]]$toa else 0
-        mrds.dist[[i]] <- if (fit.mrds) capt.ord[[i]]$mrds else 0
+        mrds.locs[[i]] <- if (fit.mrds) capt.ord[[i]]$mrds else 0
+        mrds.dist[[i]] <- if (fit.mrds) distances(mrds.locs[[i]], traps[[i]]) else 0
         ## Data check for bearings.
         if (any(capt.bearing[[i]] < 0 | capt.bearing[[i]] > 2*pi)){
             warning("Some estimated bearings are not in the interval [0, 2*pi)")
@@ -1089,10 +1098,20 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     if (!any.suppars){
         suppar.names <- NULL
     }
-    ## Sorting out which mask points are local to each detection.
+    ## Sorting out which mask points are local to each detection. Note
+    ## that for MRDS fits we allocate the true location to the nearest
+    ## mask-point location, and then just use local "integration" with
+    ## that single mask point.
     all.which.local <- vector(mode = "list", length = n.sessions)
     all.n.local <- vector(mode = "list", length = n.sessions)
-    if (local){
+    if (fit.mrds){
+        local <- TRUE
+        for (i in 1:n.sessions){
+            all.which.local[[i]] <- find.nearest.mask(mrds.locs[[i]], mask[[i]])
+            all.n.local[[i]] <- laply(all.which.local[[i]], length)
+            all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
+        }
+    } else if (local){
         for (i in 1:n.sessions){
             all.which.local[[i]] <- find_local(capt.bin.unique[[i]], dists[[i]], buffer[i])
             all.n.local[[i]] <- laply(all.which.local[[i]], length)
@@ -1192,6 +1211,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       fit_toas = as.numeric(fit.toas),
                       capt_toa = vectorise(capt.toa),
                       fit_mrds = as.numeric(fit.mrds),
+                      mrds_locs = vectorise(mrds.locs),
                       mrds_dist = vectorise(mrds.dist),
                       dists = vectorise(dists),
                       angs = vectorise(bearings),

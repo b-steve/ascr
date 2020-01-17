@@ -559,3 +559,9 @@ scale.closure <- function(covariates, scale){
     }
     out.fun
 }
+
+## Finding nearest mask point to an observed MRDS location.
+find.nearest.mask <- function(locs, mask){
+    dists <- distances(locs, mask)
+    as.list(apply(dists, 1, function(x) which(x == min(x))[1]))
+}
