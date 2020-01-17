@@ -4,7 +4,13 @@
 \alias{create.capt}
 \title{Creating capture history object.}
 \usage{
-create.capt(captures, n.traps = NULL, n.sessions = NULL, traps = NULL)
+create.capt(
+  captures,
+  n.traps = NULL,
+  n.sessions = NULL,
+  traps = NULL,
+  mrds.locs = NULL
+)
 }
 \arguments{
 \item{captures}{A data frame of capture records, see 'Details' for
@@ -21,6 +27,9 @@ deployed on the ith session.}
 multi-session models (see \link{fit.ascr}). If this argument is
 provided, there is no need to specify \code{n.traps} or
 \code{n.sessions}.}
+
+\item{mrds.locs}{A matrix of animal locations, or a list for
+multi-session models. See 'Details'.}
 }
 \description{
 Creates a capture history object to use with the function
@@ -59,8 +68,16 @@ collected over the course of the survey:
         arrival (in seconds) since the start of the survey (or some
         other reference time) of the detected acoustic signal (only
         possible when the detectors are microphones).
-  \item A column named \code{mrds} containing the \emph{known} (not
-        estimated) distance between the individual detected and the
-        detector.
 }
+
+If animal locations are known exactly, then a mark-recapture
+distance sampling (MRDS) model can be fitted. In this case, for
+single-session models the \code{mrds.loc} argument should be a
+matrix, where each row corresponds to the known x- and y-coordiates
+of an animal. The row number should match with the individual's ID
+number in the captures data frame, so for example the animal with
+an ID of 5 should have their location's x- and y-coordinates in the
+fifth row of code{mrds.loc}. For multi-session models, the
+\code{mrds.loc} argument should be a list of such matrices, where
+each component is associated with one of the sessions.
 }
