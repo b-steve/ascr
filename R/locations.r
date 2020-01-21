@@ -186,11 +186,20 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
     any.infotypes <- length(fit$infotypes) > 0
     ## Setting default infotypes.
     if (is.null(infotypes)){
-        if (any.infotypes){
-            infotypes <- "combined"
+        if ("mrds" %in% fit$infotypes){
+            infotypes <- "mrds"
         } else {
-            infotypes <- "capt"
+            if (any.infotypes){
+                infotypes <- "combined"
+            } else {
+                infotypes <- "capt"
+            }
         }
+    }
+    ## Removing "all" or "combined" from infotypes if "mrds" is specified.
+    if ("mrds" %in% infotypes){
+        infotypes <- infotypes[infotypes != "all"]
+        infotypes <- infotypes[infotypes != "combined"]
     }
     ## Error if "combined" is used when there is no additional information.
     if ("combined" %in% infotypes & !any.infotypes){
@@ -229,8 +238,8 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
             ltys["combined"] <- ltys.save
         }
     }
-    plot.types <- c("combined", "capt", "ss", "bearing", "dist", "toa") %in% infotypes
-    names(plot.types) <- c("combined", "capt", "ss", "bearing", "dist", "toa")
+    plot.types <- c("combined", "capt", "ss", "bearing", "dist", "toa",  "mrds") %in% infotypes
+    names(plot.types) <- c("combined", "capt", "ss", "bearing", "dist", "toa", "mrds")
     if (combine){
         plot.types["combined"] <- TRUE
     }
@@ -385,6 +394,10 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
                          nlevels = nlevels, prob = !density, col = cols$combined,
                          lty = ltys$combined, show.labels = show.labels,
                          plot.contours = plot.contours)
+        }
+        if (plot.types["mrds"]){
+            loc <- capt.all$mrds[id, , drop = FALSE]
+            points(loc, pch = 16, col = "black")
         }
         if (plot.estlocs){
             if ((any.infotypes & plot.types["combined"]) | !any.infotypes){
