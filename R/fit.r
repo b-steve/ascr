@@ -559,7 +559,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         ## Checking for agreement in matrix dimensions.
         if (length(capt[[i]][names(capt[[i]]) != "mrds"]) > 1){
             all.dims <- laply(capt[[i]], dim)
-            all.dims <- all.dims[names(capt[[i]]) != "mrds"]
+            all.dims <- all.dims[names(capt[[i]]) != "mrds", ]
             if (any(aaply(all.dims, 2, function(x) diff(range(x))) != 0)){
                 stop("Components of 'capt' object within a session have different dimensions.")
             }
