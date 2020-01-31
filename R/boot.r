@@ -6,7 +6,7 @@
 #' For each bootstrap resample, a new population of individuals is
 #' simulated within the mask area. Detections of these individuals are
 #' simulated using the estimated detection function. For detected
-#' individuals, additional informatin is simulated from the estimated
+#' individuals, additional information is simulated from the estimated
 #' distribution of measurement error. The original model is then
 #' re-fitted to these simulated data, and parameter estimates for each
 #' iteration saved in the component \code{boot} of the returned list.
@@ -32,12 +32,6 @@
 #' extra bootstrap procedures can be found in the
 #' \code{boot$extra.boots} component of the returned object.
 #'
-#' the bootstrap procedure will be
-#' repeated for each subset; usually this is only useful to
-#' investigate the impact on the density estimator associated with
-#' various combinations of information types. A \code{NULL} component
-#' will bootstrap without any additional information types.
-#'
 #' @section Bootstrapping for acoustic surveys:
 #'
 #' For fits based on acoustic surveys where the argument
@@ -45,8 +39,8 @@
 #' simulated data allocates multiple calls to the same location based
 #' on an estimated distribution of the call frequencies. Using a
 #' parametric bootstrap is currently the only way parameter
-#' uncertainty can be estimated for such models (see Stevenson et al.,
-#' in prep., for details).
+#' uncertainty can be estimated for such models. See Stevenson et
+#' al. (2015) for details.
 #'
 #' @section Monte Carlo error:
 #'
@@ -68,10 +62,11 @@
 #'     statistical analyses. \emph{The American Statistician},
 #'     \strong{63}: 155--162.
 #'
-#' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
-#'     G. J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
-#'     framework for animal density estimation from acoustic detection
-#'     data.
+#' @references Stevenson, B. C., Borchers, D. L., Altwegg, R., Swift,
+#'     R. J., and Gillespie, D. M., and Measey, G. J. (2015) A general
+#'     framework for animal density estimation from acoustic
+#'     detections across a fixed microphone array. \emph{Methods in
+#'     Ecology and Evolution}, \strong{6}(1): 38--48.
 #'
 #' @return A list of class \code{"ascr.boot"}. Components contain
 #'     information such as estimated parameters and standard
