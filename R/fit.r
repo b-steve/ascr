@@ -314,7 +314,7 @@
 #' @param mask A matrix with two columns, or a list of such matrices
 #'     for a multi-session model. Each row provides Cartesian
 #'     coordinates for the location of a mask point. It is most easily
-#'     crated using \link{create.mask}.
+#'     created using \link{create.mask}.
 #' @param detfn A character string specifying the detection function
 #'     to be used. One of "hn" (halfnormal), "hhn" (hazard
 #'     halfnormal), "hr" (hazard rate), "th" (threshold), "lth"
