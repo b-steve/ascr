@@ -23,7 +23,7 @@ mask.test(
 \item{mask}{A matrix with two columns, or a list of such matrices
 for a multi-session model. Each row provides Cartesian
 coordinates for the location of a mask point. It is most easily
-crated using \link{create.mask}.}
+created using \link{create.mask}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a detector. Alternatively, this
