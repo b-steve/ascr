@@ -588,8 +588,24 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.mask <- sapply(mask, nrow)
     A <- sapply(mask, function(x) attr(x, "area"))
     buffer <- sapply(mask, function(x) attr(x, "buffer"))
-    ## Removing attributes from mask.
+    ## Sorting out mask attributes and calculating distances.
+    A <- numeric(n.sessions)
+    buffer <- numeric(n.sessions)
+    dists <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
+        dists[[i]] <- distances(as.matrix(traps[[i]]), as.matrix(mask[[i]]))
+        ## Filling in area and buffer, if missing.
+        if (is.null(attr(mask[[i]], "area"))){
+            mask.dists <- distances(as.matrix(mask[[i]]), as.matrix(mask[[i]]))
+            A[i] <- min(mask.dists[mask.dists > 0])^2/10000
+        } else {
+            A[i] <- attr(mask[[i]], "area")
+        }
+        if (is.null(attr(mask[[i]], "buffer"))){
+            buffer[i] <- max(apply(dists[[i]], 2, min))
+        } else {
+            buffer[i] <- attr(mask[[i]], "buffer")
+        }
         mask[[i]] <- as.matrix(mask[[i]])
         traps[[i]] <- as.matrix(traps[[i]])
         attr(mask[[i]], "area") <- A[i]
@@ -1066,11 +1082,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## does not affect estimation.
     dbl.min <- 1e-150
     ## Calculating distances and angles.
-    dists <- vector(mode = "list", length = n.sessions)
     bearings <- vector(mode = "list", length = n.sessions)
     toa.ssq <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
-        dists[[i]] <- distances(traps[[i]], mask[[i]])
         if (fit.bearings | fit.dir){
             bearings[[i]] <- bearings(traps[[i]], mask[[i]])
         } else {
