@@ -1093,7 +1093,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (fit.toas){
             toa.ssq[[i]] <- make_toa_ssq(capt.ord[[i]]$toa, dists[[i]], sound.speed)
         } else {
-            toa.ssq <- 0
+            toa.ssq <- rep(0, n.sessions)
         }
     }
     if (is.null(cutoff)){
