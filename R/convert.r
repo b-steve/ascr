@@ -57,7 +57,7 @@ create.mask <- function(traps, buffer, ...){
 #' the \code{ascr} and \link{secr} packages respectively.
 #'
 #' As such, the first, second, and fourth columns should provide the
-#' session, the identification number of the detected animal or call,
+#' session, the identification number of the detected animal or sound,
 #' and the trap number of the trap which made the detection (where the
 #' trap number is the row number of the corresponding trap in the
 #' matrix of trap locations), respectively. Note that, for the
@@ -67,32 +67,32 @@ create.mask <- function(traps, buffer, ...){
 #' have the capabilities to deal with multi-occassion data, so the
 #' third column is ignored by \code{create.capt}.
 #'
-#' Additional optional columns can specify the additional information
+#' Additional columns can specify the auxiliary information
 #' collected over the course of the survey:
 #' \itemize{
-#'   \item A column named \code{bearing} containing estimated bearings
-#'         from which the detector detected the individual.
-#'   \item A column named \code{dist} containing the estimated
-#'         distance between the individual detected and the detector.
+#'   \item A column named \code{bearing}, containing estimated bearings
+#'         from the detector to each detected animal or sound.
+#'   \item A column named \code{dist}, containing the estimated
+#'         distance between the detected animal or sound.
 #'   \item A column named \code{ss} containing the measured signal
-#'         strengh of the detected acoustic signal (only possible when
-#'         detectors are microphones).
+#'         strengh of the detected sound.
 #'   \item A column named \code{toa} containing the measured time of
 #'         arrival (in seconds) since the start of the survey (or some
-#'         other reference time) of the detected acoustic signal (only
+#'         other reference time) of the detected sound (only
 #'         possible when the detectors are microphones).
 #' }
 #'
-#' If animal locations are known exactly, then a mark-recapture
-#' distance sampling (MRDS) model can be fitted. In this case, for
-#' single-session models the \code{mrds.loc} argument should be a
-#' matrix, where each row corresponds to the known x- and y-coordiates
-#' of an animal. The row number should match with the individual's ID
-#' number in the captures data frame, so for example the animal with
-#' an ID of 5 should have their location's x- and y-coordinates in the
-#' fifth row of code{mrds.loc}. For multi-session models, the
-#' \code{mrds.loc} argument should be a list of such matrices, where
-#' each component is associated with one of the sessions.
+#' If animal or sound locations are known exactly, then a
+#' mark-recapture distance sampling (MRDS) model can be fitted. In
+#' this case, for single-session models the \code{mrds.loc} argument
+#' should be a matrix, where each row corresponds to the known x- and
+#' y-coordiates of an animal. The row number should match with the
+#' individual's ID number in the captures data frame, so for example
+#' the animal with an ID of 5 should have their location's x- and
+#' y-coordinates in the fifth row of code{mrds.loc}. For multi-session
+#' models, the \code{mrds.loc} argument should be a list of such
+#' matrices, where each component is associated with one of the
+#' sessions.
 #'
 #' @param captures A data frame of capture records, see 'Details' for
 #'     the correct format.

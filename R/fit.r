@@ -314,7 +314,7 @@
 #' @param mask A matrix with two columns, or a list of such matrices
 #'     for a multi-session model. Each row provides Cartesian
 #'     coordinates for the location of a mask point. It is most easily
-#'     crated using \link{create.mask}.
+#'     created using \link{create.mask}.
 #' @param detfn A character string specifying the detection function
 #'     to be used. One of "hn" (halfnormal), "hhn" (hazard
 #'     halfnormal), "hr" (hazard rate), "th" (threshold), "lth"
@@ -588,8 +588,24 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     n.mask <- sapply(mask, nrow)
     A <- sapply(mask, function(x) attr(x, "area"))
     buffer <- sapply(mask, function(x) attr(x, "buffer"))
-    ## Removing attributes from mask.
+    ## Sorting out mask attributes and calculating distances.
+    A <- numeric(n.sessions)
+    buffer <- numeric(n.sessions)
+    dists <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
+        dists[[i]] <- distances(as.matrix(traps[[i]]), as.matrix(mask[[i]]))
+        ## Filling in area and buffer, if missing.
+        if (is.null(attr(mask[[i]], "area"))){
+            mask.dists <- distances(as.matrix(mask[[i]]), as.matrix(mask[[i]]))
+            A[i] <- min(mask.dists[mask.dists > 0])^2/10000
+        } else {
+            A[i] <- attr(mask[[i]], "area")
+        }
+        if (is.null(attr(mask[[i]], "buffer"))){
+            buffer[i] <- max(apply(dists[[i]], 2, min))
+        } else {
+            buffer[i] <- attr(mask[[i]], "buffer")
+        }
         mask[[i]] <- as.matrix(mask[[i]])
         traps[[i]] <- as.matrix(traps[[i]])
         attr(mask[[i]], "area") <- A[i]
@@ -1066,11 +1082,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## does not affect estimation.
     dbl.min <- 1e-150
     ## Calculating distances and angles.
-    dists <- vector(mode = "list", length = n.sessions)
     bearings <- vector(mode = "list", length = n.sessions)
     toa.ssq <- vector(mode = "list", length = n.sessions)
     for (i in 1:n.sessions){
-        dists[[i]] <- distances(traps[[i]], mask[[i]])
         if (fit.bearings | fit.dir){
             bearings[[i]] <- bearings(traps[[i]], mask[[i]])
         } else {
@@ -1079,7 +1093,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (fit.toas){
             toa.ssq[[i]] <- make_toa_ssq(capt.ord[[i]]$toa, dists[[i]], sound.speed)
         } else {
-            toa.ssq <- 0
+            toa.ssq <- rep(0, n.sessions)
         }
     }
     if (is.null(cutoff)){

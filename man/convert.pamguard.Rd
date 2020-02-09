@@ -4,13 +4,8 @@
 \alias{convert.pamguard}
 \title{Create a capture history object from a PAMGuard output file}
 \usage{
-convert.pamguard(
-  dets,
-  mics,
-  time.range = NULL,
-  sound.speed = 330,
-  new.allocation = TRUE
-)
+convert.pamguard(dets, mics, time.range = NULL, sound.speed = 330,
+  new.allocation = TRUE)
 }
 \arguments{
 \item{dets}{Detection output dataframe from PAMGuard.}

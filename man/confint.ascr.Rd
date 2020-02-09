@@ -5,18 +5,12 @@
 \alias{confint.ascr.boot}
 \title{Confidence intervals for ascr model parameters}
 \usage{
-\method{confint}{ascr}(object, parm = "fitted", level = 0.95, linked = FALSE, ...)
+\method{confint}{ascr}(object, parm = "fitted", level = 0.95,
+  linked = FALSE, ...)
 
-\method{confint}{ascr.boot}(
-  object,
-  parm = "fitted",
-  level = 0.95,
-  method = "default",
-  linked = FALSE,
-  qqplot = FALSE,
-  ask = TRUE,
-  ...
-)
+\method{confint}{ascr.boot}(object, parm = "fitted", level = 0.95,
+  method = "default", linked = FALSE, qqplot = FALSE, ask = TRUE,
+  ...)
 }
 \arguments{
 \item{object}{A fitted model from \link[ascr]{fit.ascr}.}

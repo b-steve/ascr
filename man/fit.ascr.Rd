@@ -5,47 +5,17 @@
 \alias{admbsecr}
 \title{Fitting acoustic SCR models}
 \usage{
-fit.ascr(
-  capt,
-  traps,
-  mask,
-  detfn = "hn",
-  sv = NULL,
-  bounds = NULL,
-  fix = NULL,
-  ss.opts = NULL,
-  cue.rates = NULL,
-  survey.length = NULL,
-  sound.speed = 330,
-  ihd.opts = NULL,
-  local = FALSE,
-  hess = NULL,
-  trace = FALSE,
-  clean = TRUE,
-  optim.opts = NULL,
-  ...
-)
+fit.ascr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
+  fix = NULL, ss.opts = NULL, cue.rates = NULL,
+  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
+  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
+  optim.opts = NULL, ...)
 
-admbsecr(
-  capt,
-  traps,
-  mask,
-  detfn = "hn",
-  sv = NULL,
-  bounds = NULL,
-  fix = NULL,
-  ss.opts = NULL,
-  cue.rates = NULL,
-  survey.length = NULL,
-  sound.speed = 330,
-  ihd.opts = NULL,
-  local = FALSE,
-  hess = NULL,
-  trace = FALSE,
-  clean = TRUE,
-  optim.opts = NULL,
-  ...
-)
+admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
+  fix = NULL, ss.opts = NULL, cue.rates = NULL,
+  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
+  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
+  optim.opts = NULL, ...)
 }
 \arguments{
 \item{capt}{A list containing capture histories and supplementary
@@ -61,7 +31,7 @@ model.}
 \item{mask}{A matrix with two columns, or a list of such matrices
 for a multi-session model. Each row provides Cartesian
 coordinates for the location of a mask point. It is most easily
-crated using \link{create.mask}.}
+created using \link{create.mask}.}
 
 \item{detfn}{A character string specifying the detection function
 to be used. One of "hn" (halfnormal), "hhn" (hazard

@@ -5,9 +5,11 @@
 \alias{boot.admbsecr}
 \title{Bootstrapping a fitted ascr model}
 \usage{
-boot.ascr(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL)
+boot.ascr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
+  infotypes = NULL)
 
-boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL)
+boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
+  infotypes = NULL)
 }
 \arguments{
 \item{fit}{A fitted \code{ascr} model object.}
@@ -45,7 +47,7 @@ Carries out a parametric bootstrap, based on a model fitted using
 For each bootstrap resample, a new population of individuals is
 simulated within the mask area. Detections of these individuals are
 simulated using the estimated detection function. For detected
-individuals, additional informatin is simulated from the estimated
+individuals, additional information is simulated from the estimated
 distribution of measurement error. The original model is then
 re-fitted to these simulated data, and parameter estimates for each
 iteration saved in the component \code{boot} of the returned list.
@@ -70,12 +72,6 @@ is only useful if the user is looking to investigate the benefits
 of including particular information types. The results from these
 extra bootstrap procedures can be found in the
 \code{boot$extra.boots} component of the returned object.
-
-the bootstrap procedure will be
-repeated for each subset; usually this is only useful to
-investigate the impact on the density estimator associated with
-various combinations of information types. A \code{NULL} component
-will bootstrap without any additional information types.
 }
 \section{Bootstrapping for acoustic surveys}{
 
@@ -85,8 +81,8 @@ For fits based on acoustic surveys where the argument
 simulated data allocates multiple calls to the same location based
 on an estimated distribution of the call frequencies. Using a
 parametric bootstrap is currently the only way parameter
-uncertainty can be estimated for such models (see Stevenson et al.,
-in prep., for details).
+uncertainty can be estimated for such models. See Stevenson et
+al. (2015) for details.
 }
 
 \section{Monte Carlo error}{
@@ -119,8 +115,9 @@ Koehler, E., Brown, E., and Haneuse, S. J.-P. A. (2009)
     statistical analyses. \emph{The American Statistician},
     \strong{63}: 155--162.
 
-Stevenson, B. C., Borchers, D. L., Altwegg, R., Measey,
-    G. J., Swift, R. J., and Gillespie, D. M. (in prep.) A general
-    framework for animal density estimation from acoustic detection
-    data.
+Stevenson, B. C., Borchers, D. L., Altwegg, R., Swift,
+    R. J., and Gillespie, D. M., and Measey, G. J. (2015) A general
+    framework for animal density estimation from acoustic
+    detections across a fixed microphone array. \emph{Methods in
+    Ecology and Evolution}, \strong{6}(1): 38--48.
 }

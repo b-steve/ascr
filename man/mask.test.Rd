@@ -4,18 +4,9 @@
 \alias{mask.test}
 \title{Testing the mask object for a first calls model}
 \usage{
-mask.test(
-  fit = NULL,
-  mask,
-  traps,
-  pars,
-  cutoff,
-  lower.cutoff,
-  surface = FALSE,
-  col = c("black", "blue", "red"),
-  pincol = "red",
-  ...
-)
+mask.test(fit = NULL, mask, traps, pars, cutoff, lower.cutoff,
+  surface = FALSE, col = c("black", "blue", "red"), pincol = "red",
+  ...)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
@@ -23,7 +14,7 @@ mask.test(
 \item{mask}{A matrix with two columns, or a list of such matrices
 for a multi-session model. Each row provides Cartesian
 coordinates for the location of a mask point. It is most easily
-crated using \link{create.mask}.}
+created using \link{create.mask}.}
 
 \item{traps}{A matrix with two columns. Each row provides Cartesian
 coordinates for the location of a detector. Alternatively, this
