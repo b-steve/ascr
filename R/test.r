@@ -16,10 +16,10 @@
 test.ascr <- function(quick = FALSE){
     dir <- ifelse(quick, "quick", "full")
     if (quick){
-        example <- ascr::example
-        simple.capt <- example$capt["bincapt"]
-        fit <- try(fit.ascr(capt = simple.capt, traps = example$traps,
-                            mask = example$mask, fix = list(g0 = 1)),
+        example.data <- ascr::example.data
+        simple.capt <- example.data$capt["bincapt"]
+        fit <- try(fit.ascr(capt = simple.capt, traps = example.data$traps,
+                            mask = example.data$mask, fix = list(g0 = 1)),
                    silent = TRUE)
         if (class(fit)[1] == "try-error"){
             message("ADMB executable test: FAIL\n")

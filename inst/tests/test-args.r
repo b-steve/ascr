@@ -1,9 +1,9 @@
 context("Testing fit.ascr() arguments")
 
 test_that("fixing parameters", {
-    simple.capt <- example$capt["bincapt"]
-    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, fix = list(g0 = 0.9))
+    simple.capt <- example.data$capt["bincapt"]
+    fit <- fit.ascr(capt = simple.capt, traps = example.data$traps,
+                    mask = example.data$mask, fix = list(g0 = 0.9))
     ## Checking that g0 is not estimated.
     expect_that(get.par(fit, "g0"), is_equivalent_to(0.9))
     ## Checkint that phase is set to -1.
@@ -19,13 +19,13 @@ test_that("fixing parameters", {
 })
 
 test_that("start values", {
-    simple.capt <- example$capt["bincapt"]
+    simple.capt <- example.data$capt["bincapt"]
     ## Fit original model.
-    fit.start <- fit.ascr(capt = simple.capt, traps = example$traps,
-                          mask = example$mask)
+    fit.start <- fit.ascr(capt = simple.capt, traps = example.data$traps,
+                          mask = example.data$mask)
     ## Provide a single start value.
-    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, sv = list(D = 2145))
+    fit <- fit.ascr(capt = simple.capt, traps = example.data$traps,
+                    mask = example.data$mask, sv = list(D = 2145))
     ## Check that estimates are the same.
     relative.error <- max(abs((coef(fit.start) - coef(fit))/
                               coef(fit)))
@@ -35,9 +35,9 @@ test_that("start values", {
 })
 
 test_that("parameter bounds", {
-    simple.capt <- example$capt["bincapt"]
-    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, bounds = list(D = c(0, 5000)))
+    simple.capt <- example.data$capt["bincapt"]
+    fit <- fit.ascr(capt = simple.capt, traps = example.data$traps,
+                    mask = example.data$mask, bounds = list(D = c(0, 5000)))
     ## Check that bounds object is a list.
     expect_true(is.list(fit$args$bounds))
     ## Check that bounds for D set appropriately.
@@ -47,8 +47,8 @@ test_that("parameter bounds", {
 })
 
 test_that("local integration", {
-    simple.capt <- example$capt[c("bincapt", "toa")]
-    fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                    mask = example$mask, local = TRUE)
+    simple.capt <- example.data$capt[c("bincapt", "toa")]
+    fit <- fit.ascr(capt = simple.capt, traps = example.data$traps,
+                    mask = example.data$mask, local = TRUE)
     expect_true(fit$args$local)
 })

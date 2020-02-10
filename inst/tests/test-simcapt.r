@@ -2,7 +2,7 @@ context("Testing sim.capt()")
 
 test_that("simulation produces correct output", {
     set.seed(8173)
-    test.capt <- sim.capt(traps = example$traps, mask = example$mask,
+    test.capt <- sim.capt(traps = example.data$traps, mask = example.data$mask,
                           infotypes = c("bearing", "dist", "toa"),
                           detfn = "ss",
                           pars = list(D = 2500, b0.ss = 90, b1.ss = 4,
@@ -16,10 +16,10 @@ test_that("simulation produces correct output", {
                                            "dist", "toa")))
     ## Checking dimensions.
     dims <- sapply(test.capt, dim)
-    expect_true(all(dims[1, ] == nrow(example$capt$bincapt)))
-    expect_true(all(dims[2, ] == nrow(example$traps)))
-    ## Checking equality with example$capt.
-    expect_that(test.capt, equals(example$capt))
+    expect_true(all(dims[1, ] == nrow(example.data$capt$bincapt)))
+    expect_true(all(dims[2, ] == nrow(example.data$traps)))
+    ## Checking equality with example.data$capt.
+    expect_that(test.capt, equals(example.data$capt))
     test.ss <- c(61.5810096413274, 85.7765377386673, 71.9380707339211, 0,
                  77.7630468936444, 82.4358785366641)
     expect_that(test.capt$ss[3, ], equals(test.ss))
@@ -35,7 +35,7 @@ test_that("simulation produces correct output", {
     ## Probably also best to compare to pre-specified data. Previous
     ## simulations used an older simulation function so this one is
     ## not validated. I think it's fine though.
-    test.capt <- sim.capt(traps = example$traps, mask = example$mask,
+    test.capt <- sim.capt(traps = example.data$traps, mask = example.data$mask,
                           detfn = "hn",
                           pars = list(D = 2500, g0 = 0.9, sigma = 5))
     capt <- matrix(c(0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0),
@@ -45,7 +45,7 @@ test_that("simulation produces correct output", {
     ## Same capture history analysed in test-fits.r.
     set.seed(6434)
     pars <- list(D = 500, b0.ss = 90, b1.ss = 4, sigma.b0.ss = 5, sigma.ss = 10)
-    test.capt <- sim.capt(traps = example$traps, mask = example$mask, detfn = "ss",
+    test.capt <- sim.capt(traps = example.data$traps, mask = example.data$mask, detfn = "ss",
                      pars = pars, ss.opts = list(cutoff = 60))
     test.ss <- c(75.8665334318406, 62.4175659997338, 0, 61.7592272206934, 0, 0)
     expect_that(test.capt$ss[3, ], equals(test.ss))
@@ -71,35 +71,35 @@ test_that("simulation produces correct output", {
 
 test_that("simulation errors", {
     ## Specifying incorrect SS link.
-    expect_that(sim.capt(traps = example$traps, mask = example$mask, detfn = "ss",
+    expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask, detfn = "ss",
                          pars = list(D = 2000, ss.b0 = 20, ss.b1 = 5,
                              sigma.ss = 10),
                          ss.opts = list(cutoff = 0, ss.link = "identity.link")),
                 throws_error("The argument 'ss.link' must be either \"identity\" or \"log\""))
     ## Trying to simulate SS using 'infotypes'.
-    expect_that(sim.capt(traps = example$traps, mask = example$mask,
+    expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask,
                          infotypes = c("ss", "toa"),
                          pars = list(D = 2000, ss.b0 = 20, ss.b1 = 5,
                              sigma.ss = 10, sigma.toa = 0.002),
                          ss.opts = list(cutoff = 0)),
                 throws_error("Signal strength information is simulated by setting argument 'detfn' to \"ss\"."))
     ## Cutoff provided when not required.
-    expect_that(sim.capt(traps = example$traps, mask = example$mask,
+    expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask,
                          pars = list(D = 2000, g0 = 0.75, sigma = 5),
                          ss.opts = list(cutoff = 0)),
                 gives_warning("The argument 'ss.opts' is being ignored, as 'detfn' is not \"ss\"."))
     ## Signal strength link provided when not required.
-    expect_that(sim.capt(traps = example$traps, mask = example$mask,
+    expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask,
                          pars = list(D = 2000, g0 = 0.75, sigma = 5),
                          ss.opts = list(ss.link = "identity")),
                 gives_warning("The argument 'ss.opts' is being ignored, as 'detfn' is not \"ss\"."))
     ## Extra parameter.
-    expect_that(sim.capt(traps = example$traps, mask = example$mask,
+    expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask,
                          pars = list(D = 2000, g0 = 0.75, sigma = 5,
                              sigma.toa = 0.002)),
                 throws_error("The following must be named components of the list 'pars': "))
     ## Missing parameter.
-    expect_that(sim.capt(traps = example$traps, mask = example$mask,
+    expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask,
                          pars = list(D = 2000, g0 = 0.75)),
                 throws_error("The following must be named components of the list 'pars': "))
 })

@@ -14,7 +14,7 @@
 #'     \link{secr} package.
 #'
 #' @examples
-#' mask <- create.mask(traps = example$traps, buffer = 20)
+#' mask <- create.mask(traps = example.data$traps, buffer = 20)
 #'
 #' # calculate the area of the mask (in hectares)
 #' mask_area <- attr(mask, "area") * nrow(mask)
@@ -226,7 +226,7 @@ create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NUL
 #'     attributes.
 #'
 #' @examples
-#' traps <- convert.traps(traps = example$traps)
+#' traps <- convert.traps(traps = example.data$traps)
 #'
 #' @export
 convert.traps <- function(traps, ss = FALSE){
@@ -252,7 +252,7 @@ convert.traps <- function(traps, ss = FALSE){
 #'
 #' @return An object of class \code{mask}.
 #'
-#' @examples mask <- convert.mask(mask = example$mask)
+#' @examples mask <- convert.mask(mask = example.data$mask)
 #'
 #' @export
 convert.mask <- function(mask){

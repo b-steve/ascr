@@ -94,7 +94,7 @@
 #' @examples
 #' \dontrun{
 #' ## In practice, N should be >> 100, but this leads to long computation time for a simple example.
-#' boot.fit <- boot.ascr(fit = example$fits$simple.hn, N = 100)
+#' boot.fit <- boot.ascr(fit = example.data$fits$simple.hn, N = 100)
 #' }
 #'
 #' @export

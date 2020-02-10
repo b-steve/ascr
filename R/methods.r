@@ -15,9 +15,9 @@
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @examples
-#' coef(example$fits$simple.hn)
-#' coef(example$fits$simple.hn, pars = "all")
-#' coef(example$fits$simple.hn, pars = "derived")
+#' coef(example.data$fits$simple.hn)
+#' coef(example.data$fits$simple.hn, pars = "all")
+#' coef(example.data$fits$simple.hn, pars = "derived")
 #'
 #' @export
 coef.ascr <- function(object, pars = "fitted", ...){
@@ -73,9 +73,9 @@ coef.ascr.boot <- function(object, pars = "fitted",
 #' @inheritParams coef.ascr
 #'
 #' @examples
-#' vcov(example$fits$simple.hn)
-#' vcov(example$fits$simple.hn, pars = "all")
-#' vcov(example$fits$simple.hn, pars = "derived")
+#' vcov(example.data$fits$simple.hn)
+#' vcov(example.data$fits$simple.hn, pars = "all")
+#' vcov(example.data$fits$simple.hn, pars = "derived")
 #'
 #' @export
 vcov.ascr <- function(object, pars = "fitted", ...){
@@ -168,9 +168,9 @@ vcov.ascr.boot <- function(object, pars = "fitted", ...){
 #' @inheritParams coef.ascr
 #'
 #' @examples
-#' stdEr(example$fits$simple.hn)
-#' stdEr(example$fits$simple.hn, pars = "all")
-#' stdEr(example$fits$simple.hn, pars = "derived")
+#' stdEr(example.data$fits$simple.hn)
+#' stdEr(example.data$fits$simple.hn, pars = "all")
+#' stdEr(example.data$fits$simple.hn, pars = "derived")
 #'
 #' @export
 stdEr.ascr <- function(object, pars = "fitted", ...){

@@ -9,7 +9,7 @@
 #' @inheritParams locations
 #'
 #' @examples
-#' show.survey(example$fits$simple.hn)
+#' show.survey(example.data$fits$simple.hn)
 #'
 #' @export
 show.survey <- function(fit, session = 1, ...){
@@ -46,7 +46,7 @@ show.survey <- function(fit, session = 1, ...){
 #' @param ... Arguments to be passed to \link{persp}.
 #'
 #' @examples
-#' show.detsurf(example$fits$simple.hn)
+#' show.detsurf(example.data$fits$simple.hn)
 #'
 #' @export
 show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "black", levels = NULL, xlim = NULL, ylim = NULL,
@@ -135,9 +135,9 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #' @export
 #'
 #' @examples
-#' simple.capt <- example$capt[1]
-#' cov.df <- data.frame(x = example$mask[, 1]/1000, y = example$mask[, 2]/1000)
-#' fit <- fit.ascr(capt = simple.capt, traps = example$traps, mask = example$mask,
+#' simple.capt <- example.data$capt[1]
+#' cov.df <- data.frame(x = example.data$mask[, 1]/1000, y = example.data$mask[, 2]/1000)
+#' fit <- fit.ascr(capt = simple.capt, traps = example.data$traps, mask = example.data$mask,
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)

@@ -157,8 +157,8 @@ read.ascr <- function(fn, verbose = FALSE, checkterm = TRUE){
 #'     is returned.
 #'
 #' @examples
-#' get.par(fit = example$fits$simple.hn, pars = "all")
-#' get.par(fit = example$fits$bearing.hn, pars = c("D", "kappa", "esa"), as.list = TRUE)
+#' get.par(fit = example.data$fits$simple.hn, pars = "all")
+#' get.par(fit = example.data$fits$bearing.hn, pars = c("D", "kappa", "esa"), as.list = TRUE)
 #'
 #' @export
 get.par <- function(fit, pars = "all", cutoff = FALSE, as.list = FALSE){

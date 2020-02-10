@@ -137,9 +137,9 @@ NULL
 #' \item \code{fits}: Some example model fits.
 #' }
 #'
-#' @name example
+#' @name example.data
 #' @format A list.
-#' @usage example
+#' @usage example.data
 #' @docType data
 #' @keywords datasets
 NULL
@@ -159,9 +159,9 @@ NULL
 #' \item \code{mask}: A list of suitable mask objects.
 #' }
 #'
-#' @name multi.example
+#' @name multi.example.data
 #' @format A list.
-#' @usage multi.example
+#' @usage multi.example.data
 #' @docType data
 #' @keywords datasets
 NULL

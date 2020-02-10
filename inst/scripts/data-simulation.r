@@ -18,7 +18,7 @@ simple.hr.fit <- fit.ascr(capt = simple.capt, traps = example.traps,
 bearing.hn.fit <- fit.ascr(capt = bearing.capt, traps = example.traps,
                            mask = example.mask, fix = list(g0 = 1))
 boot.simple.hn.fit <- boot.ascr(simple.hn.fit, N = 500, n.cores = 4)
-example <- list(capt = example.capt, traps = example.traps, mask = example.mask,
+example.data <- list(capt = example.capt, traps = example.traps, mask = example.mask,
                 cutoff = 60, fits = list(simple.hn = simple.hn.fit,
                                  simple.hr = simple.hr.fit,
                                  bearing.hn = bearing.hn.fit,
@@ -34,6 +34,6 @@ capt2 <- sim.capt(traps = traps2, mask = mask2, infotypes = c("bearing", "dist")
 traps <- list(traps1, traps2)
 mask <- list(mask1, mask2)
 capt <- list(capt1, capt2)
-multi.example <- list(capt = capt, traps = traps, mask = mask)
+multi.example.data <- list(capt = capt, traps = traps, mask = mask)
 
-save(example, multi.example, file = "../../data/example.RData")
+save(example.data, multi.example.data, file = "../../data/example.RData")
