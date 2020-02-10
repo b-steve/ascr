@@ -426,17 +426,17 @@ test_that("first-call signal strength models", {
 test_that("Multi-session models", {
     fit <- fit.ascr(multi.example.data$capt, multi.example.data$traps, multi.example.data$mask,
                     sv = list(kappa = 100))
-    pars.test <- c(2525.4060484, 0.9849349, 2.8395646, 120.0353505)
+    pars.test <- c(2533.22259137523, 0.713499860581126, 3.29921342361265, 
+                   14.8014736645179, 3.76943534560188)
     relative.error <- max(abs((coef(fit) - pars.test)/pars.test))
     expect_true(relative.error < 1e-3)
     set.seed(2987)
     boot.fit <- boot.ascr(fit, N = 10, prog = FALSE)
     ses <- stdEr(boot.fit, "all")
-    ses.test <- c(325.117358182622, 0.0708826944902274,
-                  0.182620570101098, 14.6858155989752,
-                  0.00190046466718596, 0.00137547230211622,
-                  0.121005550405832, 7.78842978292226,
-                  0.0650553077849548, 0.233809361964724)
+    ses.test <- c(336.848529622972, 0.0884475040103231, 0.161972601917187, 
+                  4.35984396765979, 0.953639186486301, 0.0019672618550214,
+                  0.00137173732260306, 0.128044077356419, 0.440198823131052,
+                  0.0487841733522029, 0.297075970023821, 0.261881851858642)
     relative.error <- max(abs((ses - ses.test)/ses.test))
     expect_true(relative.error < 1e-4)
 })
