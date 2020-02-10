@@ -25,12 +25,12 @@ example <- list(capt = example.capt, traps = example.traps, mask = example.mask,
                                  boot.simple.hn = boot.simple.hn.fit))
 traps1 <- example$traps
 mask1 <- create.mask(traps1, buffer = 15)
-capt1 <- sim.capt(traps = traps1, mask = mask1, infotypes = "bearing",
-                  pars = list(D = 2500, g0 = 0.9, sigma = 3, kappa = 50))
+capt1 <- sim.capt(traps = traps1, mask = mask1, infotypes = c("bearing", "dist"),
+                  pars = list(D = 2500, g0 = 0.9, sigma = 3, kappa = 10, alpha = 4))
 traps2 <- (example$traps + 20)[1:3, ]
 mask2 <- create.mask(traps2, buffer = 15)
-capt2 <- sim.capt(traps = traps2, mask = mask2, infotypes = "bearing",
-                  pars = list(D = 2500, g0 = 0.9, sigma = 3, kappa = 50))
+capt2 <- sim.capt(traps = traps2, mask = mask2, infotypes = c("bearing", "dist"),
+                  pars = list(D = 2500, g0 = 0.9, sigma = 3, kappa = 10, alpha = 4))
 traps <- list(traps1, traps2)
 mask <- list(mask1, mask2)
 capt <- list(capt1, capt2)
