@@ -30,14 +30,14 @@ Fits SECR models on different cores within a cluster.
 \examples{
 \dontrun{
 ## Running the examples in the fit.ascr() documentation in parallel.
-simple.capt <- example$capt["bincapt"]
-simple.hn.args <- list(capt = simple.capt, traps = example$traps,
-                       mask = example$mask, fix = list(g0 = 1))
-simple.hr.args <- list(capt = simple.capt, traps = example$traps,
-                       mask = example$mask, detfn = "hr")
-bearing.capt <- example$capt[c("bincapt", "bearing")]
-bearing.hn.args <- list(capt = bearing.capt, traps = example$traps,
-                        mask = example$mask, fix = list(g0 = 1))
+simple.capt <- example.data$capt["bincapt"]
+simple.hn.args <- list(capt = simple.capt, traps = example.data$traps,
+                       mask = example.data$mask, fix = list(g0 = 1))
+simple.hr.args <- list(capt = simple.capt, traps = example.data$traps,
+                       mask = example.data$mask, detfn = "hr")
+bearing.capt <- example.data$capt[c("bincapt", "bearing")]
+bearing.hn.args <- list(capt = bearing.capt, traps = example.data$traps,
+                        mask = example.data$mask, fix = list(g0 = 1))
 ## This will only run if you have 4 cores available, you may need
 ## to alter n.cores as appropriate.
 fits <- par.fit.ascr(n.cores = 4, simple.hn.args, simple.hr.args,

@@ -5,17 +5,47 @@
 \alias{admbsecr}
 \title{Fitting acoustic SCR models}
 \usage{
-fit.ascr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, ss.opts = NULL, cue.rates = NULL,
-  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
-  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
-  optim.opts = NULL, ...)
+fit.ascr(
+  capt,
+  traps,
+  mask,
+  detfn = "hn",
+  sv = NULL,
+  bounds = NULL,
+  fix = NULL,
+  ss.opts = NULL,
+  cue.rates = NULL,
+  survey.length = NULL,
+  sound.speed = 330,
+  ihd.opts = NULL,
+  local = FALSE,
+  hess = NULL,
+  trace = FALSE,
+  clean = TRUE,
+  optim.opts = NULL,
+  ...
+)
 
-admbsecr(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-  fix = NULL, ss.opts = NULL, cue.rates = NULL,
-  survey.length = NULL, sound.speed = 330, ihd.opts = NULL,
-  local = FALSE, hess = NULL, trace = FALSE, clean = TRUE,
-  optim.opts = NULL, ...)
+admbsecr(
+  capt,
+  traps,
+  mask,
+  detfn = "hn",
+  sv = NULL,
+  bounds = NULL,
+  fix = NULL,
+  ss.opts = NULL,
+  cue.rates = NULL,
+  survey.length = NULL,
+  sound.speed = 330,
+  ihd.opts = NULL,
+  local = FALSE,
+  hess = NULL,
+  trace = FALSE,
+  clean = TRUE,
+  optim.opts = NULL,
+  ...
+)
 }
 \arguments{
 \item{capt}{A list containing capture histories and supplementary
@@ -403,22 +433,22 @@ results.
 \examples{
 \dontrun{
 ## Getting some data.
-simple.capt <- example$capt["bincapt"]
+simple.capt <- example.data$capt["bincapt"]
 ## A simple model.
-simple.hn.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                          mask = example$mask, fix = list(g0 = 1))
+simple.hn.fit <- fit.ascr(capt = simple.capt, traps = example.data$traps,
+                          mask = example.data$mask, fix = list(g0 = 1))
 ## A simple model with a hazard-rate detection function.
-simple.hr.fit <- fit.ascr(capt = simple.capt, traps = example$traps,
-                          mask = example$mask, detfn = "hr")
+simple.hr.fit <- fit.ascr(capt = simple.capt, traps = example.data$traps,
+                          mask = example.data$mask, detfn = "hr")
 ## Including some bearing information.
-bearing.capt <- example$capt[c("bincapt", "bearing")]
+bearing.capt <- example.data$capt[c("bincapt", "bearing")]
 ## Fitting a model with bearing information.
-bearing.hn.fit <- fit.ascr(capt = bearing.capt, traps = example$traps,
-                           mask = example$mask, fix = list(g0 = 1))
+bearing.hn.fit <- fit.ascr(capt = bearing.capt, traps = example.data$traps,
+                           mask = example.data$mask, fix = list(g0 = 1))
 ## Getting some multi-session data.
-multi.capt <- lapply(multi.example$capt, function(x) x[1])
-multi.fit <- fit.ascr(multi.capt, multi.example$traps,
-                      multi.example$mask)
+multi.capt <- lapply(multi.example.data$capt, function(x) x[1])
+multi.fit <- fit.ascr(multi.capt, multi.example.data$traps,
+                      multi.example.data$mask)
 }
 
 }

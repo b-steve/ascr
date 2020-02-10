@@ -26,9 +26,9 @@ Plots density surface estimated by a model fitted with the function
 \link{fit.ascr}.
 }
 \examples{
-simple.capt <- example$capt[1]
-cov.df <- data.frame(x = example$mask[, 1]/1000, y = example$mask[, 2]/1000)
-fit <- fit.ascr(capt = simple.capt, traps = example$traps, mask = example$mask,
+simple.capt <- example.data$capt[1]
+cov.df <- data.frame(x = example.data$mask[, 1]/1000, y = example.data$mask[, 2]/1000)
+fit <- fit.ascr(capt = simple.capt, traps = example.data$traps, mask = example.data$mask,
                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
                                                     covariates = cov.df))
 show.Dsurf(fit)

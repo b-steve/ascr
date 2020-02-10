@@ -26,8 +26,8 @@ Extracts the variance-covariance matrix for parameters in a model
 fitted using \link[ascr]{fit.ascr}.
 }
 \examples{
-vcov(example$fits$simple.hn)
-vcov(example$fits$simple.hn, pars = "all")
-vcov(example$fits$simple.hn, pars = "derived")
+vcov(example.data$fits$simple.hn)
+vcov(example.data$fits$simple.hn, pars = "all")
+vcov(example.data$fits$simple.hn, pars = "derived")
 
 }

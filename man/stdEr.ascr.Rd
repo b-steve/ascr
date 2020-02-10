@@ -25,8 +25,8 @@ Extracts standard errors for estimated and derived parameters from
 a model fitted using \link[ascr]{fit.ascr}.
 }
 \examples{
-stdEr(example$fits$simple.hn)
-stdEr(example$fits$simple.hn, pars = "all")
-stdEr(example$fits$simple.hn, pars = "derived")
+stdEr(example.data$fits$simple.hn)
+stdEr(example.data$fits$simple.hn, pars = "all")
+stdEr(example.data$fits$simple.hn, pars = "derived")
 
 }

@@ -4,18 +4,36 @@
 \alias{locations}
 \title{Plotting estimated locations}
 \usage{
-locations(fit, id, session = 1, infotypes = NULL, combine = FALSE,
-  xlim = NULL, ylim = NULL, mask = get.mask(fit, session),
-  newdata = NULL, levels = NULL, nlevels = 10, density = FALSE,
-  cols = list(combined = "black", capt = "purple", ss = "orange", bearing
-  = "green", dist = "brown", toa = "blue"), ltys = list(combined =
-  "solid", capt = "solid", ss = "solid", bearing = "solid", dist = "solid",
-  toa = "solid"), trap.col = "red", circle.traps = TRUE,
-  show.labels = TRUE, plot.contours = TRUE, plot.estlocs = FALSE,
-  keep.estlocs = FALSE, plot.arrows = "bearing" \%in\% fit$infotypes,
-  plot.circles = "dist" \%in\% fit$infotypes & !("bearing" \%in\%
-  fit$infotypes), arrow.length = NULL, show.legend = FALSE,
-  show.axes = TRUE, add = FALSE)
+locations(
+  fit,
+  id,
+  session = 1,
+  infotypes = NULL,
+  combine = FALSE,
+  xlim = NULL,
+  ylim = NULL,
+  mask = get.mask(fit, session),
+  newdata = NULL,
+  levels = NULL,
+  nlevels = 10,
+  density = FALSE,
+  cols = list(combined = "black", capt = "purple", ss = "orange", bearing = "green",
+    dist = "brown", toa = "blue"),
+  ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing = "solid", dist
+    = "solid", toa = "solid"),
+  trap.col = "red",
+  circle.traps = TRUE,
+  show.labels = TRUE,
+  plot.contours = TRUE,
+  plot.estlocs = FALSE,
+  keep.estlocs = FALSE,
+  plot.arrows = "bearing" \%in\% fit$infotypes,
+  plot.circles = "dist" \%in\% fit$infotypes & !("bearing" \%in\% fit$infotypes),
+  arrow.length = NULL,
+  show.legend = FALSE,
+  show.axes = TRUE,
+  add = FALSE
+)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
@@ -117,7 +135,7 @@ a single mode (and the modes have the same density value) then
 a dot will be plotted for each.}
 
 \item{keep.estlocs}{Logical, if \code{TRUE}, the locations of the
-estimated locations are returned.}
+estimated locations are invisibly returned.}
 
 \item{plot.arrows}{Logical, if \code{TRUE}, arrows indicating the
 estimated bearing to the individual are plotted from detectors
@@ -139,16 +157,25 @@ plot.}
 \item{add}{Logical, if \code{TRUE}, contours will be added to an
 existing plot.}
 }
+\value{
+If \code{keep.estlocs} is \code{TRUE}, then a list
+    containing a matrix of estimated locations is invisibly
+    returned. See examples.
+}
 \description{
 Plots estimated densities of animal locations, which are latent
 variables in SECR models.
 }
 \examples{
-locations(example$fits$simple.hn, 1)
-locations(example$fits$simple.hn, 1, levels = c(0.50, 0.90, 0.95))
+locations(example.data$fits$simple.hn, 1)
+locations(example.data$fits$simple.hn, 1, levels = c(0.50, 0.90, 0.95))
+## Saving estimated locations.
+estlocs <- locations(example.data$fits$simple.hn, keep.estlocs = TRUE)
+show.survey(example.data$fits)
+points(estlocs[[1]])
 \dontrun{
-fine.mask <- create.mask(example$traps, 20, spacing = 0.2)
-locations(example$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
+fine.mask <- create.mask(example.data$traps, 20, spacing = 0.2)
+locations(example.data$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
 }
 
 }

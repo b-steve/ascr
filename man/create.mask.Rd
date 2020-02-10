@@ -26,7 +26,7 @@ Creates a mask object to use with the function
 \code{\link{fit.ascr}}.
 }
 \examples{
-mask <- create.mask(traps = example$traps, buffer = 20)
+mask <- create.mask(traps = example.data$traps, buffer = 20)
 
 # calculate the area of the mask (in hectares)
 mask_area <- attr(mask, "area") * nrow(mask)

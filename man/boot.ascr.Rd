@@ -5,11 +5,9 @@
 \alias{boot.admbsecr}
 \title{Bootstrapping a fitted ascr model}
 \usage{
-boot.ascr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
-  infotypes = NULL)
+boot.ascr(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL)
 
-boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000,
-  infotypes = NULL)
+boot.admbsecr(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = NULL)
 }
 \arguments{
 \item{fit}{A fitted \code{ascr} model object.}
@@ -105,7 +103,7 @@ extracted using the function \link{get.mce}.
 \examples{
 \dontrun{
 ## In practice, N should be >> 100, but this leads to long computation time for a simple example.
-boot.fit <- boot.ascr(fit = example$fits$simple.hn, N = 100)
+boot.fit <- boot.ascr(fit = example.data$fits$simple.hn, N = 100)
 }
 
 }

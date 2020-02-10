@@ -24,6 +24,6 @@ The returned object is suitable for use as the \code{mask}
 argument of the function \link{secr.fit}.
 }
 \examples{
-mask <- convert.mask(mask = example$mask)
+mask <- convert.mask(mask = example.data$mask)
 
 }

@@ -19,6 +19,6 @@ Plots the mask points and trap locations used in a model fitted
 with the function \link{fit.ascr}.
 }
 \examples{
-show.survey(example$fits$simple.hn)
+show.survey(example.data$fits$simple.hn)
 
 }

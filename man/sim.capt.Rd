@@ -4,12 +4,26 @@
 \alias{sim.capt}
 \title{Simulating SCR data}
 \usage{
-sim.capt(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
-  infotypes = character(0), detfn = "hn", pars = NULL,
-  ss.opts = NULL, cue.rates = NULL, survey.length = NULL,
-  freq.dist = "edf", sound.speed = 330, ihd.surf = NULL,
-  test.detfn = FALSE, first.only = FALSE, keep.locs = FALSE,
-  keep.ids = FALSE, ...)
+sim.capt(
+  fit = NULL,
+  traps = NULL,
+  mask = NULL,
+  popn = NULL,
+  infotypes = character(0),
+  detfn = "hn",
+  pars = NULL,
+  ss.opts = NULL,
+  cue.rates = NULL,
+  survey.length = NULL,
+  freq.dist = "edf",
+  sound.speed = 330,
+  ihd.surf = NULL,
+  test.detfn = FALSE,
+  first.only = FALSE,
+  keep.locs = FALSE,
+  keep.ids = FALSE,
+  ...
+)
 }
 \arguments{
 \item{fit}{A fitted \code{ascr} model object which provides the
@@ -146,10 +160,10 @@ loudest received signal strength is also above the upper cutoff.
 }
 \examples{
 ## Simulating based on model fits.
-simple.capt <- sim.capt(example$fits$simple.hn)
-bearing.capt <- sim.capt(example$fits$bearing.hn)
+simple.capt <- sim.capt(example.data$fits$simple.hn)
+bearing.capt <- sim.capt(example.data$fits$bearing.hn)
 ## Simulating from provided parameter values.
-new.capt <- sim.capt(traps = example$traps, mask = example$mask, infotypes = c("bearing", "dist"), detfn = "hr",
+new.capt <- sim.capt(traps = example.data$traps, mask = example.data$mask, infotypes = c("bearing", "dist"), detfn = "hr",
                      pars = list(D = 2500, g0 = 0.9, sigma = 3, z = 2, kappa = 50, alpha = 10))
 
 }

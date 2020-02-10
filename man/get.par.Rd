@@ -45,7 +45,7 @@ This is a similar function to \link{coef.ascr}, however
 been fixed using \code{fit.ascr}'s \code{fix} argument.
 }
 \examples{
-get.par(fit = example$fits$simple.hn, pars = "all")
-get.par(fit = example$fits$bearing.hn, pars = c("D", "kappa", "esa"), as.list = TRUE)
+get.par(fit = example.data$fits$simple.hn, pars = "all")
+get.par(fit = example.data$fits$bearing.hn, pars = c("D", "kappa", "esa"), as.list = TRUE)
 
 }

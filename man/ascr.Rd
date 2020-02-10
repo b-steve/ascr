@@ -3,7 +3,6 @@
 \docType{package}
 \name{ascr}
 \alias{ascr}
-\alias{ascr-package}
 \title{ascr: A package to fit acoustic spatial capture-recapture models}
 \description{
 Functions to fit acoustic spatial capture-recapture models.

@@ -7,8 +7,7 @@
 \usage{
 \method{coef}{ascr}(object, pars = "fitted", ...)
 
-\method{coef}{ascr.boot}(object, pars = "fitted", correct.bias = FALSE,
-  ...)
+\method{coef}{ascr.boot}(object, pars = "fitted", correct.bias = FALSE, ...)
 }
 \arguments{
 \item{object}{A fitted model from \link[ascr]{fit.ascr}.}
@@ -32,8 +31,8 @@ Extracts estimated and derived parameters from a model fitted using
 \link{fit.ascr}.
 }
 \examples{
-coef(example$fits$simple.hn)
-coef(example$fits$simple.hn, pars = "all")
-coef(example$fits$simple.hn, pars = "derived")
+coef(example.data$fits$simple.hn)
+coef(example.data$fits$simple.hn, pars = "all")
+coef(example.data$fits$simple.hn, pars = "derived")
 
 }
