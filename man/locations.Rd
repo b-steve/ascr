@@ -6,7 +6,7 @@
 \usage{
 locations(
   fit,
-  id,
+  id = "all",
   session = 1,
   infotypes = NULL,
   combine = FALSE,
@@ -17,8 +17,7 @@ locations(
   levels = NULL,
   nlevels = 10,
   density = FALSE,
-  cols = list(combined = "black", capt = "purple", ss = "orange", bearing = "green",
-    dist = "brown", toa = "blue"),
+  cols = list(combined = 1, capt = 2, ss = 3, bearing = 4, dist = 5, toa = 6),
   ltys = list(combined = "solid", capt = "solid", ss = "solid", bearing = "solid", dist
     = "solid", toa = "solid"),
   trap.col = "red",
@@ -40,7 +39,9 @@ locations(
 
 \item{id}{A numeric vector with row numbers from
 \code{fit$args$capt}, indicating which individuals' locations
-are to be plotted.}
+are to be plotted. Alternatively, the character string
+\code{"all"}, indicating all animals within the selected
+session.}
 
 \item{session}{The session with the detector array and invidual(s)
 to be plotted (for multi-session models only).}
@@ -132,7 +133,7 @@ the density of the individuals' locations is plotted unless
 \item{plot.estlocs}{Logical, if \code{TRUE}, dots are plotted at
 the mode of the combined densities. If a density has more than
 a single mode (and the modes have the same density value) then
-a dot will be plotted for each.}
+a dot will only be plotted at one of them.}
 
 \item{keep.estlocs}{Logical, if \code{TRUE}, the locations of the
 estimated locations are invisibly returned.}
@@ -171,8 +172,7 @@ locations(example.data$fits$simple.hn, 1)
 locations(example.data$fits$simple.hn, 1, levels = c(0.50, 0.90, 0.95))
 ## Saving estimated locations.
 estlocs <- locations(example.data$fits$simple.hn, keep.estlocs = TRUE)
-show.survey(example.data$fits)
-points(estlocs[[1]])
+estlocs
 \dontrun{
 fine.mask <- create.mask(example.data$traps, 20, spacing = 0.2)
 locations(example.data$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
