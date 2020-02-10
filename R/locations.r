@@ -83,7 +83,7 @@
 #'     a single mode (and the modes have the same density value) then
 #'     a dot will be plotted for each.
 #' @param keep.estlocs Logical, if \code{TRUE}, the locations of the
-#'     estimated locations are returned.
+#'     estimated locations are invisibly returned.
 #' @param plot.arrows Logical, if \code{TRUE}, arrows indicating the
 #'     estimated bearing to the individual are plotted from detectors
 #'     at which detections were made.
@@ -99,9 +99,17 @@
 #' @param add Logical, if \code{TRUE}, contours will be added to an
 #'     existing plot.
 #'
+#' @return If \code{keep.estlocs} is \code{TRUE}, then a list
+#'     containing a matrix of estimated locations is invisibly
+#'     returned. See examples.
+#' 
 #' @examples
 #' locations(example$fits$simple.hn, 1)
 #' locations(example$fits$simple.hn, 1, levels = c(0.50, 0.90, 0.95))
+#' ## Saving estimated locations.
+#' estlocs <- locations(example$fits$simple.hn, keep.estlocs = TRUE)
+#' show.survey(example$fits)
+#' points(estlocs[[1]])
 #' \dontrun{
 #' fine.mask <- create.mask(example$traps, 20, spacing = 0.2)
 #' locations(example$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
@@ -315,7 +323,7 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
                     }
                 }
             } else {
-                fit.ss <- f.capt*0 + 1
+                f.ss <- f.capt*0 + 1
             }
             ## This shit is such a mess, sorry if you have to work out
             ## how this works later.
@@ -406,6 +414,7 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
                 points(mask[mode.points, 1], mask[mode.points, 2],
                        pch = 16, col = "black")
                 if (keep.estlocs){
+                    browser()
                     estlocs[j, ] <- c(mask[mode.points, 1], mask[mode.points, 2])
                     j <- j + 1
                 }
@@ -440,9 +449,9 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
     if (keep.estlocs){
         out <- list(estlocs = estlocs)
     } else {
-        out <- invisible(TRUE)
+        out <- TRUE
     }
-    out
+    invisible(out)
 }
 
 ## Helper to get stuff in the right form for contour().
