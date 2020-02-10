@@ -6,7 +6,9 @@
 #' @param fit A fitted model from \link{fit.ascr}.
 #' @param id A numeric vector with row numbers from
 #'     \code{fit$args$capt}, indicating which individuals' locations
-#'     are to be plotted.
+#'     are to be plotted. Alternatively, the character string
+#'     \code{"all"}, indicating all animals within the selected
+#'     session.
 #' @param session The session with the detector array and invidual(s)
 #'     to be plotted (for multi-session models only).
 #' @param infotypes A character vector indicating the type(s) of
@@ -81,7 +83,7 @@
 #' @param plot.estlocs Logical, if \code{TRUE}, dots are plotted at
 #'     the mode of the combined densities. If a density has more than
 #'     a single mode (and the modes have the same density value) then
-#'     a dot will be plotted for each.
+#'     a dot will only be plotted at one of them.
 #' @param keep.estlocs Logical, if \code{TRUE}, the locations of the
 #'     estimated locations are invisibly returned.
 #' @param plot.arrows Logical, if \code{TRUE}, arrows indicating the
@@ -108,20 +110,18 @@
 #' locations(example.data$fits$simple.hn, 1, levels = c(0.50, 0.90, 0.95))
 #' ## Saving estimated locations.
 #' estlocs <- locations(example.data$fits$simple.hn, keep.estlocs = TRUE)
-#' show.survey(example.data$fits)
-#' points(estlocs[[1]])
+#' estlocs
 #' \dontrun{
 #' fine.mask <- create.mask(example.data$traps, 20, spacing = 0.2)
 #' locations(example.data$fits$bearing.hn, 1, infotypes = "all", mask = fine.mask)
 #' }
 #'
 #' @export
-locations <- function(fit, id, session = 1, infotypes = NULL,
+locations <- function(fit, id = "all", session = 1, infotypes = NULL,
                       combine = FALSE, xlim = NULL, ylim = NULL,
                       mask = get.mask(fit, session), newdata = NULL,
                       levels = NULL, nlevels = 10, density = FALSE,
-                      cols = list(combined = "black", capt = "purple",
-                                  ss = "orange", bearing = "green", dist = "brown", toa = "blue"),
+                      cols = list(combined = 1, capt = 2, ss = 3, bearing = 4, dist = 5, toa = 6),
                       ltys = list(combined = "solid", capt = "solid",
                                   ss = "solid", bearing = "solid", dist = "solid", toa = "solid"),
                       trap.col = "red", circle.traps = TRUE,
@@ -162,6 +162,12 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
     is.new.mask <- !missing(mask)
     if (fit$fit.ihd & is.new.mask & is.null(newdata)){
         stop("Covariate values for the mask object must be provided via the `newdata' argument.")
+    }
+    ## Extracting the session's capture history.
+    capt.all <- get.capt(fit, session)
+    ## Setting id properly if "all" selected.
+    if (id == "all"){
+        id <- 1:nrow(capt.all$bincapt) 
     }
     ## Saving estimated locations.
     if (keep.estlocs){
@@ -204,13 +210,26 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
             }
         }
     }
+    warn.estlocs <- FALSE
+    if (any.infotypes){
+        if (!("combined" %in% infotypes) & (plot.estlocs | keep.estlocs)){
+            warn.estlocs <- TRUE
+        }
+    } else {
+        if (!("capt" %in% infotypes) & (plot.estlocs | keep.estlocs)){
+            warn.estlocs <- TRUE
+        }
+    }
+    if (warn.estlocs){
+        warning("Estimated locations only available for 'combined' information type. Ignoring 'plot.estlocs' and 'keep.estlocs'.")
+    }
     ## Removing "all" or "combined" from infotypes if "mrds" is specified.
     if ("mrds" %in% infotypes){
         infotypes <- infotypes[infotypes != "all"]
         infotypes <- infotypes[infotypes != "combined"]
     }
     ## Error if "combined" is used when there is no additional information.
-    if ("combined" %in% infotypes & !any.infotypes){
+    if (("combined" %in% infotypes) & !any.infotypes){
         stop("No additional information used in model 'fit', so a \"combined\" contour cannot be plotted.")
     }
     ## Working out which contours to plot.
@@ -229,6 +248,16 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
     if (missing(ltys)){
         if (length(infotypes) == 1){
             ltys <- "solid"
+        }
+    }
+    if (is.list(cols)){
+        if (!all(infotypes %in% names(cols))){
+            stop("Provide a colour for each contour to be plotted.")
+        }
+    }
+    if (is.list(ltys)){
+        if (!all(infotypes %in% names(ltys))){
+            stop("Provide a line type for each contour to be plotted.")
         }
     }
     if (length(cols) == 1){
@@ -278,8 +307,6 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
     } else {
         f.x <- p.det/(a*sum(p.det))
     }
-    ## Extracting the session's capture history.
-    capt.all <- get.capt(fit, session)
     ## Calculating conditional density of capture history, given location.
     for (i in id){
         if (plot.types["combined"]){
@@ -407,14 +434,15 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
             loc <- capt.all$mrds[id, , drop = FALSE]
             points(loc, pch = 16, col = "black")
         }
-        if (plot.estlocs){
+        if (plot.estlocs | keep.estlocs){
             if ((any.infotypes & plot.types["combined"]) | !any.infotypes){
                 f.estlocs <- if (any.infotypes) f.combined else f.capt*f.x
-                mode.points <- which(f.estlocs == max(f.estlocs))
-                points(mask[mode.points, 1], mask[mode.points, 2],
-                       pch = 16, col = "black")
+                mode.points <- which(f.estlocs == max(f.estlocs))[1]
+                if (plot.estlocs){
+                    points(mask[mode.points, 1], mask[mode.points, 2],
+                           pch = 16, col = "black")
+                }
                 if (keep.estlocs){
-                    browser()
                     estlocs[j, ] <- c(mask[mode.points, 1], mask[mode.points, 2])
                     j <- j + 1
                 }
@@ -447,7 +475,7 @@ locations <- function(fit, id, session = 1, infotypes = NULL,
         legend("topright", legend = infotypes, lty = legend.ltys, col = legend.cols, bg = "white")
     }
     if (keep.estlocs){
-        out <- list(estlocs = estlocs)
+        out <- estlocs
     } else {
         out <- TRUE
     }
