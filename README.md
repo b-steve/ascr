@@ -23,13 +23,13 @@ test.ascr(quick = TRUE)
 If there are any errors with the installation or in the above tests
 please get in touch using the contact details below.
 
-NOTE: Model fitting will not work on OSX in version 2.2.1 of `ascr`. A workaround is to create the ADMB executable yourself:
+NOTE: OS X users will create the ADMB executable themselves:
 
 1. Download and install [ADMB](http://www.admb-project.org/downloads/).
 2. In R, run `system.file(package = "ascr")` to find the directory where `ascr` is installed.
 3. Navigate to this directory in a terminal, then to the subirectory `ADMB/src`.
 4. Run `admb secr`.
-5. This will create an executable. Move it to the subdirectory `ADMB/bin/mac`.
+5. This will create an executable named `secr`. Move it to the subdirectory `ADMB/bin/mac`.
 6. Test that the executable works using the `test.ascr()` code above.
 
 ## References
