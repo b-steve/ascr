@@ -116,11 +116,12 @@ to detectors that detected individuals. See 'Details'.}
 allowing for calculation of standard errors, the
 variance-covariance matrix, and the correlation matrix, at the
 expense of a little processing time. If \code{FALSE}, the
-Hessian is not estimated. Note that if individuals are
-detectable more than once (e.g., by calling more than once on
-an acoustic survey) then parameter uncertainty is not properly
-represented by these calculations. As a result, this argument
-defaults to \code{FALSE} if \code{cue.rates} is provided.}
+Hessian is not estimated. Note that if stationary individuals
+are detectable more than once (e.g., by calling more than once
+on an acoustic survey) then parameter uncertainty is not
+properly represented by these calculations. As a result, this
+argument defaults to \code{FALSE} if \code{cue.rates} is
+provided.}
 
 \item{trace}{Logical, if \code{TRUE} parameter values at each step
 of the optimisation algorithm are printed to the R console.}
@@ -153,13 +154,15 @@ by taking the inverse of the negative of the
 Hessian. Alternatively, \link{boot.ascr} can be used to carry out a
 parametric bootstrap procedure.
 
-If the data are from an acoustic survey where individuals call more
-than once (i.e., the argument \code{cue.rates} contains values
-that are not 1), then standard errors calculated from the inverse
-of the negative Hessian are not correct. They are therefore not
-provided in this case. The method used by the function
-\link{boot.ascr} is currently the only way to calculate these
-reliably (see Stevenson et al., 2015, for details)
+If the data are from an acoustic survey where stationary
+individuals call more than once (i.e., the argument
+\code{cue.rates} contains values that are not 1), then standard
+errors calculated from the inverse of the negative Hessian are not
+correct. They are therefore not provided in this case by default,
+although this can be overridden by specirying \code{hess =
+TRUE}. The method used by the function \link{boot.ascr} is
+currently the only way to calculate these reliably (see Stevenson
+et al., 2015, for details).
 }
 \section{The \code{ss.opts} argument}{
 
@@ -298,11 +301,21 @@ The argument \code{optim.opts} is a list with up to five components:
 \section{Fitted parameters}{
 
 
-For homogeneous density models, the parameter \code{D}, the density
-of individuals (or, in an acoustic survey, the density of calls) is
-always fitted. For inhomogeneous density models, specified via
-\code{ihd.opts}, coefficients for the log-linear relationship
-between covariates and \eqn{log(D)} are fitted.
+For homogeneous density models, the parameter \code{D} is
+estimated, representing the density of locations. This is the
+density of individuals if each capture history is associated with a
+specific individual.
+
+For acoustic surveys, where each capture history is associated with
+a call, \code{D} is the density of calls, and is scaled by
+\code{survey.length} to represent the density of calls per unit
+time per hectare. An estimate of animal density given by \code{Da}
+in this scenario if independently collected cue rates are provided
+in the argument \code{cue.rates}.
+
+For inhomogeneous density models, specified via \code{ihd.opts},
+coefficients for the log-linear relationship between covariates and
+\eqn{log(D)} are fitted.
 
 The effective sampling area area, \code{esa}, (see Borchers, 2012,
 for details) is always provided as a derived parameter, with a
@@ -413,8 +426,8 @@ estimated. Animal location is assumed to be known.
 For SCR models, the likelihood is calculated by integrating over
 the unobserved animal activity centres (see Borchers and Efford,
 2008). Here, the integral is approximated numerically by taking a
-finite sum over the mask points. The integrand is negligible in
-size for mask points far from detectors that detected a particular
+sum over the mask points. The integrand is negligible in size for
+mask points far from detectors that detected a particular
 individual, and so to increase computational efficiency the region
 over which this sum takes place can be reduced.
 
@@ -423,7 +436,9 @@ across mask points that are within the mask buffer distance of
 \emph{all} detectors that made a detection. So long as the buffer
 suitably represents a distance beyond which detection is
 practically impossible, the effect this has on parameter estimates
-is negligible, but processing time can be substantially reduced.
+is negligible, but processing time can be substantially reduced,
+particularly if many detectors have been deployed and the mask is
+large.
 
 Note that this increases the parameter estimates' sensitivity to
 the buffer. A buffer that is too small will lead to inaccurate
