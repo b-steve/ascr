@@ -23,11 +23,11 @@ example.data <- list(capt = example.capt, traps = example.traps, mask = example.
                                  simple.hr = simple.hr.fit,
                                  bearing.hn = bearing.hn.fit,
                                  boot.simple.hn = boot.simple.hn.fit))
-traps1 <- example$traps
+traps1 <- example.data$traps
 mask1 <- create.mask(traps1, buffer = 15)
 capt1 <- sim.capt(traps = traps1, mask = mask1, infotypes = c("bearing", "dist"),
                   pars = list(D = 2500, g0 = 0.9, sigma = 3, kappa = 10, alpha = 4))
-traps2 <- (example$traps + 20)[1:3, ]
+traps2 <- (example.data$traps + 20)[1:3, ]
 mask2 <- create.mask(traps2, buffer = 15)
 capt2 <- sim.capt(traps = traps2, mask = mask2, infotypes = c("bearing", "dist"),
                   pars = list(D = 2500, g0 = 0.9, sigma = 3, kappa = 10, alpha = 4))
