@@ -710,7 +710,7 @@ PROCEDURE_SECTION
         cerr << "Supp Par " << i << ": " << suppars(i) << ", ";
       }
     }
-    cerr << "LL: " << -f << ", ESA: " << esa << endl;
+    cerr << "LL: " << -f << endl;
   }
 
 REPORT_SECTION
