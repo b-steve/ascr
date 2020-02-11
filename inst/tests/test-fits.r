@@ -327,7 +327,6 @@ test_that("multiple calls fitting", {
                          mask = example.data$mask, fix = list(g0 = 1),
                          cue.rates = c(9, 10, 11), survey.length = 1, hess = TRUE)
     expect_that(coef(fit.hess), equals(coef(fit)))
-    expect_true(is.na(stdEr(fit.hess, "all")["Da"]))
     ses.test <- c(351.86, 0.42008)
     relative.error <- max(abs((stdEr(fit.hess)[1:2] - ses.test)/ses.test))
     expect_true(relative.error < 1e-4)

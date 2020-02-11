@@ -235,6 +235,8 @@ DATA_SECTION
   !!   nr_ihd = n_mask_per_sess;
   !!   nc_ihd = n_D_betapars;
   init_3darray mm_ihd(1,n_sessions,1,nr_ihd,1,nc_ihd)
+  // Average call rate.
+  init_number mu_rates
   // Setting n_local permanently if local integration is disabled.
   int nr_localmats
   int nc_localmats
@@ -273,6 +275,7 @@ PARAMETER_SECTION
   4darray expected_ss(1,n_sessions,1,dummy_n_dir_quadpoints,1,nr_expected_ss,1,nc_expected_ss)
   // Some parameters or something.
   sdreport_number D
+  sdreport_number Da
   number corr_ss
   number cond_corr_ss
   vector detpars(1,n_detpars)
@@ -289,6 +292,8 @@ PARAMETER_SECTION
   vector sum_D_det_probs(1,n_sessions)
   matrix D_mask(1,n_sessions,1,nr_ihd)
   vector D_mask_vec(1,n_mask_total)
+  matrix Da_mask(1,n_sessions,1,nr_ihd)
+  vector Da_mask_vec(1,n_mask_total)
   number undet_prob
   number undet_lower_prob
   number capt_prob
@@ -309,6 +314,8 @@ PROCEDURE_SECTION
   }
   // Getting D for homogeneous density models.
   D = mfexp(D_betapars_link(1));
+  // Getting Da for homogeneous density models.
+  Da = D/mu_rates;
   // Converting parameters from their link scales.
   invlinkfn_pointer invlinkfn;
   for (i = 1; i <= n_detpars; i++){
@@ -346,7 +353,9 @@ PROCEDURE_SECTION
       D_mask_vec(i) = D_mask(s, j);
       i++;
     }
-  } 
+  }
+  Da_mask = D_mask/mu_rates;
+  Da_mask_vec = D_mask_vec/mu_rates;
   // Calculating mask detection probabilities and expected signal strengths...
   sum_det_probs = 0;
   sum_D_det_probs = 0;
@@ -716,6 +725,8 @@ PROCEDURE_SECTION
 REPORT_SECTION
   // Writing D to report file.
   report << "# D:" << endl << D << endl;
+  // Writing Da to report file.
+  report << "# Da:" << endl << Da << endl;
   // Writing ESAs to report file.
   for (i = 1; i <= n_sessions; i++){
     report << "# esa[" << i << "]:" << endl << esa(i) << endl;
@@ -723,6 +734,10 @@ REPORT_SECTION
   // Writing D_mask to report file.
   for (i= 1; i <= n_sessions; i++){
     report << "# D_mask[" << i << "]:" << endl << D_mask(i) << endl;
+  }
+  // Writing Da_mask to report file.
+  for (i= 1; i <= n_sessions; i++){
+    report << "# Da_mask[" << i << "]:" << endl << Da_mask(i) << endl;
   }
   
 GLOBALS_SECTION

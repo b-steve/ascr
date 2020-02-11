@@ -9,13 +9,15 @@
 #' Hessian. Alternatively, \link{boot.ascr} can be used to carry out a
 #' parametric bootstrap procedure.
 #'
-#' If the data are from an acoustic survey where individuals call more
-#' than once (i.e., the argument \code{cue.rates} contains values
-#' that are not 1), then standard errors calculated from the inverse
-#' of the negative Hessian are not correct. They are therefore not
-#' provided in this case. The method used by the function
-#' \link{boot.ascr} is currently the only way to calculate these
-#' reliably (see Stevenson et al., 2015, for details)
+#' If the data are from an acoustic survey where stationary
+#' individuals call more than once (i.e., the argument
+#' \code{cue.rates} contains values that are not 1), then standard
+#' errors calculated from the inverse of the negative Hessian are not
+#' correct. They are therefore not provided in this case by default,
+#' although this can be overridden by specirying \code{hess =
+#' TRUE}. The method used by the function \link{boot.ascr} is
+#' currently the only way to calculate these reliably (see Stevenson
+#' et al., 2015, for details).
 #'
 #' @section The \code{ss.opts} argument:
 #'
@@ -147,11 +149,21 @@
 #'
 #' @section Fitted parameters:
 #'
-#' For homogeneous density models, the parameter \code{D}, the density
-#' of individuals (or, in an acoustic survey, the density of calls) is
-#' always fitted. For inhomogeneous density models, specified via
-#' \code{ihd.opts}, coefficients for the log-linear relationship
-#' between covariates and \eqn{log(D)} are fitted.
+#' For homogeneous density models, the parameter \code{D} is
+#' estimated, representing the density of locations. This is the
+#' density of individuals if each capture history is associated with a
+#' specific individual.
+#'
+#' For acoustic surveys, where each capture history is associated with
+#' a call, \code{D} is the density of calls, and is scaled by
+#' \code{survey.length} to represent the density of calls per unit
+#' time per hectare. An estimate of animal density given by \code{Da}
+#' in this scenario if independently collected cue rates are provided
+#' in the argument \code{cue.rates}.
+#'
+#' For inhomogeneous density models, specified via \code{ihd.opts},
+#' coefficients for the log-linear relationship between covariates and
+#' \eqn{log(D)} are fitted.
 #'
 #' The effective sampling area area, \code{esa}, (see Borchers, 2012,
 #' for details) is always provided as a derived parameter, with a
@@ -261,8 +273,8 @@
 #' For SCR models, the likelihood is calculated by integrating over
 #' the unobserved animal activity centres (see Borchers and Efford,
 #' 2008). Here, the integral is approximated numerically by taking a
-#' finite sum over the mask points. The integrand is negligible in
-#' size for mask points far from detectors that detected a particular
+#' sum over the mask points. The integrand is negligible in size for
+#' mask points far from detectors that detected a particular
 #' individual, and so to increase computational efficiency the region
 #' over which this sum takes place can be reduced.
 #'
@@ -271,7 +283,9 @@
 #' \emph{all} detectors that made a detection. So long as the buffer
 #' suitably represents a distance beyond which detection is
 #' practically impossible, the effect this has on parameter estimates
-#' is negligible, but processing time can be substantially reduced.
+#' is negligible, but processing time can be substantially reduced,
+#' particularly if many detectors have been deployed and the mask is
+#' large.
 #'
 #' Note that this increases the parameter estimates' sensitivity to
 #' the buffer. A buffer that is too small will lead to inaccurate
@@ -358,11 +372,12 @@
 #'     allowing for calculation of standard errors, the
 #'     variance-covariance matrix, and the correlation matrix, at the
 #'     expense of a little processing time. If \code{FALSE}, the
-#'     Hessian is not estimated. Note that if individuals are
-#'     detectable more than once (e.g., by calling more than once on
-#'     an acoustic survey) then parameter uncertainty is not properly
-#'     represented by these calculations. As a result, this argument
-#'     defaults to \code{FALSE} if \code{cue.rates} is provided.
+#'     Hessian is not estimated. Note that if stationary individuals
+#'     are detectable more than once (e.g., by calling more than once
+#'     on an acoustic survey) then parameter uncertainty is not
+#'     properly represented by these calculations. As a result, this
+#'     argument defaults to \code{FALSE} if \code{cue.rates} is
+#'     provided.
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #'     of the optimisation algorithm are printed to the R console.
 #' @param clean Logical, if \code{TRUE} ADMB output files are
@@ -1172,6 +1187,22 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             stop("Fitting of signal strength models with heterogeneity in source signal strength is only implemented with an identity link function.")
         }
     }
+    ## Determining whether or not standard errors should be calculated.
+    if (!is.null(cue.rates)){
+        fit.freqs <- TRUE
+    } else {
+        fit.freqs <- FALSE
+    }
+    ## Calculating average call rate.
+    if (fit.freqs){
+        mu.rates <- mean(cue.rates)
+    } else {
+        mu.rates  <- 1
+    }
+    ## Setting hess.
+    if (is.null(hess)){
+        hess <- !fit.freqs
+    }
     if (first.calls){
         vectorise <- function(x) x[[1]]
     } else {
@@ -1230,17 +1261,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                       dists = vectorise(dists),
                       angs = vectorise(bearings),
                       toa_ssq = vectorise(toa.ssq),
-                      mm_ihd = vectorise(mm.ihd))
-    ## Determining whether or not standard errors should be calculated.
-    if (!is.null(cue.rates)){
-        fit.freqs <- any(cue.freqs != 1)
-    } else {
-        fit.freqs <- FALSE
-    }
-    ## Setting hess.
-    if (is.null(hess)){
-        hess <- !fit.freqs
-    }
+                      mm_ihd = vectorise(mm.ihd),
+                      mu_rates = mu.rates)
     ## Using optimx() for first call fits.
     if (first.calls){
         if (n.sessions > 1){
@@ -1396,6 +1418,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         if (fit.ihd){
             out$se <- out$se[names(out$se) != "D"]
         }
+        if (!fit.freqs){
+            out$se <- out$se[names(out$se) != "Da"]
+        }
         ## Getting ESAs from .rep file for better accuracy. Also getting mask densities.
         rep.pars <- read_rep("secr")$est
         esa <- rep.pars[substr(names(rep.pars), 1, 3) == "esa"]
@@ -1427,8 +1452,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Creating coefficients vector.
     est.pars <- c(D.betapars.names, detpar.names, suppar.names)[c(D.betapars.phase, detpars.phase, suppars.phase[any.suppars]) > -1]
     n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + n.sessions + !fit.ihd)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""), "D"[!fit.ihd])
+    out$coefficients <- numeric(2*n.est.pars + n.sessions + fit.freqs + !fit.ihd)
+    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""), "D"[!fit.ihd], "Da"[fit.freqs])
     if (hess){
         names(out$se) <- names(out$coefficients)
     }
@@ -1437,6 +1462,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     }
     if (!fit.ihd){
         out$coefficients["D"] <- exp(out$coefficients[D.betapars.phase[1]])
+    }
+    if (fit.freqs){
+        out$coefficients["Da"] <- out$coeflist[["Da"]]
     }
     for (i in 1:n.est.pars){
         out$coefficients[n.est.pars + i] <-
@@ -1474,11 +1502,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$coefficients[2*n.est.pars + (1:n.sessions)] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
-        mu.rates <- mean(cue.rates)
         Dc <- get.par(out, "D")
-        Da <- Dc/mu.rates
-        names.vec <- c(names(out[["coefficients"]]), "Da", "Dc", "mu.rates")
-        coefs.updated <- c(out[["coefficients"]], Da, Dc, mu.rates)
+        names.vec <- c(names(out[["coefficients"]]), "Dc", "mu.rates")
+        coefs.updated <- c(out[["coefficients"]], Dc, mu.rates)
         names(coefs.updated) <- names.vec
         out[["coefficients"]] <- coefs.updated
         ## Removing ses, cor, vcov matrices.
@@ -1489,8 +1515,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                ncol = length(names.vec))
         dimnames(vcov.updated) <- list(names.vec, names.vec)
         if (hess){
-            ses.updated <- c(out[["se"]], rep(NA, 3))
-            max.ind <- length(names.vec) - 3
+            ses.updated <- c(out[["se"]], rep(NA, 2))
+            max.ind <- length(names.vec) - 2
             cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
             vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
         } else {
@@ -1504,7 +1530,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             if (!hess){
                 message("NOTE: Standard errors not calculated; use boot.ascr().", "\n")
             } else {
-                message("NOTE: Standard errors are probably not correct; use boot.ascr().", "\n")
+                message("NOTE: Standard errors are calculated assuming independence between locations of calls from the same animal and do not incorporate uncertainty in the average call rate. Use boot.ascr() to correct for stationary animals.", "\n")
             }
         }
     } else {
