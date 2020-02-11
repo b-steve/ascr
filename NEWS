@@ -1,3 +1,28 @@
+ascr 2.2.2
+----------
+
+* Fixed bug that fixed density at 1 for the final (s - 1) mask points
+  in the final session, where s is the total number of sessions.
+
+* Implemented a predict() function to calculate estimated density from
+  user-specified spatial covariates.
+
+* Improved locations() so that it accepts new, user-specified mask
+  objects for models with inhomogeneous density.
+
+* Fixed bug in locations() that caused an error when combine = TRUE
+  was used with a model that didn't involve received signal strengths.
+
+* Implemented MRDS model fitting, for surveys where animal locations
+  are observed exactly upon detection.
+
+* Area and buffer attributes are now automatically added to the mask
+  by fit.ascr() if they are not included in the user-specified object.
+
+* Various minor bug fixes.
+
+* Small updates to documentation.
+
 ascr 2.2.1
 ----------
 
@@ -25,7 +50,7 @@ ascr 2.2.0
   argument ihd.opts. Density can be fitted as a smooth function of
   spatial covariates using mgcv syntax like s() and te().
 
-* Fixed bug in locations() so that is correctly plots location
+* Fixed bug in locations() so that it correctly plots location
   contours for models with estimated distances.
 
 * Fixed bug in fit.ascr() for multi-session models, so that it
@@ -75,7 +100,7 @@ ascr 2.0.1
 ascr 2.0.0
 ----------
 
-* Package renamed from `admbsecr' to `ascr'.
+* Package renamed from 'admbsecr' to 'ascr'.
 
 admbsecr 1.2.3
 --------------
@@ -90,9 +115,9 @@ admbsecr 1.2.2
 admbsecr 1.2.1
 --------------
 
-* Changed parameter `call.freqs' to `cue.rates' for accuracy.
+* Changed parameter 'call.freqs' to 'cue.rates' for accuracy.
 
-* Added `survey.length' parameter to admbsecr(). Cue and animal
+* Added 'survey.length' parameter to admbsecr(). Cue and animal
   densities are now both explicitly provided.
 
 * Improved detection-to-cue matching algorithm.
@@ -424,14 +449,14 @@ admbsecr 0.1.1
 
     * "dist" -- SECR with estimated distance information.
 
-* Added the parameter `bounds` to admbsecr(). This allows the user to
+* Added the parameter 'bounds' to admbsecr(). This allows the user to
   specify bounds on any parameters they wish to, overriding the
   defaults.
 
 * A log link function is now used to calculate expected received
   signal strength for methods "ss" and "sstoa".
 
-* Bug fix to `profpars` parameter of admbsecr(). Profile likelihood
+* Bug fix to 'profpars' parameter of admbsecr(). Profile likelihood
   now works.
 
 * Bug fix to issue with specifying start values in a named vector out
