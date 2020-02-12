@@ -130,6 +130,8 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'
 #' @param zlim A numberic vector of length 2, giving the range of
 #'     density contours.
+#' @param plot.contours Logical, if \code{TRUE}, contours are
+#'     plotted.
 #' @inheritParams locations
 #'
 #' @export
@@ -141,7 +143,7 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
-show.Dsurf <- function(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL){
+show.Dsurf <- function(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL, plot.contours = TRUE){
     D.mask <- fit$D.mask[[session]]
     mask <- get.mask(fit, session)
     if (is.null(xlim)){
@@ -173,8 +175,10 @@ show.Dsurf <- function(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL){
     plot(mask, type = "n", asp = 1, xlab = "", ylab = "")
     image(x = unique.x, y = unique.y, z = z, zlim = zlim, add = TRUE)
     points(traps, col = "black", pch = 4, lwd = 2)
-    contour(x = unique.x, y = unique.y, z = z, levels = levels,
-            drawlabels = TRUE, add = TRUE)
+    if (plot.contours){
+        contour(x = unique.x, y = unique.y, z = z, levels = levels,
+                drawlabels = TRUE, add = TRUE)
+    }
 }
 
 #' Testing the mask object for a first calls model
