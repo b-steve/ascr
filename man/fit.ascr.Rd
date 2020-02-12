@@ -95,7 +95,7 @@ long, the cue rates must be provided in cues per minute if
 \code{survey.length = 0.5}.}
 
 \item{survey.length}{The length of a cue-based survey. If provided,
-the estimated density \code{Dc} is measured in cues per unit
+the estimated density \code{D} is measured in cues per unit
 time (using the same units as \code{survey.length}). For
 multi-session data, this must be a vector, giving the survey
 lengths for each session.}
