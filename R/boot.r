@@ -135,7 +135,7 @@ boot.ascr <- function(fit, N, prog = TRUE, n.cores = 1, M = 10000, infotypes = N
         if (n.dets == 0){
             n.par <- length(fit$coefficients)
             out <- rep(NA, n.par + 1)
-            out[names(fit$coefficients) %in% c("D", "Da", "Dc")] <- 0
+            out[names(fit$coefficients) %in% c("D", "Da")] <- 0
             out[names(fit$coefficients) == "D_link"] <- -Inf
         } else {
             ## Simulating calling frequencies (if required).

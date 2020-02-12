@@ -355,7 +355,7 @@
 #'     \code{survey.length = 30}, but in cues per hour if
 #'     \code{survey.length = 0.5}.
 #' @param survey.length The length of a cue-based survey. If provided,
-#'     the estimated density \code{Dc} is measured in cues per unit
+#'     the estimated density \code{D} is measured in cues per unit
 #'     time (using the same units as \code{survey.length}). For
 #'     multi-session data, this must be a vector, giving the survey
 #'     lengths for each session.
@@ -509,6 +509,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## Sorting objects from optim.opts.
     cbs <- optim.opts$cbs
     gbs <- optim.opts$gbs
+    ams <- optim.opts$ams
     exe.type <- optim.opts$exe.type
     neld.mead <- optim.opts$neld.mead
     if (is.null(exe.type)){
@@ -1396,10 +1397,15 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         } else {
             gbs.cmd <- NULL
         }
+        if (!is.null(ams)){
+            ams.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
+        } else {
+            ams.cmd <- NULL
+        }
         ## Running ADMB executable.
         cmd <- paste("./"[os.type != "windows"], exe.name,
                      " -ind secr.dat -ainp secr.pin", " -neldmead"[neld.mead],
-                     " -nohess"[!hess], cbs.cmd, gbs.cmd, sep = "")
+                     " -nohess"[!hess], cbs.cmd, gbs.cmd, ams.cmd, sep = "")
         if (trace){
             message(cmd, "\n")
         }
@@ -1415,10 +1421,15 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                                                        nchar(list.files())) == ".par")]][1]
         }
         out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
+        ## Stripping out unused parameters.
         if (fit.ihd){
+            out$cor <- out$cor[names(out$se) != "D", names(out$se) != "D"]
+            out$vcov <- out$vcov[names(out$se) != "D", names(out$se) != "D"]
             out$se <- out$se[names(out$se) != "D"]
         }
         if (!fit.freqs){
+            out$cor <- out$cor[names(out$se) != "Da", names(out$se) != "Da"]
+            out$vcov <- out$vcov[names(out$se) != "Da", names(out$se) != "Da"]
             out$se <- out$se[names(out$se) != "Da"]
         }
         ## Getting ESAs from .rep file for better accuracy. Also getting mask densities.
@@ -1426,10 +1437,19 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         esa <- rep.pars[substr(names(rep.pars), 1, 3) == "esa"]
         names(esa) <- NULL
         D.mask <- vector(mode = "list", length = n.sessions)
+        if (fit.freqs){
+            Da.mask <- vector(mode = "list", length = n.sessions)
+        }
         for (i in 1:n.sessions){
             D.mask[[i]] <- rep.pars[substr(names(rep.pars), 1, 8 + nchar(i)) == paste("D_mask[", i, "]", sep = "")]
+            if (fit.freqs){
+                Da.mask[[i]] <- D.mask[[i]]/mu.rates
+            }
         }
         out$D.mask <- D.mask
+        if (fit.freqs){
+            out$Da.mask <- Da.mask
+        }
         out$mm.ihd <- mm.ihd
         setwd(curr.dir)
         if (class(out)[1] == "try-error"){
@@ -1502,9 +1522,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     out$coefficients[2*n.est.pars + (1:n.sessions)] <- esa
     ## Putting in call frequency information and correct parameter names.
     if (fit.freqs){
-        Dc <- get.par(out, "D")
-        names.vec <- c(names(out[["coefficients"]]), "Dc", "mu.rates")
-        coefs.updated <- c(out[["coefficients"]], Dc, mu.rates)
+        names.vec <- c(names(out[["coefficients"]]), "mu.rates")
+        coefs.updated <- c(out[["coefficients"]], mu.rates)
         names(coefs.updated) <- names.vec
         out[["coefficients"]] <- coefs.updated
         ## Removing ses, cor, vcov matrices.
@@ -1515,8 +1534,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                                ncol = length(names.vec))
         dimnames(vcov.updated) <- list(names.vec, names.vec)
         if (hess){
-            ses.updated <- c(out[["se"]], rep(NA, 2))
-            max.ind <- length(names.vec) - 2
+            ses.updated <- c(out[["se"]], NA)
+            max.ind <- length(names.vec) - 1
             cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
             vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
         } else {

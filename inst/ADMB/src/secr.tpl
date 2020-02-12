@@ -292,8 +292,6 @@ PARAMETER_SECTION
   vector sum_D_det_probs(1,n_sessions)
   matrix D_mask(1,n_sessions,1,nr_ihd)
   vector D_mask_vec(1,n_mask_total)
-  matrix Da_mask(1,n_sessions,1,nr_ihd)
-  vector Da_mask_vec(1,n_mask_total)
   number undet_prob
   number undet_lower_prob
   number capt_prob
@@ -354,8 +352,6 @@ PROCEDURE_SECTION
       i++;
     }
   }
-  Da_mask = D_mask/mu_rates;
-  Da_mask_vec = D_mask_vec/mu_rates;
   // Calculating mask detection probabilities and expected signal strengths...
   sum_det_probs = 0;
   sum_D_det_probs = 0;
@@ -734,10 +730,6 @@ REPORT_SECTION
   // Writing D_mask to report file.
   for (i= 1; i <= n_sessions; i++){
     report << "# D_mask[" << i << "]:" << endl << D_mask(i) << endl;
-  }
-  // Writing Da_mask to report file.
-  for (i= 1; i <= n_sessions; i++){
-    report << "# Da_mask[" << i << "]:" << endl << Da_mask(i) << endl;
   }
   
 GLOBALS_SECTION

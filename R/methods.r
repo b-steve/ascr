@@ -35,7 +35,7 @@ coef.ascr <- function(object, pars = "fitted", ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$coefficients[which.linked]
-        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da" | par.names == "Dc")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da")
         derived <- object$coefficients[which.derived]
         fitted <- object$coefficients[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -188,7 +188,7 @@ stdEr.ascr <- function(object, pars = "fitted", ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$se[which.linked]
-        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da" | par.names == "Dc")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da")
         derived <- object$se[which.derived]
         fitted <- object$se[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -230,7 +230,7 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
     if (any(c("fitted", "derived", "linked") %in% pars)){
         which.linked <- grep("_link", par.names)
         linked <- object$boot$se[which.linked]
-        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da" | par.names == "Dc")
+        which.derived <- which(substr(par.names, 1, 3) == "esa" | par.names == "Da")
         derived <- object$boot$se[which.derived]
         fitted <- object$boot$se[-c(which.linked, which.derived)]
         out <- mget(pars)
@@ -265,11 +265,9 @@ stdEr.ascr.boot <- function(object, pars = "fitted", mce = FALSE, ...){
 #' @export
 AIC.ascr <- function(object, ..., k = 2){
     if (object$fit.freqs){
-        out <- NA
-    } else {
-        out <- deviance(object) + k*length(coef(object))
+        message("NOTE: Use of AIC for this model relies on independence between locations of calls from the same animal, which may not be appropriate")
     }
-    out
+    deviance(object) + k*length(coef(object))
 }
 
 #' Summarising ascr model fits
