@@ -14,7 +14,7 @@
 #' \code{cue.rates} contains values that are not 1), then standard
 #' errors calculated from the inverse of the negative Hessian are not
 #' correct. They are therefore not provided in this case by default,
-#' although this can be overridden by specirying \code{hess =
+#' although this can be overridden by specifying \code{hess =
 #' TRUE}. The method used by the function \link{boot.ascr} is
 #' currently the only way to calculate these reliably (see Stevenson
 #' et al., 2015, for details).
