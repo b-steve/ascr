@@ -4,7 +4,14 @@
 \alias{show.Dsurf}
 \title{Plotting an estimated density surface.}
 \usage{
-show.Dsurf(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL)
+show.Dsurf(
+  fit,
+  session = 1,
+  xlim = NULL,
+  ylim = NULL,
+  zlim = NULL,
+  plot.contours = TRUE
+)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
@@ -20,6 +27,9 @@ range.}
 
 \item{zlim}{A numberic vector of length 2, giving the range of
 density contours.}
+
+\item{plot.contours}{Logical, if \code{TRUE}, contours are
+plotted.}
 }
 \description{
 Plots density surface estimated by a model fitted with the function
