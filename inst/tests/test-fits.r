@@ -315,7 +315,7 @@ test_that("multiple calls fitting", {
                     mask = example.data$mask, fix = list(g0 = 1),
                     cue.rates = c(9, 10, 11), survey.length = 1)
     pars.test <- c(2267.7394754986, 5.39011188311111, 10, 0.0560029, 
-                   226.77394754986, 2267.7394754986)
+                   226.77394754986)
     n.pars <- length(pars.test)
     relative.error <- max(abs((coef(fit, c("fitted", "derived")) - pars.test)/pars.test))
     expect_true(relative.error < 1e-4)
