@@ -438,6 +438,15 @@ test_that("Multi-session models", {
                   0.0666011007114636, 0.390954896490698, 0.17849130228836)
     relative.error <- max(abs((ses - ses.test)/ses.test))
     expect_true(relative.error < 1e-4)
+    library(devtools); load_all("~/GitHub/ascr")
+    ## Estimating density separately for each session.
+    mask.df <- list(data.frame(x1 = rnorm(nrow(multi.example.data$mask[[1]]))),
+                    data.frame(x1 = rnorm(nrow(multi.example.data$mask[[2]]))))
+    session.df <- data.frame(x2 = c("a", "b"))
+    model <- list(D ~ x1, mask.df = mask.df)
+    fit.ihd <- fit.ascr(multi.example.data$capt, multi.example.data$traps, multi.example.data$mask,
+                        sv = list(kappa = 100), model = model)
+    ## 7.883, -0.147                    
 })
 
 test_that("Inhomogeneous density estimation", {

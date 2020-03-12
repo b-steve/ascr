@@ -366,8 +366,9 @@
 #' @param local Logical, if \code{TRUE} integration over unobserved
 #'     animal activity centres is only carried out in a region local
 #'     to detectors that detected individuals. See 'Details'.
-#' @param ihd.opts Options for inhomogeneous density. See 'Details'
-#'     below.
+#' @param model A list specifying how to model parameters using
+#'     covariates. See 'Details' below.
+#' @param ihd.opts Options for inhomogeneous density. Deprecated.
 #' @param hess Logical, if \code{TRUE} the Hessian is estimated,
 #'     allowing for calculation of standard errors, the
 #'     variance-covariance matrix, and the correlation matrix, at the
@@ -425,8 +426,8 @@
 #' @export
 fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                      fix = NULL, ss.opts = NULL, cue.rates = NULL, survey.length = NULL,
-                     sound.speed = 330, ihd.opts = NULL, local = FALSE, hess = NULL,
-                     trace = FALSE, clean = TRUE, optim.opts = NULL, ...){
+                     sound.speed = 330, model = NULL, ihd.opts = NULL, local = FALSE,
+                     hess = NULL, trace = FALSE, clean = TRUE, optim.opts = NULL, ...){
     arg.names <- names(as.list(environment()))
     extra.args <- list(...)
     ## Sorting out multi-session stuff.
@@ -627,6 +628,10 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         attr(mask[[i]], "area") <- A[i]
         attr(mask[[i]], "buffer") <- buffer[i]
     }
+
+    
+    ## ALL THIS STUFF NEEDS TO GO.
+    
     ## Sorting out inhomogeneous density stuff.
     if (!is.null(ihd.opts)){
         if (ihd.opts$model != ~1){
@@ -681,6 +686,9 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         covariates[[i]] <- all.covariates[which.session == i, ]
     }
     D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
+
+
+    
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
@@ -888,12 +896,47 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
-    par.names <- c(D.betapars.names, detpar.names, suppar.names)
+    if (!missing(model)){
+        par.names <- c("D", detpar.names, suppar.names)
+    } else {
+        par.names <- c(D.betapars.names, detpar.names, suppar.names) 
+    }
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
     n.D.betapars <- length(D.betapars.names)
     any.suppars <- n.suppars > 0
     n.pars <- length(par.names)
+
+
+    ## SORT OUT COVARIATES IN HERE.
+    if (!missing(model)){
+        browser()
+        ## Creating covariate scaling function.
+        scale.covs <- scale.closure(all.covariates, cov.scale)
+        ## Grabbing the different data frames.
+        if (is.null(model$session.df)){
+            session.df <- data.frame(session = 1:n.sessions)
+        } else {
+            session.df <- data.frame(session = 1:n.sessions, model$session.df)
+        }
+        
+        mask.df <- model$mask.df
+        trap.df <- model$trap.df
+        detection.df <- model$detection.df
+        model.formula <- model[sapply(model, is.formula)]
+        model.formula.pars <- sapply(model.formula,
+                                     function(x) rownames(attr(terms(x), "factors"))[1])
+        ## Sorting out covariates for D.
+        D.session.df <- data.frame(session.df[rep(1:n.sessions, times = n.mask), ])
+        names(D.session.df) <- names(session.df)
+        D.mask.df <- do.call(rbind, mask.df)
+        D.df <- data.frame(D.session.df, D.mask.df)
+        D.df <- scale.covs(D.df)
+        D.formula <- model.formula[[model.formula.pars == "D"]]
+        D.df <- data.frame(D.df, D = rep(0, nrow(D.df)))
+        D.fgam <- gam(D.formula, data = D.df, fit = FALSE)
+        D.mm <- D.fgam$X
+    }
     ## Checking par.names against names of sv, fix, bounds, and sf.
     for (i in c("sv", "fix", "bounds", "phases", "sf")){
         obj <- get(i)
