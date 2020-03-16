@@ -443,7 +443,7 @@ test_that("Multi-session models", {
     mask.df <- list(data.frame(x1 = rnorm(nrow(multi.example.data$mask[[1]]))),
                     data.frame(x1 = rnorm(nrow(multi.example.data$mask[[2]]))))
     session.df <- data.frame(x2 = c("a", "b"))
-    model <- list(D ~ x1, mask.df = mask.df)
+    model <- list(D ~ x1 + x2, mask.df = mask.df, session.df = session.df)
     fit.ihd <- fit.ascr(multi.example.data$capt, multi.example.data$traps, multi.example.data$mask,
                         sv = list(kappa = 100), model = model)
     ## 7.883, -0.147                    

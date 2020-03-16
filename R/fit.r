@@ -628,67 +628,6 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         attr(mask[[i]], "area") <- A[i]
         attr(mask[[i]], "buffer") <- buffer[i]
     }
-
-    
-    ## ALL THIS STUFF NEEDS TO GO.
-    
-    ## Sorting out inhomogeneous density stuff.
-    if (!is.null(ihd.opts)){
-        if (ihd.opts$model != ~1){
-            fit.ihd <- TRUE
-        } else {
-            fit.ihd <- FALSE
-        }
-    } else {
-        ihd.opts$model <- ~ 1
-        fit.ihd <- FALSE
-    }
-    if (is.data.frame(ihd.opts$covariates)){
-        if (any(names(ihd.opts$covariates) %in% c("x", "y"))){
-            stop("Covariate names 'x' and 'y' are reserved for x- and y-coordiates.")
-        }
-        covariates <- list()
-        covariates[[1]] <- data.frame(mask[[1]], ihd.opts$covariates)
-    } else if (is.list(ihd.opts$covariates)){
-        covariates <- list()
-        for (i in 1:n.sessions){
-            covariates[[i]] <- data.frame(mask[[i]], ihd.opts$covariates[[i]])
-        }
-    } else if (is.null(ihd.opts$covariates)){
-        covariates <- mask
-    }
-    if (is.null(ihd.opts$scale)){
-        cov.scale <- TRUE
-    } else {
-        cov.scale <- ihd.opts$scale
-    }
-    all.mask <- do.call("rbind", mask)
-    all.covariates <- data.frame(do.call("rbind", covariates))
-    which.session <- rep(1:length(mask), times = sapply(mask, nrow))
-    ## Creating covariate scaling function.
-    scale.covs <- scale.closure(all.covariates, cov.scale)
-    ## Scaling covariates.
-    all.covariates <- scale.covs(all.covariates)
-    ## Extracting model formula.
-    model.formula <- ihd.opts$model
-    ## Creating a response because we need one for gam() to work.
-    gam.resp <- rep(0, nrow(all.covariates))
-    model.formula <- as.formula(paste("gam.resp", paste(as.character(model.formula), collapse = "")))
-    ## Making model matrix.
-    all.fgam <- gam(model.formula, data = all.covariates, fit = FALSE)
-    all.mm.ihd <- all.fgam$X
-    colnames(all.mm.ihd) <- all.fgam$term.names
-    ## Splitting model matrix and covariates into sessions.
-    mm.ihd <- list()
-    covariates <- list()
-    for (i in 1:n.sessions){
-        mm.ihd[[i]] <- all.mm.ihd[which.session == i, , drop = FALSE]
-        covariates[[i]] <- all.covariates[which.session == i, ]
-    }
-    D.betapars.names <- paste("D.", colnames(mm.ihd[[1]]), sep = "")
-
-
-    
     ## Sorting out signal strength options.
     if (fit.ss){
         ## Warning for unexpected component names.
@@ -896,30 +835,23 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                            ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
-    if (!missing(model)){
-        par.names <- c("D", detpar.names, suppar.names)
-    } else {
-        par.names <- c(D.betapars.names, detpar.names, suppar.names) 
-    }
+    par.names <- c("D", detpar.names, suppar.names)
     n.detpars <- length(detpar.names)
     n.suppars <- length(suppar.names)
-    n.D.betapars <- length(D.betapars.names)
     any.suppars <- n.suppars > 0
     n.pars <- length(par.names)
 
 
     ## SORT OUT COVARIATES IN HERE.
     if (!missing(model)){
-        browser()
-        ## Creating covariate scaling function.
-        scale.covs <- scale.closure(all.covariates, cov.scale)
+        ## Hard-coding cov.scale.
+        cov.scale <- TRUE
         ## Grabbing the different data frames.
         if (is.null(model$session.df)){
             session.df <- data.frame(session = 1:n.sessions)
         } else {
             session.df <- data.frame(session = 1:n.sessions, model$session.df)
         }
-        
         mask.df <- model$mask.df
         trap.df <- model$trap.df
         detection.df <- model$detection.df
@@ -931,12 +863,16 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         names(D.session.df) <- names(session.df)
         D.mask.df <- do.call(rbind, mask.df)
         D.df <- data.frame(D.session.df, D.mask.df)
-        D.df <- scale.covs(D.df)
+        ## Creating density covariate scaling function.
+        D.scale.covs <- scale.closure(D.df, cov.scale)
+        D.df <- D.scale.covs(D.df)
         D.formula <- model.formula[[model.formula.pars == "D"]]
         D.df <- data.frame(D.df, D = rep(0, nrow(D.df)))
         D.fgam <- gam(D.formula, data = D.df, fit = FALSE)
         D.mm <- D.fgam$X
+        D.beta.names <- paste("D.", colnames(D.mm), sep = "")
     }
+    beta.par.names <- c(D.beta.names, detpar.names, suppar.names)
     ## Checking par.names against names of sv, fix, bounds, and sf.
     for (i in c("sv", "fix", "bounds", "phases", "sf")){
         obj <- get(i)
@@ -958,7 +894,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## 1 = identity
     ## 2 = log
     ## 3 = logit
-    parlinks.list <- list(g0 = 3,
+    parlinks.list <- list(D = 2,
+                          g0 = 3,
                           lambda0 = 2,
                           sigma = 2,
                           shape = 1,
@@ -974,9 +911,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
                           sigma.toa = 2,
                           kappa = 2,
                           alpha = 2)
-    for (i in D.betapars.names){
-        parlinks.list[i] <- 1
-    }
+    browser()
     links <- parlinks.list[par.names]
     link.list <- list(identity, log.link, logit.link)
     unlink.list <- list(identity, exp, inv.logit)
@@ -992,7 +927,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
         names(sv)[names(sv) == "D"] <- "D.(Intercept)"
     }
     autoD.generic <- function(args) 0
-    for (i in D.betapars.names){
+    for (i in D.beta.names){
         if (i != "D.(Intercept)"){
             assign(paste0("auto", i), autoD.generic)
         }
