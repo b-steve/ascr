@@ -368,6 +368,7 @@
 #'     to detectors that detected individuals. See 'Details'.
 #' @param model A list specifying how to model parameters using
 #'     covariates. See 'Details' below.
+#' @param dfs A list of data frames providing covariates to model.
 #' @param ihd.opts Options for inhomogeneous density. Deprecated.
 #' @param hess Logical, if \code{TRUE} the Hessian is estimated,
 #'     allowing for calculation of standard errors, the
@@ -381,6 +382,8 @@
 #'     provided.
 #' @param trace Logical, if \code{TRUE} parameter values at each step
 #'     of the optimisation algorithm are printed to the R console.
+#' @param cov.scale Logical, if \code{TRUE}, covariates are centred
+#'     and scaled to aid optimisation convergence.
 #' @param clean Logical, if \code{TRUE} ADMB output files are
 #'     removed. Otherwise, ADMB output file will remain in a
 #'     directory, the location of which is reported after the model is
@@ -424,381 +427,54 @@
 #' }
 #'
 #' @export
-fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
-                     fix = NULL, ss.opts = NULL, cue.rates = NULL, survey.length = NULL,
-                     sound.speed = 330, model = NULL, ihd.opts = NULL, local = FALSE,
-                     hess = NULL, trace = FALSE, clean = TRUE, optim.opts = NULL, ...){
-    arg.names <- names(as.list(environment()))
-    extra.args <- list(...)
-    ## Sorting out multi-session stuff.
-    if (is.data.frame(traps)){
-        traps <- as.matrix(traps)
-    }
-    if (is.data.frame(mask)){
-        mask <- as.matrix(mask)
-    }
-    multi.session <- ifelse(is.list(traps) & is.list(mask), TRUE, FALSE)
-    ## If only a single session, just make multi-session objects with a single component.
-    if (!multi.session){
-        if (is.list(traps) | is.list(mask)){
-            stop("For multi-session models, both `traps' and `mask' must be lists.")
-        }
-        capt <- list(capt)
+fit.ascr <- function(capt, traps, mask, detfn = "hn", model = NULL, dfs = NULL,
+                     sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
+                     cue.rates = NULL, survey.length = NULL, sound.speed = 330,
+                     ihd.opts = NULL, local = FALSE, hess = NULL, trace = FALSE,
+                     cov.scale = TRUE, clean = TRUE, optim.opts = NULL, ...){
+    ## Sorting out objects if they provided in single-session format.
+    if (!is.list(traps)){
         traps <- list(traps)
+    }
+    if (!is.list(mask)){
         mask <- list(mask)
     }
     if (!is.list(capt[[1]])){
         capt <- list(capt)
     }
-    if (length(traps) != length(mask)){
-        stop("For multi-session models, both `traps' and `mask' must have the same number of components.")
-    }
+    ## Number of sessions.
     n.sessions <- length(traps)
-    if (length(capt) != n.sessions){
-        stop("For multi-session models, `capt' must have a component for each session.")
+    ## Checking for consistent list lengths.
+    if ((length(capt) != n.sessions) | (length(mask) != n.sessions)){
+        stop("Arugments 'capt', 'trap', and 'mask' imply different number of sessions.")
     }
-    capt.names <- names(capt[[1]])
-    for (i in 1:length(capt)){
-        if (!all(names(capt[[i]]) == capt.names)){
-            stop("For multi-session models, all components of `capt' must have the same data types.")
-        }
-    }
-    if (any(names(extra.args) == "call.freqs")){
-        if (!missing(cue.rates)){
-            stop("The argument `cue.rates' has replaced `call.freqs'; use only the former.")
-        }
-        warning("The argument `call.freqs' is deprecated; please rename to `cue.rates' instead.")
-        cue.rates <- extra.args[["call.freqs"]]
-    }
-    ## Pulling some stuff out of optim.opts.
-    phases <- optim.opts$phases
-    sf <- optim.opts$sf
-    ## Determining supplementary parameter names.
-    supp.types <- c("bearing", "dist", "ss", "toa", "mrds")
-    fit.types <- supp.types %in% capt.names
-    names(fit.types) <- supp.types
-    ## Logical indicators for additional information types.
-    fit.bearings <- fit.types["bearing"]
-    fit.dists <- fit.types["dist"]
-    fit.ss <- fit.types["ss"]
-    fit.toas <- fit.types["toa"]
-    fit.mrds <- fit.types["mrds"]
-    ## Warning from cue.rates without survey.length.
-    if (is.null(survey.length)){
-        survey.length <- rep(1, n.sessions)
-        if (!is.null(cue.rates)){
-            stop("The use of `cue.rates' without `survey.length' is no longer supported. Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
-        }
-    } else {
-        if (length(survey.length) != n.sessions){
-            stop("The argument `survey.length' must have a value for each session.")
-        }
-    }
-    ## Sorting out cues per survey.
-    if (!is.null(cue.rates)){
-        cue.freqs <- cue.rates*survey.length
-    }
-    ## Storing objects from ss.opts.
-    cutoff <- ss.opts$cutoff
-    ss.link <- ss.opts$ss.link
-    directional <- ss.opts$directional
-    het.source <- ss.opts$het.source
-    het.source.method <- ss.opts$het.source.method
-    n.dir.quadpoints <- ss.opts$n.dir.quadpoints
-    n.het.source.quadpoints <- ss.opts$n.het.source.quadpoints
-    lower.cutoff <- ss.opts$lower.cutoff
-    ## Sorting objects from optim.opts.
-    cbs <- optim.opts$cbs
-    gbs <- optim.opts$gbs
-    ams <- optim.opts$ams
-    exe.type <- optim.opts$exe.type
-    neld.mead <- optim.opts$neld.mead
-    if (is.null(exe.type)){
-        exe.type <- "old"
-    }
-    if (is.null(neld.mead)){
-        neld.mead <- FALSE
-        neld.mead.force <- FALSE
-    } else {
-        neld.mead.force <- TRUE
-    }
-    ## Setting up first.calls indicator.
-    first.calls <- FALSE
-    if (fit.ss){
-        if (missing(ss.opts)){
-            ## Error if ss.opts not provided for signal strength model.
-            stop("Argument 'ss.opts' is missing.")
-        }
-        ## Error for unspecified cutoff.
-        if (is.null(cutoff)){
-            stop("The 'cutoff' component of 'ss.opts' must be specified.")
-        }
-        if (!is.null(lower.cutoff)){
-            first.calls <- TRUE
-            if (!(lower.cutoff < cutoff)){
-                stop("The 'lower.cutoff' component of 'ss.opts' must be lower than the 'cutoff' component.")
-            }
-        } else {
-            ss.opts["lower.cutoff"] <- list(NULL)
-            lower.cutoff <- NULL
-        }
-        ## Removing detections below the cutoff.
-        n.removed <- 0
-        for (i in 1:n.sessions){
-            rem <- capt[[i]]$ss < cutoff
-            capt[[i]] <- lapply(capt[[i]], function(x, rem){
-                x[rem] <- 0
-                x
-            }, rem = rem)
-            keep <- apply(capt[[i]]$bincapt, 1, sum) > 0
-            capt[[i]] <- lapply(capt[[i]], function(x, keep) x[keep, , drop = FALSE], keep = keep)
-            n.removed <- n.removed + sum(!keep)
-        }
-        if (trace & n.removed > 0){
-            message(n.removed, " capture history entries have no received signal strengths above the cutoff and have therefore been removed.\n", sep = "")
-        }
-    }
-    capt.bin <- vector(mode = "list", length = n.sessions)
-    for (i in 1:n.sessions){
-        ## Checking for bincapt.
-        if (!any(names(capt[[i]]) == "bincapt")){
-            stop("The binary capture history must be provided as a component of 'capt'.")
-        }
-        capt.bin[[i]] <- capt[[i]]$bincapt
-        ## Checking for correct number of trap locations.
-        if (ncol(capt.bin[[i]]) != nrow(traps[[i]])){
-            stop("There must be a trap location for each column in the components of 'capt'.")
-        }
-        ## Checking that each component of 'capt' is a matrix.
-        if (any(!laply(capt[[i]], is.matrix))){
-            stop("At least one component of 'capt' is not a matrix.")
-        }
-        ## Checking for agreement in matrix dimensions.
-        if (length(capt[[i]][names(capt[[i]]) != "mrds"]) > 1){
-            all.dims <- laply(capt[[i]], dim)
-            all.dims <- all.dims[names(capt[[i]]) != "mrds", ]
-            if (any(aaply(all.dims, 2, function(x) diff(range(x))) != 0)){
-                stop("Components of 'capt' object within a session have different dimensions.")
-            }
-        }
-    }
-    ## Various checks for other arguments.
-    if (!is.list(sv) & !is.null(sv)){
-        stop("The 'sv' argument must be 'NULL' or a list.")
-    }
-    if (!is.list(bounds) & !is.null(bounds)){
-        stop("The 'bounds' argument must be 'NULL' or a list.")
-    }
-    if (!is.list(phases) & !is.null(phases)){
-        stop("The 'phases' argument must be 'NULL' or a list.")
-    }
-    if (is.list(bounds)){
-        if (any(laply(bounds, length) != 2)){
-            stop("Each component of 'bounds' must be a vector of length 2.")
-        }
-    }
-    if (!is.list(fix) & !is.null(fix)){
-        stop("The 'fix' argument must be 'NULL' or a list.")
-    }
-    n <- sapply(capt.bin, nrow)
+    ## Number of traps per session.
     n.traps <- sapply(traps, nrow)
+    ## Number of mask points per session.
     n.mask <- sapply(mask, nrow)
-    A <- sapply(mask, function(x) attr(x, "area"))
-    buffer <- sapply(mask, function(x) attr(x, "buffer"))
-    ## Sorting out mask attributes and calculating distances.
-    A <- numeric(n.sessions)
-    buffer <- numeric(n.sessions)
-    dists <- vector(mode = "list", length = n.sessions)
-    for (i in 1:n.sessions){
-        dists[[i]] <- distances(as.matrix(traps[[i]]), as.matrix(mask[[i]]))
-        ## Filling in area and buffer, if missing.
-        if (is.null(attr(mask[[i]], "area"))){
-            mask.dists <- distances(as.matrix(mask[[i]]), as.matrix(mask[[i]]))
-            A[i] <- min(mask.dists[mask.dists > 0])^2/10000
-        } else {
-            A[i] <- attr(mask[[i]], "area")
-        }
-        if (is.null(attr(mask[[i]], "buffer"))){
-            buffer[i] <- max(apply(dists[[i]], 2, min))
-        } else {
-            buffer[i] <- attr(mask[[i]], "buffer")
-        }
-        mask[[i]] <- as.matrix(mask[[i]])
-        traps[[i]] <- as.matrix(traps[[i]])
-        attr(mask[[i]], "area") <- A[i]
-        attr(mask[[i]], "buffer") <- buffer[i]
+    ## Extracting types of information provided in capt. Note that
+    ## these are vectors of length n.sessions, allowing different
+    ## information types to be collected on different sessions. TODO:
+    ## Actually implement this in ADMB.
+    capt.names <- vector(mode = "list", length = n.sessions)
+    fit.bearing <- sapply(capt, function(x) any(names(x) == "bearing"))
+    fit.dist <- sapply(capt, function(x) any(names(x) == "dist"))
+    fit.mrds <- sapply(capt, function(x) any(names(x) == "mrds"))
+    fit.ss <- sapply(capt, function(x) any(names(x) == "ss"))
+    fit.ss.any <- any(fit.ss)
+    fit.toa <- sapply(capt, function(x) any(names(x) == "toa"))
+    fit.supp.types <- c(bearing = any(fit.bearing), dist = any(fit.dist),
+                        mrds = any(fit.mrds), ss = any(fit.ss), toa = any(fit.toa))
+    ## Error if signal strengths are only sometimes provided.
+    if (!all(fit.ss) & !all(!fit.ss)){
+        stop("Signal strengths must be collected for all sessions, or for no sessions.")
     }
-    ## Sorting out signal strength options.
-    if (fit.ss){
-        ## Warning for unexpected component names.
-        if (!all(names(ss.opts) %in% c("cutoff", "het.source", "het.source.method", "n.het.source.quadpoints", "directional", "n.dir.quadpoints", "ss.link", "lower.cutoff"))){
-            warning("Components of 'ss.opts' may only consist of \"cutoff\", \"het.source\", \"het.source.method\", \"n.het.source.quadpoints\", \"directional\",  \"n.dir.quadpoints\", \"ss.link\", and \"lower.cutoff\"; others are being ignored.")
-        }
-        ## Setting default values for ss.link, het.source and directional.
-        if (is.null(ss.link)){
-            ss.opts$ss.link <- "identity"
-            ss.link <- "identity"
-        } else if (!(ss.link %in% c("identity", "log", "spherical"))){
-            stop("Component 'ss.link' in 'ss.opts' must be \"identity\", \"log\", or \"spherical\".")
-        }
-        if (first.calls & ss.link != "identity"){
-            stop("First-call models are only implemented for ss.link = \"identity\".")
-        }
-        ## By default, directional calling model is only used if b2.ss appears in sv or fix.
-        if (is.null(directional)){
-            if (is.null(sv$b2.ss) & is.null(fix$b2.ss)){
-                ss.opts$directional <- FALSE
-                directional <- FALSE
-            } else {
-                ss.opts$directional <- TRUE
-                directional <- TRUE
-            }
-        }
-        ## Fixing b2.ss to 0 if a directional calling model is not being used.
-        if (!directional){
-            warn.directional <- FALSE
-            if (!is.null(sv$b2.ss)){
-                if (sv$b2.ss != 0){
-                    warn.directional <- TRUE
-                }
-                sv$b2.ss <- NULL
-            }
-            if (!is.null(fix$b2.ss)){
-                if (fix$b2.ss != 0){
-                    warn.directional <- TRUE
-                }
-                fix$b2.ss <- NULL
-            }
-            if (warn.directional){
-                warning("As the 'directional' component of 'ss.opts' is FALSE, the values of parameter b2.ss in 'sv' and 'fix' are being ignored")
-            }
-            fix$b2.ss <- 0
-        }
-        ## By default, heterogeneity source strength model is only
-        ## used if sigma.b0.ss appears in sv or fix.
-        if (is.null(het.source)){
-            if (is.null(sv$sigma.b0.ss) & is.null(fix$sigma.b0.ss)){
-                ss.opts$het.source <- FALSE
-                het.source <- FALSE
-            } else {
-                ss.opts$het.source <- TRUE
-                het.source <- TRUE
-                ss.opts$het.source.method <- "GH"
-                het.source.method <- "GH"
-            }
-        }
-        if (het.source){
-            if (is.null(het.source.method)){
-                ss.opts$het.source.method <- "GH"
-                het.source.method <- "GH"
-            }
-        } else {
-            ## Fixing sigma.b0.ss to 0 if a heterogeneous source
-            ## strength model is not being used.
-            warn.het <- FALSE
-            if (!is.null(sv$sigma.b0.ss)){
-                if (sv$sigma.b0.ss != 0){
-                    warn.het <- TRUE
-                }
-                sv$sigma.b0.ss <- NULL
-            }
-            if (!is.null(fix$sigma.b0.ss)){
-                if (fix$sigma.b0.ss != 0){
-                    warn.het <- TRUE
-                }
-                fix$sigma.b0.ss <- NULL
-            }
-            if (warn.het){
-                warning("As the 'het.source' component of 'ss.opts' is FALSE, the values of the parameter sigma.b0.ss in 'sv' and 'fix' are being ignored")      
-            }
-            fix$sigma.b0.ss <- 0
-        }
-    } else {
-        if (!is.null(ss.opts)){
-            warning("Argument 'ss.opts' is being ignored as a signal strength model is not being fitted.")
-        }
-        ss.opts <- NULL
-        lower.cutoff <- NULL
-    }
-    ## Setting fit.dir.
-    if (fit.ss){
-        fit.dir <- TRUE
-        if ("b2.ss" %in% names(fix)){
-            if (fix[["b2.ss"]] == 0){
-                fit.dir <- FALSE
-            }
-        }
-    } else {
-        fit.dir <- FALSE
-    }
-    ## Setting fit.het.source.
-    if (fit.ss){
-        fit.het.source <- TRUE
-        if ("sigma.b0.ss" %in% names(fix)){
-            if (fix[["sigma.b0.ss"]] == 0){
-                fit.het.source <- FALSE
-            }
-        }
-    } else {
-        fit.het.source <- FALSE
-    }
-    ## Setting het.source.gh.
-    if (fit.het.source){
-        het.source.gh <- het.source.method == "GH"
-    } else {
-        het.source.gh <- FALSE
-    }
-    if (fit.het.source & first.calls){
-        stop("Models with both first calls and heterogeneity in source signal strengths are not yet implemented.")
-    }
-    if (fit.dir & first.calls){
-        stop("Models with both first calls and directional calling are not yet implemented.")
-    }
-    ## Supplementary parameter names.
-    suppar.names <- c("kappa", "alpha", "sigma.toa")[fit.types[c("bearing", "dist", "toa")]]
-    ## Generating ordered binary capture history.
-    capt.bin.order <- vector(mode = "list", length = n.sessions)
-    capt.bin.unique <- vector(mode = "list", length = n.sessions)
-    capt.bin.freqs <- vector(mode = "list", length = n.sessions)
-    n.unique <- numeric(n.sessions)
-    capt.bearing <- vector(mode = "list", length = n.sessions)
-    capt.dist <- vector(mode = "list", length = n.sessions)
-    capt.ss <- vector(mode = "list", length = n.sessions)
-    capt.toa <- vector(mode = "list", length = n.sessions)
-    mrds.locs <- vector(mode = "list", length = n.sessions)
-    mrds.dist <- vector(mode = "list", length = n.sessions)
-    capt.ord <- vector(mode = "list", length = n.sessions)
-    for (i in 1:n.sessions){
-        capt.bin.order[[i]] <- do.call(order, as.data.frame(capt.bin[[i]]))
-        capt.bin.unique[[i]] <- capt.bin[[i]][capt.bin.order[[i]], , drop = FALSE]
-        ## Note that we don't group capture histories for MRDS fits,
-        ## so a "unique" capture history is not truly "unique".
-        if (fit.mrds){
-            capt.bin.freqs[[i]] <- rep(1, nrow(capt.bin.unique[[i]]))
-        } else {
-            capt.bin.freqs[[i]] <- as.vector(table(apply(capt.bin.unique[[i]], 1, paste, collapse = "")))
-            names(capt.bin.freqs[[i]]) <- NULL
-            capt.bin.unique[[i]] <- capt.bin.unique[[i]][!duplicated(as.data.frame(capt.bin.unique[[i]])), , drop = FALSE]
-        }
-        n.unique[i] <- nrow(capt.bin.unique[[i]])
-        ## Reordering all capture history components.
-        capt.ord[[i]] <- capt[[i]]
-        for (j in 1:length(capt[[i]])){
-            capt.ord[[i]][[j]] <- capt[[i]][[j]][capt.bin.order[[i]], , drop = FALSE]
-        }
-        ## Capture histories for additional information types (if they exist)
-        capt.bearing[[i]] <- if (fit.bearings) capt.ord[[i]]$bearing else 0
-        capt.dist[[i]] <- if (fit.dists) capt.ord[[i]]$dist else 0
-        capt.ss[[i]] <- if (fit.ss) capt.ord[[i]]$ss else 0
-        capt.toa[[i]] <- if (fit.toas) capt.ord[[i]]$toa else 0
-        mrds.locs[[i]] <- if (fit.mrds) capt.ord[[i]]$mrds else 0
-        mrds.dist[[i]] <- if (fit.mrds) distances(mrds.locs[[i]], traps[[i]]) else 0
-        ## Data check for bearings.
-        if (any(capt.bearing[[i]] < 0 | capt.bearing[[i]] > 2*pi)){
-            warning("Some estimated bearings are not in the interval [0, 2*pi)")
-        }
-    }
-    if (fit.ss){
+    ## Names of supplementary information parameters.
+    supp.par.names <- c("kappa", "alpha", "sigma.toa")[fit.supp.types[c("bearing", "dist", "toa")]]
+    ## Extracting some signal strength information.
+    ss.cutoff <- ss.opts$cutoff
+    ss.link <- ss.opts$ss.link
+    if (fit.ss.any){
         if (!missing(detfn) & detfn != "ss"){
             warning("Argument 'detfn' is being ignored as signal strength information is provided in 'capt'. A signal strength detection function has been fitted instead.")
         }
@@ -812,12 +488,8 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             detfn <- "spherical.ss"
             linkfn.id <- 3
         }
-    } else {
-        ## Not sure what a linkfn.id of 4 means? Probably throws an error in ADMB.
-        linkfn.id <- 4
     }
-    detfns <- c("hn", "hhn", "hr", "th", "lth", "ss", "log.ss", "spherical.ss")
-    ## Sets detection function ID number for use in ADMB:
+    ## Sorting out detection function ID for ADMB:
     ## 1 = Half normal
     ## 2 = Hazard halfnormal
     ## 3 = Hazard rate
@@ -825,817 +497,67 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
     ## 5 = Log-link threshold
     ## 6 = Identity-link signal strength
     ## 7 = Log-link signal strength.
-    detfn.id <- which(detfn == detfns)
-    detpar.names <- switch(detfn,
-                           hn = c("g0", "sigma"),
-                           hhn = c("lambda0", "sigma"),
-                           hr = c("g0", "sigma", "z"),
-                           th = c("shape", "scale"),
-                           lth = c("shape.1", "shape.2", "scale"),
-                           ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
-                           log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
-                           spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
-    par.names <- c("D", detpar.names, suppar.names)
-    n.detpars <- length(detpar.names)
-    n.suppars <- length(suppar.names)
-    any.suppars <- n.suppars > 0
-    n.pars <- length(par.names)
-
-
-    ## SORT OUT COVARIATES IN HERE.
-    if (!missing(model)){
-        ## Hard-coding cov.scale.
-        cov.scale <- TRUE
-        ## Grabbing the different data frames.
-        if (is.null(model$session.df)){
-            session.df <- data.frame(session = 1:n.sessions)
-        } else {
-            session.df <- data.frame(session = 1:n.sessions, model$session.df)
-        }
-        mask.df <- model$mask.df
-        trap.df <- model$trap.df
-        detection.df <- model$detection.df
-        model.formula <- model[sapply(model, is.formula)]
-        model.formula.pars <- sapply(model.formula,
-                                     function(x) rownames(attr(terms(x), "factors"))[1])
-        ## Sorting out covariates for D.
-        D.session.df <- data.frame(session.df[rep(1:n.sessions, times = n.mask), ])
-        names(D.session.df) <- names(session.df)
-        D.mask.df <- do.call(rbind, mask.df)
-        D.df <- data.frame(D.session.df, D.mask.df)
-        ## Creating density covariate scaling function.
-        D.scale.covs <- scale.closure(D.df, cov.scale)
-        D.df <- D.scale.covs(D.df)
-        D.formula <- model.formula[[model.formula.pars == "D"]]
-        D.df <- data.frame(D.df, D = rep(0, nrow(D.df)))
-        D.fgam <- gam(D.formula, data = D.df, fit = FALSE)
-        D.mm <- D.fgam$X
-        D.beta.names <- paste("D.", colnames(D.mm), sep = "")
+    ## 8 = Spherical-spreading signal strength.
+    detfn.id <- which(detfn == c("hn",
+                                 "hhn",
+                                 "hr",
+                                 "th",
+                                 "lth",
+                                 "ss",
+                                 "log.ss",
+                                 "spherical.ss"))
+    ## Setting detection function parameter names.
+    det.par.names <- switch(detfn,
+                            hn = c("g0", "sigma"),
+                            hhn = c("lambda0", "sigma"),
+                            hr = c("g0", "sigma", "z"),
+                            th = c("shape", "scale"),
+                            lth = c("shape.1", "shape.2", "scale"),
+                            ss = c("b0.ss", "b1.ss", "sigma.ss"),
+                            log.ss = c("b0.ss", "b1.ss", "sigma.ss"),
+                            spherical.ss = c("b0.ss", "b1.ss", "sigma.ss"))
+    ## Extracting session data frame with special variable 'session'.
+    session.df <- dfs$session
+    if (is.null(session.df)){
+        session.df <- data.frame(session = factor(1:n.sessions))
+    } else {
+        session.df <- data.frame(session = factor(1:n.sessions), session.df)
     }
-    beta.par.names <- c(D.beta.names, detpar.names, suppar.names)
-    ## Checking par.names against names of sv, fix, bounds, and sf.
-    for (i in c("sv", "fix", "bounds", "phases", "sf")){
-        obj <- get(i)
-        if (!is.null(obj)){
-            if (i == "sv"){
-                obj.fitted <- names(obj) %in% c("D", par.names)
-            } else {
-                obj.fitted <- names(obj) %in% c("D", par.names)
-            }
-            if(!all(obj.fitted)){
-                msg <- paste("Some parameters listed in '", i, "' are not being used. These are being removed.",
-                             sep = "")
-                warning(msg)
-                assign(i, obj[obj.fitted])
-            }
+    ## Extracting mask data frame.
+    mask.df <- dfs$mask
+    if (is.null(mask.df)){
+        mask.df <- vector(mode = "list", length = n.sessions)
+        for (i in 1:n.sessions){
+            mask.df[[i]] <- mask[[i]][, 1:2]
         }
     }
-    ## Sets link function ID number for use in ADMB:
-    ## 1 = identity
-    ## 2 = log
-    ## 3 = logit
-    parlinks.list <- list(D = 2,
-                          g0 = 3,
-                          lambda0 = 2,
-                          sigma = 2,
-                          shape = 1,
-                          shape.1 = 2,
-                          shape.2 = 1,
-                          scale = 2,
-                          b0.ss = 2,
-                          b1.ss = 2,
-                          b2.ss = 2,
-                          sigma.b0.ss = 2,
-                          sigma.ss = 2,
-                          z = 2,
-                          sigma.toa = 2,
-                          kappa = 2,
-                          alpha = 2)
+    ## Extracting traps data frame.
+    trap.df <- dfs$trap
+    ## Extracting detections data frame.
+    detection.df <- dfs$detection
+    ## Determining parameters in model statement.
+    model.pars <- sapply(model, function(x) rownames(attr(terms(x), "factors"))[1])
+    ## Setting up model matrix for D. Parameter affected by session
+    ## and mask covariates, so we need a row for every mask point.
     browser()
-    links <- parlinks.list[par.names]
-    link.list <- list(identity, log.link, logit.link)
-    unlink.list <- list(identity, exp, inv.logit)
-    par.links <- llply(links, function(x, link.list) link.list[[x]], link.list)
-    par.unlinks <- llply(links, function(x, unlink.list) unlink.list[[x]], unlink.list)
-    ## Sorting out start values. Start values are set to those provided,
-    ## or else are determined automatically from functions in
-    ## autofuns.r.
-    sv.link <- vector("list", length = n.pars)
-    names(sv.link) <- par.names
-    if (any(names(sv) == "D")){
-        sv[["D"]] <- log(sv[["D"]])
-        names(sv)[names(sv) == "D"] <- "D.(Intercept)"
-    }
-    autoD.generic <- function(args) 0
-    for (i in D.beta.names){
-        if (i != "D.(Intercept)"){
-            assign(paste0("auto", i), autoD.generic)
-        }
-    }
-    sv.link[names(sv)] <- sv
-    sv.link[names(fix)] <- fix
-    auto.names <- par.names[sapply(sv.link, is.null)]
-    sv.funs <- paste("auto", auto.names, sep = "")
-    ## Use the first session with detections to generate start values.
-    sess.to.use <- which(n > 0)[1]
-    same.traplocs <-  all(distances(traps[[sess.to.use]], traps[[sess.to.use]]) == 0)
-    ## Done in reverse so that D is calculated last (requires detfn
-    ## parameters). D not moved to front as it should appear as the
-    ## first parameter in any output.  Note that start value
-    ## parameters are automatically generated only from the first
-    ## session's data.
-    for (i in rev(seq(1, length(auto.names), length.out = length(auto.names)))){
-        sv.link[auto.names[i]] <- eval(call(sv.funs[i],
-                                       list(capt = capt[[sess.to.use]], detfn = detfn,
-                                            detpar.names = detpar.names,
-                                            mask = mask[[sess.to.use]], traps = traps[[sess.to.use]],
-                                            sv = sv.link, ss.opts = ss.opts,
-                                            A = A[1], survey.length = survey.length[1],
-                                            same.traplocs = same.traplocs)))
-    }
-    ## Converting start values to link scale.
-    sv <- sv.link
-    for (i in names(sv.link)){
-        sv.link[[i]] <- link.list[[links[[i]]]](sv.link[[i]])
-    }
-    ## Sorting out phases.
-    phases.save <- phases
-    phases <- vector("list", length = n.pars)
-    names(phases) <- par.names
-    for (i in par.names){
-        if (any(i == names(fix))){
-            ## Phase of -1 in ADMB fixes parameter at starting value.
-            phases[[i]] <- -1
-        } else {
-            if (any(i == names(phases.save))){
-                phases[[i]] <- phases.save[[i]]
-            } else {
-                phases[[i]] <- 1
-            }
-        }
-    }
-    D.betapars.phase <- c(phases[D.betapars.names], recursive = TRUE)
-    detpars.phase <- c(phases[detpar.names], recursive = TRUE)
-    if (any.suppars){
-        suppars.phase <- c(phases[suppar.names], recursive = TRUE)
+    D.session.df <- data.frame(session.df[rep(1:n.sessions, times = n.mask), ])
+    names(D.session.df) <- names(session.df)
+    D.mask.df <- do.call(rbind, mask.df)
+    D.df <- data.frame(D.session.df, D.mask.df)
+    D.scale.covs <- scale.closure(D.df, cov.scale)
+    D.df <- D.scale.covs(D.df)
+    D.df <- data.frame(D.df, D = rep(0, nrow(D.df)))
+    ## Extracting model statement for D.
+    if (any(model.pars == "D")){
+        D.formula <- model[[model.pars == "D"]]
     } else {
-        suppars.phase <- -1
+        D.formula <- D ~ 1
     }
-    ## Sorting out bounds.
-    ## Below bounds are the defaults.
-    default.bounds.list <- list(g0 = c(0, 1),
-                                lambda0 = c(0, 1e8),
-                                sigma = c(0, 1e8),
-                                shape = c(-100, 100),
-                                shape.1 = c(0, 1e8),
-                                shape.2 = c(-100, 100),
-                                scale = c(0, 1e8),
-                                b0.ss = c(0, 1e8),
-                                b1.ss = c(0, 1e8),
-                                b2.ss = c(0, 1e8),
-                                sigma.b0.ss = c(0, 1e8),
-                                sigma.ss = c(0, 1e8),
-                                z = c(0, 1e8),
-                                sigma.toa = c(0, 1e8),
-                                kappa = c(0, 700),
-                                alpha = c(0, 1e8))
-    for (i in D.betapars.names){
-        default.bounds.list[[i]] <- c(-log(1e20), log(1e20))
-    }
-    default.bounds <- default.bounds.list[par.names]
-    if (any(names(bounds) == "D")){
-        if (bounds[["D"]][1] == 0){
-            bounds[["D"]][1] <- 1e-20
-        }
-        bounds[["D"]] <- log(bounds[["D"]])
-        names(bounds)[names(bounds) == "D"] <- "D.(Intercept)"
-    }
-    bound.changes <- bounds
-    bounds <- default.bounds
-    for (i in names(default.bounds)){
-        if (i %in% names(bound.changes)){
-            bounds[[i]] <- bound.changes[[i]]
-        }
-    }
-    ## Converting bounds to link scale.
-    bounds.link <- bounds
-    for (i in names(bounds)){
-        bounds.link[[i]] <- link.list[[links[[i]]]](bounds[[i]])
-    }
-    D.betapars.bounds <- bounds.link[D.betapars.names]
-    D.betapars.lb <- sapply(D.betapars.bounds, function(x) x[1])
-    D.betapars.ub <- sapply(D.betapars.bounds, function(x) x[2])
-    detpar.bounds <- bounds.link[detpar.names]
-    detpars.lb <- sapply(detpar.bounds, function(x) x[1])
-    detpars.ub <- sapply(detpar.bounds, function(x) x[2])
-    if (any.suppars){
-        suppar.bounds <- bounds.link[suppar.names]
-        suppars.lb <- sapply(suppar.bounds, function(x) x[1])
-        suppars.ub <- sapply(suppar.bounds, function(x) x[2])
-    } else {
-        suppars.lb <- 0
-        suppars.ub <- 0
-    }
-    ## Sorting out scalefactors.
-    if (is.null(sf)){
-        sv.vec <- c(sv.link, recursive = TRUE)
-        ## Currently, by default, the scalefactors are the inverse
-        ## fraction of each starting value to the largest starting
-        ## value. Not sure how sensible this is.
-        ##bound.ranges <- laply(bounds.link, function(x) diff(range(x)))
-        ##sf <- max(bound.ranges)/bound.ranges
-        sf <- abs(max(sv.vec)/sv.vec)
-        names(sf) <- par.names
-    } else if (is.list(sf)){
-        sf <- numeric(n.pars)
-        names(sf) <- par.names
-        for (i in par.names){
-            sf[i] <- ifelse(i %in% names(sf), sf[[i]], 1)
-        }
-    } else if (is.vector(sf) & length(sf) == 1){
-        sf <- rep(sf, length(par.names))
-        names(sf) <- par.names
-    }
-    ## Replacing infinite scalefactors.
-    sf[!is.finite(sf)] <- 1
-    D.betapars.sf <- c(sf[D.betapars.names], recursive = TRUE)
-    detpars.sf <- c(sf[detpar.names], recursive = TRUE)
-    if (any.suppars){
-        suppars.sf <- c(sf[suppar.names], recursive = TRUE)
-    } else {
-        suppars.sf <- 1
-    }
-    ## Creating link objects to pass to ADMB.
-    detpars.link <- c(links[detpar.names], recursive = TRUE)
-    if (any.suppars){
-        suppars.link <- c(links[suppar.names], recursive = TRUE)
-    } else {
-        suppars.link <- 1
-    }
-    ## Setting small number so that numerical under/overflow in ADMB
-    ## does not affect estimation.
-    dbl.min <- 1e-150
-    ## Calculating distances and angles.
-    bearings <- vector(mode = "list", length = n.sessions)
-    toa.ssq <- vector(mode = "list", length = n.sessions)
-    for (i in 1:n.sessions){
-        if (fit.bearings | fit.dir){
-            bearings[[i]] <- bearings(traps[[i]], mask[[i]])
-        } else {
-            bearings[[i]] <- 0
-        }
-        if (fit.toas){
-            toa.ssq[[i]] <- make_toa_ssq(capt.ord[[i]]$toa, dists[[i]], sound.speed)
-        } else {
-            toa.ssq <- rep(0, n.sessions)
-        }
-    }
-    if (is.null(cutoff)){
-        cutoff <- 0
-    }
-    ## Kludge to fix number of parameters for no supplementary
-    ## information.
-    if (!any.suppars){
-        n.suppars <- max(c(n.suppars, 1))
-        sv.link$dummy <- 0
-        suppar.names <- "dummy"
-    }
-    ## Reordering sv.link. Matters when there is no supplementary information.
-    sv.link <- sv.link[c(D.betapars.names, detpar.names, suppar.names)]
-    ## ... And resetting suppar.names to NULL if required.
-    if (!any.suppars){
-        suppar.names <- NULL
-    }
-    ## Sorting out which mask points are local to each detection. Note
-    ## that for MRDS fits we allocate the true location to the nearest
-    ## mask-point location, and then just use local "integration" with
-    ## that single mask point.
-    all.which.local <- vector(mode = "list", length = n.sessions)
-    all.n.local <- vector(mode = "list", length = n.sessions)
-    if (fit.mrds){
-        local <- TRUE
-        for (i in 1:n.sessions){
-            all.which.local[[i]] <- find.nearest.mask(mrds.locs[[i]], mask[[i]])
-            all.n.local[[i]] <- laply(all.which.local[[i]], length)
-            all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
-        }
-    } else if (local){
-        for (i in 1:n.sessions){
-            all.which.local[[i]] <- find_local(capt.bin.unique[[i]], dists[[i]], buffer[i])
-            all.n.local[[i]] <- laply(all.which.local[[i]], length)
-            all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
-        }
-    } else {
-        for (i in 1:n.sessions){
-            all.n.local[[i]] <- rep(1, n.unique[i])
-            all.which.local[[i]] <- rep(0, n.unique[i])
-        }
-    }
-    ## Sorting out number of quadrature points for directional calling.
-    if (fit.dir){
-        if (is.null(n.dir.quadpoints)){
-            n.dir.quadpoints <- 8
-        }
-    } else {
-        n.dir.quadpoints <- 1
-    }
-    ## Sorting out number of quadrature points for heteroegeous source strength.
-    if (fit.het.source){
-        if (is.null(n.het.source.quadpoints)){
-            n.het.source.quadpoints <- 15
-        }
-    } else {
-        n.het.source.quadpoints <- 1
-    }
-    ## Getting nodes and weights for Gauss-Hermite quadrature.
-    if (het.source.gh){
-        GHd <- gaussHermiteData(n.het.source.quadpoints)
-        het.source.nodes <- GHd$x
-        het.source.weights <- GHd$w
-    } else {
-        het.source.nodes <- 0
-        het.source.weights <- 0
-    }
-    ## Error thrown for model with both heterogeneity in source strength and directional calling.
-    if (fit.het.source & fit.dir){
-        stop("Fitting of models with both heterogeneity in source signal strength and directional calling is not yet implemented.")
-    }
-    ## Error thrown for model with heterogeneity in source strength and a log-link function.
-    if (fit.het.source){
-        if (ss.link != "identity"){
-            stop("Fitting of signal strength models with heterogeneity in source signal strength is only implemented with an identity link function.")
-        }
-    }
-    ## Determining whether or not standard errors should be calculated.
-    if (!is.null(cue.rates)){
-        fit.freqs <- TRUE
-    } else {
-        fit.freqs <- FALSE
-    }
-    ## Calculating average call rate.
-    if (fit.freqs){
-        mu.rates <- mean(cue.rates)
-    } else {
-        mu.rates  <- 1
-    }
-    ## Setting hess.
-    if (is.null(hess)){
-        hess <- !fit.freqs
-    }
-    if (first.calls){
-        vectorise <- function(x) x[[1]]
-    } else {
-        vectorise <- list.to.vector
-    }
-    ## Stuff for the .dat file.
-    data.list <- list(n_sessions = n.sessions,
-                      survey_length = survey.length,
-                      n_unique_per_sess = n.unique,
-                      local = as.numeric(local),
-                      n_local_per_unique = c(all.n.local, recursive = TRUE),
-                      which_local_per_unique = c(all.which.local, recursive = TRUE),
-                      n_D_betapars = n.D.betapars,
-                      D_betapars_lb = D.betapars.lb,
-                      D_betapars_ub = D.betapars.ub,
-                      D_betapars_phase = D.betapars.phase,
-                      D_betapars_sf = D.betapars.sf,
-                      n_detpars = n.detpars,
-                      detpars_lb = detpars.lb,
-                      detpars_ub = detpars.ub,
-                      detpars_phase = detpars.phase,
-                      detpars_sf = detpars.sf,
-                      detpars_linkfns = detpars.link,
-                      n_suppars = n.suppars, suppars_lb = suppars.lb,
-                      suppars_ub = suppars.ub,
-                      suppars_phase = suppars.phase,
-                      suppars_sf = suppars.sf,
-                      suppars_linkfns = suppars.link,
-                      detfn_id = detfn.id, trace = as.numeric(trace),
-                      dbl_min = dbl.min, n_per_sess = n,
-                      n_traps_per_sess = n.traps,
-                      n_mask_per_sess = n.mask, A_per_sess = A,
-                      capt_bin_unique = vectorise(capt.bin.unique),
-                      capt_bin_freqs = c(capt.bin.freqs, recursive = TRUE),
-                      fit_angs = as.numeric(fit.bearings),
-                      fit_dir = as.numeric(fit.dir),
-                      n_dir_quadpoints = n.dir.quadpoints,
-                      fit_het_source = as.numeric(fit.het.source),
-                      het_source_gh = as.numeric(het.source.gh),
-                      n_het_source_quadpoints = n.het.source.quadpoints,
-                      het_source_nodes = het.source.nodes,
-                      het_source_weights = het.source.weights,
-                      capt_ang = vectorise(capt.bearing),
-                      fit_dists = as.numeric(fit.dists),
-                      capt_dist = vectorise(capt.dist),
-                      fit_ss = as.numeric(fit.ss), cutoff = cutoff,
-                      first_calls = as.numeric(first.calls),
-                      lower_cutoff = ifelse(is.null(lower.cutoff), 0, lower.cutoff),
-                      linkfn_id = linkfn.id,
-                      capt_ss = vectorise(capt.ss),
-                      fit_toas = as.numeric(fit.toas),
-                      capt_toa = vectorise(capt.toa),
-                      fit_mrds = as.numeric(fit.mrds),
-                      mrds_locs = vectorise(mrds.locs),
-                      mrds_dist = vectorise(mrds.dist),
-                      dists = vectorise(dists),
-                      angs = vectorise(bearings),
-                      toa_ssq = vectorise(toa.ssq),
-                      mm_ihd = vectorise(mm.ihd),
-                      mu_rates = mu.rates)
-    ## Using optimx() for first call fits.
-    if (first.calls){
-        if (n.sessions > 1){
-            stop("First-call models not yet implemented for multisession data.")
-        }
-        ## All possible capture histories.
-        n.combins <- 2^n.traps
-        combins <- matrix(NA, nrow = n.combins, ncol = n.traps)
-        for (i in 1:n.traps){
-            combins[, i] <- rep(rep(c(0, 1), each = 2^(n.traps - i)), times = 2^(i - 1))
-        }
-        data.list$combins <- combins
-        fit <- optimx(c(sv.link[c("D.(Intercept)", "b0.ss", "b1.ss", "sigma.ss")], recursive = TRUE),
-                      secr_nll, dat = data.list, get_esa = FALSE, method = "BFGS",
-                      hessian = hess)
-        out <- vector("list", 15)
-        names(out) <- c("fn", "coefficients", "coeflist", "se", "loglik", "maxgrad", 
-                        "cor", "vcov", "npar", "npar_re", "npar_sdrpt", "npar_rep",
-                        "npar_total", "hes", "eratio")
-        out$fn <- "optimx"
-        c <- as.vector(coef(fit))
-        n.opars <- length(c)
-        coeflist <- list()
-        for (i in 1:n.opars){
-            coeflist[[i]] <- c[i]
-        }
-        names(coeflist) <- paste(colnames(coef(fit)), "_link", sep = "")
-        out$coeflist <- coeflist
-        ## Delta method for unlinked parameters.
-        if (hess){
-            vcov.link <- solve(attr(fit, "details")[1, "nhatend"][[1]])
-            jacobian <- matrix(0, nrow = 2*n.opars, ncol = n.opars)
-            jacobian[1:n.opars, ] <- diag(n.opars)
-            jacobian[(n.opars + 1):(2*n.opars), ] <- diag(exp(c))
-            vcov.all <- jacobian %*% vcov.link %*% t(jacobian)
-            cor.all <- cov2cor(vcov.all)
-            vcov.all <- rbind(vcov.all, NA)
-            vcov.all <- cbind(vcov.all, NA)
-            cor.all <- rbind(cor.all, NA)
-            cor.all <- cbind(cor.all, NA)
-            se.all <- c(sqrt(diag(vcov.all)), NA)
-        } else {
-            vcov.all <- matrix(NA, nrow = 2*n.opars + 1, ncol = 2*n.opars + 1)
-            se.all <- rep(NA, 2*length(coeflist) + 2)
-            cor.all <- matrix(NA, nrow = 2*n.opars + 1, ncol = 2*n.opars + 1)
-        }
-        rownames(vcov.all) <- colnames(vcov.all) <- rownames(cor.all) <-
-            colnames(cor.all) <- names(se.all) <- c(paste("pars_link", 1:n.opars, sep = "."),
-                                                    paste("par_ests", 1:n.opars, sep = "."),
-                                                    paste("esa", 1:n.sessions, sep = "."))
-        out$se <- se.all
-        out$se[length(out$se)] <- out$se[n.opars + 1]
-        out$loglik <- -fit$value
-        out$maxgrad <- c(fit$kkt1, fit$kkt2)
-        out$cor <- cor.all
-        out$vcov <- vcov.all
-        out$npar <- n.opars
-        out$npar_re <- 0
-        out$npar_sdrpt <- 0
-        out$npar_rep <- 0
-        out$npar_total <- out$npar + out$npar_re + out$npar_sdrpt + out$npar_rep
-        out$eratio <- as.logical(NA)
-        esa <- secr_nll(coef(fit), data.list, TRUE)
-    } else {
-        ## Idea of running executable as below taken from glmmADMB.
-        ## Working out correct command to run from command line.
-        if (exe.type == "new"){
-            exe.name <- "secr_new"
-        } else if (exe.type == "old"){
-            exe.name <- "secr"
-        } else if (exe.type == "test"){
-            exe.name <- "secr_test"
-        } else {
-            stop("Argument 'exe.type' must be \"old\" or \"new\".")
-        }
-        prefix.name <- exe.name
-        if (.Platform$OS == "windows"){
-            os.type <- "windows"
-            exe.name <- paste(prefix.name, ".exe", sep = "")
-        } else if (.Platform$OS == "unix"){
-            if (Sys.info()["sysname"] == "Linux"){
-                os.type <- "linux"
-            } else if (Sys.info()["sysname"] == "Darwin"){
-                os.type <- "mac"
-            } else {
-                stop("Unknown OS type.")
-            }
-        } else {
-            stop("Unknown OS type.")
-        }
-        ## Finding executable folder (possible permission problems?).
-        exe.dir <- paste(system.file(package = "ascr"), "ADMB", "bin", os.type, sep = "/")
-        exe.loc <- paste(exe.dir, exe.name, sep = "/")
-        ## Creating command to run using system().
-        curr.dir <- getwd()
-        ## Creating temporary directory.
-        temp.dir <- tempfile("ascr", curr.dir)
-        dir.create(temp.dir)
-        ## Cleaning up files on function exit.
-        if (clean){
-            on.exit({setwd(curr.dir)
-                unlink(temp.dir, recursive = TRUE)})
-        } else {
-            on.exit({setwd(curr.dir)
-                message("ADMB files found in:", "\n", temp.dir, "\n")})
-        }
-        setwd(temp.dir)
-        ## Creating .pin and .dat files.
-        write_pin("secr", sv.link)
-        write_dat("secr", data.list)
-        ## Creating link to executable.
-        if (os.type == "windows"){
-            file.copy(exe.loc, exe.name)
-            dll1.name <- "libstdc++-6.dll"
-            dll2.name <- "libgcc_s_dw2-1.dll"
-            dll1.loc <- paste(exe.dir, dll1.name, sep = "/")
-            dll2.loc <- paste(exe.dir, dll2.name, sep = "/")
-            file.copy(dll1.loc, dll1.name)
-            file.copy(dll2.loc, dll2.name)
-        } else {
-            file.symlink(exe.loc, exe.name)
-        }
-        ## Sorting out -cbs and -gbs.
-        if (!is.null(cbs)){
-            cbs.cmd <- paste(" -cbs", format(cbs, scientific = FALSE))
-        } else {
-            cbs.cmd <- NULL
-        }
-        if (!is.null(gbs)){
-            gbs.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
-        } else {
-            gbs.cmd <- NULL
-        }
-        if (!is.null(ams)){
-            ams.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
-        } else {
-            ams.cmd <- NULL
-        }
-        ## Running ADMB executable.
-        cmd <- paste("./"[os.type != "windows"], exe.name,
-                     " -ind secr.dat -ainp secr.pin", " -neldmead"[neld.mead],
-                     " -nohess"[!hess], cbs.cmd, gbs.cmd, ams.cmd, sep = "")
-        if (trace){
-            message(cmd, "\n")
-        }
-        if (os.type == "windows"){
-            system(cmd, ignore.stdout = !trace, show.output.on.console = trace)
-        } else {
-            system(cmd, ignore.stdout = !trace)
-        }
-        ## Reading in model results.
-        if (exe.type == "test"){
-            prefix.name <- strsplit(list.files(), "\\.")[[which(substr(list.files(),
-                                                                       nchar(list.files()) - 3,
-                                                                       nchar(list.files())) == ".par")]][1]
-        }
-        out <- suppressWarnings(try(read.ascr(prefix.name), silent = TRUE))
-        ## Stripping out unused parameters.
-        if (fit.ihd){
-            out$cor <- out$cor[names(out$se) != "D", names(out$se) != "D"]
-            out$vcov <- out$vcov[names(out$se) != "D", names(out$se) != "D"]
-            out$se <- out$se[names(out$se) != "D"]
-        }
-        if (!fit.freqs){
-            out$cor <- out$cor[names(out$se) != "Da", names(out$se) != "Da"]
-            out$vcov <- out$vcov[names(out$se) != "Da", names(out$se) != "Da"]
-            out$se <- out$se[names(out$se) != "Da"]
-        }
-        ## Getting ESAs from .rep file for better accuracy. Also getting mask densities.
-        rep.pars <- read_rep("secr")$est
-        esa <- rep.pars[substr(names(rep.pars), 1, 3) == "esa"]
-        names(esa) <- NULL
-        D.mask <- vector(mode = "list", length = n.sessions)
-        if (fit.freqs){
-            Da.mask <- vector(mode = "list", length = n.sessions)
-        }
-        for (i in 1:n.sessions){
-            D.mask[[i]] <- rep.pars[substr(names(rep.pars), 1, 8 + nchar(i)) == paste("D_mask[", i, "]", sep = "")]
-            if (fit.freqs){
-                Da.mask[[i]] <- D.mask[[i]]/mu.rates
-            }
-        }
-        out$D.mask <- D.mask
-        if (fit.freqs){
-            out$Da.mask <- Da.mask
-        }
-        out$mm.ihd <- mm.ihd
-        setwd(curr.dir)
-        if (class(out)[1] == "try-error"){
-            stop("Parameters not found. There was either a problem with the model fit, or the executable did not run properly.")
-        }
-        ## Warning for non-convergence.
-        if (out$maxgrad < -0.1){
-            warning("Failed convergence -- maximum gradient component is too large.")
-        }
-        ## Moving back to original working directory.
-        setwd(curr.dir)
-        ## Removing fixed coefficients from list.
-        if (!hess){
-            out$coeflist[c(D.betapars.phase, detpars.phase, suppars.phase, D.betapars.phase) == -1] <- NULL
-        }
-        if (fit.ihd){
-            out$coeflist <- out$coeflist[names(out$coeflist) != "D"]
-        }
-    }
-    ## Creating coefficients vector.
-    est.pars <- c(D.betapars.names, detpar.names, suppar.names)[c(D.betapars.phase, detpars.phase, suppars.phase[any.suppars]) > -1]
-    n.est.pars <- length(est.pars)
-    out$coefficients <- numeric(2*n.est.pars + n.sessions + fit.freqs + !fit.ihd)
-    names(out$coefficients) <- c(paste(est.pars, "_link", sep = ""), est.pars, paste("esa.", 1:n.sessions, sep = ""), "D"[!fit.ihd], "Da"[fit.freqs])
-    if (hess){
-        names(out$se) <- names(out$coefficients)
-    }
-    for (i in 1:n.est.pars){
-        out$coefficients[i] <- out$coeflist[[i]]
-    }
-    if (!fit.ihd){
-        out$coefficients["D"] <- exp(out$coefficients[D.betapars.phase[1]])
-    }
-    if (fit.freqs){
-        out$coefficients["Da"] <- out$coeflist[["Da"]]
-    }
-    for (i in 1:n.est.pars){
-        out$coefficients[n.est.pars + i] <-
-            unlink.list[[links[[est.pars[i]]]]](out$coeflist[[i]])
-    }
-    ## Adding extra components to list.
-    if (detfn == "log.ss") detfn <- "ss"
-    ## Putting in updated argument names.
-    args <- vector(mode = "list", length = length(arg.names))
-    names(args) <- arg.names
-    for (i in arg.names){
-        if (!is.null(get(i))){
-            args[[i]] <- get(i)
-        }
-    }
-    out$args <- args
-    out$n.sessions <- n.sessions
-    out$fit.types <- fit.types
-    out$infotypes <- names(fit.types)[fit.types]
-    out$detpars <- detpar.names
-    out$suppars <- suppar.names
-    out$D.betapars <- D.betapars.names
-    out$phases <- phases
-    out$par.links <- par.links
-    out$par.unlinks <- par.unlinks
-    out$fit.ihd <- fit.ihd
-    ## Logical value for random effects in the detection function.
-    out$re.detfn <- FALSE
-    if (detfn == "ss"){
-        if (get.par(out, "b2.ss") != 0 | get.par(out, "sigma.b0.ss") != 0){
-            out$re.detfn <- TRUE
-        }
-    }
-    ## Putting in esa estimate.
-    out$coefficients[2*n.est.pars + (1:n.sessions)] <- esa
-    ## Putting in call frequency information and correct parameter names.
-    if (fit.freqs){
-        names.vec <- c(names(out[["coefficients"]]), "mu.rates")
-        coefs.updated <- c(out[["coefficients"]], mu.rates)
-        names(coefs.updated) <- names.vec
-        out[["coefficients"]] <- coefs.updated
-        ## Removing ses, cor, vcov matrices.
-        cor.updated <- matrix(NA, nrow = length(names.vec),
-                              ncol = length(names.vec))
-        dimnames(cor.updated) <- list(names.vec, names.vec)
-        vcov.updated <- matrix(NA, nrow = length(names.vec),
-                               ncol = length(names.vec))
-        dimnames(vcov.updated) <- list(names.vec, names.vec)
-        if (hess){
-            ses.updated <- c(out[["se"]], NA)
-            max.ind <- length(names.vec) - 1
-            cor.updated[1:max.ind, 1:max.ind] <- out[["cor"]]
-            vcov.updated[1:max.ind, 1:max.ind] <- out[["vcov"]]
-        } else {
-            ses.updated <- rep(NA, length(names.vec))
-        }
-        names(ses.updated) <- names.vec
-        out[["se"]] <- ses.updated
-        out[["cor"]] <- cor.updated
-        out[["vcov"]] <- vcov.updated
-        if (trace){
-            if (!hess){
-                message("NOTE: Standard errors not calculated; use boot.ascr().", "\n")
-            } else {
-                message("NOTE: Standard errors are calculated assuming independence between locations of calls from the same animal and do not incorporate uncertainty in the average call rate. Use boot.ascr() to correct for stationary animals.", "\n")
-            }
-        }
-    } else {
-        if (hess){
-            ## Putting correct parameter names into se, cor, vcov.
-            replace <- substr(rownames(out$vcov), 1, 8) == "par_ests"
-            rownames(out$vcov)[replace] <-
-                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                colnames(out$cor)[replace] <- est.pars
-            replace <- 1:length(est.pars)
-            rownames(out$vcov)[replace] <-
-                colnames(out$vcov)[replace] <- rownames(out$cor)[replace] <-
-                colnames(out$cor)[replace] <- paste(est.pars, "_link", sep = "")
-        } else {
-            ## Filling se, cor, vcov with NAs.
-            names.vec <- names(out[["coefficients"]])
-            ses.updated <- rep(NA, length(names.vec))
-            names(ses.updated) <- names.vec
-            cor.updated <- matrix(NA, nrow = length(names.vec),
-                                  ncol = length(names.vec))
-            dimnames(cor.updated) <- list(names.vec, names.vec)
-            vcov.updated <- matrix(NA, nrow = length(names.vec),
-                                   ncol = length(names.vec))
-            dimnames(vcov.updated) <- list(names.vec, names.vec)
-            out[["se"]] <- ses.updated
-            out[["cor"]] <- cor.updated
-            out[["vcov"]] <- vcov.updated
-        }
-    }
-    out$fit.freqs <- fit.freqs
-    out$first.calls <- first.calls
-    out$scale.covs <- scale.covs
-    out$model.formula <- model.formula
-    out$fgam <- all.fgam
-    out$all.covariates <- all.covariates
-    if (out$fn == "secr"){
-        if (out$maxgrad < -0.01){
-            warning("Maximum gradient component is large.")
-        }
-    }
-    if (out$fn == "optimx"){
-        if (any(!out$maxgrad)){
-            warning("Nelder-Mead algorithm has not converged.")
-        }
-    }
-    class(out) <- c("ascr", "admb")
-    out
-    }
-
-## Aliasing old admbsecr() function name.
-#' @rdname fit.ascr
-#' @export
-admbsecr <- fit.ascr
-
-#' Parallelising ascr fits using a cluster
-#'
-#' Fits SECR models on different cores within a cluster.
-#'
-#' @param ... Lists with components comprising arguments for a call to
-#' \link{fit.ascr}. Component names must be the argument names.
-#' @param arg.list Alternatively, a list with components comprising
-#' the lists of arguments, as above.
-#' @inheritParams boot.ascr
-#'
-#' @return A list, where components are objects returned by
-#' \link{fit.ascr}. There is one component for each list of arguments
-#' provide in \code{...}.
-#'
-#' @examples
-#' \dontrun{
-#' ## Running the examples in the fit.ascr() documentation in parallel.
-#' simple.capt <- example.data$capt["bincapt"]
-#' simple.hn.args <- list(capt = simple.capt, traps = example.data$traps,
-#'                        mask = example.data$mask, fix = list(g0 = 1))
-#' simple.hr.args <- list(capt = simple.capt, traps = example.data$traps,
-#'                        mask = example.data$mask, detfn = "hr")
-#' bearing.capt <- example.data$capt[c("bincapt", "bearing")]
-#' bearing.hn.args <- list(capt = bearing.capt, traps = example.data$traps,
-#'                         mask = example.data$mask, fix = list(g0 = 1))
-#' ## This will only run if you have 4 cores available, you may need
-#' ## to alter n.cores as appropriate.
-#' fits <- par.fit.ascr(n.cores = 4, simple.hn.args, simple.hr.args,
-#'                      bearing.hn.args)
-#' }
-#'
-#' @export
-par.fit.ascr <- function(n.cores, ..., arg.list = NULL){
-    if (n.cores > detectCores()){
-        stop("The argument n.cores is greater than the number of available cores.")
-    }
-    if (is.null(arg.list)){
-        arg.list <- list(...)
-    }
-    n.fits <- length(arg.list)
-    FUN <- function(i, arg.list){
-        out <- try(do.call(fit.ascr, arg.list[[i]]), silent = TRUE)
-    }
-    cluster <- makeCluster(n.cores)
-    clusterEvalQ(cluster, {
-        library(ascr)
-    })
-    out <- parLapplyLB(cluster, 1:n.fits, FUN, arg.list = arg.list)
-    stopCluster(cluster)
-    out
+    D.mm <- gam(D.formula, data = D.df, fit = FALSE)$X
+    D.beta.names <- paste("D.", colnames(D.mm), sep = "")
+    ## Setting up model matrices for detection function parameters.
+    ## TODO.
+    ## Setting up model matrices for supplementary information parameters.
+    ## TODO.
 }
-
-## Aliasing old par.admbsecr() function name.
-#' @rdname par.fit.ascr
-#' @export
-par.admbsecr <- par.fit.ascr
 
