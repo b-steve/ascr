@@ -391,4 +391,41 @@ convert.pamguard <- function(dets, mics, time.range = NULL,
 }
 
 
-
+#' Create a capture history object from a Raven output file
+#'
+#' Converts a Raven output file to a capture history object
+#' suitable for use with the \link{fit.ascr} function. This uses
+#' \link{make.acoustic.captures} to allocate call identities to
+#' detections.
+#'
+#' @param dets Detection output dataframe from Raven.
+#' @inheritParams convert.pamguard
+#' @export
+convert.raven <- function(dets, mics, time.range = NULL, sound.speed = 330,
+                          new.allocation = TRUE){
+    mics <- as.matrix(mics)
+    toa.info <- dets[, 4]
+    mic.id <- log2(dets[, 3]) + 1
+    ss.info <- dets[, 8]
+    n <- nrow(dets)
+    clicks <- data.frame(session = rep(1, n), ID = 1:n,
+                         occasion = rep(1, n), trap = mic.id,
+                         ss = ss.info, toa = toa.info)
+    if (!is.null(time.range)){
+        keep <- toa.info > time.range[1] & toa.info < time.range[2]
+        if (!any(keep)){
+            stop("No calls were detected within the specified time.range.")
+        }
+        clicks <- clicks[keep, ]
+    }
+    ord <- order(clicks$toa)
+    clicks <- clicks[ord, ]
+    ## Old and new way to allocate IDs below.
+    if (new.allocation){
+        captures <- clicks
+        captures[, 2] <- allocate.calls(mics, clicks, sound.speed)
+    } else {
+        captures <- make.acoustic.captures(mics, clicks, sound.speed)
+    }
+    create.capt(captures, traps = mics)
+}
