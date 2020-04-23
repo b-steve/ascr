@@ -67,6 +67,10 @@ sim_ss <- function(ss_mean, sigma_ss, cutoff, freqs) {
     .Call('_ascr_sim_ss', PACKAGE = 'ascr', ss_mean, sigma_ss, cutoff, freqs)
 }
 
+squarify <- function(mask, D_mask) {
+    .Call('_ascr_squarify', PACKAGE = 'ascr', mask, D_mask)
+}
+
 #' Evaluating the likelihood using C++
 #'
 #' Returns the likelihood for a vector of parameter values.

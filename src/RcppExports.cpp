@@ -128,6 +128,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// squarify
+NumericMatrix squarify(const NumericMatrix& mask, const NumericVector& D_mask);
+RcppExport SEXP _ascr_squarify(SEXP maskSEXP, SEXP D_maskSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type D_mask(D_maskSEXP);
+    rcpp_result_gen = Rcpp::wrap(squarify(mask, D_mask));
+    return rcpp_result_gen;
+END_RCPP
+}
 // secr_nll
 double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get_esa);
 RcppExport SEXP _ascr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
@@ -165,6 +177,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ascr_make_toa_ssq", (DL_FUNC) &_ascr_make_toa_ssq, 3},
     {"_ascr_find_local", (DL_FUNC) &_ascr_find_local, 3},
     {"_ascr_sim_ss", (DL_FUNC) &_ascr_sim_ss, 4},
+    {"_ascr_squarify", (DL_FUNC) &_ascr_squarify, 2},
     {"_ascr_secr_nll", (DL_FUNC) &_ascr_secr_nll, 3},
     {"_ascr_calc_probsurf", (DL_FUNC) &_ascr_calc_probsurf, 2},
     {NULL, NULL, 0}
