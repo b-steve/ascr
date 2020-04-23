@@ -128,10 +128,20 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #' Plots density surface estimated by a model fitted with the function
 #' \link{fit.ascr}.
 #'
+#' @param session The session with the detector array and invidual(s)
+#'     to be plotted. Ignored if the \code{newdata} argument is
+#'     provided.
+#' @param newdata A data frame including new mask points and covariate
+#'     values, from which to estimate and plot denstiy estimates
+#'     for. This allows, for example, estimates to be provided for new
+#'     regions not included in the mask used to fit the model. Two
+#'     columns, named \code{x} and \code{y}, must be included,
+#'     providing the x- and y-coordinates of the new mask
+#'     points. Additional columns must provide the covariates used to
+#'     fit the model.
 #' @param zlim A numberic vector of length 2, giving the range of
 #'     density contours.
-#' @param plot.contours Logical, if \code{TRUE}, contours are
-#'     plotted.
+#' @param plot.contours Logical, if \code{TRUE}, contours are plotted.
 #' @inheritParams locations
 #'
 #' @export
@@ -143,9 +153,17 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
-show.Dsurf <- function(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL, plot.contours = TRUE){
-    D.mask <- fit$D.mask[[session]]
-    mask <- get.mask(fit, session)
+show.Dsurf <- function(fit, session = 1, newdata = NULL, xlim = NULL, ylim = NULL, zlim = NULL, plot.contours = TRUE){
+    if (missing(newdata)){
+        D.mask <- fit$D.mask[[session]]
+        mask <- get.mask(fit, session)
+        traps <- get.traps(fit, session)
+    } else {
+        D.mask <- predict(fit, newdata = newdata)
+        mask <- cbind(newdata$x, newdata$y)
+        ## Charlotte's bonkers way of rbind-ing list components.
+        traps <- do.call("rbind", get.traps(fit))
+    }
     if (is.null(xlim)){
         xlim <- range(mask[, 1])
     }
@@ -155,19 +173,9 @@ show.Dsurf <- function(fit, session = 1, xlim = NULL, ylim = NULL, zlim = NULL, 
     mask.keep <- xlim[1] <= mask[, 1] & xlim[2] >= mask[, 1] &
         ylim[1] <= mask[, 2] & ylim[2] >= mask[, 2]
     mask <- mask[mask.keep, ]
-    traps <- get.traps(fit, session)
     unique.x <- sort(unique(mask[, 1]))
     unique.y <- sort(unique(mask[, 2]))
-    z <- matrix(NA, nrow = length(unique.x), ncol = length(unique.y))
-    n.mask <- nrow(mask)
-    n.traps <- nrow(traps)
-    for (i in 1:n.mask){
-        x <- mask[i, 1]
-        y <- mask[i, 2]
-        index.x <- which(x == unique.x)
-        index.y <- which(y == unique.y)
-        z[index.x, index.y] <- D.mask[mask.keep][i]
-    }
+    z <- squarify(mask, D.mask[mask.keep])
     if (is.null(zlim)){
         zlim <- c(0, max(z, na.rm = TRUE))
     }
