@@ -465,10 +465,15 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
 #'     variables with which to estimate density. If omitted, the
 #'     function will return the estimated densities at the mask
 #'     points.
+#' @param se.fit A switch indicating if standard errors are
+#'     required. At present, this will only work if \code{newdata} is
+#'     also provided.
+#' @param use.log If \code{TRUE}, density estimates and standard
+#'     errors (if calculated) are provided on the log scale.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @export
-predict.ascr <- function(object, newdata = NULL, ...){
+predict.ascr <- function(object, newdata = NULL, se.fit = FALSE, use.log = FALSE, ...){
     if (is.null(newdata)){
         out <- object$D.mask
     } else {
@@ -485,6 +490,33 @@ predict.ascr <- function(object, newdata = NULL, ...){
         mm <- predict(gam(G = object$fgam), newdata = newdata.scaled, type = "lpmatrix")
         ## Calculated estimated density.
         out <- as.vector(exp(mm %*% get.par(object, object$D.betapars)))
+        if (use.log){
+            out <- log(out)
+        }
+        if (se.fit){
+            ## Gotta implement the delta method.
+            n.predict <- length(out)
+            n.betapars <- length(object$D.betapars)
+            est.vcov <- vcov(object)
+            est.vcov <- est.vcov[rownames(est.vcov) != "mu.rates", colnames(est.vcov) != "mu.rates"]
+            n.par <- nrow(est.vcov)
+            jacobian <- matrix(0, nrow = n.predict, ncol = n.par)
+            colnames(jacobian) <- colnames(est.vcov)
+            for (i in 1:ncol(jacobian)){
+                if (colnames(jacobian)[i] %in% object$D.betapars){
+                    if (use.log){
+                        jacobian[, i] <- mm[, which(colnames(jacobian)[i] == object$D.betapars)]
+                    } else {
+                        jacobian[, i] <- mm[, which(colnames(jacobian)[i] == object$D.betapars)]*out
+                    }
+                } else {
+                    jacobian[, i] <- 0
+                }
+            }
+            se <- sqrt(diag(jacobian %*% est.vcov %*% t(jacobian)))
+            out <- cbind(out, se)
+            colnames(out) <- c("predict", "se")
+        }
     }
     out
 }
