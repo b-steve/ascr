@@ -85,11 +85,13 @@ NULL
 #' @importFrom CircStats dvm rvm
 #' @importFrom optimx optimx
 #' @importFrom fastGHQuad gaussHermiteData
+#' @importFrom fields image.plot
 #' @importFrom matrixStats colProds
 #' @importFrom mgcv gam
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @importFrom utils example setTxtProgressBar txtProgressBar
+#' @importFrom viridis viridis
 #' @useDynLib ascr
 NULL
 
