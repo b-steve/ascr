@@ -7,6 +7,7 @@
 show.Dsurf(
   fit,
   session = 1,
+  newdata = NULL,
   xlim = NULL,
   ylim = NULL,
   zlim = NULL,
@@ -17,7 +18,17 @@ show.Dsurf(
 \item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{session}{The session with the detector array and invidual(s)
-to be plotted (for multi-session models only).}
+to be plotted. Ignored if the \code{newdata} argument is
+provided.}
+
+\item{newdata}{A data frame including new mask points and covariate
+values, from which to estimate and plot denstiy estimates
+for. This allows, for example, estimates to be provided for new
+regions not included in the mask used to fit the model. Two
+columns, named \code{x} and \code{y}, must be included,
+providing the x- and y-coordinates of the new mask
+points. Additional columns must provide the covariates used to
+fit the model.}
 
 \item{xlim}{A numeric vector of length 2, giving the x coordinate
 range.}
@@ -28,8 +39,7 @@ range.}
 \item{zlim}{A numberic vector of length 2, giving the range of
 density contours.}
 
-\item{plot.contours}{Logical, if \code{TRUE}, contours are
-plotted.}
+\item{plot.contours}{Logical, if \code{TRUE}, contours are plotted.}
 }
 \description{
 Plots density surface estimated by a model fitted with the function
