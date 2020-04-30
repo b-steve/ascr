@@ -13,6 +13,7 @@ Depends:
 Imports:
     CircStats,
     fastGHQuad,
+    fields,
     graphics,
     grDevices,
     matrixStats,
@@ -24,7 +25,8 @@ Imports:
     secr,
     stats,
     truncnorm,
-    utils
+    utils,
+    viridis
 Suggests:
     knitr,
     xtable
