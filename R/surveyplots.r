@@ -139,6 +139,9 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'     providing the x- and y-coordinates of the new mask
 #'     points. Additional columns must provide the covariates used to
 #'     fit the model.
+#' @param unsuitable A data frame with two columns, named \code{x} and
+#'     \code{y}, providing mask points in unsuitable habitat. These
+#'     mask points are allocated a density of zero in the plot.
 #' @param zlim A numberic vector of length 2, giving the range of
 #'     density contours.
 #' @param scale By default, density is in animals per hectare. The
@@ -157,7 +160,7 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
-show.Dsurf <- function(fit, session = 1, newdata = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE){
+show.Dsurf <- function(fit, session = 1, newdata = NULL, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE){
     if (missing(newdata)){
         D.mask <- fit$D.mask[[session]]
         mask <- get.mask(fit, session)
@@ -173,6 +176,11 @@ show.Dsurf <- function(fit, session = 1, newdata = NULL, xlim = NULL, ylim = NUL
     }
     if (is.null(ylim)){
         ylim <- range(mask[, 2])
+    }
+    if (!is.null(unsuitable)){
+        n.unsuitable <- nrow(unsuitable)
+        D.mask <- c(D.mask, rep(0, n.unsuitable))
+        mask <- rbind(mask, as.matrix(unsuitable))
     }
     mask.keep <- xlim[1] <= mask[, 1] & xlim[2] >= mask[, 1] &
         ylim[1] <= mask[, 2] & ylim[2] >= mask[, 2]
