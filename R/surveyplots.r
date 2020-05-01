@@ -160,7 +160,7 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
-show.Dsurf <- function(fit, session = 1, newdata = NULL, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE){
+show.Dsurf <- function(fit, session = 1, newdata = NULL, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE, add = FALSE){
     if (missing(newdata)){
         D.mask <- fit$D.mask[[session]]
         mask <- get.mask(fit, session)
@@ -194,7 +194,9 @@ show.Dsurf <- function(fit, session = 1, newdata = NULL, unsuitable = NULL, xlim
     z <- scale*z
     z[z > zlim[2]] <- zlim[2]
     levels <- pretty(zlim, 10)
-    plot(mask, type = "n", asp = 1, xlab = "", ylab = "")
+    if (!add){
+        plot(mask, type = "n", asp = 1, xlab = "", ylab = "")
+    }
     image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis(100), add = TRUE)
     points(traps, col = "black", pch = 4, lwd = 2)
     if (plot.contours){
