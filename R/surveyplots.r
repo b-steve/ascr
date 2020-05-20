@@ -139,6 +139,9 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'     providing the x- and y-coordinates of the new mask
 #'     points. Additional columns must provide the covariates used to
 #'     fit the model.
+#' @param show.cv Logical. If true, the CV of the density estimate is
+#'     plotted rather than the estimate itself. At present, this will
+#'     only work if \code{newdata} is also provided.
 #' @param unsuitable A data frame with two columns, named \code{x} and
 #'     \code{y}, providing mask points in unsuitable habitat. These
 #'     mask points are allocated a density of zero in the plot.
@@ -160,16 +163,21 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
-show.Dsurf <- function(fit, session = 1, newdata = NULL, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE, add = FALSE){
+show.Dsurf <- function(fit, session = 1, newdata = NULL, show.cv = FALSE, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE, add = FALSE){
     if (missing(newdata)){
         D.mask <- fit$D.mask[[session]]
         mask <- get.mask(fit, session)
         traps <- get.traps(fit, session)
     } else {
-        D.mask <- predict(fit, newdata = newdata)
+        D.mask <- predict(fit, newdata = newdata, se.fit = show.cv)
+        if (show.cv){
+            D.mask <- D.mask[, 2]/D.mask[, 1]
+        }
         mask <- cbind(newdata$x, newdata$y)
         ## Charlotte's bonkers way of rbind-ing list components.
-        traps <- do.call("rbind", get.traps(fit))
+        if (is.list(traps)){
+            traps <- do.call("rbind", get.traps(fit))
+        }
     }
     if (is.null(xlim)){
         xlim <- range(mask[, 1])
@@ -191,7 +199,9 @@ show.Dsurf <- function(fit, session = 1, newdata = NULL, unsuitable = NULL, xlim
     if (is.null(zlim)){
         zlim <- c(0, max(z, na.rm = TRUE))
     }
-    z <- scale*z
+    if (!show.cv){
+        z <- scale*z
+    }
     z[z > zlim[2]] <- zlim[2]
     levels <- pretty(zlim, 10)
     if (!add){
