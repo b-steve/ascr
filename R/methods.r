@@ -470,10 +470,15 @@ calc.cis <- function(object, parm, level, method, linked, qqplot, boot, ask, ...
 #'     also provided.
 #' @param use.log If \code{TRUE}, density estimates and standard
 #'     errors (if calculated) are provided on the log scale.
+#' @param set.zero Indices for effects to ignore. For example,
+#'     \code{set.zero = c(1, 3)} will set the first (probably an
+#'     intercept) and third terms in the linear predictor to zero when
+#'     calculating the predictions.
 #' @param ... Other parameters (for S3 generic compatibility).
 #'
 #' @export
-predict.ascr <- function(object, newdata = NULL, se.fit = FALSE, use.log = FALSE, ...){
+predict.ascr <- function(object, newdata = NULL, se.fit = FALSE,
+                         use.log = FALSE, set.zero = NULL, ...){
     if (is.null(newdata)){
         out <- object$D.mask
     } else {
@@ -488,6 +493,9 @@ predict.ascr <- function(object, newdata = NULL, se.fit = FALSE, use.log = FALSE
         newdata.scaled <- object$scale.covs(newdata)
         ## Creating model matrix.
         mm <- predict(gam(G = object$fgam), newdata = newdata.scaled, type = "lpmatrix")
+        if (!is.null(set.zero)){
+            mm[, set.zero] <- 0
+        }
         ## Calculated estimated density.
         out <- as.vector(exp(mm %*% get.par(object, object$D.betapars)))
         if (use.log){
