@@ -4,7 +4,14 @@
 \alias{predict.ascr}
 \title{Extract density estimates given a set of covariate values}
 \usage{
-\method{predict}{ascr}(object, newdata = NULL, ...)
+\method{predict}{ascr}(
+  object,
+  newdata = NULL,
+  se.fit = FALSE,
+  use.log = FALSE,
+  set.zero = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{A fitted model from \link[ascr]{fit.ascr}.}
@@ -13,6 +20,18 @@
 variables with which to estimate density. If omitted, the
 function will return the estimated densities at the mask
 points.}
+
+\item{se.fit}{A switch indicating if standard errors are
+required. At present, this will only work if \code{newdata} is
+also provided.}
+
+\item{use.log}{If \code{TRUE}, density estimates and standard
+errors (if calculated) are provided on the log scale.}
+
+\item{set.zero}{Indices for effects to ignore. For example,
+\code{set.zero = c(1, 3)} will set the first (probably an
+intercept) and third terms in the linear predictor to zero when
+calculating the predictions.}
 
 \item{...}{Other parameters (for S3 generic compatibility).}
 }

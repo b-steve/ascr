@@ -8,10 +8,14 @@ show.Dsurf(
   fit,
   session = 1,
   newdata = NULL,
+  show.cv = FALSE,
+  unsuitable = NULL,
   xlim = NULL,
   ylim = NULL,
   zlim = NULL,
-  plot.contours = TRUE
+  scale = 1,
+  plot.contours = TRUE,
+  add = FALSE
 )
 }
 \arguments{
@@ -30,6 +34,14 @@ providing the x- and y-coordinates of the new mask
 points. Additional columns must provide the covariates used to
 fit the model.}
 
+\item{show.cv}{Logical. If true, the CV of the density estimate is
+plotted rather than the estimate itself. At present, this will
+only work if \code{newdata} is also provided.}
+
+\item{unsuitable}{A data frame with two columns, named \code{x} and
+\code{y}, providing mask points in unsuitable habitat. These
+mask points are allocated a density of zero in the plot.}
+
 \item{xlim}{A numeric vector of length 2, giving the x coordinate
 range.}
 
@@ -39,7 +51,15 @@ range.}
 \item{zlim}{A numberic vector of length 2, giving the range of
 density contours.}
 
+\item{scale}{By default, density is in animals per hectare. The
+plotted values are multiplied by this argument, allowing for
+user-specified units. For example, setting \code{scale = 100}
+results in densities plotted as animals per square kilometre.}
+
 \item{plot.contours}{Logical, if \code{TRUE}, contours are plotted.}
+
+\item{add}{Logical, if \code{TRUE}, contours will be added to an
+existing plot.}
 }
 \description{
 Plots density surface estimated by a model fitted with the function
