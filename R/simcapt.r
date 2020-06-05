@@ -209,6 +209,11 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         full.mask <- list(full.mask)
         full.traps <- list(full.traps)
     }
+    ## Making sure survey.length is a vector for multisession stuff.
+    full.survey.length <- survey.length
+    if (length(full.survey.length) != n.sessions){
+        stop("The 'survey.length' argument must have a value for each session.")
+    }
     ## Setting up inhomogeneous density stuff.
     if (is.null(ihd.surf)){
         sim.ihd <- FALSE
@@ -323,6 +328,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     for (s in 1:n.sessions){
         mask <- full.mask[[s]]
         traps <- full.traps[[s]]
+        survey.length <- full.survey.length[s]
         ## Specifies the area in which animal locations can be generated.
         core <- data.frame(x = range(mask[, 1]), y = range(mask[, 2]))
         ## Simulating population.
