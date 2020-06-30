@@ -211,8 +211,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     }
     ## Making sure survey.length is a vector for multisession stuff.
     full.survey.length <- survey.length
-    if (length(full.survey.length) != n.sessions){
-        stop("The 'survey.length' argument must have a value for each session.")
+    if (!is.null(survey.length)){
+        if (length(full.survey.length) != n.sessions){
+            stop("The 'survey.length' argument must have a value for each session.")
+        }
     }
     ## Setting up inhomogeneous density stuff.
     if (is.null(ihd.surf)){
