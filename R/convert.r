@@ -71,7 +71,7 @@ create.mask <- function(traps, buffer, ...){
 #' collected over the course of the survey:
 #' \itemize{
 #'   \item A column named \code{bearing}, containing estimated bearings
-#'         from the detector to each detected animal or sound.
+#'         (in radians) from the detector to each detected animal or sound.
 #'   \item A column named \code{dist}, containing the estimated
 #'         distance between the detected animal or sound.
 #'   \item A column named \code{ss} containing the measured signal
