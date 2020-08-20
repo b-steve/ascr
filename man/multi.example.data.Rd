@@ -4,7 +4,9 @@
 \name{multi.example.data}
 \alias{multi.example.data}
 \title{Multi-array example data}
-\format{A list.}
+\format{
+A list.
+}
 \usage{
 multi.example.data
 }
