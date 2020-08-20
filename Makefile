@@ -29,10 +29,10 @@ compile: inst/ADMB/src/densfuns.cpp inst/ADMB/src/detfuns.cpp inst/ADMB/src/secr
 
 prepare:
 	rm -rfv man
-	rm -fv NAMESPACE src/*.o src/RcppExports.cpp src/ascr.so src/symbols.rds R/RcppExports.R
+	rm -fv src/*.o src/RcppExports.cpp src/ascr.so src/symbols.rds R/RcppExports.R
 
 rcpp:
-	export str="library(Rcpp);compileAttributes()"; R --slave -e $$str
+	export str="library(Rcpp);compileAttributes('.')"; R --slave -e $$str
 
 roxygen:
 	export str="library(roxygen2);roxygenise('.')"; R --slave -e $$str
