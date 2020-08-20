@@ -1,5 +1,5 @@
-pkgs <- c("CircStats", "fastGHQuad", "knitr", "matrixStats", "mgcv", "mvtnorm", "optimx", "plyr",
-          "Rcpp", "R2admb", "secr", "testthat", "truncnorm", "xtable", "downloader")
+pkgs <- c("CircStats", "fastGHQuad", "fields", "knitr", "matrixStats", "mgcv", "mvtnorm", "optimx", "plyr",
+          "Rcpp", "R2admb", "secr", "testthat", "truncnorm", "viridis", "xtable", "downloader")
 options(warn = -1)
 for (i in pkgs){
     if (!require(i, quietly = TRUE, character.only = TRUE)){
