@@ -1,3 +1,10 @@
+ascr 2.2.4
+----------
+
+* Implemented the show.capt() function, which plots capture histories
+  and estimated bearings and distances without needing to fit a model
+  first.
+
 ascr 2.2.3
 ----------
 
