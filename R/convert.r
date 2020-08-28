@@ -89,7 +89,7 @@ create.mask <- function(traps, buffer, ...){
 #' y-coordiates of an animal. The row number should match with the
 #' individual's ID number in the captures data frame, so for example
 #' the animal with an ID of 5 should have their location's x- and
-#' y-coordinates in the fifth row of \code{mrds.loc}. For multi-session
+#' y-coordinates in the fifth row of \code{mrds.locs}. For multi-session
 #' models, the \code{mrds.loc} argument should be a list of such
 #' matrices, where each component is associated with one of the
 #' sessions.
