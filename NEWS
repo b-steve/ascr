@@ -2,12 +2,12 @@ ascr 2.2.3
 ----------
 
 * Improvements to show.Dsurf():
-    - An option to plot coefficients of variation.
-    - An option to add to an existing plot.
-    - An argument to scale densities to a unit other than animals per
+    * An option to plot coefficients of variation.
+    * An option to add to an existing plot.
+    * An argument to scale densities to a unit other than animals per
       hectare.
-    - An argument to mask out unsuitable habitat regions.
-    - An argument to use a mask other than the one used to fit
+    * An argument to mask out unsuitable habitat regions.
+    * An argument to use a mask other than the one used to fit
       the model.
 
 * Fixed bug that affected multi-session models with varying survey
