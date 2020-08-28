@@ -64,26 +64,28 @@ show.capt <- function(capt, traps, mask, session = NULL, ask = TRUE){
         traps.sess <- traps[[i]]
         mask.sess <- mask[[i]]
         capt.sess <- capt[[i]]
-        for (id in 1:nrow(capt.sess[[1]])){
-            plot(mask.sess, type = "n", asp = 1)
-            points(traps.sess, col = "red", pch = 4, lwd = 2)
-            points(traps.sess[capt.sess$bincapt[id, ] == 1, , drop = FALSE], col = "red", cex = 2, lwd = 2)
-            x.range <- par("usr")[2] - par("usr")[1]
-            y.range <- par("usr")[2] - par("usr")[1]
-            text(par("usr")[1] + 0.01*x.range, par("usr")[4] - 0.01*y.range,
-                 paste0("Session ", i, ", Detection ", id), adj = c(0, 1))
-            if (plot.arrows){
-                if (any(names(capt.sess) == "dist")){
-                    arrow.length <- capt.sess$dist[id, capt.sess$bincapt[id, ] == 1]
-                } else {
-                    arrow.length <- NULL
+        if (nrow(capt.sess[[1]]) > 0){
+            for (id in 1:nrow(capt.sess[[1]])){
+                plot(mask.sess, type = "n", asp = 1)
+                points(traps.sess, col = "red", pch = 4, lwd = 2)
+                points(traps.sess[capt.sess$bincapt[id, ] == 1, , drop = FALSE], col = "red", cex = 2, lwd = 2)
+                x.range <- par("usr")[2] - par("usr")[1]
+                y.range <- par("usr")[2] - par("usr")[1]
+                text(par("usr")[1] + 0.01*x.range, par("usr")[4] - 0.01*y.range,
+                     paste0("Session ", i, ", Detection ", id), adj = c(0, 1))
+                if (plot.arrows){
+                    if (any(names(capt.sess) == "dist")){
+                        arrow.length <- capt.sess$dist[id, capt.sess$bincapt[id, ] == 1]
+                    } else {
+                        arrow.length <- NULL
+                    }
+                    show.arrows(id = id, session = NULL, arrow.length = arrow.length,
+                                trap.col = "red", capt = capt.sess, traps = traps.sess)
                 }
-                show.arrows(id = id, session = NULL, arrow.length = arrow.length,
-                            trap.col = "red", capt = capt.sess, traps = traps.sess)
-            }
-            if (plot.circles){
-                show.circles(id = id, session = NULL, trap.col = "red",
-                             capt = capt.sess, traps = traps.sess)
+                if (plot.circles){
+                    show.circles(id = id, session = NULL, trap.col = "red",
+                                 capt = capt.sess, traps = traps.sess)
+                }
             }
         }
     }
