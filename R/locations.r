@@ -151,8 +151,10 @@ locations <- function(fit, id = "all", session = 1, infotypes = NULL,
             stop("The locations() function has not yet been implemented for heterogeneous source strength model fits.")
         }
     }
-    if (fit$first.calls){
-        stop("The locations() function has not yet been implemented for first-call models.")
+    if (!is.null(fit$first.calls)){
+        if (fit$first.calls){
+            stop("The locations() function has not yet been implemented for first-call models.")
+        }
     }
     ## Error if combine specified without infotypes.
     if (missing(infotypes) & combine){
@@ -401,9 +403,6 @@ locations <- function(fit, id = "all", session = 1, infotypes = NULL,
                     f.combined <- f.combined*f.dist
                 }
             }
-            if (plot.circles){
-                show.circles(fit, i, session, trap.col)
-            }
         }
         ## Contour due to measured times of arrival.
         if (plot.types["toa"] | plot.types["combined"] &
@@ -465,6 +464,12 @@ locations <- function(fit, id = "all", session = 1, infotypes = NULL,
                 arrow.length <- capt.all$dist[i, capt == 1]
             }
             show.arrows(fit, i, session, arrow.length, trap.col)
+        }
+    }
+    ## Plotting circles for estimated distances.
+    if (fit$fit.types["dist"]){
+        if (plot.circles & !plot.arrows){
+            show.circles(fit, i, session, trap.col)
         }
     }
     ## Making legend.
@@ -595,16 +600,25 @@ toa.density <- function(fit, id, session, mask, dists){
 }
 
 ## Plots arrows on traps where a detection was made, showing estimated bearing.
-show.arrows <- function(fit, id, session, arrow.length = NULL, trap.col){
+show.arrows <- function(fit = NULL, id, session, arrow.length = NULL, trap.col, capt = NULL, traps = NULL){
     xlim <- par("usr")[c(1, 2)]
     ylim <- par("usr")[c(3, 4)]
     if (is.null(arrow.length)){
         arrow.length <- 0.05*min(c(diff(range(xlim)), diff(range(ylim))))
     }
-    capt.all <- get.capt(fit, session)
+    if (!is.null(fit)){
+        capt.all <- get.capt(fit, session)
+    } else {
+        capt.all <- capt
+    }
     capt <- capt.all$bincapt[id, ]
     bearing.capt <- capt.all$bearing[id, capt == 1]
-    trappos <- get.traps(fit, session)[which(capt == 1), , drop = FALSE]
+    if (!is.null(fit)){
+        trappos <- get.traps(fit, session)
+    } else {
+        trappos <- traps
+    }
+    trappos <- trappos[which(capt == 1), , drop = FALSE]
     sinb <- sin(bearing.capt)*arrow.length
     cosb <- cos(bearing.capt)*arrow.length
     arrows(trappos[, 1], trappos[, 2], trappos[, 1] + sinb, trappos[, 2] + cosb,
@@ -612,11 +626,20 @@ show.arrows <- function(fit, id, session, arrow.length = NULL, trap.col){
 }
 
 ## Plots circles around traps where a detection was made, showing estimated distance.
-show.circles <- function(fit, id, session, trap.col){
-    capt.all <- get.capt(fit, session)
+show.circles <- function(fit = NULL, id, session, trap.col, capt = NULL, traps = NULL){
+    if (!is.null(fit)){
+        capt.all <- get.capt(fit, session)
+    } else {
+        capt.all <- capt
+    }
     capt <- capt.all$bincapt[id, ]
     dist.capt <- capt.all$dist[id, capt == 1]
-    trappos <- get.traps(fit, session)[which(capt == 1), , drop = FALSE]
+    if (!is.null(fit)){
+        trappos <- get.traps(fit, session)
+    } else {
+        trappos <- traps
+    }
+    trappos <- trappos[which(capt == 1), , drop = FALSE]
     for (i in 1:nrow(trappos)){
         centre <- trappos[i, ]
         radius <- dist.capt[i]

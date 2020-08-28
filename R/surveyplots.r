@@ -17,6 +17,78 @@ show.survey <- function(fit, session = 1, ...){
     points(get.traps(fit, session), pch = 16, col = "red")
 }
 
+##' Plotting capture histories
+##'
+##' Plots trap locations and capture histories.
+##'
+##' @param session The session for which to plot capture histories. If
+##'     \code{NULL}, the default, then plots will be shown for all
+##'     sessions.
+##' @param ask If \code{TRUE}, the user will be prompted to press
+##'     return to see the next plot.
+##' @inheritParams fit.ascr
+##'
+##' @export
+show.capt <- function(capt, traps, mask, session = NULL, ask = TRUE){
+    ## Converting single-session objects to multi-session.
+    if (!is.list(traps)){
+        traps <- list(traps)
+    }
+    if (!is.list(mask)){
+        mask <- list(mask)
+    }
+    if (!is.list(capt[[1]])){
+        capt <- list(capt)
+    }
+    ## Total number of sessions.
+    n.sessions <- length(traps)
+    if (is.null(session)){
+        session <- 1:n.sessions
+    }
+    ## Figuring out whether or not to plot arrows/circles.
+    plot.arrows <- FALSE
+    plot.circles <- FALSE
+    if (any(names(capt[[1]]) == "bearing")){
+        plot.arrows <- TRUE
+    } else if (any(names(capt[[1]]) == "dist")){
+        plot.circles <- TRUE
+    }
+    if (ask){
+        ## Setting par(ask).
+        ask.save <- par("ask")
+        par(ask = TRUE)
+        ## Making sure par is restored on function exit.
+        on.exit(par(ask = ask.save))
+    }
+    for (i in session){
+        traps.sess <- traps[[i]]
+        mask.sess <- mask[[i]]
+        capt.sess <- capt[[i]]
+        for (id in 1:nrow(capt.sess[[1]])){
+            plot(mask.sess, type = "n", asp = 1)
+            points(traps.sess, col = "red", pch = 4, lwd = 2)
+            points(traps.sess[capt.sess$bincapt[id, ] == 1, , drop = FALSE], col = "red", cex = 2, lwd = 2)
+            x.range <- par("usr")[2] - par("usr")[1]
+            y.range <- par("usr")[2] - par("usr")[1]
+            text(par("usr")[1] + 0.01*x.range, par("usr")[4] - 0.01*y.range,
+                 paste0("Session ", i, ", Detection ", id), adj = c(0, 1))
+            if (plot.arrows){
+                if (any(names(capt.sess) == "dist")){
+                    arrow.length <- capt.sess$dist[id, capt.sess$bincapt[id, ] == 1]
+                } else {
+                    arrow.length <- NULL
+                }
+                show.arrows(id = id, session = NULL, arrow.length = arrow.length,
+                            trap.col = "red", capt = capt.sess, traps = traps.sess)
+            }
+            if (plot.circles){
+                show.circles(id = id, session = NULL, trap.col = "red",
+                             capt = capt.sess, traps = traps.sess)
+            }
+        }
+    }
+}
+
 #' Plotting the detection probability surface
 #'
 #' Plots the detection probability surface, based on trap locations

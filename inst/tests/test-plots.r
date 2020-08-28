@@ -39,3 +39,7 @@ test_that("inhomogeneous density surface plotting", {
                     ihd.opts = list(model = ~ x + y))
     expect_null(show.Dsurf(fit), is_null())
 })
+
+test_that("capture history plotting", {
+    expect_null(show.capt(multi.example.data$capt, multi.example.data$traps, multi.example.data$mask, ask = FALSE))
+})
