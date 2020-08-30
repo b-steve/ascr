@@ -89,6 +89,7 @@ NULL
 #' @importFrom matrixStats colProds
 #' @importFrom mgcv gam
 #' @importFrom mvtnorm rmvnorm
+#' @importFrom Rcpp sourceCpp
 #' @importFrom secr make.capthist make.mask read.mask read.traps sim.popn
 #' @importFrom utils example setTxtProgressBar txtProgressBar
 #' @importFrom viridis viridis

@@ -1,3 +1,31 @@
+ascr 2.2.4
+----------
+
+* Implemented the show.capt() function, which plots capture histories
+  and estimated bearings and distances without needing to fit a model
+  first.
+
+ascr 2.2.3
+----------
+
+* Improvements to show.Dsurf():
+    * An option to plot coefficients of variation.
+    * An option to add to an existing plot.
+    * An argument to scale densities to a unit other than animals per
+      hectare.
+    * An argument to mask out unsuitable habitat regions.
+    * An argument to use a mask other than the one used to fit
+      the model.
+
+* Fixed bug that affected multi-session models with varying survey
+  lengths.
+
+* Implemented the calculation of standard errors to densities
+  estimated by predict().
+
+* Implemented a function to convert output from Raven into a capture
+  histories object.
+
 ascr 2.2.2
 ----------
 

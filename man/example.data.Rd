@@ -4,7 +4,9 @@
 \name{example.data}
 \alias{example.data}
 \title{Example data}
-\format{A list.}
+\format{
+A list.
+}
 \usage{
 example.data
 }

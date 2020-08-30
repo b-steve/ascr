@@ -4,7 +4,9 @@
 \name{lightfooti}
 \alias{lightfooti}
 \title{\emph{Arthroleptella lightfooti} survey data}
-\format{A list.}
+\format{
+A list.
+}
 \usage{
 lightfooti
 }

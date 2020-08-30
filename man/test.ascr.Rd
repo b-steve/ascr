@@ -18,9 +18,5 @@ is running correctly.}
 Runs tests for ascr.
 }
 \details{
-This function was written to allow users to test their ascr
-installation. Users cannot use the \link[testthat]{test_package}
-function from the testthat package as the tests are not
-installed. This is because tests fail on the R-forge servers due to
-the AD model builder executable.
+This function allows users to test their ascr installation.
 }
