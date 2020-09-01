@@ -4,13 +4,12 @@
 \alias{show.survey}
 \title{Plotting mask and trap layout}
 \usage{
-show.survey(fit, session = 1, ...)
+show.survey(fit = NULL, traps = NULL, mask = NULL, session = 1, ...)
 }
 \arguments{
-\item{fit}{A fitted model from \link{fit.ascr}.}
-
-\item{session}{The session for which the mask point and trap
-locations are to be plotted.}
+\item{session}{The session(s) for which the mask point and trap
+locations are to be plotted. Using \code{"all"} will plot all
+sessions.}
 
 \item{...}{Further arguments to be passed to \link{plot}.}
 }

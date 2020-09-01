@@ -4,13 +4,18 @@
 \alias{get.traps}
 \title{Extracting trap locations}
 \usage{
-get.traps(fit, session = NULL)
+get.traps(fit, session = NULL, as.list = NULL)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
 
 \item{session}{The session from which to extract the trap
-locations.}
+locations. If a vector, the function selects masks from
+multiple sessions, and \code{"all"} will use all sessions.}
+
+\item{as.list}{If \code{TRUE}, then a list is returned, with each
+component being a matrix of trap locations. If \code{FALSE},
+all locations are combined into a single matrix.}
 }
 \value{
 A traps object.

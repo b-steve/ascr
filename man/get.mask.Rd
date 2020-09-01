@@ -4,12 +4,18 @@
 \alias{get.mask}
 \title{Extracting mask point locations}
 \usage{
-get.mask(fit, session = NULL)
+get.mask(fit, session = NULL, as.list = NULL)
 }
 \arguments{
 \item{fit}{A fitted model from \link{fit.ascr}.}
 
-\item{session}{The session from which to extract the mask.}
+\item{session}{The session from which to extract the trap
+locations. If a vector, the function selects masks from
+multiple sessions, and \code{"all"} will use all sessions.}
+
+\item{as.list}{If \code{TRUE}, then a list is returned, with each
+component being a matrix of trap locations. If \code{FALSE},
+all locations are combined into a single matrix.}
 }
 \value{
 A mask object.
