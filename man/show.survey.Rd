@@ -7,6 +7,21 @@
 show.survey(fit = NULL, traps = NULL, mask = NULL, session = 1, ...)
 }
 \arguments{
+\item{fit}{A fitted model from \link{fit.ascr}.}
+
+\item{traps}{A matrix with two columns. Each row provides Cartesian
+coordinates for the location of a detector. Alternatively, this
+can be a list of such matrices if detections from multiple
+detector arrays (or `sessions') are being used to fit a single
+model.}
+
+\item{mask}{A matrix with two columns. Each row provides Cartesian
+coordinates for the location of a mask point. The function
+\link[ascr]{create.mask} will return a suitable object. The
+mask used to fit the model \code{fit} will be used by default;
+this argument is usually used when estimated location contours
+need to be plotted to a higher resolution than this.}
+
 \item{session}{The session(s) for which the mask point and trap
 locations are to be plotted. Using \code{"all"} will plot all
 sessions.}
@@ -16,6 +31,12 @@ sessions.}
 \description{
 Plots the mask points and trap locations used in a model fitted
 with the function \link{fit.ascr}.
+}
+\details{
+If \code{fit} is provided, then \code{traps} and \code{mask}
+objects to be plotted are those used to fit the
+model. Alternatively, \code{traps} and \code{mask} can be provided
+without having fitted a model first.
 }
 \examples{
 show.survey(example.data$fits$simple.hn)
