@@ -290,8 +290,14 @@ get.mask <- function(fit, session = NULL, as.list = NULL){
     if (is.null(as.list)){
         as.list <- length(out) > 1
     }
-    if (!as.list){
-        out <- do.call("rbind", out)
+    if (length(session) > 1){
+        if (!as.list){
+            out <- do.call("rbind", out)
+        }
+    } else {
+        if (!as.list){
+            out <- out[[1]]
+        }
     }
     out
 }
