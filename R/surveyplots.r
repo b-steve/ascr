@@ -3,16 +3,17 @@
 #' Plots the mask points and trap locations used in a model fitted
 #' with the function \link{fit.ascr}.
 #'
+#' If \code{fit} is provided, then \code{traps} and \code{mask}
+#' objects to be plotted are those used to fit the
+#' model. Alternatively, \code{traps} and \code{mask} can be provided
+#' without having fitted a model first.
+#' 
 #' @param session The session(s) for which the mask point and trap
 #'     locations are to be plotted. Using \code{"all"} will plot all
 #'     sessions.
 #' @param ... Further arguments to be passed to \link{plot}.
 #' @inheritParams locations
-#'
-#' If \code{fit} is provided, then \code{traps} and \code{mask}
-#' objects to be plotted are those used to fit the
-#' model. Alternatively, \code{traps} and \code{mask} can be provided
-#' without having fitted a model first.
+#' @inheritParams fit.ascr
 #' 
 #' @examples
 #' show.survey(example.data$fits$simple.hn)
