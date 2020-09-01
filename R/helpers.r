@@ -267,20 +267,31 @@ get.capt <- function(fit, session = NULL){
 #'
 #' Extracts the mask used in an ascr fit.
 #'
+#' @inheritParams get.traps
 #' @inheritParams locations
-#' @param session The session from which to extract the mask.
 #'
 #' @return A mask object.
 #'
 #' @export
-get.mask <- function(fit, session = NULL){
+get.mask <- function(fit, session = NULL, as.list = NULL){
+    if (length(session) == 1){
+        if (session == "all"){
+            session <- 1:fit$n.sessions
+        }
+    }
     if (fit$n.sessions == 1){
         session <- 1
     }
     if (is.null(session) | !is.list(fit$args$mask)){
         out <- fit$args$mask
     } else {
-        out <- fit$args$mask[[session]]
+        out <- fit$args$mask[session]
+    }
+    if (is.null(as.list)){
+        as.list <- length(out) > 1
+    }
+    if (!as.list){
+        out <- do.call("rbind", out)
     }
     out
 }
@@ -291,19 +302,34 @@ get.mask <- function(fit, session = NULL){
 #'
 #' @inheritParams locations
 #' @param session The session from which to extract the trap
-#'     locations.
+#'     locations. If a vector, the function selects masks from
+#'     multiple sessions, and \code{"all"} will use all sessions.
+#' @param as.list If \code{TRUE}, then a list is returned, with each
+#'     component being a matrix of trap locations. If \code{FALSE},
+#'     all locations are combined into a single matrix.
 #' 
 #' @return A traps object.
 #' 
 #' @export
-get.traps <- function(fit, session = NULL){
+get.traps <- function(fit, session = NULL, as.list = NULL){
+    if (length(session) == 1){
+        if (session == "all"){
+            session <- 1:fit$n.sessions
+        }
+    }
     if (fit$n.sessions == 1){
         session <- 1
     }
     if (is.null(session) | !is.list(fit$args$traps)){
         out <- fit$args$traps
     } else {
-        out <- fit$args$traps[[session]]
+        out <- fit$args$traps[session]
+    }
+    if (is.null(as.list)){
+        as.list <- length(out) > 1
+    }
+    if (!as.list){
+        out <- do.call("rbind", out)
     }
     out
 }

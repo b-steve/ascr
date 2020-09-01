@@ -3,18 +3,48 @@
 #' Plots the mask points and trap locations used in a model fitted
 #' with the function \link{fit.ascr}.
 #'
-#' @param session The session for which the mask point and trap
-#'     locations are to be plotted.
+#' @param session The session(s) for which the mask point and trap
+#'     locations are to be plotted. Using \code{"all"} will plot all
+#'     sessions.
 #' @param ... Further arguments to be passed to \link{plot}.
 #' @inheritParams locations
 #'
+#' If \code{fit} is provided, then \code{traps} and \code{mask}
+#' objects to be plotted are those used to fit the
+#' model. Alternatively, \code{traps} and \code{mask} can be provided
+#' without having fitted a model first.
+#' 
 #' @examples
 #' show.survey(example.data$fits$simple.hn)
 #'
 #' @export
-show.survey <- function(fit, session = 1, ...){
-    plot(get.mask(fit, session), pch = ".", cex = 3, asp = 1, ...)
-    points(get.traps(fit, session), pch = 16, col = "red")
+show.survey <- function(fit = NULL, traps = NULL, mask = NULL, session = 1, ...){
+    if (!is.null(fit)){
+        traps <- get.traps(fit, session, as.list = FALSE)
+        mask <- get.mask(fit, session, as.list = FALSE)
+        if (!is.null(traps) | !is.null(mask)){
+            warning("The 'traps' and 'mask' arguments are being ignored because a fitted model object has been provided")
+        }
+    } else {
+        if (is.matrix(traps)){
+            traps <- list(traps)
+        }
+        if (is.matrix(mask)){
+            mask <- list(mask)
+        }
+        if (length(traps) != length(mask)){
+            stop("The 'traps' and 'mask' arguments must correspond to the same number of sessions.")
+        }
+        if (length(session) == 1){
+            if (session == "all"){
+                session <- 1:length(traps)
+            }
+        }
+        traps <- do.call("rbind", traps[session])
+        mask <- do.call("rbind", mask[session])
+    }
+    plot(mask, pch = ".", cex = 3, asp = 1, ...)
+    points(traps, pch = 16, col = "red")
 }
 
 ##' Plotting capture histories
