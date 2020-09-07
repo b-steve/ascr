@@ -269,10 +269,10 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
 show.Dsurf <- function(fit, session = 1, newdata = NULL, show.cv = FALSE, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE, add = FALSE){
+    traps <- get.traps(fit, session)
     if (missing(newdata)){
         D.mask <- fit$D.mask[[session]]
         mask <- get.mask(fit, session)
-        traps <- get.traps(fit, session)
     } else {
         D.mask <- predict(fit, newdata = newdata, se.fit = show.cv)
         if (show.cv){
@@ -301,11 +301,11 @@ show.Dsurf <- function(fit, session = 1, newdata = NULL, show.cv = FALSE, unsuit
     unique.x <- sort(unique(mask[, 1]))
     unique.y <- sort(unique(mask[, 2]))
     z <- squarify(mask, D.mask[mask.keep])
-    if (is.null(zlim)){
-        zlim <- c(0, max(z, na.rm = TRUE))
-    }
     if (!show.cv){
         z <- scale*z
+    }
+    if (is.null(zlim)){
+        zlim <- c(0, max(z, na.rm = TRUE))
     }
     z[z > zlim[2]] <- zlim[2]
     levels <- pretty(zlim, 10)
