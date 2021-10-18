@@ -1,0 +1,377 @@
+[
+    {
+        "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+        "file_last_write": 1634527097.0,
+        "definitions": [
+            {
+                "usr": "c:@F@incheck#&1$@N@tmbutils@S@vector>#I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "incheck(const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 43,
+                "column": 13
+            },
+            {
+                "usr": "c:@F@incheck_scalar#&1I#&1$@N@tmbutils@S@vector>#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "incheck_scalar(const int &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 59,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@lookup_data_full#&1I#S0_#S0_#S0_#S0_#&1$@N@tmbutils@S@vector>#I#S1_#S1_#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_data_full(const int &, const int &, const int &, const int &, const int &, const vector<int> &, const vector<int> &, const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 103,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@lookup_data_dist_theta#&1I#S0_#S0_#&1$@N@tmbutils@S@vector>#I#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_data_dist_theta(const int &, const int &, const int &, const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 123,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@lookup_data_mask#&1I#S0_#&1$@N@tmbutils@S@vector>#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_data_mask(const int &, const int &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 137,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@lookup_data_IDmask#&1I#S0_#S0_#S0_#S0_#&1$@N@tmbutils@S@vector>#I#S1_#S1_#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_data_IDmask(const int &, const int &, const int &, const int &, const int &, const vector<int> &, const vector<int> &, const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 151,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@lookup_bincapt_uid#&1I#S0_#S0_#&1$@N@tmbutils@S@vector>#I#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_bincapt_uid(const int &, const int &, const int &, const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 170,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@lookup_n_detection#&1I#S0_#S0_#S0_#&1$@N@tmbutils@S@vector>#I#S1_#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_n_detection(const int &, const int &, const int &, const int &, const vector<int> &, const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 186,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@lookup_n_det_and_id_uid#&1I#S0_#&1$@N@tmbutils@S@vector>#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_n_det_and_id_uid(const int &, const int &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 206,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@look_up_u#&1I#S0_#&1$@N@tmbutils@S@vector>#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "look_up_u(const int &, const int &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 220,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@look_up_ids_uid#&1I#S0_#&1$@N@tmbutils@S@vector>#I#1S2_#S1_#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "look_up_ids_uid(const int &, const int &, const vector<int> &, const vector<int>, const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 234,
+                "column": 13
+            },
+            {
+                "usr": "c:@F@look_up_traps_uid#&1I#S0_#S0_#S0_#1$@N@tmbutils@S@vector>#I#&1S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "look_up_traps_uid(const int &, const int &, const int &, const int &, const vector<int>, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 266,
+                "column": 13
+            },
+            {
+                "usr": "c:@F@lookup_data_uid#&1I#S0_#S0_#&1$@N@tmbutils@S@vector>#I#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "lookup_data_uid(const int &, const int &, const int &, const vector<int> &, const vector<int> &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/ascrTmb.cpp",
+                "line": 287,
+                "column": 5
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+        "file_last_write": 1598752755.0,
+        "definitions": [
+            {
+                "usr": "c:@F@find_incomplete_blocks#&1I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "find_incomplete_blocks(const Rcpp::LogicalMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 25,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@set_value#&1I#S0_#&1b#&I#S2_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "set_value(const int &, const int &, const bool &, Rcpp::LogicalMatrix &, Rcpp::LogicalMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 52,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@set_false#&1I#S0_#&I#S1_#S0_#&b#S0_#S0_#S0_#S1_#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "set_false(const int &, const int &, Rcpp::LogicalMatrix &, Rcpp::LogicalMatrix &, const Rcpp::NumericMatrix &, bool &, const int &, const int &, const int &, Rcpp::IntegerMatrix &, Rcpp::IntegerMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 61,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@set_true#&1I#S0_#&I#S1_#S0_#&b#S0_#S0_#S0_#S1_#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "set_true(const int &, const int &, Rcpp::LogicalMatrix &, Rcpp::LogicalMatrix &, const Rcpp::NumericMatrix &, bool &, const int &, const int &, const int &, Rcpp::IntegerMatrix &, Rcpp::IntegerMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 100,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@consider#&1I#S0_#&I#S1_#S0_#S1_#S1_#S1_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "consider(const int &, const int &, Rcpp::LogicalMatrix &, Rcpp::LogicalMatrix &, const Rcpp::NumericMatrix &, Rcpp::IntegerMatrix &, Rcpp::IntegerMatrix &, Rcpp::IntegerMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 150,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@blockify#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "blockify(const Rcpp::LogicalMatrix &, const Rcpp::NumericMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 183,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@min_unallocated#&1I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "min_unallocated(const Rcpp::LogicalVector &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 220,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@add_to_block#&1I#&I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "add_to_block(const int &, Rcpp::LogicalVector &, const Rcpp::LogicalMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 231,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@reset_in_block#&I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "reset_in_block(Rcpp::LogicalVector &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 242,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@detection_dists#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "detection_dists(const Rcpp::NumericMatrix &, const Rcpp::NumericVector &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 251,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@detection_timediffs#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "detection_timediffs(const Rcpp::NumericVector &, const Rcpp::NumericVector &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 265,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@which_max_reqss#&1I#S0_#&I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "which_max_reqss(const Rcpp::NumericMatrix &, const Rcpp::LogicalMatrix &, Rcpp::IntegerMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 278,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@copy_matrix#&1I#&I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "copy_matrix(const Rcpp::NumericMatrix &, Rcpp::NumericMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 310,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@copy_matrix#&1I#&I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "copy_matrix(const Rcpp::LogicalMatrix &, Rcpp::LogicalMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 320,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@min_skip_matrix#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "min_skip_matrix(const Rcpp::IntegerMatrix &, const Rcpp::LogicalMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 331,
+                "column": 5
+            },
+            {
+                "usr": "c:@F@reset_matrix#&I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "reset_matrix(Rcpp::IntegerMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/block.cpp",
+                "line": 353,
+                "column": 6
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/funs.cpp",
+        "file_last_write": 1598752755.0,
+        "definitions": [
+            {
+                "usr": "c:@F@distances#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "distances(const Rcpp::NumericMatrix &, const Rcpp::NumericMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/funs.cpp",
+                "line": 20,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@bearings#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "bearings(const Rcpp::NumericMatrix &, const Rcpp::NumericMatrix &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/funs.cpp",
+                "line": 46,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@make_toa_ssq#&1I#S0_#&1d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "make_toa_ssq(const Rcpp::NumericMatrix &, const Rcpp::NumericMatrix &, const double &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/funs.cpp",
+                "line": 68,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@find_local#&1I#S0_#&1d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "find_local(const Rcpp::IntegerMatrix &, const Rcpp::NumericMatrix &, const double &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/funs.cpp",
+                "line": 96,
+                "column": 6
+            },
+            {
+                "usr": "c:@F@sim_ss#&1I#&1d#S1_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "sim_ss(const Rcpp::NumericMatrix &, const double &, const double &, const Rcpp::NumericVector &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/funs.cpp",
+                "line": 146,
+                "column": 15
+            },
+            {
+                "usr": "c:@F@squarify#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "squarify(const Rcpp::NumericMatrix &, const Rcpp::NumericVector &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/funs.cpp",
+                "line": 180,
+                "column": 15
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/secr_nll.cpp",
+        "file_last_write": 1598752755.0,
+        "definitions": [
+            {
+                "usr": "c:@F@log_dnorm#1d#1d#1d#1d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_dnorm(const double, const double, const double, const double)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/secr_nll.cpp",
+                "line": 6,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@log_dpois#1d#1d#1d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "log_dpois(const double, const double, const double)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/secr_nll.cpp",
+                "line": 11,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@secr_nll#&1I#S0_#&1b#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "secr_nll(const Rcpp::NumericVector &, const Rcpp::List &, const bool &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/secr_nll.cpp",
+                "line": 33,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@calc_probsurf#&1I#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "calc_probsurf(const Rcpp::NumericVector &, const Rcpp::List &)",
+                "file": "C:/Users/haoli/Documents/GitHub/ben/ascr/src/secr_nll.cpp",
+                "line": 129,
+                "column": 6
+            }
+        ]
+    }
+]

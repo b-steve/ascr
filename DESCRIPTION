@@ -26,11 +26,14 @@ Imports:
     stats,
     truncnorm,
     utils,
-    viridis
+    viridis,
+    TMB,
+    RcppEigen,
+    Rcpp
 Suggests:
     knitr,
     xtable
-LinkingTo: Rcpp
+LinkingTo: Rcpp, TMB, RcppEigen
 VignetteBuilder: knitr
 Description: This package provides functions to fit spatial
     capture-recapture (SCR) models, primarily to acoustic
