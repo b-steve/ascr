@@ -269,11 +269,12 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
 show.Dsurf <- function(fit, session = 1, newdata = NULL, show.cv = FALSE, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE, add = FALSE){
-    traps <- get.traps(fit, session)
     if (missing(newdata)){
+        traps <- get.traps(fit, session)
         D.mask <- fit$D.mask[[session]]
         mask <- get.mask(fit, session)
     } else {
+        traps <- get.traps(fit)
         D.mask <- predict(fit, newdata = newdata, se.fit = show.cv)
         if (show.cv){
             D.mask <- D.mask[, 2]/D.mask[, 1]
@@ -281,7 +282,7 @@ show.Dsurf <- function(fit, session = 1, newdata = NULL, show.cv = FALSE, unsuit
         mask <- cbind(newdata$x, newdata$y)
         ## Charlotte's bonkers way of rbind-ing list components.
         if (is.list(traps)){
-            traps <- do.call("rbind", get.traps(fit))
+            traps <- do.call("rbind", traps)
         }
     }
     if (is.null(xlim)){
