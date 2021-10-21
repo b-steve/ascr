@@ -164,7 +164,7 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
   
   if(is.null(types)) types = 'linked'
   
-  #'og' below means original output from the object
+  # 'og' below means original output from the object
   param_values_og = get_coef(object)
   cov_og = object$vcov
   name_dim_og = colnames(cov_og)

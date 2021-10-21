@@ -1,3 +1,4 @@
+#' @export
 fit.ascr.tmb = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL,
                         ss.opts = NULL, cue.rates = NULL, survey.length = NULL, sound.speed = 330,
                         local = FALSE, par.extend = NULL, ...){
