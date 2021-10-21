@@ -1,3 +1,13 @@
+#' Extract coefficients from the output of ascr_tmb model
+#'
+#' @param object a fitted model from fit.ascr.tmb
+#' @param types a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'
+#' @param pars a character vector containing any parameter names
+#' @param new_covariates a data frame containing the values of covariates of any extended parameter
+#'
+#' @return a named numeric vector
+#' @export
+#'
 coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
   #source('get_funs.r', local = TRUE)
   #source('support_functions.r', local = TRUE)
@@ -107,6 +117,10 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
 
 ##################################################################################################################
 
+#' S3 method for output of coef.ascr_tmb
+#'
+#' @export
+#'
 print.coef_ascr_tmb = function(x){
   output = as.matrix(x)
   colnames(output) = "Est"
@@ -115,6 +129,15 @@ print.coef_ascr_tmb = function(x){
 
 ##################################################################################################################
 
+#' Extract variance covariance matrix of the estimated parameters from ascr.tmb models
+#'
+#' @param object a fitted model from fit.ascr.tmb
+#' @param types a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'
+#' @param pars a character vector containing any parameter names
+#' @param new_covariates a data frame containing the values of covariates of any extended parameter
+#'
+#' @return a list with matrices as its elements if multiple 'types'. a matrix if only one 'types'.
+#' @export
 vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
   #source('get_funs.r', local = TRUE)
   #source('support_functions.r', local = TRUE)
@@ -240,6 +263,15 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
 
 ##################################################################################################################
 
+#' Extract standard errors of the estimated parameters from ascr.tmb models
+#'
+#' @param object a fitted model from fit.ascr.tmb
+#' @param types a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'
+#' @param pars a character vector containing any parameter names
+#' @param new_covariates a data frame containing the values of covariates of any extended parameter
+#'
+#' @return a named numeric vector
+#' @export
 stdEr.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
   output_vcov = vcov(object = object, types = types, pars = pars, new_covariates = new_covariates)
   if(is(output_vcov, 'list')){
@@ -256,6 +288,10 @@ stdEr.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NU
 
 ##################################################################################################################
 
+#' S3 method for the output of stdEr.ascr_tmb
+#'
+#' @export
+#'
 print.std_ascr_tmb = function(x){
   output = as.matrix(x)
   colnames(output) = "Std"
@@ -264,6 +300,22 @@ print.std_ascr_tmb = function(x){
 
 ##################################################################################################################
 
+#' Extract confidence interval for ascr.tmb models
+#'
+#' @param object a fitted model from fit.ascr.tmb
+#' @param types a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'
+#' @param level confident level, default is 0.95
+#' @param method 'default' only
+#' @param linked logical value. if set to be TRUE, inverse of linked function will be applied to parameters confident 
+#'               intervals as the 'fitted' confidence interval. if FALSE, delta method will be applied to obtain the 
+#'               'fitted' confidence interval
+#' @param pars a character vector containing any parameter names
+#' @param new_covariates a data frame containing the values of covariates of any extended parameter
+#' @param qqplot Not available yet
+#' @param ask Not available yet
+#'
+#' @return a matrix
+#' @export
 confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'default',
                             linked = FALSE, pars = NULL, new_covariates = NULL,
                             qqplot = FALSE, ask = FALSE, ...){
