@@ -281,7 +281,7 @@ convert.mask <- function(mask){
 #'
 #' @return A capture history object appropriate for analysis using
 #'     either the \code{ascr} or the \code{secr} package.
-#' @examples capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
+#' @examples capt <- convert.capt.to.secr(capt = example.data$capt, traps = example.data$traps, cutoff = example.data$cutoff)
 #'
 #' @name convert.capt
 NULL
