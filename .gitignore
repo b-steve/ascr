@@ -3,3 +3,7 @@ results/
 package-build/
 HELP-release.txt
 .Rproj.user/E9C4FDC1/pcs/files-pane.pper
+*.pper
+.Rhistory
+.RData
+.Rhistory
