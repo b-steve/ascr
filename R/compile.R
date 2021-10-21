@@ -1,3 +1,4 @@
+#' @export
 compile.ascr <- function(template = 'ascrTmb.cpp'){
   wd <- getwd()
   dir <- paste0(

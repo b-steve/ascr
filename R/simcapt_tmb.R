@@ -1,3 +1,4 @@
+#' @export
 simcapt_from_fit_tmb = function(fit){
   #source('get_funs.r', local = T)
   #get pop density for each mask

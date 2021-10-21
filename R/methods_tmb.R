@@ -1,3 +1,4 @@
+#' @export
 coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
   #source('get_funs.r', local = TRUE)
   #source('support_functions.r', local = TRUE)
@@ -107,6 +108,7 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
 
 ##################################################################################################################
 
+#' @export
 print.coef_ascr_tmb = function(x){
   output = as.matrix(x)
   colnames(output) = "Est"
@@ -115,6 +117,7 @@ print.coef_ascr_tmb = function(x){
 
 ##################################################################################################################
 
+#' @export
 vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
   #source('get_funs.r', local = TRUE)
   #source('support_functions.r', local = TRUE)
@@ -141,7 +144,7 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
   
   if(is.null(types)) types = 'linked'
   
-  #'og' below means original output from the object
+  # 'og' below means original output from the object
   param_values_og = get_coef(object)
   cov_og = object$vcov
   name_dim_og = colnames(cov_og)
@@ -240,6 +243,7 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
 
 ##################################################################################################################
 
+#' @export
 stdEr.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
   output_vcov = vcov(object = object, types = types, pars = pars, new_covariates = new_covariates)
   if(is(output_vcov, 'list')){
@@ -256,6 +260,7 @@ stdEr.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NU
 
 ##################################################################################################################
 
+#' @export
 print.std_ascr_tmb = function(x){
   output = as.matrix(x)
   colnames(output) = "Std"
@@ -264,6 +269,7 @@ print.std_ascr_tmb = function(x){
 
 ##################################################################################################################
 
+#' @export
 confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'default',
                             linked = FALSE, pars = NULL, new_covariates = NULL,
                             qqplot = FALSE, ask = FALSE, ...){
