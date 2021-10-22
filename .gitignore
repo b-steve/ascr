@@ -7,3 +7,6 @@ HELP-release.txt
 .Rhistory
 .RData
 .Rhistory
+*.pper
+*.pper
+.Rproj.user/

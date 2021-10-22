@@ -6,78 +6,29 @@
 \usage{
 create.capt(
   captures,
+  traps = NULL,
   n.traps = NULL,
   n.sessions = NULL,
-  traps = NULL,
-  mrds.locs = NULL
+  mrds.locs = NULL,
+  use.name = FALSE
 )
 }
 \arguments{
-\item{captures}{A data frame of capture records, see 'Details' for
-the correct format.}
+\item{captures}{}
 
-\item{n.traps}{The number of traps deployed on each session. If the
-number of traps varies between sessions, then this must be a
-vector with the ith element providing the number of traps
-deployed on the ith session.}
+\item{traps}{}
 
-\item{n.sessions}{The total number of sessions.}
+\item{n.traps}{}
 
-\item{traps}{A matrix of trap locations, or a list for
-multi-session models (see \link{fit.ascr}). If this argument is
-provided, there is no need to specify \code{n.traps} or
-\code{n.sessions}.}
+\item{n.sessions}{}
 
-\item{mrds.locs}{A matrix of animal locations, or a list for
-multi-session models. See 'Details'.}
+\item{mrds.locs}{}
+
+\item{use.name}{}
+}
+\value{
+
 }
 \description{
-Creates a capture history object to use with the function
-\code{\link{fit.ascr}}.
-}
-\details{
-The \code{captures} argument to this function is intended to be of
-a similar format to the \code{captures} argument to
-\link{make.capthist} in the \link{secr} package. That is, users can
-use the same \code{captures} data frame with \code{create.capt} and
-\code{make.capthist}, which generate capture histories for use with
-the \code{ascr} and \link{secr} packages respectively.
-
-As such, the first, second, and fourth columns should provide the
-session, the identification number of the detected animal or sound,
-and the trap number of the trap which made the detection (where the
-trap number is the row number of the corresponding trap in the
-matrix of trap locations), respectively. Note that, for the
-\link{secr} package, the third column of the \code{captures} data
-frame provides the 'occassion' of the detection for
-\link{make.capthist}.  However, the ascr package does not presently
-have the capabilities to deal with multi-occassion data, so the
-third column is ignored by \code{create.capt}.
-
-Additional columns can specify the auxiliary information
-collected over the course of the survey:
-\itemize{
-  \item A column named \code{bearing}, containing estimated bearings
-        (in radians) from the detector to each detected animal or sound.
-  \item A column named \code{dist}, containing the estimated
-        distance between the detected animal or sound.
-  \item A column named \code{ss} containing the measured signal
-        strengh of the detected sound.
-  \item A column named \code{toa} containing the measured time of
-        arrival (in seconds) since the start of the survey (or some
-        other reference time) of the detected sound (only
-        possible when the detectors are microphones).
-}
-
-If animal or sound locations are known exactly, then a
-mark-recapture distance sampling (MRDS) model can be fitted. In
-this case, for single-session models the \code{mrds.loc} argument
-should be a matrix, where each row corresponds to the known x- and
-y-coordiates of an animal. The row number should match with the
-individual's ID number in the captures data frame, so for example
-the animal with an ID of 5 should have their location's x- and
-y-coordinates in the fifth row of \code{mrds.locs}. For multi-session
-models, the \code{mrds.loc} argument should be a list of such
-matrices, where each component is associated with one of the
-sessions.
+Creating capture history object.
 }

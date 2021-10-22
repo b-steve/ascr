@@ -552,10 +552,6 @@ get.bias <- function(fit, pars = "fitted", mce = FALSE){
     out
 }
 
-## Helper function for passing lists as 3D arrays to ADMB.
-list.to.vector <- function(x){
-    c(lapply(x, function(m) c(t(m))), recursive = TRUE)
-}
 
 ## Calculates the `effective listening area', assuming perfect
 ## detection within some fixed radius of the traps.
@@ -568,29 +564,6 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
     a*sum(in.area)
 }
 
-## A closure for scaling covariates.
-scale.closure <- function(covariates, scale){
-    n.cov <- ncol(covariates)
-    numeric.cov <- sapply(covariates, is.numeric)
-    mean.cov <- numeric(n.cov)
-    sd.cov <- numeric(n.cov)
-    mean.cov[!numeric.cov] <- NA
-    sd.cov[!numeric.cov] <- NA
-    mean.cov[numeric.cov] <- sapply(covariates[, numeric.cov, drop = FALSE], mean)
-    sd.cov[numeric.cov] <- sapply(covariates[, numeric.cov, drop = FALSE], sd)
-    cov.names <- names(covariates)
-    out.fun <- function(covariates){
-        cov.names.new <- names(covariates)
-        out <- covariates
-        for (i in 1:n.cov){
-            if ((scale & numeric.cov[i]) & (cov.names[i] %in% cov.names.new)){
-                out[, cov.names[i]] <- (out[, cov.names[i]] - mean.cov[i])/sd.cov[i]
-            }
-        }
-        out
-    }
-    out.fun
-}
 
 ## Finding nearest mask point to an observed MRDS location.
 find.nearest.mask <- function(locs, mask){

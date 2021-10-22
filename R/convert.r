@@ -44,168 +44,300 @@ create.mask <- function(traps, buffer, ...){
     mask
 }
 
+
 #' Creating capture history object.
 #'
-#' Creates a capture history object to use with the function
-#' \code{\link{fit.ascr}}.
+#' @param captures 
+#' @param traps 
+#' @param n.traps 
+#' @param n.sessions 
+#' @param mrds.locs 
+#' @param use.name 
 #'
-#' The \code{captures} argument to this function is intended to be of
-#' a similar format to the \code{captures} argument to
-#' \link{make.capthist} in the \link{secr} package. That is, users can
-#' use the same \code{captures} data frame with \code{create.capt} and
-#' \code{make.capthist}, which generate capture histories for use with
-#' the \code{ascr} and \link{secr} packages respectively.
-#'
-#' As such, the first, second, and fourth columns should provide the
-#' session, the identification number of the detected animal or sound,
-#' and the trap number of the trap which made the detection (where the
-#' trap number is the row number of the corresponding trap in the
-#' matrix of trap locations), respectively. Note that, for the
-#' \link{secr} package, the third column of the \code{captures} data
-#' frame provides the 'occassion' of the detection for
-#' \link{make.capthist}.  However, the ascr package does not presently
-#' have the capabilities to deal with multi-occassion data, so the
-#' third column is ignored by \code{create.capt}.
-#'
-#' Additional columns can specify the auxiliary information
-#' collected over the course of the survey:
-#' \itemize{
-#'   \item A column named \code{bearing}, containing estimated bearings
-#'         (in radians) from the detector to each detected animal or sound.
-#'   \item A column named \code{dist}, containing the estimated
-#'         distance between the detected animal or sound.
-#'   \item A column named \code{ss} containing the measured signal
-#'         strengh of the detected sound.
-#'   \item A column named \code{toa} containing the measured time of
-#'         arrival (in seconds) since the start of the survey (or some
-#'         other reference time) of the detected sound (only
-#'         possible when the detectors are microphones).
-#' }
-#'
-#' If animal or sound locations are known exactly, then a
-#' mark-recapture distance sampling (MRDS) model can be fitted. In
-#' this case, for single-session models the \code{mrds.loc} argument
-#' should be a matrix, where each row corresponds to the known x- and
-#' y-coordiates of an animal. The row number should match with the
-#' individual's ID number in the captures data frame, so for example
-#' the animal with an ID of 5 should have their location's x- and
-#' y-coordinates in the fifth row of \code{mrds.locs}. For multi-session
-#' models, the \code{mrds.loc} argument should be a list of such
-#' matrices, where each component is associated with one of the
-#' sessions.
-#'
-#' @param captures A data frame of capture records, see 'Details' for
-#'     the correct format.
-#' @param n.traps The number of traps deployed on each session. If the
-#'     number of traps varies between sessions, then this must be a
-#'     vector with the ith element providing the number of traps
-#'     deployed on the ith session.
-#' @param n.sessions The total number of sessions.
-#' @param traps A matrix of trap locations, or a list for
-#'     multi-session models (see \link{fit.ascr}). If this argument is
-#'     provided, there is no need to specify \code{n.traps} or
-#'     \code{n.sessions}.
-#' @param mrds.locs A matrix of animal locations, or a list for
-#'     multi-session models. See 'Details'.
-#' 
+#' @return
 #' @export
-create.capt <- function(captures, n.traps = NULL, n.sessions = NULL, traps = NULL, mrds.locs = NULL){
-    if (!missing(n.traps) | !missing(n.sessions)){
-        warning("Arguments 'n.traps' and 'n.sessions' are deprecated. Please provide the the 'traps' argument instead.")
+create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NULL,
+                        mrds.locs = NULL, use.name = FALSE){
+    
+    #captures must be provided as a matrix or data frame with at least 4 columns
+    #traps could be list, matrix or data frame
+    #traps, or (n.traps & n.sessions), one of them must be provided
+    stopifnot(is.data.frame(captures) | is.matrix(captures), ncol(captures) >= 4,
+              any(is.null(traps), is.list(traps), is.matrix(traps), is.data.frame(traps)),
+              any(!is.null(traps), !is.null(n.traps) & !is.null(n.sessions)))
+    
+    if ((!missing(n.traps) | !missing(n.sessions)) & is.null(traps)){
+        warning("Arguments 'n.traps' and 'n.sessions' are deprecated.
+    Please provide the the 'traps' argument instead. Future versions of ascr will require
+            the 'traps' argument to be provided to the 'create.capt()' function.")
     }
-    if (missing(traps)){
-        warning("Future versions of ascr will require the 'traps' argument to be provided to the 'create.capt()' function.")
-    } else {
-        if (!is.list(traps)){
-            traps <- list(traps)
+    
+    if(is.matrix(captures)) captures = as.data.frame(captures, stringsAsFactors = FALSE)
+    
+    #rename the 1, 2, 4 column, and make it sure that "session" and "trap" are numeric
+    colnames(captures)[c(1,2,4)] = c("session", "ID", "trap")
+    captures$session = as.numeric(captures$session)
+    stopifnot(all(captures$session > 0), all(captures$session %% 1 == 0))
+    stopifnot(all(captures$trap > 0), all(captures$trap %% 1 == 0))
+    captures = captures[order(captures$session, captures$ID, captures$trap),]
+    
+    #------------------------------------------------------------------------------------------------------
+    #deal with n.sessions
+    
+    #generate n.sessions based on "captures" data
+    tem.n.sessions.capt = max(captures$session)
+    
+    if(!is.null(traps)){
+        #generate n.sessions based on "traps" data
+        tem.n.sessions.trap = ifelse(is(traps, 'list'), length(traps), 1)
+        
+        #length of traps is 1 is a special case
+        if(tem.n.sessions.trap == 1){
+            #if n.sessions is not provided, we assume it should be just 1
+            if(is.null(n.sessions)) n.sessions = 1
+            #if n.sessions is not null, we just use it, no code needed
+        } else {
+            #if length of traps is not 1, we should use it as n.sessions
+            if(!is.null(n.sessions)) warning("'traps' is provided, argument 'n.sessions' will be overwriten")
+            n.sessions = tem.n.sessions.trap
         }
-        n.traps <- sapply(traps, nrow)
-        n.sessions <- length(traps)
     }
-    is.mrds <- !is.null(mrds.locs)
-    if (is.mrds){
-        if (!is.list(mrds.locs)){
-            mrds.locs <- list(mrds.locs)
-        }
-        if (length(mrds.locs) != n.sessions){
-            stop("The argument 'mrds.locs' must have a component for each session.")
-        }
+    
+    #if "traps" is null, the constraint as very beginning of this function has confirmed that
+    #n.sessions will be provided, so just use it, no code needed
+    
+    #the maximum of session in captures data should be <= n.sessions
+    if(tem.n.sessions.capt > n.sessions) {
+        stop('The number of sessions based on "n.sessions" or "traps" can not match the captures data')
     }
-    session.full <- captures[, 1]
-    id.full <- captures[, 2]
-    trap.full <- captures[, 4]
-    if (is.null(n.sessions)){
-        n.sessions <- max(session.full)
-    } else if (any(session.full > n.sessions)){
-        stop("Session ID in arguments 'captures' exceeds 'n.sessions'.")
+    
+    
+    if(!all(captures$session %in% seq(n.sessions))){
+        stop('"session" must be assigned as successive positive integers begins from one.')
     }
-    if (is.null(n.traps)){
-        n.traps <- max(trap.full)
-    }
-    if (length(n.traps) == 1){
-        n.traps <- rep(n.traps, n.sessions)
-        if (max(trap.full) > max(n.traps)){
-            stop("Trap ID in argument 'captures' exceeds 'n.traps'.")
-        }
-    } else {
-        if (length(n.traps) != n.sessions){
-            stop("If provided, the argument 'n.traps' must be of length 1, or of length equal to the total number of sessions.")
-        }
-    }
-    all.types <- c("bearing", "dist", "ss", "toa")
-    info.types <- all.types[all.types %in% colnames(captures)]
-    if (n.sessions > 1){
-        out.list <- vector(mode = "list", length = n.sessions)
-    }
-    captures.full <- captures
-    for (s in 1:n.sessions){
-        captures <- captures.full[session.full == s, ]
-        id <- captures[, 2]
-        n <- length(unique(id))
-        if (is.mrds){
-            if (nrow(mrds.locs[[s]]) != n){
-                stop("A location must be specified for each detected individual.")
+    
+    
+    #-----------------------------------------------------------------------------------------------
+    
+    #deal with n.traps
+    
+    #generate n.traps based on captures data frame
+    tem.n.traps.capt = numeric(n.sessions)
+    tem.n.traps.capt[unique(captures$session)] = aggregate(captures$trap,
+                                                           list(session = captures$session), max)$x
+    
+    #check if "trap" is labeled by natural numbers
+    for(i in 1:n.sessions){
+        tem = subset(captures, session == i)
+        if(nrow(tem) > 0){
+            if(any(!tem$trap %in% 1:tem.n.traps.capt[i])) {
+                stop('labels of traps must be successive natural numbers')
             }
         }
+    }
+    
+    
+    if(!is.null(traps)){
+        #if 'traps' is provided deal with the special case that its length is 1
+        if(any(is(traps, 'list') & length(traps) == 1, is.matrix(traps), is.data.frame(traps))){
+            tem.traps = vector('list', n.sessions)
+            if(is(traps, 'list')){
+                for(i in 1:n.sessions) tem.traps[[i]] = traps[[1]]
+            } else {
+                for(i in 1:n.sessions) tem.traps[[i]] = traps
+            }
+            traps = tem.traps
+        }
+        
+        if(!is.null(n.traps)) warning("'traps' is provided, argument 'n.traps' will be overwriten")
+        n.traps = sapply(traps, nrow)
+    } else {
+        #length(n.traps) == 1 is a special case
+        if(length(n.traps) == 1){
+            n.traps = rep(n.traps, n.sessions)
+        } else {
+            msg = paste0("The length of 'n.traps' should match the number of sessions: ", n.sessions)
+            if(length(n.traps) != n.sessions) stop(msg)
+        }
+    }
+    
+    #n.traps generated from capture data should always smaller than it from "traps"
+    if(any(tem.n.traps.capt > n.traps)){
+        msg = paste0('In session(s): (', paste(which(tem.n.traps.capt > n.traps), collapse = ","),
+                     '), the number of traps based on "n.traps" or "traps" cannot match the captures data')
+        stop(msg)
+    }
+    
+    stopifnot(all(n.traps) > 0)
+    
+    #-----------------------------------------------------------------------------------------------------
+    
+    #deal with mrds.locs. "ID" will be dealt with together as they are closely related
+    #here we only require mrds.locs for the sessions that we have detection,
+    #so not using n.sessions for checking
+    is.mrds <- !is.null(mrds.locs)
+    
+    if (is.mrds){
+        if(is(mrds.locs, "list")) {
+            if(n.sessions != length(mrds.locs)) {
+                msg = paste0("mrds.locs must be a list with a length of n.sessions: ", n.sessions)
+                stop(msg)
+            }
+        } else {
+            stopifnot(n.sessions == 1, is.matrix(mrds.locs) | is.data.frame(mrds.locs))
+            mrds.locs = list(mrds.locs)
+        }
+        
+    }
+    
+    
+    #we added two new components, "animal_ID" column and "use named ID"
+    is.animalID = "animal_ID" %in% colnames(captures)
+    
+    #deal with new components with all possible combinations
+    if(is.animalID | use.name == TRUE){
+        
+        if(is.animalID){
+            captures$key = paste(captures$animal_ID, captures$ID, sep = "_")
+        } else {
+            captures$key =as.character(captures$ID)
+        }
+        
+        dupli = duplicated(captures[,c("session", "key", "trap")])
+        if(any(dupli)){
+            warning("Ignoring the duplicated observations")
+        }
+        captures = captures[!dupli,]
+        
+        n.keys = numeric(n.sessions)
+        n.keys[unique(captures$session)] = aggregate(captures$key, list(session = captures$session),
+                                                     function(x) length(unique(x)))$x
+        
+        
+        if(is.mrds) {
+            tem.n.IDs = lapply(mrds.locs, nrow)
+            tem.n.IDs = lapply(tem.n.IDs, function(x) ifelse(is.null(x), 0, x))
+            tem.n.IDs = do.call('c', tem.n.IDs)
+            stopifnot(all(tem.n.IDs == n.keys))
+            
+            for(i in unique(captures$session)){
+                if(is.animalID){
+                    if(!all(c("animal_ID", "ID") %in% colnames(mrds.locs[[i]]))) {
+                        stop("Please provide identification information 'animal_ID' and 'ID' in mrds.locs argument")
+                    }
+                } else {
+                    if(!("ID" %in% colnames(mrds.locs[[i]]))){
+                        stop("Please provide identifiation information 'ID' in mrds.locs argument")
+                    }
+                }
+            }
+            
+        }
+        
+    } else {
+        dupli = duplicated(captures[,c("session", "ID", "trap")])
+        if(any(dupli)){
+            warning("Ignoring the duplicated observations")
+        }
+        captures = captures[!dupli,]
+        n.IDs = numeric(n.sessions)
+        n.IDs[unique(captures$session)] = aggregate(captures$ID, list(session = captures$session),
+                                                    function(x) length(unique(x)))$x
+        
+        if(is.mrds) {
+            tem.n.IDs = lapply(mrds.locs, nrow)
+            tem.n.IDs = lapply(tem.n.IDs, function(x) ifelse(is.null(x), 0, x))
+            tem.n.IDs = do.call('c', tem.n.IDs)
+            stopifnot(all(tem.n.IDs == n.IDs))
+            for(i in 1:n.sessions){
+                tem = subset(captures, session == i)
+                if(any(!tem$ID %in% 1:n.IDs[i])) {
+                    stop('labels of IDs with "mrds.locs" provided must be successive natural numbers')
+                }
+            }
+            
+        }
+    }
+    
+    
+    #-----------------------------------------------------------------------------------------------------
+    #all checks have been done, below we generate output list
+    
+    all.types <- c("bearing", "dist", "ss", "toa")
+    info.types <- all.types[all.types %in% colnames(captures)]
+    out.list <- vector(mode = "list", length = n.sessions)
+    
+    
+    
+    
+    for (s in 1:n.sessions){
+        tem <- captures[captures$session == s, ]
+        if(is.animalID){
+            tem.key = data.frame(animal_ID = tem$animal_ID, ID = tem$ID)
+            tem.key = tem.key[!duplicated(tem.key)]
+            id <- paste(tem.key$animal_ID, tem.key$ID, sep = '_')
+            n <- n.keys[s]
+        } else {
+            id <- tem$ID
+            n <- ifelse(use.name == TRUE, n.keys[s], n.IDs[s])
+        }
+        
         out <- vector(mode = "list", length = length(info.types) + 1 + as.numeric(is.mrds))
+        #if animal_ID is used, we use data frame for 'bincapt', and we add two columns after
+        #n.traps[s] columns, so that the order of the first n.traps[s] columns still make sense
+        
+        
         for (i in 1:length(out)){
             out[[i]] <- matrix(0, nrow = n, ncol = n.traps[s])
         }
+        
+        
+        if(is.animalID){
+            out[[1]] <- as.data.frame(out[[1]], stringsAsFactors = FALSE)
+            out[[1]]$animal_ID = NA
+            out[[1]]$ID = NA
+        }
         names(out) <- c("bincapt", info.types, "mrds"[is.mrds])
-        if (nrow(captures) > 0){
-            session <- captures[, 1]
-            trap <- captures[, 4]
+        
+        
+        if (nrow(tem) > 0){
+            trap <- tem$trap
             rnames <- character(n)
             for (i in 1:n){
                 u.id <- unique(id)[i]
                 trig <- trap[id == u.id]
-                if (length(trig) != length(unique(trig))){
-                    msg <- paste("Ignoring that individual", u.id, "was detected by some traps more than once.")
-                    warning(msg)
-                }
                 out[["bincapt"]][i, trig] <- 1
                 for (j in info.types){
                     for (k in trig){
-                        out[[j]][i, k] <- captures[id == u.id & trap == k, j][1]
+                        out[[j]][i, k] <- tem[id == u.id & trap == k, j][1]
                     }
                 }
                 if (is.mrds){
-                    out[[length(out)]] <- mrds.locs[[s]]
+                    out[["mrds"]] <- mrds.locs[[s]]
                 }
                 rnames[i] <- u.id
+                
+                if(is.animalID){
+                    
+                    out[["bincapt"]]$animal_ID = tem.key$animal_ID
+                    out[["bincapt"]]$ID = tem.key$ID
+                    
+                }
+                
             }
             for (i in 1:length(out)){
                 rownames(out[[i]]) <- rnames
             }
         }
-        if (n.sessions > 1){
-            out.list[[s]] <- out
-        }
+        out.list[[s]] = out
     }
-    if (n.sessions > 1){
-        out <- out.list
+    
+    if(n.sessions == 1) {
+        return(out.list[[1]])
+    } else {
+        return(out.list)
     }
-    out
+    
 }
 
 #' Convert traps object

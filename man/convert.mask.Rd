@@ -6,12 +6,6 @@
 \usage{
 convert.mask(mask)
 }
-\arguments{
-\item{mask}{A matrix with two columns, or a list of such matrices
-for a multi-session model. Each row provides Cartesian
-coordinates for the location of a mask point. It is most easily
-created using \link{create.mask}.}
-}
 \value{
 An object of class \code{mask}.
 }

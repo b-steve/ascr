@@ -1,5 +1,5 @@
 p.dot.defaultD = function(points = NULL, traps = NULL, detfn = NULL, ss_dir = NULL,
-                          ss.link = NULL, pars = NULL, A = A, n.quadpoints = 8){
+                          ss.link = NULL, pars = NULL, A, n.quadpoints = 8){
   
   dists <- distances(traps, points)
   
@@ -18,15 +18,22 @@ p.dot.defaultD = function(points = NULL, traps = NULL, detfn = NULL, ss_dir = NU
         ## Probabilities of detection given orientation.
         o.prob <- numeric(n.traps)
         for (k in 1:n.traps){
-          o.prob[k] <- calc.detfn(dists[k, j], detfn, pars, ss.link,
-                                        orientations[k, j])
+          o.prob[k] <- det_prob(detfn, pars, dists[k, j], ss.link
+            #direction ss is not supported yet, hide this part
+                                  #      , orientations[k, j]
+                                  )
         }
         probs[j] <- probs[j] + (1/n.quadpoints)*(1 - prod(1 - o.prob))
       }
     }
     out <- probs
   } else {
-    probs <- calc.detfn(dists, detfn, pars, ss.link)
+    probs <- det_prob(detfn, pars, dists, ss.link)
+    if(detfn == 'ss'){
+      sigma.ss <- pars$sigma.ss
+      cutoff <- pars$cutoff
+      probs = 1 - pnorm(cutoff, mean = probs, sd = sigma.ss)
+    }
     out <- aaply(probs, 2, function(x) 1 - prod(1 - x))
   }
   
@@ -218,11 +225,6 @@ default.sv = function(param, info){
     
     if(ss_het | ss_dir | detfn == 'ss'){
       detfn = 'ss'
-      if(ss.link == 'log'){
-        detfn = 'log.ss'
-      } else if(ss.link == 'spherical'){
-        detfn = 'spherical.ss'
-      }
       pars[["sigma.b0.ss"]] <- 0
       if(!any(detpar.names == 'b2.ss')) pars[['b2.ss']] = 0
     }

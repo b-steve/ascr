@@ -7,8 +7,6 @@
 get.mce(fit, estimate)
 }
 \arguments{
-\item{fit}{A fitted model from \link{fit.ascr}.}
-
 \item{estimate}{A character string, either \code{"bias"} or
 \code{"se"}, which determines whether Monte Carlo errors for
 bias estimates or standard errors are reported.}

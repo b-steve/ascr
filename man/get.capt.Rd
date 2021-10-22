@@ -7,8 +7,6 @@
 get.capt(fit, session = NULL)
 }
 \arguments{
-\item{fit}{A fitted model from \link{fit.ascr}.}
-
 \item{session}{The session from which to extract the capture
 histories.}
 }

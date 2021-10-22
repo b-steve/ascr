@@ -18,12 +18,6 @@ convert.capt.to.secr(capt, traps, capthist = TRUE, cutoff = NULL)
 \code{convert.capt.to.ascr}, or an \code{ascr} capture
 history object for \code{convert.capt.to.secr}.}
 
-\item{traps}{A matrix with two columns. Each row provides Cartesian
-coordinates for the location of a detector. Alternatively, this
-can be a list of such matrices if detections from multiple
-detector arrays (or `sessions') are being used to fit a single
-model.}
-
 \item{capthist}{Logical, if \code{TRUE}, a \code{capthist} object
 is returned. Otherwise a data frame is returned, which is
 suitable for the \code{captures} argument to the
@@ -42,6 +36,6 @@ structures required for the \code{ascr} and \code{secr}
 packages.
 }
 \examples{
-capt <- convert.capt.to.secr(capt = example$capt, traps = example$traps, cutoff = example$cutoff)
+capt <- convert.capt.to.secr(capt = example.data$capt, traps = example.data$traps, cutoff = example.data$cutoff)
 
 }

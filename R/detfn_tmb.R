@@ -1,6 +1,9 @@
 #dx and each component of det_par should be vectors with the same length
 #of course, if any one of them is only a scaler, there will be no problem
-det_prob = function(det_fn, det_par, dx, ss.link = NULL){
+
+#argument orientation is used for ss.dir, not supported yet
+
+det_prob = function(det_fn, det_par, dx, ss.link = NULL, orientation = NULL){
   
   for(i in names(det_par)) assign(i, det_par[[i]])
   

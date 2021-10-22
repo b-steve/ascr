@@ -7,8 +7,6 @@
 get.par(fit, pars = "all", cutoff = FALSE, as.list = FALSE)
 }
 \arguments{
-\item{fit}{A fitted model from \link{fit.ascr}.}
-
 \item{pars}{A character vector containing names of parameter values
 to be extracted. Alternatively, the character string
 \code{"all"} will extract all parameters, fixed or otherwise,

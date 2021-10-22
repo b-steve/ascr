@@ -7,8 +7,6 @@
 get.mask(fit, session = NULL, as.list = NULL)
 }
 \arguments{
-\item{fit}{A fitted model from \link{fit.ascr}.}
-
 \item{session}{The session from which to extract the trap
 locations. If a vector, the function selects masks from
 multiple sessions, and \code{"all"} will use all sessions.}
