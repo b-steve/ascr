@@ -146,31 +146,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// secr_nll
-double secr_nll(const NumericVector& link_pars, const List& dat, const bool& get_esa);
-RcppExport SEXP _ascr_secr_nll(SEXP link_parsSEXP, SEXP datSEXP, SEXP get_esaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP);
-    Rcpp::traits::input_parameter< const List& >::type dat(datSEXP);
-    Rcpp::traits::input_parameter< const bool& >::type get_esa(get_esaSEXP);
-    rcpp_result_gen = Rcpp::wrap(secr_nll(link_pars, dat, get_esa));
-    return rcpp_result_gen;
-END_RCPP
-}
-// calc_probsurf
-List calc_probsurf(const NumericVector& link_pars, const List& dat);
-RcppExport SEXP _ascr_calc_probsurf(SEXP link_parsSEXP, SEXP datSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type link_pars(link_parsSEXP);
-    Rcpp::traits::input_parameter< const List& >::type dat(datSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_probsurf(link_pars, dat));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ascr_find_incomplete_blocks", (DL_FUNC) &_ascr_find_incomplete_blocks, 1},
@@ -184,8 +159,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ascr_find_local", (DL_FUNC) &_ascr_find_local, 3},
     {"_ascr_sim_ss", (DL_FUNC) &_ascr_sim_ss, 4},
     {"_ascr_squarify", (DL_FUNC) &_ascr_squarify, 2},
-    {"_ascr_secr_nll", (DL_FUNC) &_ascr_secr_nll, 3},
-    {"_ascr_calc_probsurf", (DL_FUNC) &_ascr_calc_probsurf, 2},
     {NULL, NULL, 0}
 };
 

@@ -220,7 +220,7 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local,
         mrds = data.full[data.full$session == i, c("mrds_x", "mrds_y")]
         mrds = mrds[!duplicated(mrds),]
         all.which.local[[i]] <- find.nearest.mask(as.matrix(mrds), mask[[i]])
-        all.n.local[[i]] <- laply(all.which.local[[i]], length)
+        all.n.local[[i]] <- plyr::laply(all.which.local[[i]], length)
         all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
       }
       
@@ -246,7 +246,7 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local,
         }
         
         all.which.local[[i]] <- find_local(bincapt, dists[[i]], buffer[i])
-        all.n.local[[i]] <- laply(all.which.local[[i]], length)
+        all.n.local[[i]] <- plyr::laply(all.which.local[[i]], length)
         all.which.local[[i]] <- c(all.which.local[[i]], recursive = TRUE)
       }
     }
@@ -893,7 +893,7 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
     het.source.weights <- 0
     if(het.source){
       if(het.source.method == "GH"){
-        GHd <- gaussHermiteData(n.het.source.quadpoints)
+        GHd <- fastGHQuad::gaussHermiteData(n.het.source.quadpoints)
         het.source.nodes <- GHd$x
         het.source.weights <- GHd$w
       }

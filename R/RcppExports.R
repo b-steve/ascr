@@ -71,22 +71,3 @@ squarify <- function(mask, D_mask) {
     .Call('_ascr_squarify', PACKAGE = 'ascr', mask, D_mask)
 }
 
-#' Evaluating the likelihood using C++
-#'
-#' Returns the likelihood for a vector of parameter values.
-#'
-#' @param link_pars Parameter values on link scale.
-#' @param dat Data list.
-#' @param get_esa Logical. If \code{TRUE} the effective sampling area is returned,
-#'        otherwise the negative log-likelihood is returned.
-#'
-#' @return The value of the negative log-likelihood.
-#'
-secr_nll <- function(link_pars, dat, get_esa) {
-    .Call('_ascr_secr_nll', PACKAGE = 'ascr', link_pars, dat, get_esa)
-}
-
-calc_probsurf <- function(link_pars, dat) {
-    .Call('_ascr_calc_probsurf', PACKAGE = 'ascr', link_pars, dat)
-}
-

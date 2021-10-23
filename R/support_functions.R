@@ -34,7 +34,7 @@ p.dot.defaultD = function(points = NULL, traps = NULL, detfn = NULL, ss_dir = NU
       cutoff <- pars$cutoff
       probs = 1 - pnorm(cutoff, mean = probs, sd = sigma.ss)
     }
-    out <- aaply(probs, 2, function(x) 1 - prod(1 - x))
+    out <- plyr::aaply(probs, 2, function(x) 1 - prod(1 - x))
   }
   
   out <- A*sum(out)
@@ -807,4 +807,10 @@ ori_name = function(char){
   }
   
   return(output)
+}
+
+## Finding nearest mask point to an observed MRDS location.
+find.nearest.mask <- function(locs, mask){
+  dists <- distances(locs, mask)
+  as.list(apply(dists, 1, function(x) which(x == min(x))[1]))
 }

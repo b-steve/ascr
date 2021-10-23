@@ -433,7 +433,7 @@ p.dot <- function(fit = NULL, session = 1, esa = FALSE, points = get.mask(fit, s
         out <- probs
     } else {
         probs <- calc.detfn(dists, detfn, pars, ss.link)
-        out <- aaply(probs, 2, function(x) 1 - prod(1 - x))
+        out <- plyr::aaply(probs, 2, function(x) 1 - prod(1 - x))
     }
     if (esa){
         A <- attr(points, "area")
@@ -565,8 +565,4 @@ calc.ela <- function(traps, radius, mask = NULL, ...){
 }
 
 
-## Finding nearest mask point to an observed MRDS location.
-find.nearest.mask <- function(locs, mask){
-    dists <- distances(locs, mask)
-    as.list(apply(dists, 1, function(x) which(x == min(x))[1]))
-}
+

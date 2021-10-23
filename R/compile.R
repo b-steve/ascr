@@ -1,13 +1,8 @@
 #' @export
-compile.ascr <- function(template = 'ascrTmb.cpp'){
-  wd <- getwd()
-  dir <- paste0(
-    #system.file(package = "ascr"), 
-    
-    #for dev only
-    wd,
-    "/src")
-  setwd(dir)
-  TMB::compile(template)
-  setwd(wd)
+compile.ascr <- function(){
+
+  dir = paste0(system.file(package = "ascr"), "/TMB/")
+  
+  TMB::compile(paste0(dir, "ascrTmb.cpp"))
+
 }
