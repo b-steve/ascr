@@ -1,6 +1,6 @@
 #' @export
-simcapt_from_fit_tmb = function(fit){
-  #source('get_funs.r', local = T)
+sim.capt = function(fit){
+
   #get pop density for each mask
   data_density = get_D_tmb(fit)
   #area for each mask
@@ -163,7 +163,7 @@ sim_det_history = function(fit, data_density){
   data_dist_theta = merge(data_dist_theta, data_density[,c('session', 'mask', 'n_animals')],
                           by = c('session', 'mask'))
   
-  #shrink the data set by picking out the masks with no simulated animal
+  #shrink the data set by dropping the masks with no simulated animal
   data_capt = subset(data_dist_theta, data_dist_theta$n_animals != 0)
   
   #merge the coordination of each trap and each mask to this data frame
