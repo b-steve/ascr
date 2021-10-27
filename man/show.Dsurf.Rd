@@ -26,7 +26,7 @@ to be plotted. Ignored if the \code{newdata} argument is
 provided.}
 
 \item{newdata}{A data frame including new mask points and covariate
-values, from which to estimate and plot denstiy estimates
+values, from which to estimate and plot density estimates
 for. This allows, for example, estimates to be provided for new
 regions not included in the mask used to fit the model. Two
 columns, named \code{x} and \code{y}, must be included,
