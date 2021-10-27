@@ -32,10 +32,10 @@
 #' prediction location are used for prediction; This is only applied to numeric 
 #' covariate variable.
 #' 
-#' @return A list with element \code{prediction} and \code{plot} is returned. 
+#' @return A list with elements \code{prediction} and \code{plot} is returned. 
 #' 
 #' @export
-plot.prediction = function(mask,
+show.prediction = function(mask,
                            cov.var=NULL,
                            point.var=NULL,
                            nmax = 10,
