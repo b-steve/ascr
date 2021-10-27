@@ -2,3 +2,5 @@ package-build/
 results/
 Makefile
 HELP-release.txt
+^.*\.Rproj$
+^\.Rproj\.user$

@@ -2,3 +2,8 @@
 results/
 package-build/
 HELP-release.txt
+.Rproj*
+.Rhistory
+*.dll
+*.o
+*.Rproj
