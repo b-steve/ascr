@@ -10,3 +10,4 @@ HELP-release.txt
 *.pper
 *.pper
 .Rproj.user/
+.Rhistory

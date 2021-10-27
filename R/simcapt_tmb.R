@@ -74,7 +74,7 @@ sim.capt = function(fit){
 
 ###########################################################################################################
 #simulate detection history, the key component of simulation
-sim_det_history = function(fit, data_density){
+sim_det_history = function(fit, data_density, max_try = 1000){
   #source('support_functions.r', local = TRUE)
   #source('detfn_tmb.r', local = TRUE)
   data_full = get_data_full(fit)
@@ -270,10 +270,11 @@ sim_det_history = function(fit, data_density){
   rm(det_par)
   
   data_capt[['n_det']] = 0
-  
+  n_try = 0
   #at least we need some detection history, otherwise we cannot proceed with any further procedure
-  while(sum(data_capt[['n_det']]) == 0){
+  while(sum(data_capt[['n_det']]) == 0 & n_try < max_try){
     data_capt[['n_det']] = rbinom(nrow(data_capt), data_capt[['n_calls']], data_capt[['det_prob']])
+    n_try = n_try + 1
   }
   return(data_capt)
 }
