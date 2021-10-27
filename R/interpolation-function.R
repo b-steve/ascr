@@ -1,26 +1,45 @@
-###Interpolation using idw
-###
-###
-cov.bind = function(cov.var, cov.list) {
-  names(cov.list) = 1:length(cov.list)
-  col = c("X", "Y", cov.var)
-  
-  df = data.frame()
-  for (i in 1:length(cov.list)) {
-    cov.df = cov.list[[i]]
-    if (cov.var %in% names(cov.df)) {
-      df = rbind(df, cov.df[col])
-      df = as.data.frame(df)
-    }
-  }
-  df
-}
-
+#' Interpolation for covariates
+#'
+#' Interpolates the covariate for the mask points using 
+#' inverse distance weighted (IDW) method.
+#' 
+#' IDW uses the measured values surrounding the prediction location to predict
+#' a value for any unmeasured location. 
+#' 
+#' Each measured point, according to IDW, has a local influence that decreases
+#' with distance. It gives more weight to points that are closest to the
+#' prediction location and the weights decrease as the distance increases.
+#' 
+#' @param mask A matrix with two columns. Each row provides Cartesian 
+#' coordinates named "x" and "y" for the location of a mask point. 
+#' 
+#' @param cov.var A vector of the covariate variables for prediction. 
+#' 
+#' @param point.var A vector of the distance covariate for prediction.
+#' 
+#' @param cov.list A list of all the covariate data frames. Each row 
+#' provides Cartesian coordinates named "X" and "Y" and its 
+#' covariate values.
+#' 
+#' @param point.df A data frames of the distance covariates. Each row 
+#' provides Cartesian coordinates named "X" and "Y" and the 
+#' corresponding feature named "feature".
+#' 
+#' @param nmax the number of nearest observations that should be used for
+#' prediction. This is only applied to numeric covariate variable.
+#' 
+#' @param maxdist only observations within a distance of maxdist from the 
+#' prediction location are used for prediction; This is only applied to numeric 
+#' covariate variable.
+#' 
+#' @return A list with element \code{prediction} and \code{plot} is returned. 
+#' 
+#' @export
 plot.prediction = function(mask,
                            cov.var=NULL,
                            point.var=NULL,
-                           nmax = 1,
-                           maxdist = 10000,
+                           nmax = 10,
+                           maxdist = 1000,
                            cov.list=NULL,
                            point.df=NULL) {
   mask = as.data.frame(mask)
@@ -111,6 +130,21 @@ plot.prediction = function(mask,
   names(output.df)[-1:-2] = c(cov.var,point.var)
   names(plot.list) = c(cov.var,point.var)
   multi.return = list(output.df, plot.list)
-  
+  names(multi.return) = c("prediction", "plot")
   return(multi.return)
+}
+
+cov.bind = function(cov.var, cov.list) {
+  names(cov.list) = 1:length(cov.list)
+  col = c("X", "Y", cov.var)
+  
+  df = data.frame()
+  for (i in 1:length(cov.list)) {
+    cov.df = cov.list[[i]]
+    if (cov.var %in% names(cov.df)) {
+      df = rbind(df, cov.df[col])
+      df = as.data.frame(df)
+    }
+  }
+  df
 }
