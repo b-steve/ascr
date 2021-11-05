@@ -1,3 +1,48 @@
+covariates_mask_check = function(dat, n.sessions, n.masks, identical_flag){
+  #list and data.frame will all return TRUE for is.list()
+  stopifnot(is.list(dat))
+  
+  if(is(dat, 'list')){
+    if(length(dat) > 1){
+      #if more than one component in this list, each component represent one session
+      stopifnot(length(dat) != n.sessions)
+      stopifnot(all(sapply(dat, nrow) == n.masks))
+    } else {
+      #if only one component in this list, then if n.sessions > 1 is a special scenario
+      stopifnot(nrow(dat[[1]] == n.masks[1]))
+      
+      if(n.sessions > 1){
+        stopifnot(identical_flag)
+        tem = dat[[1]]
+        dat = vector('list', n.sessions)
+        for(s in 1:n.sessions) dat[[s]] = tem
+      }
+      
+    }
+    
+  } else {
+    stopifnot(nrow(dat) == n.masks[1])
+    if(n.sessions > 1){
+      stopifnot(identical_flag)
+    }
+    
+    tem = dat
+    dat = vector('list', n.sessions)
+    for(s in 1:n.sessions) dat[[s]] = tem
+  }
+  
+  for(s in 1:n.sessions){
+    dat[[s]][['session']] = s
+    dat[[s]][['mask']] = 1:n.masks[s]
+  }
+  dat = do.call('rbind', dat)
+  
+  return(dat)
+}
+
+
+
+
 p.dot.defaultD = function(points = NULL, traps = NULL, detfn = NULL, ss_dir = NULL,
                           ss.link = NULL, pars = NULL, A, n.quadpoints = 8){
   
@@ -138,13 +183,13 @@ formula_separate = function(foo, var.m){
 param.range.validate = function(param, value){
   if(param %in% c("sigma", "lambda0", "z", "shape.1","scale", "sigma.b0.ss", "kappa", "alpha", "sigma.toa",
                   "b0.ss", "b1.ss", "b2.ss", "sigma.ss", 'D')){
-    if(value > 0){
+    if(value >= 0){
       return(TRUE)
     } else {
       return(FALSE)
     }
   } else if(param == 'g0'){
-    if(value > 0 & value <= 1){
+    if(value >= 0 & value <= 1){
       return(TRUE)
     } else {
       return(FALSE)
@@ -813,4 +858,20 @@ ori_name = function(char){
 find.nearest.mask <- function(locs, mask){
   dists <- distances(locs, mask)
   as.list(apply(dists, 1, function(x) which(x == min(x))[1]))
+}
+
+mean_diy = function(vec){
+  if(length(vec) > 0){
+    if(is(vec, 'numeric')){
+      return(mean(vec, na.rm = TRUE))
+    } else {
+      return(vec[1])
+    }
+  } else {
+    if(is(vec, 'character')){
+      return(character(0))
+    } else {
+      return(numeric(0))
+    }
+  }
 }

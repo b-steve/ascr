@@ -1,0 +1,13 @@
+library('devtools')
+load_all()
+
+demo_names = list.files("G:/")
+demo_names = demo_names[grepl("^fit_", demo_names)]
+
+for(i in demo_names){
+  dir = paste0("G:/", i)
+  assign(i, readRDS(dir)$model_output)
+}
+
+rm(demo_names, dir, i)
+

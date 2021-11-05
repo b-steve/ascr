@@ -6,11 +6,12 @@
 ID',}
 \usage{
 par.extend.fun(
-  par.extend = par.extend,
-  data.full = data.full,
-  data.mask = data.mask,
-  dims = dims,
-  fulllist.par = fulllist.par
+  par.extend,
+  data.full,
+  data.mask,
+  dims,
+  fulllist.par,
+  extra_args
 )
 }
 \description{

@@ -35,7 +35,7 @@ create.mask <- function(traps, buffer, ...){
     } else {
         ## Creating mask for a single session.
         traps <- convert.traps(traps)
-        mask <- make.mask(traps, buffer = buffer, type = "trapbuffer", ...)
+        mask <- secr::make.mask(traps, buffer = buffer, type = "trapbuffer", ...)
         A <- attr(mask, "area")
         mask <- as.matrix(mask)
         attr(mask, "area") <- A
@@ -340,6 +340,7 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
     
 }
 
+
 #' Convert traps object
 #'
 #' Converts an \code{ascr} traps matrix to a \code{secr} traps
@@ -369,7 +370,7 @@ convert.traps <- function(traps, ss = FALSE){
     colnames(traps) <- c("x", "y")
     traps.df <- data.frame(names = 1:n.traps, traps)
     detector <- ifelse(ss, "signal", "proximity")
-    read.traps(data = traps.df, detector = detector)
+    secr::read.traps(data = traps.df, detector = detector)
 }
 
 #' Convert mask object
@@ -391,7 +392,7 @@ convert.mask <- function(mask){
     if (is.list(mask)){
         stop("The convert.mask() function will only convert single-session mask objects.")
     }
-    read.mask(data = as.data.frame(mask))
+    secr::read.mask(data = as.data.frame(mask))
 }
 
 #' Capture history conversion.
@@ -469,7 +470,7 @@ convert.capt.to.secr <- function(capt, traps, capthist = TRUE, cutoff = NULL){
     }
     if (capthist){
         traps <- convert.traps(traps, ss = fit.ss)
-        out <- make.capthist(out, traps, fmt = "trapID", noccasions = 1,
+        out <- secr::make.capthist(out, traps, fmt = "trapID", noccasions = 1,
                              cutval = cutoff)
     }
     out
@@ -560,4 +561,100 @@ convert.raven <- function(dets, mics, time.range = NULL, sound.speed = 330,
         captures <- make.acoustic.captures(mics, clicks, sound.speed)
     }
     create.capt(captures, traps = mics)
+}
+
+
+#' Assigning ID numbers to sounds
+#'
+#' Identifies recaptures and assigns ID numbers to sounds recorded for
+#' an SECR model.
+#'
+#' Detected sounds are assumed to come from the same animal if times
+#' of arrival at different microphones are closer together than the
+#' time it would take for sound to travel between these microphones.
+#'
+#' @param mics a matrix containing the coordinates of trap locations.
+#' @param dets a data frame containing (at least): (i) \code{$toa},
+#'     the precise time of arrival of the received sound, and (ii)
+#'     \code{$trap} the trap at which the sound was recorded.
+#' @param sound.speed the speed of sound in metres per second.
+#' @return A data frame. Specifically, the \code{dets} dataframe, now
+#'     with a new variable, \code{ID}.
+#' @author David Borchers
+#'
+#' @export
+make.acoustic.captures <- function(mics, dets, sound.speed){
+    mics <- as.matrix(mics)
+    dists <- distances(mics, mics)
+    dt <- dists/sound.speed
+    K <- dim(mics)[1]
+    captures <- dets
+    ct <- rep(-Inf, K)
+    ID <- 1
+    ct[dets$trap[1]] <- dets$toa[1]
+    new <- FALSE
+    ndets <- length(dets$toa)
+    for (i in 2:ndets){
+        if (ct[dets$trap[i]] > -Inf){
+            nd <- length(which(ct > -Inf))
+            captures$ID[(i - nd):(i - 1)] <- ID
+            ct <- rep(-Inf, K)
+            ct[dets$trap[i]] <- dets$toa[i]
+            ID <- ID + 1
+            if(i == ndets) captures$ID[i] <- ID
+        }
+        else {
+            ct[dets$trap[i]] <- dets$toa[i]
+            ctset <- which(ct > -Inf)
+            dts <- dt[ctset, dets$trap[i]]
+            cts <- -(ct[ctset] - dets$toa[i])
+            if (any((cts - dts) > 0)) new <- TRUE
+            if (new) {
+                nd <- length(which(ct > -Inf)) - 1
+                captures$ID[(i - nd):(i - 1)] <- ID
+                ct <- rep(-Inf, K)
+                ct[dets$trap[i]] <- dets$toa[i]
+                ID <- ID + 1
+                new <- FALSE
+                if (i == ndets) captures$ID[i] <- ID
+            } else if(i == ndets){
+                nd <- length(which(ct > -Inf))
+                captures$ID[(i - nd + 1):i] <- ID
+            }
+        }
+    }
+    captures
+}
+
+
+
+allocate.calls <- function(mics, dets, sound.speed){
+    mics <- as.matrix(mics)
+    trap.dists <- distances(mics, mics)
+    n.dets <- nrow(dets)
+    ## Allocating pairwise plausibility of common cue sources.
+    dist.mat <- detection_dists(trap.dists, dets$trap)
+    timediff.mat <- detection_timediffs(dets$toa, dets$trap)
+    maxtime.mat <- dist.mat/sound.speed
+    match.mat <- timediff.mat <= maxtime.mat
+    ## Finding blocks of multiple cues with possible common sources.
+    incomplete.blocks <- find_incomplete_blocks(match.mat)
+    n.blocks <- max(incomplete.blocks)
+    complete.block <- logical(n.blocks)
+    final.mat <- matrix(FALSE, nrow = n.dets, ncol = n.dets)
+    ## Allocating possible common cues to sources.
+    reqss.mat <- dist.mat/timediff.mat
+    for (i in 1:max(incomplete.blocks)){
+        ## Grabbing a block.
+        block <- match.mat[incomplete.blocks == i, incomplete.blocks == i]
+        reqss <- reqss.mat[incomplete.blocks == i, incomplete.blocks == i]
+        ## Working out if there is any possible ambiguity.
+        is.complete <- all(block)
+        ## If ambiguity, resolve it.
+        if (!is.complete){
+            block <- blockify(block, reqss)
+        }
+        final.mat[incomplete.blocks == i, incomplete.blocks == i] <- block
+    }
+    find_incomplete_blocks(final.mat)
 }

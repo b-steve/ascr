@@ -51,7 +51,11 @@ capture.fun = function(capt){
         tem.df$ID = rep(tem$bincapt$ID, n.traps[i])
         tem$bincapt = as.matrix(tem$bincapt[, 1:n.traps[i]])
       } else {
-        tem.df$ID = rep(rownames(tem$bincapt), n.traps[i])
+        if(is.null(rownames(tem$bincapt))){
+          tem.df$ID = rep(as.character(1:nrow(tem$bincapt)), n.traps[i])
+        } else {
+          tem.df$ID = rep(rownames(tem$bincapt), n.traps[i])
+        }
       }
       
       tem.df$trap = rep(1:n.traps[i], each = n.IDs[i])
@@ -115,8 +119,7 @@ trap.fun = function(traps, dims){
 
 ###################################################################################
 
-mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local,
-                    sound.speed = sound.speed){
+mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound.speed){
   
   stopifnot(any(is(mask, 'list'), is.data.frame(mask), is.matrix(mask)))
   n.sessions = dims$n.sessions
@@ -350,8 +353,53 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local,
 
 ###############################################################################
 
-par.extend.fun = function(par.extend = par.extend, data.full = data.full, data.mask = data.mask,
-                          dims = dims, fulllist.par = fulllist.par){
+par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, extra_args){
+  
+  n.sessions = dims$n.sessions
+  n.IDs = dims$n.IDs
+  n.traps = dims$n.traps
+  n.masks = dims$n.masks
+  
+  #it is possible that throughout all sessions, the traps/masks remain the same
+  #and in this case, users can only provide one set of data frame of traps/masks
+  if(n.sessions > 1){
+    identical_traps = all(n.traps == n.traps[1])
+    identical_masks = all(n.masks == n.masks[1])
+  }
+  
+  
+  ihd_merge = FALSE
+  #if the user is using ADMB version input for ihd model, there will be an argument named 'ihd.opts'
+  #in the extra_args, merge it into 'par.extend'
+  if('ihd.opts' %in% names(extra_args)){
+    #some basic check about 'ihd.opts', this part cannot be done in the later check of 'par.extend'
+    #because it is possible that the user provide 'par.extend' as well, and inside of it, there is
+    #some 'mask' related extension
+    ihd_data = extra_args$ihd.opts$covariates
+    ihd_scale = extra_args$ihd.opts$scale
+    ihd_model = extra_args$ihd.opts$model
+    stopifnot(!is.null(ihd_data) & !is.null(ihd_model))
+    if(is.null(ihd_scale)) ihd_scale = TRUE
+    
+    
+    
+    if(is.null(par.extend)){
+      par.extend = list(data = list(mask = ihd_data), model = list(D=ihd_model), scale = ihd_scale)
+    } else {
+      if(!is.null(par.extend$model$D)){
+        stop('"ihd.opts" and Density extension in "par.extend" are both provided, please choose one of them.')
+      } else {
+        par.extend$model$D = ihd_model
+        par.extend$scale = ihd_scale
+        if(is.null(par.extend$data$mask)){
+          par.extend$data$mask = ihd_data
+        } else {
+          ihd_data = covariates_mask_check(ihd_data, n.sessions, n.masks, identical_masks)
+          ihd_merge = TRUE
+        }
+      }
+    }
+  }
   
   #'fgam' is an object for compatibility with ADMB model
   fgam = NULL
@@ -364,11 +412,6 @@ par.extend.fun = function(par.extend = par.extend, data.full = data.full, data.m
   }
   
   namelist.par.extend = fulllist.par[-which(fulllist.par == 'sigma.b0.ss')]
-  
-  n.sessions = dims$n.sessions
-  n.IDs = dims$n.IDs
-  n.traps = dims$n.traps
-  n.masks = dims$n.masks
   
   is.animal_ID = "animal_ID" %in% colnames(data.full)
   
@@ -432,8 +475,24 @@ par.extend.fun = function(par.extend = par.extend, data.full = data.full, data.m
     if(!is.null(df.t)){
       stopifnot(is(df.t, 'data.frame'))
       name.t = colnames(df.t)
-      stopifnot(all(c('session', 'trap') %in% name.t))
-      stopifnot(length(name.t) > 2)
+      stopifnot('trap' %in% name.t)
+      
+      if('session' %in% name.t){
+        stopifnot(length(name.t) > 2)
+      } else {
+        #if all sessions share the same trap, the user can skip 'session' in the traps' covariates
+        #or there is only 1 session
+        stopifnot(length(name.t) > 1)
+        if(n.sessions > 1) stopifnot(identical_traps)
+        tem = vector('list', n.sessions)
+        df.t[['session']] = 0
+        for(s in 1:n.sessions){
+          tem[[s]] = df.t
+          tem[[s]][['session']] = s
+        }
+        df.t = do.call('rbind', tem)
+      }
+      
       if(any(duplicated(df.t[, c('session', 'trap')]))) stop('duplicated "trap" input.')
       stopifnot(all(paste(df.t$session, df.t$trap, sep = '-') %in%
                       unique(paste(data.full$session, data.full$trap, sep = '-'))))
@@ -485,21 +544,11 @@ par.extend.fun = function(par.extend = par.extend, data.full = data.full, data.m
     
     df.m = input_data$mask
     if(!is.null(df.m)){
-      stopifnot(is.list(df.m))
-      if(is(df.m, 'list')){
-        stopifnot(length(df.m) == n.sessions)
-        stopifnot(sapply(df.m, nrow) == n.masks)
-        for(i in 1:n.sessions){
-          df.m[[i]][['session']] = i
-          df.m[[i]][['mask']] = 1:n.masks[i]
-        }
-        df.m = do.call('rbind', df.m)
-      } else {
-        stopifnot(n.sessions == 1)
-        stopifnot(nrow(df.m) == n.masks)
-        df.m[['session']] = 1
-        df.m[['mask']] = 1:n.masks
-      }
+      
+      df.m = covariates_mask_check(df.m, n.sessions, n.masks, identical_masks)
+      
+      if(ihd_merge) df.m = merge(df.m, ihd_data, by = c('session', 'mask'))
+      
       name.m = colnames(df.m)
       var.m = name.m[-which(name.m == 'session'| name.m == 'mask')]
       data.par.mask = df.m

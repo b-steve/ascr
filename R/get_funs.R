@@ -4,7 +4,7 @@ get_D_tmb = function(fit){
   #extract the values from it and make it into a usable format data frame
   #with session and mask indices
   
-  dims = fit$output.tmb$dims
+  dims = get_dims_tmb(fit)
   output = data.frame(session = rep(1:dims$n.sessions, dims$n.masks))
   tem = vector('list', dims$n.sessions)
   for(s in 1:dims$n.sessions){
@@ -15,7 +15,7 @@ get_D_tmb = function(fit){
   row.names(output) = NULL
   data_mask = get_data_mask(fit)
   output = merge(output, data_mask, by = c('session', 'mask'))
-  output = output[order(output$session, output$mask),]
+  output = sort.data(output, 'data.mask')
   return(output)
 }
 
@@ -186,5 +186,118 @@ get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked,
   DX_new = cbind(DX_full_new, DX_mask_new)
   output = as.vector(DX_new %*% as.matrix(par_value_linked, ncol = 1))
   return(output)
+}
+
+#for numeric columns in the data frames in par.extend$data, the mean will be
+#used as the default value, and for non-numeric columns, the first element
+#will be used as the default value.
+#Actually if the argument for the fit.ascr(par.extend = xxx) sets scale = TRUE
+#then the default values for numeric columns will be just 0, however, if scale = FALSE
+#this function could help
+
+get_default_covariates = function(fit){
+  dat = fit$args$par.extend$data
+  dat_name = names(dat)
+  o = vector('list', length(dat_name))
+  names(o) = dat_name
+  
+  for(i in dat_name){
+    tem = dat[[i]]
+    tem = tem[, which(!colnames(tem) %in% c('session','ID','trap','mask')), drop = FALSE]
+    tem = as.data.frame(apply(tem, 2, mean_diy, simplify = FALSE))
+    tem = fit$scale.covs(tem)
+    o[[i]] = tem
+  }
+  
+  output = o[[dat_name[1]]]
+  if(length(dat_name) > 1){
+    for(i in 2:length(dat_name)) output = cbind(output, o[[dat_name[i]]])
+  }
+  return(output)
+}
+
+get_sv_for_boot = function(fit){
+  #depend on whether there is any parameter be extended in this model,
+  #it can be determined whether use default covariates (mean for each covariate) values 
+  is.extended = !is.null(get_par_extend_name(fit))
+  if(is.extended){
+    covaraites_default = get_default_covariates(fit)
+    output = as.list(coef(fit, 'fitted', new_covariates = covaraites_default))
+  } else {
+    output = as.list(coef(fit, 'fitted'))
+  }
+  
+  df_parm = get_data_param(fit)
+  fixed_par = names(fit$args$fix)
+
+  #avoid extreme start values if it is not fixed
+  for(i in names(output)){
+    if(!i %in% fixed_par){
+      link = df_parm[which(df_parm$par == i), 'link']
+      if(link == 'logit') output[[i]] = max(min(0.95, output[[i]]), 0.05)
+      if(link == 'log') output[[i]] = max(0.05, output[[i]])
+    }
+  }
+  
+  return(output)
+}
+
+#a simple version of "create.capt()", input is the simulated capture history if there is any,
+#which means nrow(capture) > 0
+get_capt_for_boot = function(captures, dims, infotypes){
+  n.sessions = dims$n.sessions
+  n.traps = dims$n.traps
+
+  #deal with irregular IDs and remove useless info types
+  captures = captures[,c('session', 'ID', 'trap', infotypes)]
+  tem_capt = vector('list', n.sessions)
+  n.IDs = numeric(n.sessions)
+  tem_data_head = vector('list', n.sessions)
+  for(s in 1:n.sessions){
+    tem_capt[[s]] = subset(captures, captures$session == s)
+    if(nrow(tem_capt[[s]] > 0)){
+      tem_capt[[s]]$ID = as.numeric(as.factor(tem_capt[[s]]$ID))
+      n.IDs[s] = max(tem_capt[[s]]$ID)
+      tem_data_head[[s]] = data.frame(session = s, ID = rep(seq(n.IDs[s]), each = n.traps[s]), 
+                                      trap = rep(seq(n.traps[s]), n.IDs[s]))
+    } else {
+      n.IDs[s] = 0
+    }
+
+  }
+  captures = do.call('rbind', tem_capt)
+  captures$bincapt = 1
+  data_head = do.call('rbind', tem_data_head)
+  
+  o = merge(data_head, captures, by = c('session', 'ID', 'trap'), all.x = TRUE)
+  o = sort.data(o, 'data.full')
+  for(i in c('bincapt', infotypes)) o[,i] = ifelse(is.na(o[,i]), 0, o[,i])
+  #prepare the structure of the output
+  if(n.sessions == 1){
+    output = vector('list', length(infotypes) + 1)
+    names(output) = c('bincapt', infotypes)
+    for(i in names(output)){
+      output[[i]] = matrix(o[,i], ncol = n.traps, byrow = TRUE)
+      rownames(output[[i]]) = seq(n.IDs)
+    }
+  } else {
+    output = vector('list', n.sessions)
+    for(s in 1:n.sessions){
+      output[[s]] = vector('list', length(infotypes) + 1)
+      names(output[[s]]) = c('bincapt', infotypes)
+      tem = subset(o, o$session == s)
+      for(i in names(output[[s]])){
+        if(n.IDs[s] > 0){
+          output[[s]][[i]] = matrix(tem[,i], ncol = n.traps[s], byrow = TRUE)
+          rownames(output[[s]][[i]]) = seq(n.IDs[s])
+        } else {
+          output[[s]][[i]] = matrix(nrow = 0, ncol = n.traps[s])
+        }
+      }
+    }
+  }
+  
+  return(output)
+  
 }
 

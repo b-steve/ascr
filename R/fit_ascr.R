@@ -13,8 +13,7 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
     }
   }
   
-  #source('functions_in_fit_ascr_tmb.r', local = TRUE)
-  #source('support_functions.r', local = TRUE)
+  extra_args = list(...)
   
   ####################################################################################################
   #begin of fit_ascr()
@@ -52,7 +51,7 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
                    'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
                    "sigma.b0.ss", 'D')
   o.par.extend = par.extend.fun(par.extend = par.extend, data.full = data.full, data.mask = data.mask,
-                                dims = dims, fulllist.par = fulllist.par)
+                                dims = dims, fulllist.par = fulllist.par, extra_args = extra_args)
   
   data.full = o.par.extend$data.full
   data.mask = o.par.extend$data.mask
