@@ -277,11 +277,10 @@ default.sv = function(param, info){
     if (!is.null(cutoff)){
       pars$cutoff <- cutoff
     }
-    
     esa <- p.dot.defaultD(points = mask, traps = traps, detfn = detfn, ss_dir = ss_dir,
                           ss.link = ss.link, pars = pars, A = A, n.quadpoints = 8)
     
-    return(log(dims$n.IDs[session_to_use]/(esa*survey.length)))
+    return(dims$n.IDs[session_to_use]/(esa*survey.length))
     #this part in the original function is difficult, better to ask for help
   } else if(param == "g0"){
     return(0.95)

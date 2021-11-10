@@ -1260,7 +1260,6 @@ param.detfn.fun = function(sv, fix, bounds, name.extend.par, detfn, data.full, d
   tem = lapply(tem, function(x) x[[1]])
   clean.names.mask = do.call('c', tem)
   
-  
   for(i in fulllist.par){
     index_par = which(data.par$par == i)
     
@@ -1351,6 +1350,7 @@ param.detfn.fun = function(sv, fix, bounds, name.extend.par, detfn, data.full, d
                                               detfn = detfn, dims = dims,
                                               survey.length = survey.length, param.og = param.og,
                                               sv = sv))
+          
         }
       }
     } else {
@@ -1391,7 +1391,6 @@ param.detfn.fun = function(sv, fix, bounds, name.extend.par, detfn, data.full, d
       
     }
   }
-  
   
   #construct the parameters input, which must be transformed
   #they are not needed to be named, especially the betas for extended parameters
@@ -1448,7 +1447,7 @@ param.detfn.fun = function(sv, fix, bounds, name.extend.par, detfn, data.full, d
     bounds.input[[i]][1, 1] = link.fun(link = link, value = bounds[[i]][1])
     bounds.input[[i]][2, 1] = link.fun(link = link, value = bounds[[i]][2])
   }
-  
+
   return(list(design.matrices.full = design.matrices.full,
               design.matrices.mask = design.matrices.mask,
               name.extend.par = name.extend.par,

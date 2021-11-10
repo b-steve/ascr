@@ -181,7 +181,7 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
     cutoff = ss.opts$cutoff
   }
   
-  
+
   #####################################################################
   
   #dist is a little special because it could appear in log(capt_dist) in the likelihood
@@ -319,8 +319,15 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
     map[[par_name]] = factor(rep(NA, length(parameters[[par_name]])))
   }
   
+  #dev is a logical variable for development environment, default is FALSE
+  dev = extra_args$dev
+  if(is.null(dev)) dev = FALSE
+  if(dev){
+    dyn.load(TMB::dynlib("G:/work/ben/TMB-test/ascrTmb"))
+  } else {
+    dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
+  }
   
-  dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
   
   
   if(!("ss.het" %in% bucket_info)){
