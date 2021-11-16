@@ -245,6 +245,7 @@ get_sv_for_boot = function(fit){
 #a simple version of "create.capt()", input is the simulated capture history if there is any,
 #which means nrow(capture) > 0
 get_capt_for_boot = function(captures, dims, infotypes){
+  #dims$n.IDs is not valid here, do not use it
   n.sessions = dims$n.sessions
   n.traps = dims$n.traps
 
