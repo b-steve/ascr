@@ -1,3 +1,50 @@
+natural_number_check = function(session, key){
+  output = TRUE
+  for(s in unique(session)){
+    tem_key = key[which(session == s)]
+    seq_key = seq(length(unique(tem_key)))
+    if(any(!tem_key %in% seq_key)) output = FALSE
+  }
+  
+  return(output)
+}
+
+convert_natural_number = function(dat, is.animalID, which.convert){
+  if(which.convert == 'ID'){
+    if(is.animalID){
+      keys = paste(dat$session, dat$animal_ID, sep = '_')
+    } else {
+      keys = dat$session
+    }
+    uni_keys = unique(keys)
+    output = vector('list', length(uni_keys))
+    for(i in 1:length(uni_keys)){
+      output[[i]] = dat[keys == uni_keys[i],,drop = FALSE]
+      output[[i]]$ID = as.numeric(as.factor(output[[i]]$ID))
+    }
+    output = do.call('rbind', output)
+  } else if(which.convert == 'animal_ID'){
+    keys = dat$session
+    uni_keys = unique(keys)
+    output = vector('list', length(uni_keys))
+    for(i in 1:length(uni_keys)){
+      output[[i]] = dat[keys == uni_keys[i],,drop = FALSE]
+      output[[i]]$animal_ID = as.numeric(as.factor(output[[i]]$animal_ID))
+    }
+    output = do.call('rbind', output)
+  } else if(which.convert == 'both'){
+    dat = convert_natural_number(dat, TRUE, 'animal_ID')
+    dat = convert_natural_number(dat, TRUE, 'ID')
+    output = dat
+  } else {
+    stop('Invalid input.')
+  }
+  
+  return(output)
+
+}
+
+
 covariates_mask_check = function(dat, n.sessions, n.masks, identical_flag){
   #list and data.frame will all return TRUE for is.list()
   stopifnot(is.list(dat))
@@ -5,11 +52,11 @@ covariates_mask_check = function(dat, n.sessions, n.masks, identical_flag){
   if(is(dat, 'list')){
     if(length(dat) > 1){
       #if more than one component in this list, each component represent one session
-      stopifnot(length(dat) != n.sessions)
+      stopifnot(length(dat) == n.sessions)
       stopifnot(all(sapply(dat, nrow) == n.masks))
     } else {
       #if only one component in this list, then if n.sessions > 1 is a special scenario
-      stopifnot(nrow(dat[[1]] == n.masks[1]))
+      stopifnot(nrow(dat[[1]]) == n.masks[1])
       
       if(n.sessions > 1){
         stopifnot(identical_flag)

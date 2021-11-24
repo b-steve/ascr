@@ -1,85 +1,91 @@
-capture.fun = function(capt){
+capture.fun = function(capt, animal.model){
   all.types <- c("bearing", "dist", "ss", "toa")
   
-  if("bincapt" %in% names(capt)){
-    n.sessions = 1
-    is.animalID = "animal_ID" %in% colnames(capt$bincapt)
-    n.traps = ncol(capt$bincapt)
-    #if "is.animal_ID", 2 columns were used for "animal_ID" and "ID", so deduct 2
-    if(is.animalID) {
-      n.traps = n.traps - 2
-      n.animals = length(unique(capt$bincapt$animal_ID))
-    } else {
-      n.animals = 0
-    }
-    n.IDs = nrow(capt$bincapt)
-    bucket_info <- all.types[all.types %in% names(capt)]
-    is.mrds = "mrds" %in% names(capt)
-    
+  if(!animal.model){
+            if("bincapt" %in% names(capt)){
+              n.sessions = 1
+              n.traps = ncol(capt$bincapt)
+              n.IDs = nrow(capt$bincapt)
+              bucket_info <- all.types[all.types %in% names(capt)]
+              is.mrds = "mrds" %in% names(capt)
+              
+            } else {
+              n.sessions = length(capt)
+              n.traps = sapply(capt, function(x) ncol(x$bincapt))
+              
+              n.IDs = sapply(capt, function(x) nrow(x$bincapt))
+              bucket_info <- all.types[all.types %in% names(capt[[1]])]
+              is.mrds = "mrds" %in% names(capt[[1]])
+              
+            }
+            
+            tem.data.capt = vector('list', n.sessions)
+            for(i in 1:n.sessions){
+              if(n.sessions == 1){
+                tem = capt
+              } else {
+                tem = capt[[i]]
+              }
+              
+              number.row = n.IDs[i] * n.traps[i]
+              tem.df = data.frame(session = rep(i, number.row), ID = numeric(number.row))
+              for(j in c("trap", "bincapt", all.types, "mrds_x", "mrds_y")) tem.df[[j]] = numeric(number.row)
+              
+              if(number.row > 0){
+                tem.df$ID = rep(1:nrow(tem$bincapt), n.traps[i])
+                tem.df$trap = rep(1:n.traps[i], each = n.IDs[i])
+                for(k in c('bincapt', bucket_info)) tem.df[[k]] = as.vector(tem[[k]])
+                
+                if(is.mrds){
+                  tem$mrds = as.data.frame(tem$mrds, stringsAsFactors = FALSE)
+                  colnames(tem$mrds) = c('mrds_x', 'mrds_y')
+                  tem$mrds$ID = 1:nrow(tem$mrds)
+                  tem.df = merge(tem.df, tem$mrds, by = "ID")
+                }
+                
+              }
+              tem.data.capt[[i]] = tem.df
+            }
+            data.capt = do.call("rbind", tem.data.capt)
+            data.capt = sort.data(data.capt, "data.full")
+            #n.animals is useless in this case, just use 0 to occupy the variable name
+            n.animals = 0
+  #####################################################################################################          
   } else {
-    n.sessions = length(capt)
-    is.animalID = "animal_ID" %in% colnames(capt[[1]]$bincapt)
-    n.traps = sapply(capt, function(x) ncol(x$bincapt))
-    if(is.animalID) {
-      n.traps = n.traps - 2
-      n.animals = sapply(capt, function(x) length(unique(x$bincapt$animal_ID)))
-    } else {
-      n.animals = numeric(n.sessions)
-    }
-    n.IDs = sapply(capt, function(x) nrow(x$bincapt))
-    bucket_info <- all.types[all.types %in% names(capt[[1]])]
-    is.mrds = "mrds" %in% names(capt[[1]])
+  #####################################################################################################
+            #according to the data cleaning process in "create.capt()", all these indices will be
+            #successive natural numbers, so take its max is equivalent to take length(unique(xxx))
+            
+            base_cols = c('session', 'animal_ID', 'ID', 'trap', 'bincapt')
+            all_cols = c(base_cols, 'mrds_x', 'mrds_y', all.types)
+            
+            if(any(!base_cols %in% colnames(capt))){
+              stop(paste0('columns: ', paste(base_cols, collapse = ", "), ", must be included."))
+            }
     
+            #for animal included model, since there is no compatible consern, the "create.capt()" has
+            #already sorted out the data structure, here we just need to extract some basic information
+            
+            n.sessions = max(capt$session)
+            n.traps = aggregate(capt$trap, list(session = capt$session), max)$x
+            n.animals = aggregate(capt$animal_ID, list(session = capt$session), max)$x
+            n.animals = ifelse(is.na(n.animals), 0, n.animals)
+            #n.IDs become a vector with length of sum(n.animals), each element is the number of calls
+            #made by that animal
+            capt = sort.data(capt, 'data.full')
+            tem = subset(capt, !is.na(capt$animal_ID))
+            n.IDs = aggregate(capt$ID, list(session = capt$session, animal_ID = capt$animal_ID), max)$x
+            
+            is.mrds = "mrds_x" %in% colnames(capt)
+            bucket_info = all.types[all.types %in% colnames(capt)]
+            
+            data.capt = capt[, colnames(capt) %in% all_cols]
+            for(i in c('mrds_x', 'mrds_y', all.types)){
+              if(!i %in% colnames(data.capt)) data.capt[[i]] = 0
+            }
   }
+
   
-  tem.data.capt = vector('list', n.sessions)
-  for(i in 1:n.sessions){
-    if(n.sessions == 1){
-      tem = capt
-    } else {
-      tem = capt[[i]]
-    }
-    
-    number.row = n.IDs[i] * n.traps[i]
-    tem.df = data.frame(session = rep(i, number.row), ID = character(number.row))
-    if(is.animalID) tem.df$animal_ID = character(number.row)
-    for(j in c("trap", "bincapt", all.types, "mrds_x", "mrds_y")) tem.df[[j]] = numeric(number.row)
-    
-    if(number.row > 0){
-      if(is.animalID){
-        tem.df$animal_ID = rep(tem$bincapt$animal_ID, n.traps[i])
-        tem.df$ID = rep(tem$bincapt$ID, n.traps[i])
-        tem$bincapt = as.matrix(tem$bincapt[, 1:n.traps[i]])
-      } else {
-        if(is.null(rownames(tem$bincapt))){
-          tem.df$ID = rep(as.character(1:nrow(tem$bincapt)), n.traps[i])
-        } else {
-          tem.df$ID = rep(rownames(tem$bincapt), n.traps[i])
-        }
-      }
-      
-      tem.df$trap = rep(1:n.traps[i], each = n.IDs[i])
-      for(k in c('bincapt', bucket_info)) tem.df[[k]] = as.vector(tem[[k]])
-      
-      if(is.mrds){
-        tem$mrds = as.data.frame(tem$mrds, stringsAsFactors = FALSE)
-        if(!"ID" %in% colnames(tem$mrds)) tem$mrds$ID = as.character(1:nrow(tem$mrds))
-        if("animal_ID" %in% colnames(tem$mrds)){
-          tem.mrds = merge(tem.df, tem$mrds, by = c("animal_ID","ID"))
-        } else {
-          tem.mrds = merge(tem.df, tem$mrds, by = "ID")
-        }
-        tem.df = tem.df[order(tem.df$session, tem.df$ID, tem.df$trap),]
-        tem.mrds = tem.mrds[order(tem.mrds$session, tem.mrds$ID, tem.mrds$trap),]
-        tem.df$mrds_x = tem.mrds$V1
-        tem.df$mrds_y = tem.mrds$V2
-      }
-      
-    }
-    tem.data.capt[[i]] = tem.df
-  }
-  data.capt = do.call("rbind", tem.data.capt)
-  data.capt = sort.data(data.capt, "data.full")
   return(list(data.capt = data.capt, dims = list(n.sessions = n.sessions, n.traps = n.traps,
                                                  n.IDs = n.IDs, n.animals = n.animals),
               bucket_info = c(bucket_info, "mrds"[is.mrds])))
@@ -114,24 +120,28 @@ trap.fun = function(traps, dims){
     traps[[i]]$trap = 1:nrow(traps[[i]])
   }
   return(do.call("rbind", traps))
+  
 }
 
 
 ###################################################################################
 
-mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound.speed){
+mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info, local, sound.speed){
   
   stopifnot(any(is(mask, 'list'), is.data.frame(mask), is.matrix(mask)))
   n.sessions = dims$n.sessions
   n.traps = dims$n.traps
+  if(animal.model) n.animals = dims$n.animals
   n.IDs = dims$n.IDs
-  is.animal_ID = "animal_ID" %in% colnames(data.full)
   
   if(any(is(mask, 'list') & length(mask) == 1, is.data.frame(mask), is.matrix(mask))){
     tem.mask = vector('list', n.sessions)
     for(i in 1:n.sessions){
-      if(is(mask, 'list')) tem.mask[[i]] = mask[[1]]
-      if(is.data.frame(mask) | is.matrix(mask)) tem.mask[[i]] = mask
+      if(is(mask, 'list')){
+        tem.mask[[i]] = mask[[1]]
+      } else {
+        tem.mask[[i]] = mask
+      }
     }
     mask = tem.mask
   } else {
@@ -148,7 +158,8 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
   #a function occupies this name, so I changed it
   dists <- vector(mode = "list", length = n.sessions)
   thetas = vector("list", length = n.sessions)
-  tem.df = vector('list', n.sessions)
+  data.dists.thetas = vector('list', n.sessions)
+  data.mask = vector('list', n.sessions)
   
   for (i in 1:n.sessions){
     traps = data.traps[data.traps$session == i, c("trap_x", "trap_y")]
@@ -158,6 +169,13 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
     }
     
     colnames(mask[[i]]) = c('x', 'y')
+    
+    
+    data.mask[[i]] = as.data.frame(mask[[i]], stringsAsFactors = FALSE)
+    data.mask[[i]]$session = i
+    data.mask[[i]]$mask = seq(n.masks[i])
+    
+    
     mask[[i]] <- as.matrix(mask[[i]])
     dists[[i]] <- distances(as.matrix(traps), mask[[i]])
     #based on the main procedure, at this stage, we don't know whether it is "ss.dir",
@@ -165,12 +183,11 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
     #so we generate bearings anyway.
     thetas[[i]] = bearings(as.matrix(traps), mask[[i]])
     
-    
-    n.rows = n.traps[i] * n.masks[i]
-    tem.dist.theta = data.frame(mask = rep(1:n.masks[i], each = n.traps[i]),
-                                trap = rep(1:n.traps[i], n.masks[i]),
-                                dx = as.vector(dists[[i]]),
-                                theta = as.vector(thetas[[i]]))
+    data.dists.thetas[[i]] = data.frame(session = rep(i, n.masks[i] * n.traps[i]),
+                                        mask = rep(1:n.masks[i], each = n.traps[i]),
+                                        trap = rep(1:n.traps[i], n.masks[i]),
+                                        dx = as.vector(dists[[i]]),
+                                        theta = as.vector(thetas[[i]]))
     
     
     ## Filling in area and buffer, if missing.
@@ -188,38 +205,28 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
     }
     attr(mask[[i]], "area") = A[i]
     attr(mask[[i]], "buffer") = buffer[i]
-    
-    tem.df[[i]] = as.data.frame(mask[[i]], stringsAsFactors = FALSE)
-    tem.df[[i]]$mask = 1:nrow(mask[[i]])
-    tem.df[[i]]$session = i
-    tem.df[[i]] = merge(tem.df[[i]], tem.dist.theta, by = 'mask')
   }
+  #data.mask and data.dists.thetas are naturally in right order here
+  data.dists.thetas = do.call('rbind', data.dists.thetas)
+  data.mask = do.call('rbind', data.mask)
   
-  data.dists.thetas = do.call('rbind', tem.df)
-  
-  
-  data.mask = data.dists.thetas[, c("session", 'mask', 'x', 'y'), drop = FALSE]
-  data.mask = data.mask[!duplicated(data.mask[, c('session', 'mask')]), , drop = F]
-  data.mask = sort.data(data.mask, "data.mask")
-  data.dists.thetas = data.dists.thetas[, -which(colnames(data.dists.thetas)
-                                                 %in% c('x', 'y'))]
-  data.dists.thetas = sort.data(data.dists.thetas, "data.dists.thetas")
   
   ################################################################################
   #deal with local argument
-  #sort it first, because later, in aggregate() step,
-  #the result will be sorted automatically, however, u.id generated by unique() is not sorted
   data.full = sort.data(data.full, "data.full")
   
   all.which.local <- vector(mode = "list", length = n.sessions)
   all.n.local <- vector(mode = "list", length = n.sessions)
+  
+  #for animal.model, the primary key is 'animal_ID', and which is 'ID' for non animal.model.
+  if(animal.model) n.keys = n.animals else n.keys = n.IDs
   
   
   if ("mrds" %in% bucket_info){
     local <- TRUE
     for (i in 1:n.sessions){
       
-      if(n.IDs[i] > 0){
+      if(n.keys[i] > 0){
         mrds = data.full[data.full$session == i, c("mrds_x", "mrds_y")]
         mrds = mrds[!duplicated(mrds),]
         all.which.local[[i]] <- find.nearest.mask(as.matrix(mrds), mask[[i]])
@@ -231,11 +238,20 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
   } else if (local){
     
     for (i in 1:n.sessions){
-      if(n.IDs[i] > 0){
-        if(is.animal_ID){
-          bincapt = data.full[data.full$session == i, c("bincapt","animal_ID", "ID")]
-          bincapt = aggregate(bincapt$bincapt, list(animal_ID = bincapt$animal_ID,
-                                                    ID = bincapt$ID),
+      if(n.keys[i] > 0){
+        if(animal.model){
+          #for each animal_ID, 
+          #######################################################################33
+          ##########################################################################
+          ############################################################################
+          #continue from here
+          tem = data.full[data.full$session == i, c("bincapt", "animal_ID", "trap")]
+          tem = aggregate(tem$bincapt, list(animal_ID = tem$animal_ID, trap = tem$trap),
+                              function(x) as.numeric(any(x == 1)))
+          tem = tem[order(tem$animal_ID, tem$trap),,drop = FALSE]
+          bincapt = tem[, c('animal_ID', 'x')]
+          colnames(bincapt) = c('animal_ID', 'bincapt')
+          bincapt = aggregate(bincapt$bincapt, list(animal_ID = bincapt$animal_ID),
                               function(x) t(x))
           
           bincapt = bincapt[order(bincapt$animal_ID, bincapt$ID),]
@@ -255,9 +271,9 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
     }
   } else {
     for (i in 1:n.sessions){
-      if(n.IDs[i] > 0){
-        all.n.local[[i]] <- rep(1, n.IDs[i])
-        all.which.local[[i]] <- rep(0, n.IDs[i])
+      if(n.keys[i] > 0){
+        all.n.local[[i]] <- rep(1, n.keys[i])
+        all.which.local[[i]] <- rep(0, n.keys[i])
       }
     }
   }
@@ -273,7 +289,7 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
   }
   
   
-  #to avoid confusing, u.id is animal_ID-ID if is.animal_ID, and the "ID" column is
+  #to avoid confusing, u.id is animal_ID-ID if animal.model, and the "ID" column is
   #temporarily to be animal_ID-ID as well until in the later step where we restore it
   for(i in 1:n.sessions){
     if(n.IDs[i] > 0){
@@ -281,7 +297,7 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
       #be careful that 'unique' will return a vector that not been sorted if the
       #original vector is not sorted. but here data.full has been sorted before,
       #so we could literally use it.
-      if(is.animal_ID){
+      if(animal.model){
         u.id[[i]] = unique(paste0(tem[['animal_ID']], '-', tem[['ID']]))
       } else {
         u.id[[i]] = unique(tem[["ID"]])
@@ -310,7 +326,7 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
       #we take 'order' so careful because 'aggregate' returns
       #results based on sorted 'list(ID = xx)' agrgument
       if('toa' %in% bucket_info){
-        if(is.animal_ID){
+        if(animal.model){
           toa = aggregate(tem$toa, list(animal_ID = tem$animal_ID, ID = tem$ID),
                           function(x) t(x))$x
         } else {
@@ -335,7 +351,7 @@ mask.fun = function(mask, dims, data.traps, data.full, bucket_info, local, sound
   }
   
   
-  if(is.animal_ID){
+  if(animal.model){
     data.ID_mask[['animal_ID']] = gsub("-(.+)", "", data.ID_mask[['ID']])
     data.ID_mask[['ID']] = gsub("^(.+)-", "", data.ID_mask[["ID"]])
     data.ID_mask = sort.data(data.ID_mask, "data.ID_mask")

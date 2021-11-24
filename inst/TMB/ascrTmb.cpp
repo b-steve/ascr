@@ -1149,7 +1149,6 @@ Type objective_function<Type>::operator() ()
     for(m = 1; m <= n_m; m++){
       *p_D_tem = *p_D_full + *p_D_mask;
       trans(p_D_tem, par_link(16));
-      //*p_D_tem *= area_unit;
       
       
       p_dot(m - 1) = Type(1.0);
@@ -1330,7 +1329,7 @@ Type objective_function<Type>::operator() ()
     }
     
     esa(s - 1) *= area_unit;
-    lambda_theta *= area_unit * servey_len / cue_rates;
+    lambda_theta *= area_unit * servey_len * cue_rates;
     //end of lambda_theta calculation
     
     

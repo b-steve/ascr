@@ -1,7 +1,7 @@
 #' @export
-fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL,
-                        ss.opts = NULL, cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-                        local = FALSE, par.extend = NULL, ...){
+fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = NULL, bounds = NULL, 
+                    fix = NULL, ss.opts = NULL, cue.rates = NULL, survey.length = NULL, sound.speed = 330,
+                    local = FALSE, par.extend = NULL, ...){
   
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
@@ -16,16 +16,45 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
   extra_args = list(...)
   
   ####################################################################################################
+  #depend on 'animal.model', there will be two models, so sort this argument out first
+  if(animal.model){
+    if(!is(capt, 'data.frame')){
+      stop('argument "capt" only accepts data.frame as input.')
+    }
+    if(!is.null(cue.rates)){
+      cue.rates = NULL
+      warning('argument "cue.rates" is ignored since "animal.model" is TRUE.')
+    }
+    if(!"animal_ID" %in% colnames(capt)){
+      stop('information about "animal_ID" is not provided.')
+    }
+  } else {
+    if(is(capt, 'data.frame')){
+      #in this case, it might be the user forget to change the argument of animal.model to be TRUE
+      #so set it to be TRUE
+      if(all(c('session', 'animal_ID', 'ID', 'trap', 'bincapt') %in% colnames(capt))){
+        animal.model = TRUE
+      } else {
+        stop('invalid input "capt", "create.capt()" is recommended for obtaining valid input object.')
+      }
+    }
+  }
+  
+  
+  ####################################################################################################
   #begin of fit_ascr()
-  o = capture.fun(capt = capt)
+  o = capture.fun(capt = capt, animal.model = animal.model)
   dims = o$dims
   data.full = o$data.capt
   bucket_info = o$bucket_info
-  
+
+  #########################################################################################################
   data.traps = trap.fun(traps = traps, dims = dims)
   data.full = merge(data.full, data.traps, by = c('session', 'trap'), all = TRUE)
+  data.full = sort.data(data.full, 'data.full')
   
-  o.mask = mask.fun(mask = mask, dims = dims,
+  ########################################################################################################
+  o.mask = mask.fun(mask = mask, dims = dims, animal.model = animal.model,
                     data.traps = data.traps, data.full = data.full,
                     local = local, bucket_info = bucket_info, sound.speed = sound.speed)
   
@@ -34,7 +63,6 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
   bucket_info = o.mask$bucket_info
   #keep the old version of output temporarily, might be useful later
   mask = o.mask$mask
-  
   arg.input[['mask']] = mask
   
   #dists = o.mask$dists
@@ -45,6 +73,9 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
   data.dists.thetas = o.mask$data.dists.thetas
   data.ID_mask = o.mask$data.ID_mask
   data.mask = o.mask$data.mask
+
+  
+  ########################################################################################################
   
   fulllist.par = c('g0', 'sigma', 'lambda0', 'z', 'shape.1',
                    'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
@@ -64,7 +95,7 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
   scale.covs = o.par.extend$scale.covs
   is.scale = o.par.extend$is.scale
   
-  
+
   o.ss = ss.fun(ss.opts = ss.opts, data.full = data.full, data.ID_mask = data.ID_mask,
                 dims = dims, bucket_info = bucket_info, sv = sv, fix = fix)
   
@@ -244,7 +275,7 @@ fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, f
                #link index: 1 - identity, 2 - log, 4 - spherical
                ss_link = numeric_link(ss.link),
                
-               is_animalID = as.numeric("animal_ID" %in% colnames(data.full)),
+               is_animalID = as.numeric(animal.model),
                is_ss = as.numeric("ss" %in% bucket_info),
                is_ss_origin = as.numeric(all("ss" %in% bucket_info,
                                              !"ss.het" %in% bucket_info,
