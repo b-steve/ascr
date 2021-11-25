@@ -4,23 +4,15 @@
 \alias{show.prediction}
 \title{Interpolation for covariates}
 \usage{
-show.prediction(
-  mask,
-  cov.var = NULL,
-  point.var = NULL,
-  nmax = 10,
-  maxdist = 1000,
-  cov.list = NULL,
-  point.df = NULL
-)
+show.prediction(mask, datalist, nmax = 10, maxdist = 1000)
 }
 \arguments{
 \item{mask}{A matrix with two columns. Each row provides Cartesian 
-coordinates named "x" and "y" for the location of a mask point.}
+coordinates named "x" and "y" for the location of a mask point. It is most 
+easily created using \code{\link{create.mask}}.}
 
-\item{cov.var}{A vector of the covariate variables for prediction.}
-
-\item{point.var}{A vector of the distance covariate for prediction.}
+\item{datalist}{A list containing all the covariate data. It is most easily 
+created using \code{\link{all.data}}.}
 
 \item{nmax}{the number of nearest observations that should be used for
 prediction. This is only applied to numeric covariate variable.}
@@ -28,14 +20,6 @@ prediction. This is only applied to numeric covariate variable.}
 \item{maxdist}{only observations within a distance of maxdist from the 
 prediction location are used for prediction; This is only applied to numeric 
 covariate variable.}
-
-\item{cov.list}{A list of all the covariate data frames. Each row 
-provides Cartesian coordinates named "X" and "Y" and its 
-covariate values.}
-
-\item{point.df}{A data frames of the distance covariates. Each row 
-provides Cartesian coordinates named "X" and "Y" and the 
-corresponding feature named "feature".}
 }
 \value{
 A list with elements \code{prediction} and \code{plot} is returned.

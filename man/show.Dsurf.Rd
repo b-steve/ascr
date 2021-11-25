@@ -7,6 +7,10 @@
 show.Dsurf(
   fit,
   session = 1,
+  cov.var = NULL,
+  point.var = NULL,
+  cov.list = NULL,
+  point.df = NULL,
   newdata = NULL,
   show.cv = FALSE,
   unsuitable = NULL,

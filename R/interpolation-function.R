@@ -10,20 +10,12 @@
 #' with distance. It gives more weight to points that are closest to the
 #' prediction location and the weights decrease as the distance increases.
 #' 
+#' @param datalist A list containing all the covariate data. It is most easily 
+#' created using \code{\link{all.data}}.
+#' 
 #' @param mask A matrix with two columns. Each row provides Cartesian 
-#' coordinates named "x" and "y" for the location of a mask point. 
-#' 
-#' @param cov.var A vector of the covariate variables for prediction. 
-#' 
-#' @param point.var A vector of the distance covariate for prediction.
-#' 
-#' @param cov.list A list of all the covariate data frames. Each row 
-#' provides Cartesian coordinates named "X" and "Y" and its 
-#' covariate values.
-#' 
-#' @param point.df A data frames of the distance covariates. Each row 
-#' provides Cartesian coordinates named "X" and "Y" and the 
-#' corresponding feature named "feature".
+#' coordinates named "x" and "y" for the location of a mask point. It is most 
+#' easily created using \code{\link{create.mask}}.
 #' 
 #' @param nmax the number of nearest observations that should be used for
 #' prediction. This is only applied to numeric covariate variable.
@@ -36,12 +28,13 @@
 #' 
 #' @export
 show.prediction = function(mask,
-                           cov.var=NULL,
-                           point.var=NULL,
+                           datalist,
                            nmax = 10,
-                           maxdist = 1000,
-                           cov.list=NULL,
-                           point.df=NULL) {
+                           maxdist = 1000) {
+  cov.var = datalist$cov.var
+  cov.list = datalist$cov.list
+  point.var = datalist$point.var
+  point.df = datalist$point.df
   mask = as.data.frame(mask)
   df = mask[, c("x", "y")]
   coordinates(df) = ~ x + y
@@ -57,6 +50,7 @@ show.prediction = function(mask,
       var.df = df1
       coordinates(var.df) = ~ X + Y
       
+      ##numeric covariates
       if (is.numeric(var.df[[i]])) {
         # Inverse Distance Weighting
         idw = idw(
@@ -79,6 +73,8 @@ show.prediction = function(mask,
         formula.num = formula.num + 1
         
       }
+      
+      ##factor covariates
       else if (is.character(var.df[[i]])){
         nearest = nn2(df1[, c("X", "Y")],
                       mask[, c("x", "y")],
@@ -102,6 +98,7 @@ show.prediction = function(mask,
     }
   }
   
+  ##distance covariates
   if (!is.null(point.var)){
     var.num = 1
     for (i in point.var){

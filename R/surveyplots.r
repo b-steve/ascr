@@ -268,7 +268,23 @@ show.detsurf <- function(fit, session = 1, surface = TRUE, mask = NULL, col = "b
 #'                 fix = list(g0 = 1), ihd.opts = list(model = ~ x + y,
 #'                                                     covariates = cov.df))
 #' show.Dsurf(fit)
-show.Dsurf <- function(fit, session = 1, newdata = NULL, show.cv = FALSE, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE, add = FALSE){
+show.Dsurf <- function(fit, session = 1, cov.var = NULL, point.var = NULL,cov.list = NULL, point.df = NULL, newdata = NULL, show.cv = FALSE, unsuitable = NULL, xlim = NULL, ylim = NULL, zlim = NULL, scale = 1, plot.contours = TRUE, add = FALSE){
+    if (session == "all"){
+      mask <- do.call(rbind,get.mask(fit))
+      x.max <- max(mask[,1])
+      x.min <- min(mask[,1])
+      y.max <- max(mask[,2])
+      y.min <- min(mask[,2])
+      spacing <- max(sapply(get.mask(fit), function(x){unique(sort(diff(sort(x[, "x"]))))[2]}))
+      x.col <- seq(x.min,x.max,by=spacing)
+      y.col <- seq(y.min,y.max,by=spacing)
+      new.mask <- data.frame("x"=rep(x.col,by=length(y.col)),"y"=rep(y.col,each=length(x.col)))
+      newdata <- show.prediction(mask = new.mask,
+                                 cov.var = cov.var,
+                                 cov.list = cov.list,
+                                 point.var = point.var,
+                                 point.df = point.df)[[1]]
+    }
     if (missing(newdata)){
         traps <- get.traps(fit, session)
         D.mask <- fit$D.mask[[session]]
