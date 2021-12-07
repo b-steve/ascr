@@ -50,6 +50,7 @@ capture.fun = function(capt, animal.model){
             data.capt = sort.data(data.capt, "data.full")
             #n.animals is useless in this case, just use 0 to occupy the variable name
             n.animals = 0
+            n.animal.call = 0
   #####################################################################################################          
   } else {
   #####################################################################################################
@@ -68,13 +69,20 @@ capture.fun = function(capt, animal.model){
             
             n.sessions = max(capt$session)
             n.traps = aggregate(capt$trap, list(session = capt$session), max)$x
-            n.animals = aggregate(capt$animal_ID, list(session = capt$session), max)$x
-            n.animals = ifelse(is.na(n.animals), 0, n.animals)
-            #n.IDs become a vector with length of sum(n.animals), each element is the number of calls
+            n.animals = aggregate(capt$animal_ID, list(session = capt$session), function(x) length(unique(x)))$x
+            no.det = aggregate(capt$animal_ID, list(session = capt$session), function(x) any(is.na(x)))$x
+            n.animals = ifelse(no.det, 0, n.animals)
+            #n.animal.call is a vector with length of sum(n.animals), each element is the number of calls
             #made by that animal
             capt = sort.data(capt, 'data.full')
             tem = subset(capt, !is.na(capt$animal_ID))
-            n.IDs = aggregate(capt$ID, list(session = capt$session, animal_ID = capt$animal_ID), max)$x
+            n.animal.call = aggregate(tem$ID, list(session = tem$session, animal_ID = tem$animal_ID),
+                                      function(x) length(unique(x)))$x
+            
+            #n.IDs becomes the number of length(unique(animal_ID, ID)) for each session
+            n.IDs = aggregate(paste(capt$animal_ID, capt$ID, sep = '---'), list(session = capt$session),
+                              function(x) length(unique(x)))$x
+            n.IDs = ifelse(no.det, 0, n.IDs)
             
             is.mrds = "mrds_x" %in% colnames(capt)
             bucket_info = all.types[all.types %in% colnames(capt)]
@@ -87,7 +95,8 @@ capture.fun = function(capt, animal.model){
 
   
   return(list(data.capt = data.capt, dims = list(n.sessions = n.sessions, n.traps = n.traps,
-                                                 n.IDs = n.IDs, n.animals = n.animals),
+                                                 n.IDs = n.IDs, n.animals = n.animals, 
+                                                 n.animal.call = n.animal.call),
               bucket_info = c(bucket_info, "mrds"[is.mrds])))
   
 }
@@ -131,7 +140,6 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
   stopifnot(any(is(mask, 'list'), is.data.frame(mask), is.matrix(mask)))
   n.sessions = dims$n.sessions
   n.traps = dims$n.traps
-  if(animal.model) n.animals = dims$n.animals
   n.IDs = dims$n.IDs
   
   if(any(is(mask, 'list') & length(mask) == 1, is.data.frame(mask), is.matrix(mask))){
@@ -218,15 +226,11 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
   all.which.local <- vector(mode = "list", length = n.sessions)
   all.n.local <- vector(mode = "list", length = n.sessions)
   
-  #for animal.model, the primary key is 'animal_ID', and which is 'ID' for non animal.model.
-  if(animal.model) n.keys = n.animals else n.keys = n.IDs
-  
-  
   if ("mrds" %in% bucket_info){
     local <- TRUE
     for (i in 1:n.sessions){
       
-      if(n.keys[i] > 0){
+      if(n.IDs[i] > 0){
         mrds = data.full[data.full$session == i, c("mrds_x", "mrds_y")]
         mrds = mrds[!duplicated(mrds),]
         all.which.local[[i]] <- find.nearest.mask(as.matrix(mrds), mask[[i]])
@@ -238,13 +242,10 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
   } else if (local){
     
     for (i in 1:n.sessions){
-      if(n.keys[i] > 0){
+      if(n.IDs[i] > 0){
         if(animal.model){
-          #for each animal_ID, 
-          #######################################################################33
-          ##########################################################################
-          ############################################################################
-          #continue from here
+          #for each animal_ID, find the detectors have at least one record of any call of this animal
+
           tem = data.full[data.full$session == i, c("bincapt", "animal_ID", "trap")]
           tem = aggregate(tem$bincapt, list(animal_ID = tem$animal_ID, trap = tem$trap),
                               function(x) as.numeric(any(x == 1)))
@@ -254,8 +255,8 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
           bincapt = aggregate(bincapt$bincapt, list(animal_ID = bincapt$animal_ID),
                               function(x) t(x))
           
-          bincapt = bincapt[order(bincapt$animal_ID, bincapt$ID),]
-          bincapt = bincapt[, -c(1,2)]
+          bincapt = bincapt[order(bincapt$animal_ID),]
+          bincapt = bincapt[, -1]
         } else {
           bincapt = data.full[data.full$session == i, c("bincapt","ID")]
           bincapt = aggregate(bincapt$bincapt, list(ID = bincapt$ID),
@@ -270,19 +271,18 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
       }
     }
   } else {
+    #if not 'local' these two variables are meaningless, just assign them something
     for (i in 1:n.sessions){
-      if(n.keys[i] > 0){
-        all.n.local[[i]] <- rep(1, n.keys[i])
-        all.which.local[[i]] <- rep(0, n.keys[i])
+      if(n.IDs[i] > 0){
+        all.n.local[[i]] <- rep(1, n.IDs[i])
+        all.which.local[[i]] <- rep(0, n.IDs[i])
       }
     }
   }
-  
+
   #prepare a data set for ID*mask
   
   data.ID_mask = vector('list', n.sessions)
-  u.id = vector('list', n.sessions)
-  
   if(local) {
     bucket_info = c(bucket_info, "local")
     tem.df = vector('list', n.sessions)
@@ -294,45 +294,56 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
   for(i in 1:n.sessions){
     if(n.IDs[i] > 0){
       tem = subset(data.full, session == i)
-      #be careful that 'unique' will return a vector that not been sorted if the
-      #original vector is not sorted. but here data.full has been sorted before,
-      #so we could literally use it.
+
       if(animal.model){
-        u.id[[i]] = unique(paste0(tem[['animal_ID']], '-', tem[['ID']]))
+        u.id = unique(paste(tem[['animal_ID']], tem[['ID']], sep = '---'))
+        u.a = sort(unique(tem$animal_ID))
       } else {
-        u.id[[i]] = unique(tem[["ID"]])
+        u.id = unique(tem[["ID"]])
       }
       
       if(local){
-        tem.df[[i]] = data.frame(session = rep(i, sum(all.n.local[[i]])),
-                                 ID = rep(u.id[[i]], all.n.local[[i]]),
-                                 mask = all.which.local[[i]], local = 1,
-                                 stringsAsFactors = F)
+        if(animal.model){
+          tem.df[[i]] = data.frame(session = rep(i, sum(all.n.local[[i]])),
+                                   animal_ID = rep(u.a, all.n.local[[i]]),
+                                   mask = all.which.local[[i]], local = 1,
+                                   stringsAsFactors = F)
+        } else {
+          tem.df[[i]] = data.frame(session = rep(i, sum(all.n.local[[i]])),
+                                   ID = rep(u.id, all.n.local[[i]]),
+                                   mask = all.which.local[[i]], local = 1,
+                                   stringsAsFactors = F)
+        }
+        
+        #here column 'ID' is "animal_ID---ID" if animal.model, will be separated later
         data.ID_mask[[i]] = data.frame(session = rep(i, n.IDs[i] * n.masks[i]),
-                                       ID = rep(u.id[[i]], each = n.masks[i]),
+                                       ID = rep(u.id, each = n.masks[i]),
                                        mask = rep(1:n.masks[i], n.IDs[i]),
                                        stringsAsFactors = F)
       } else {
+        #here column 'ID' is "animal_ID---ID" if animal.model, will be separated later
         data.ID_mask[[i]] = data.frame(session = rep(i, n.IDs[i] * n.masks[i]),
-                                       ID = rep(u.id[[i]], each = n.masks[i]),
+                                       ID = rep(u.id, each = n.masks[i]),
                                        mask = rep(1:n.masks[i], n.IDs[i]),
-                                       local = 1,
-                                       stringsAsFactors = F)
+                                       local = 1, stringsAsFactors = F)
       }
       
       #assign 'toa_ssq' in this ID_mask data set
       #data.full must be sorted by 'session', 'ID', 'trap'
       #far before this step, it has already been sorted
+      #but in case of any disorder, we sort the aggregated result again
       #we take 'order' so careful because 'aggregate' returns
-      #results based on sorted 'list(ID = xx)' agrgument
+      #results based on sorted 'list(ID = xx)' argument
       if('toa' %in% bucket_info){
         if(animal.model){
           toa = aggregate(tem$toa, list(animal_ID = tem$animal_ID, ID = tem$ID),
-                          function(x) t(x))$x
+                          function(x) t(x))
+          toa = toa[order(toa$animal_ID, toa$ID),]
         } else {
-          toa = aggregate(tem$toa, list(ID = tem$ID), function(x) t(x))$x
+          toa = aggregate(tem$toa, list(ID = tem$ID), function(x) t(x))
+          toa = toa[order(toa$ID),]
         }
-        toa.ssq = make_toa_ssq(toa, dists[[i]], sound.speed)
+        toa.ssq = make_toa_ssq(toa$x, dists[[i]], sound.speed)
         #based on the designed structure of 'data.ID_mask' and the structure
         #of toa.ssq, it need to be transposed
         data.ID_mask[[i]][['toa_ssq']] = as.vector(t(toa.ssq))
@@ -344,20 +355,25 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
   
   data.ID_mask = do.call('rbind', data.ID_mask)
   
+  if(animal.model){
+    data.ID_mask[['animal_ID']] = gsub("---(.+)", "", data.ID_mask[['ID']])
+    data.ID_mask[['ID']] = gsub("^(.+)---", "", data.ID_mask[["ID"]])
+  }
+  
+  
+  
   if(local){
     tem.df = do.call('rbind', tem.df)
-    data.ID_mask = merge(data.ID_mask, tem.df, by = c('session', 'ID', 'mask'), all = T)
+    if(animal.model){
+      data.ID_mask = merge(data.ID_mask, tem.df, by = c('session', 'animal_ID', 'mask'), all = T)
+    } else {
+      data.ID_mask = merge(data.ID_mask, tem.df, by = c('session', 'ID', 'mask'), all = T)
+    }
+    
     data.ID_mask[['local']] = ifelse(is.na(data.ID_mask[['local']]), 0, data.ID_mask[['local']])
   }
   
-  
-  if(animal.model){
-    data.ID_mask[['animal_ID']] = gsub("-(.+)", "", data.ID_mask[['ID']])
-    data.ID_mask[['ID']] = gsub("^(.+)-", "", data.ID_mask[["ID"]])
-    data.ID_mask = sort.data(data.ID_mask, "data.ID_mask")
-  } else {
-    data.ID_mask = sort.data(data.ID_mask, "data.ID_mask")
-  }
+  data.ID_mask = sort.data(data.ID_mask, "data.ID_mask")
   
   return(list(mask = mask, dists = dists, thetas = thetas, n.masks = n.masks, A = A,
               buffer = buffer, all.which.local = all.which.local, all.n.local= all.n.local,
@@ -369,13 +385,11 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
 
 ###############################################################################
 
-par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, extra_args){
+par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, fulllist.par, extra_args){
   
   n.sessions = dims$n.sessions
-  n.IDs = dims$n.IDs
   n.traps = dims$n.traps
   n.masks = dims$n.masks
-  
   #it is possible that throughout all sessions, the traps/masks remain the same
   #and in this case, users can only provide one set of data frame of traps/masks
   if(n.sessions > 1){
@@ -429,13 +443,15 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
   
   namelist.par.extend = fulllist.par[-which(fulllist.par == 'sigma.b0.ss')]
   
-  is.animal_ID = "animal_ID" %in% colnames(data.full)
-  
   #a list records the number of beta in both data.full and data.mask needed for each parameter
   param_distribution = vector('list', length(fulllist.par))
   names(param_distribution) = fulllist.par
   
+  
+
   if(!is.null(par.extend)){
+    ########################################################################################################
+    #key component begin
     if(!all(names(par.extend) %in% c('data', 'model', 'link', 'scale'))) {
       stop("'par.extend' only accepts 'data', 'model', 'link' and 'scale' as input.")
     }
@@ -448,30 +464,21 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
       stop('one or more parameters indicated in "model" are not supported to be extended currently.')
     }
     
-    #scale default is set as TRUE
-    if(is.null(par.extend$scale)){
-      is.scale = TRUE
-    } else {
-      is.scale = par.extend$scale
-    }
-    
     #check 'data' component first
     
-    #temporarily not allow "ID" level extension
-    #and "animal_ID" level extension will make it too complicated
-    #maybe add it in the future
+    #we could include 'session', 'trap', 'animal_ID', 'mask' levels covariates,
+    #although some parameters such as 'mu' is only extendable under 'animal_ID'
+    #level covariates in reality, but we do not make any restriction here
     
     input_data = par.extend$data
-    if(!all(names(input_data) %in% c('session', 'trap',
-                                     #'ID',
-                                     'mask'))){
-      #stop("only 'session', 'trap', 'ID' or 'mask' level data could be used as input.")
-      stop("only 'session', 'trap', or 'mask' level data could be used as input.")
+    if(!all(names(input_data) %in% c('session', 'trap', 'animal_ID', 'mask'))){
+      stop("only 'session', 'trap', 'animal_ID' or 'mask' level data could be used as input.")
     }
     
     data.par.non.mask = data.frame(session = 1:n.sessions)
     
     #check 'session' level data
+    #a data.frame with columns of 'session' and session level covariates
     df.s = input_data$session
     if(!is.null(df.s)){
       stopifnot(is(df.s, 'data.frame'))
@@ -501,7 +508,6 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
         stopifnot(length(name.t) > 1)
         if(n.sessions > 1) stopifnot(identical_traps)
         tem = vector('list', n.sessions)
-        df.t[['session']] = 0
         for(s in 1:n.sessions){
           tem[[s]] = df.t
           tem[[s]][['session']] = s
@@ -518,31 +524,30 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
       var.t = NULL
     }
     
-    #check 'ID' level data
-    df.I = input_data$ID
-    if(!is.null(df.I)){
-      stopifnot(is(df.I, 'data.frame'))
-      name.I = colnames(df.I)
-      stopifnot(all(c('session', 'animal_ID'[is.animal_ID], 'ID') %in% name.I))
-      stopifnot(length(name.I) > (2 + as.numeric(is.animal_ID)))
-      if(any(duplicated(df.I[, c('session', 'animal_ID'[is.animal_ID], 'ID')]))) stop('duplicated "ID" input.')
-      
-      if(is.animal_ID){
-        stopifnot(all(paste(df.I$session, df.I$animal_ID, df.I$ID, sep = '-') %in%
-                        unique(paste(data.full$session, data.full$animal_ID, data.full$ID, sep = '-'))))
-        var.I = name.I[-which(name.I == 'session'| name.I == 'ID' | name.I == 'animal_ID')]
-      } else {
-        stopifnot(all(paste(df.I$session, df.I$ID, sep = '-') %in%
-                        unique(paste(data.full$session, data.full$ID, sep = '-'))))
-        var.I = name.I[-which(name.I == 'session'| name.I == 'ID')]
-      }
-      
-      data.par.non.mask = merge(data.par.non.mask, df.I, by ='session', all = TRUE)
+    #check 'animal_ID' level data
+    if(!animal.model){
+      df.a = NULL  
     } else {
-      var.I = NULL
+      df.a = input_data$animal_ID
     }
     
-    if(any(c('x', 'y') %in% c(var.I, var.s, var.t))){
+    if(!is.null(df.a)){
+      stopifnot(is(df.a, 'data.frame'))
+      name.a = colnames(df.a)
+      stopifnot(all(c('session', 'animal_ID') %in% name.a))
+      stopifnot(length(name.a) > 2)
+      if(any(duplicated(df.a[, c('session', 'animal_ID')]))) stop('duplicated "animal_ID" input.')
+      
+      stopifnot(all(paste(df.a$session, df.a$animal_ID, sep = '-') %in%
+                      unique(paste(data.full$session, data.full$animal_ID, sep = '-'))))
+      var.a = name.a[-which(name.a == 'session'| name.a == 'animal_ID')]
+      
+      data.par.non.mask = merge(data.par.non.mask, df.a, by ='session', all = TRUE)
+    } else {
+      var.a = NULL
+    }
+    
+    if(any(c('x', 'y') %in% c(var.a, var.s, var.t))){
       stop("'x' and 'y' are reserved column names, please choose another name.")
     }
     
@@ -563,7 +568,20 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
       
       df.m = covariates_mask_check(df.m, n.sessions, n.masks, identical_masks)
       
-      if(ihd_merge) df.m = merge(df.m, ihd_data, by = c('session', 'mask'))
+      #when both old argument 'ihd.opts' and par.extend$data$mask are provided,
+      #we need to merge them together after confirming they have no identical covariates
+      if(ihd_merge){
+        name1 = colnames(df.m)
+        name1 = name1[-which(name1 == 'session'| name1 == 'mask')]
+        name2 = colnames(ihd_data)
+        name2 = name2[-which(name2 == 'session'| name2 == 'mask')]
+        
+        if(any(duplicated(c(name1, name2)))){
+          stop('One or more covariates are provided in both "ihd.opts" and "par.extend".')
+        }
+        
+        df.m = merge(df.m, ihd_data, by = c('session', 'mask'))
+      } 
       
       name.m = colnames(df.m)
       var.m = name.m[-which(name.m == 'session'| name.m == 'mask')]
@@ -596,7 +614,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
     
     #check whether there is duplicated column names across these  data sets
     
-    var.ex = c(var.s, var.t, var.I, var.m)
+    var.ex = c(var.s, var.t, var.a, var.m)
     
     if(any(duplicated(var.ex))) {
       stop('duplicated column name across different level data sets.')
@@ -626,11 +644,17 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
       foo = stats::as.formula(paste(c('gam.resp', as.character(par.extend$model[[i]])), collapse = ""))
       foo_var = all.vars(foo[[3]])
       if(length(foo_var) == 0) stop('please input a valid formula except "~ 1"')
-      if(!all(foo_var %in% var.ex)) stop(paste0('one or more specifed explaintory varrable in "model"',
+      if(!all(foo_var %in% var.ex)) stop(paste0('one or more specifed covariates in "model"',
                                                 ' is not provided in "data".'))
       
       #sigma_toa is not trap extendable
       if(i == 'sigma_toa' & any(foo_var %in% var.t)) stop("'sigma_toa' is not extendable in 'trap' level.")
+      #in fact there should be much more constraint such as "mu" should not be linked to any 'trap' level covariates.
+      #however, from the perspective of code, there is no necessary to make these constraint since all parameters
+      #are treated as the same since the data structure does not change. However, 'sigma_toa' is different, because 'toa_ssq'
+      #is stored under the data frame of "data.ID_matrix" which is not involved with any parameter extension stuff, so
+      #there might be a concern about the work-flow later if we enable parameter 'sigma_toa' trap level extension.
+      
       
       tem = formula_separate(foo, var.m)
       
@@ -650,9 +674,11 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
         tem = as.data.frame(lapply(data.par.non.mask[, foo_full_var, drop = FALSE], is.na), stringsAsFactors = FALSE)
         index = apply(tem, 1, any)
         if(sum(index) > 0){
-          warning(paste0("NA appears in covariates for parameter ", i, ", a review on the data is recommended."))
+          stop(paste0("NA appears in covariates for parameter ", i, ", a review on the data is recommended."))
         }
-        tem.data = subset(data.par.non.mask, !index)
+        
+        
+        tem.data = data.par.non.mask
         tem.data[['gam.resp']] = 1
         
         for(j in foo_full_var){
@@ -675,11 +701,9 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
         design.matrix[['session']] = tem.data[['session']]
         if(!is.null(tem.data[['trap']])) design.matrix[['trap']] = tem.data[['trap']]
         if(!is.null(tem.data[['animal_ID']])) design.matrix[['animal_ID']] = tem.data[['animal_ID']]
-        if(!is.null(tem.data[['ID']])) design.matrix[['ID']] = tem.data[['ID']]
         data.par.non.mask = merge(data.par.non.mask, design.matrix,
                                   by = c('session', 'trap'[!is.null(design.matrix[['trap']])],
-                                         'animal_ID'[!is.null(design.matrix[['animal_ID']])],
-                                         'ID'[!is.null(design.matrix[['ID']])]), all = TRUE)
+                                         'animal_ID'[!is.null(design.matrix[['animal_ID']])]), all = TRUE)
         
       } else {
         #no matter whether this parameter is extended under other levels, the intercept always
@@ -694,9 +718,10 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
         tem = as.data.frame(lapply(data.par.mask[, foo_mask_var, drop = FALSE], is.na), stringsAsFactors = FALSE)
         index = apply(tem, 1, any)
         if(sum(index) > 0){
-          warning(paste0("NA appears in covariates for parameter ", i, ", a review on the data is recommended."))
+          stop(paste0("NA appears in covariates for parameter ", i, ", a review on the data is recommended."))
         }
-        tem.data = subset(data.par.mask, !index)
+        
+        tem.data = data.par.mask
         tem.data[['gam.resp']] = 1
         
         for(j in foo_mask_var){
@@ -757,6 +782,9 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
         param_distribution[[i]] = c(1, 0)
       }
     }
+    #key component end
+    ########################################################################################################
+    
   } else {
     for(i in fulllist.par){
       data.full[[paste0(i, ' _ (Intercept)')]] = 1
@@ -787,8 +815,14 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
     df.par[j, 'n_col_full'] = param_distribution[[i]][1]
     df.par[j, 'n_col_mask'] = param_distribution[[i]][2]
     if(i %in% names(link)){
+      #if 'link' is provided, check it whether is a valid input
+      #currently we only support three link functions
+      stopifnot(link[[j]] %in% c('log', 'logit', 'identity'))
+      
       df.par[j, 'link'] = link[[i]]
     } else {
+      #set default 'link' if it is not provided
+      if(i == "mu") df.par[j, 'link'] = 'log'
       if(i == "D") df.par[j, 'link'] = 'log'
       if(i == "g0") df.par[j, 'link'] = 'logit'
       if(i == "sigma") df.par[j, 'link'] = 'log'
@@ -831,7 +865,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, dims, fulllist.par, 
 
 #############################################################################
 
-ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
+ss.fun = function(ss.opts, data.full, data.ID_mask, animal.model, dims, bucket_info, sv, fix){
   cutoff <- ss.opts[["cutoff"]]
   ss.link <- ss.opts[["ss.link"]]
   directional <- ss.opts[["directional"]]
@@ -840,12 +874,8 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
   n.dir.quadpoints <- ss.opts[["n.dir.quadpoints"]]
   n.het.source.quadpoints <- ss.opts[["n.het.source.quadpoints"]]
   
-  is.animal_ID = "animal_ID" %in% colnames(data.full)
   
-  fit.ss = "ss" %in% bucket_info
-  
-  
-  if(fit.ss){
+  if("ss" %in% bucket_info){
     if(is.null(ss.opts)) stop("Argument 'ss.opts' is missing.")
     if(is.null(cutoff)) stop("The 'cutoff' component of 'ss.opts' must be specified.")
     ## Warning for unexpected component names.
@@ -994,15 +1024,9 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
     }
     
     
-    #data.full$ss = NA observations are generated by the previous par.extend()
-    #because the session in which no call is detected still contains useful
-    #information such as trap level covariates (e.g. detector's brand) and
-    #session level covariates (e.g. weather).
-    #in this case, they are merged into the data.full without bincapt nor ss etc.
-    #so we generated NA in that merge step.
-    #if one call is detected by trap 1 but not trap 2, "ss" will be recorded as 0
-    data.ss = subset(data.full, !is.na(ss))
-    data.ss.na = subset(data.full, is.na(ss))
+    
+    data.ss = subset(data.full, !is.na(ID))
+    data.no.det.session = subset(data.full, is.na(ID))
     
     
     #adjust all capture history to zero if "ss" < cutoff, and then remove the observations if
@@ -1013,7 +1037,7 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
     }
     
     
-    if(is.animal_ID){
+    if(animal.model){
       keep = aggregate(data.ss$bincapt, list(session = data.ss$session,
                                              animal_ID = data.ss$animal_ID,
                                              ID = data.ss$ID), sum)
@@ -1024,28 +1048,33 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
     
     keep = subset(keep, x > 0)
     if(nrow(keep) == 0) stop("None of signal received is greater than the cut off threshold.")
-    colnames(keep)[3] = "keep"
-    data.ss = merge(data.ss, keep, by = c("session", "animal_ID"[is.animal_ID], "ID"), all = TRUE)
+    colnames(keep)[which(colnames(keep) == 'x')] = "keep"
+    data.ss = merge(data.ss, keep, by = c("session", "animal_ID"[animal.model], "ID"), all = TRUE)
     data.ss = subset(data.ss, !is.na(data.ss$keep))
     
-    if(nrow(data.ss) == 0) stop('no signal strength is greater than the cutoff.')
-    
     data.ss = data.ss[,-which(colnames(data.ss) == "keep")]
-    data.full = rbind(data.ss, data.ss.na)
-    
+    data.ss = sort.data(data.ss, "data.full")
+    data.full = rbind(data.ss, data.no.det.session)
+    data.full = sort.data(data.full, "data.full")
     
     #refresh "dims"
-    if(is.animal_ID){
-      new.n.animal_IDs = aggregate(data.ss$animal_ID, list(session = data.ss$session),
+    if(animal.model){
+      new.n.animals = aggregate(data.ss$animal_ID, list(session = data.ss$session),
                                    function(x) length(unique(x)))
-      new.n.IDs = aggregate(paste0(data.ss$animal_ID, "-", data.ss$ID), list(session = data.ss$session),
+      new.n.animals = new.n.animals[order(new.n.animals$session),]
+      new.n.IDs = aggregate(paste(data.ss$animal_ID, data.ss$ID, sep = '---'), list(session = data.ss$session),
                             function(x) length(unique(x)))
-      dims$n.animals[new.n.animal_IDs$session] = new.n.animal_IDs$x
-      
+      new.n.animal.call = aggregate(data.ss$ID, list(session = data.ss$session, animal_ID = data.ss$animal_ID),
+                                    function(x) length(unique(x)))
+      new.n.animal.call = new.n.animal.call[order(new.n.animal.call$session, new.n.animal.call$animal_ID),]
+      dims$n.animals[new.n.animals$session] = new.n.animals$x
+      dims$n.animal.call = new.n.animal.call$x
     } else {
       new.n.IDs = aggregate(data.ss$ID, list(session = data.ss$session),
                             function(x) length(unique(x)))
     }
+    
+    new.n.IDs = new.n.IDs[order(new.n.IDs$session),]
     
     n.removed = sum(dims$n.IDs) - sum(new.n.IDs$x)
     if(n.removed > 0){
@@ -1067,6 +1096,7 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
         data.ID_mask = subset(data.ID_mask, paste(session, ID, sep = "-") %in%
                                 unique(paste(data.full$session, data.full$ID, sep = "-")))
       }
+      data.ID_mask = sort.data(data.ID_mask, "data.ID_mask")
     }
     
     #modified ss.opts, contains much condensed and regular information
@@ -1081,8 +1111,7 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
     
   } else {
     if (!is.null(ss.opts)){
-      warning("Argument 'ss.opts' is being ignored as a signal
-            strength model is not being fitted.")
+      warning("Argument 'ss.opts' is being ignored as signal strength is not provided.")
     }
     
     ss.opts <- NULL
@@ -1102,7 +1131,6 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
     }
   }
   
-  data.full = sort.data(data.full, "data.full")
   
   
   return(list(data.full = data.full, dims = dims, data.ID_mask = data.ID_mask,
@@ -1110,8 +1138,7 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, bucket_info, dims, sv, fix){
 }
 
 ############################################################################
-CR_SL = function(cue.rates = cue.rates, survey.length = survey.length,
-                 bucket_info = bucket_info, dims = dims){
+CR_SL = function(cue.rates, survey.length, bucket_info, dims){
   n.sessions = dims$n.sessions
   
   if (is.null(survey.length)){
@@ -1140,7 +1167,7 @@ CR_SL = function(cue.rates = cue.rates, survey.length = survey.length,
 
 ############################################################################
 
-param.detfn.fun = function(sv, fix, bounds, name.extend.par, detfn, data.full, data.mask,
+param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn, data.full, data.mask,
                            data.par, ss.opts, bucket_info, fulllist.par, A, buffer,
                            survey.length, dims){
   #check bounds, sv, fix
@@ -1257,6 +1284,8 @@ param.detfn.fun = function(sv, fix, bounds, name.extend.par, detfn, data.full, d
   
   param.og = c(param.og, "D")
   
+  if(animal.model) param.og = c(param.og, "mu")
+  
   #generate all DATA_MATRIX for every each parameter
   #and in the loop, we also do some basic conflict checking
   data.full = sort.data(data.full, "data.full")
@@ -1285,6 +1314,7 @@ param.detfn.fun = function(sv, fix, bounds, name.extend.par, detfn, data.full, d
       design.matrices.mask[[i]] = matrix(0, ncol = 2, nrow = 2)
     }
     
+    #because intercept is in "data.full", so this design matrix always has someting
     design.matrices.full[[i]] = as.matrix(data.full[, which(clean.names.full == i), drop = FALSE])
     
     if(i %in% param.og){

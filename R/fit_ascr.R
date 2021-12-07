@@ -74,15 +74,16 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   data.ID_mask = o.mask$data.ID_mask
   data.mask = o.mask$data.mask
 
-  
   ########################################################################################################
-  
+  #in animal_ID model, the cue.rate is no longer an inputted argument, but a fitted argument, named as "mu"
   fulllist.par = c('g0', 'sigma', 'lambda0', 'z', 'shape.1',
                    'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
                    'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
-                   "sigma.b0.ss", 'D')
+                   "sigma.b0.ss", 'D', 'mu')
+
   o.par.extend = par.extend.fun(par.extend = par.extend, data.full = data.full, data.mask = data.mask,
-                                dims = dims, fulllist.par = fulllist.par, extra_args = extra_args)
+                                animal.model = animal.model, dims = dims, fulllist.par = fulllist.par,
+                                extra_args = extra_args)
   
   data.full = o.par.extend$data.full
   data.mask = o.par.extend$data.mask
@@ -91,13 +92,34 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   #fgam is for compatibility with ADMB model
   fgam = o.par.extend$fgam
   gam_output = o.par.extend$gam_output
-  #scale.covs is used for scaling new input of covariates (if it is scaled in modelling)
+  #scale.covs is used for scaling new input of covariates (if it is scaled in modeling)
   scale.covs = o.par.extend$scale.covs
   is.scale = o.par.extend$is.scale
   
-
-  o.ss = ss.fun(ss.opts = ss.opts, data.full = data.full, data.ID_mask = data.ID_mask,
-                dims = dims, bucket_info = bucket_info, sv = sv, fix = fix)
+  #we didn't modify the 'animal_ID' and 'ID' to successive natural number because in 'animal_ID' level
+  #extend covariates data, the user may want to assign some covariates to each 'animal_ID', so we must keep
+  #it as original input, but after dealing with 'par.extend', there is no interaction with users about
+  #'animal_ID' or 'ID', so we modify them to make sure design matrices are in right order
+  
+  #in the 'convert_natural_number()', the key component is as.numeric(as.factor(xxx)). Both 'data.full' and
+  #'data.ID_mask' contains the same combination of 'animal_ID' and 'ID', but they may be in different order,
+  #to make sure as.numeric(as.factor(xxx)) output the same numeric value to the same 'animal_ID' or 'ID',
+  #sort these two data set first, so they will have the same content and the same order, there should be no
+  #possibility result in different output
+  data.full = sort.data(data.full, 'data.full')
+  data.ID_mask = sort.data(data.ID_mask, 'data.ID_mask')
+  
+  data.full = convert_natural_number(data.full, animal.model, 'both')
+  data.ID_mask = convert_natural_number(data.ID_mask, animal.model, 'both')
+  
+  #because there is 'rbind' in the convert_natural_numer, so sort them again
+  data.full = sort.data(data.full, 'data.full')
+  data.ID_mask = sort.data(data.ID_mask, 'data.ID_mask')
+  
+  #####################################################################################################
+  o.ss = ss.fun(ss.opts = ss.opts, data.full = data.full, data.ID_mask = data.ID_mask, 
+                animal.model = animal.model, dims = dims, bucket_info = bucket_info,
+                sv = sv, fix = fix)
   
   data.full = o.ss$data.full
   data.ID_mask = o.ss$data.ID_mask
@@ -105,7 +127,9 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   bucket_info = o.ss$bucket_info
   ss.opts = o.ss$ss.opts
   ss.link = ss.opts$ss.link
+
   
+  ######################################################################################################
   o.CR_SL = CR_SL(cue.rates = cue.rates, survey.length = survey.length,
                   bucket_info = bucket_info, dims = dims)
   
@@ -114,12 +138,16 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   arg.input[['survey.length']] = survey.length
   
   bucket_info = o.CR_SL$bucket_info
+  #this is the mean of cue.rate, and it will be generated anyway, but when animal.model = TRUE
+  #this "mu.rates" will not be used in the model.
   mu.rates = o.CR_SL$mu.rates
   
-  o.param = param.detfn.fun(sv = sv, fix = fix, bounds = bounds, name.extend.par = name.extend.par,
-                            detfn = detfn, data.full = data.full, data.mask = data.mask,
-                            data.par = data.par, ss.opts = ss.opts, bucket_info = bucket_info,
-                            fulllist.par = fulllist.par, A = A, buffer = buffer,
+  
+  ########################################################################################################
+  o.param = param.detfn.fun(animal.model= animal.model, sv = sv, fix = fix, bounds = bounds, 
+                            name.extend.par = name.extend.par, detfn = detfn, data.full = data.full,
+                            data.mask = data.mask, data.par = data.par, ss.opts = ss.opts, 
+                            bucket_info = bucket_info, fulllist.par = fulllist.par, A = A, buffer = buffer,
                             survey.length = survey.length, dims = dims)
   
   DX.full = o.param$design.matrices.full
@@ -136,64 +164,66 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   #follows the order of fulllist.par
   param.og = fulllist.par[which(fulllist.par %in% param.og)]
   
-  data.full = numeric_ID(data.full)
-  data.ID_mask = numeric_ID(data.ID_mask)
   
-  data.full = sort.data(data.full, "data.full")
-  data.mask = sort.data(data.mask, "data.mask")
-  data.ID_mask = sort.data(data.ID_mask, "data.ID_mask")
-  data.dists.thetas = sort.data(data.dists.thetas, "data.dists.thetas")
+  #############################################################################################################
+  #uid stuffs
   
-  tem = subset(data.full, !is.na(ID))
-  
-  if("animal_ID" %in% colnames(data.full)){
-    dims$n.calls.each.animal = aggregate(tem$ID, list(session = tem$session, animal_ID = tem$animal_ID),
-                                         function(x) length(unique(x)))$x
-  } else dims$n.calls.each.animal = 0
-  
+  #dims$n.detection records the number of detectors with detection for every each 'ID' or 'animal_ID-ID'
+  #so it is a vector with length of sum(n.animal.call) or sum(n.IDs)
   dims$n.detection = cal_n_det(data.full)
   
+  if(!animal.model){
+    tem = extract_unique_id(data.full, dims)
+    #these two dimensions are a little bit ambiguous
+    #n.id.uid means the number of IDs under each unique capture history, this is a vector that
+    #simply combines these numbers for all unique capture histories in all sessions in a row
+    #for example, if there are 3 sessions and 1st session has 3 unique capture histories, and 2nd has no detection
+    #and the 3rd session has 2 unique capture histories
+    #then this n.id.uid will be a vector with length of 3 + 0 + 2 = 5
+    
+    dims$n.id.uid = tem$n_id_uid
+    
+    #n.uids is the number of unique capture histories in each session, it is a vector
+    #with length of n.sessions
+    
+    dims$n.uids = tem$n_uids
+    
+    #each unique capture history
+    data_u_bin = tem$data_u_bin
+    uid_dup_data_full = tem$uid_dup_data_full
+    
+    DX.full.uid = lapply(DX.full,
+                         function(x) {x = x[!uid_dup_data_full,,drop = FALSE]; x = x[order(data_u_bin$session, data_u_bin$u_id, data_u_bin$trap),,drop = FALSE]; return(x)})
+    
+    data_u_bin = sort.data(data_u_bin, "data_u_bin")
+    
+    #this one is like the number of detection for each uid, like 'n.detection', this is a literately vector
+    #if 3 sessions, and their n.uid is 3,0,2, then this "n.detection.uid" is vector with length of 5
+    dims$n.detection.uid = cal_n_det(data_u_bin, is_uid = TRUE)
+    
+    #this is a literately vector as well, "n.detection.uid" must be used to extract the index of traps for one uid
+    index_traps_uid = aggregate(data_u_bin$bincapt, list(session = data_u_bin$session,
+                                                         u_id = data_u_bin$u_id), function(x) which(x == 1))
+    index_traps_uid = sort.data(index_traps_uid, "index_traps_uid")
+    index_traps_uid = do.call('c', index_traps_uid$x)
+    
+    
+    #ID and unique capture history match table
+    u_id_match = tem$u_id_match
+    u_id_match = sort.data(u_id_match, "u_id_match")
+  } else {
+    #for animal.model, we do not use unique capture history trick, set these related variables to zero
+    dims$n.id.uid = 0
+    dims$n.uids = 0
+    dims$n.detection.uid = 0
+    data_u_bin = data.frame(bincapt = 0)
+    DX.full.uid = vector('list', length(fulllist.par))
+    names(DX.full.uid) = fulllist.par
+    for(i in fulllist.par) DX.full.uid[[i]] = matrix(0, ncol = 2, nrow = 2)
+    index_traps_uid = 0
+    u_id_match = data.frame(ID = 0)
+  }
   
-  ###########################################uid stuffs
-  
-  tem = extract_unique_id(data.full, dims)
-  #these two dimensions are a little bit ambiguous
-  #n.id.uid means the number of IDs under each unique capture history, this is a vector that
-  #simply combines these numbers for all unique capture histories in all sessions in a row
-  #for example, if there are 3 sessions and 1st session has 3 unique capture histories, and 2nd has no detection
-  #and the 3rd session has 2 unique capture histories
-  #then this n.id.uid will be a vector with length of 3 + 0 + 2 = 5
-  
-  dims$n.id.uid = tem$n_id_uid
-  
-  #n.uids is the number of unique capture histories in each session, it is a vector
-  #with length of n.sessions
-  
-  dims$n.uids = tem$n_uids
-  
-  #each unique capture history
-  data_u_bin = tem$data_u_bin
-  uid_dup_data_full = tem$uid_dup_data_full
-  
-  DX.full.uid = lapply(DX.full,
-                       function(x) {x = x[!uid_dup_data_full,,drop = FALSE]; x = x[order(data_u_bin$session, data_u_bin$u_id, data_u_bin$trap),,drop = FALSE]; return(x)})
-  
-  data_u_bin = sort.data(data_u_bin, "data_u_bin")
-  
-  #this one is like the number of detection for each uid, like 'n.detection', this is a literately vector
-  #if 3 sessions, and their n.uid is 3,0,2, then this "n.detection.uid" is vector with length of 5
-  dims$n.detection.uid = cal_n_det(data_u_bin, is_uid = TRUE)
-  
-  #this is a literately vector as well, "n.detection.uid" must be used to extract the index of traps for one uid
-  index_traps_uid = aggregate(data_u_bin$bincapt, list(session = data_u_bin$session,
-                                                       u_id = data_u_bin$u_id), function(x) which(x == 1))
-  index_traps_uid = sort.data(index_traps_uid, "index_traps_uid")
-  index_traps_uid = do.call('c', index_traps_uid$x)
-  
-  
-  #ID and unique capture history match table
-  u_id_match = tem$u_id_match
-  u_id_match = sort.data(u_id_match, "u_id_match")
   
   
   
@@ -230,7 +260,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
                n_masks = dims$n.masks,
                n_detection = dims$n.detection,
                n_detection_uid = dims$n.detection.uid,
-               n_calls_each_animal = dims$n.calls.each.animal,
+               n_calls_each_animal = dims$n.animal.call,
                n_uid_session = dims$n.uids,
                n_ids_each_uid = dims$n.id.uid,
                index_traps_uid = index_traps_uid,
@@ -354,7 +384,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   dev = extra_args$dev
   if(is.null(dev)) dev = FALSE
   if(dev){
-    dyn.load(TMB::dynlib("G:/work/ben/TMB-test/ascrTmb"))
+    dyn.load(TMB::dynlib(paste0(getwd(), '/inst/TMB/ascrTmb')))
   } else {
     dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
   }

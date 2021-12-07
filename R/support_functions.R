@@ -10,6 +10,10 @@ natural_number_check = function(session, key){
 }
 
 convert_natural_number = function(dat, is.animalID, which.convert){
+  
+  dat.na = subset(dat, is.na(ID))
+  dat = subset(dat, !is.na(ID))
+  
   if(which.convert == 'ID'){
     if(is.animalID){
       keys = paste(dat$session, dat$animal_ID, sep = '_')
@@ -24,6 +28,7 @@ convert_natural_number = function(dat, is.animalID, which.convert){
     }
     output = do.call('rbind', output)
   } else if(which.convert == 'animal_ID'){
+    stopifnot(is.animalID)
     keys = dat$session
     uni_keys = unique(keys)
     output = vector('list', length(uni_keys))
@@ -33,13 +38,16 @@ convert_natural_number = function(dat, is.animalID, which.convert){
     }
     output = do.call('rbind', output)
   } else if(which.convert == 'both'){
-    dat = convert_natural_number(dat, TRUE, 'animal_ID')
-    dat = convert_natural_number(dat, TRUE, 'ID')
+    if(is.animalID){
+      dat = convert_natural_number(dat, is.animalID, 'animal_ID')
+    }
+    dat = convert_natural_number(dat, is.animalID, 'ID')
     output = dat
   } else {
     stop('Invalid input.')
   }
   
+  output = rbind(output, dat.na)
   return(output)
 
 }
@@ -147,7 +155,7 @@ formula_separate = function(foo, var.m){
     mask_vars = foo_vars[index]
   }
   
-  foo_terms = attr(terms(foo), 'factors')[-1,,drop = FALSE]
+  foo_terms = attr(stats::terms(foo), 'factors')[-1,,drop = FALSE]
   
   row_names = as.list(rownames(foo_terms))
   col_names = as.list(colnames(foo_terms))
@@ -229,7 +237,7 @@ formula_separate = function(foo, var.m){
 
 param.range.validate = function(param, value){
   if(param %in% c("sigma", "lambda0", "z", "shape.1","scale", "sigma.b0.ss", "kappa", "alpha", "sigma.toa",
-                  "b0.ss", "b1.ss", "b2.ss", "sigma.ss", 'D')){
+                  "b0.ss", "b1.ss", "b2.ss", "sigma.ss", 'D', 'mu')){
     if(value >= 0){
       return(TRUE)
     } else {
@@ -385,6 +393,22 @@ default.sv = function(param, info){
     shape.1 = default.sv(param = "shape.1", info = info)
     scale = default.sv(param = "scale", info = info)
     return(shape.1 + scale * sigma)
+  } else if(param == 'mu'){
+    n.animals = dims$n.animals
+    n.animal.call = dims$n.animal.call
+    n.sessions = dims$n.sessions
+    
+    i = 1
+    for(s in 1:n.sessions){
+      if(n.animals[s] > 0){
+        for(a in 1:n.animals[s]){
+          n.animal.call[i] = n.animal.call[i]/survey.length[s]
+          i = i + 1
+        }
+      }
+    }
+    
+    return(mean(n.animal.call))
   }
 }
 
@@ -396,7 +420,7 @@ default.bounds = function(param){
     return(c(0, 1))
   } else if(param %in% c('sigma', 'lambda0', 'shape.1', 'scale', 'b0.ss',
                          'b1.ss', 'b2.ss', 'sigma.b0.ss', 'sigma.ss',
-                         'z', 'sigma.toa', 'alpha')){
+                         'z', 'sigma.toa', 'alpha', 'mu')){
     return(c(0, 1e8))
   } else if(param == 'kappa'){
     return(c(0, 700))
@@ -483,36 +507,6 @@ sort.data = function(dat, name){
     dat = dat[order(dat$session, dat$u_id, dat$trap),]
   }
   
-  return(dat)
-}
-
-
-
-numeric_ID = function(dat){
-  is.animal_ID = "animal_ID" %in% colnames(dat)
-  if(is.animal_ID){
-    tem.dat.non.na = subset(dat, !is.na(ID))
-    tem.dat.non.na$animal_ID = as.numeric(as.factor(tem.dat.non.na$animal_ID))
-    
-    tem.dat.na = subset(dat, is.na(ID))
-    u.id = unique(tem.dat.non.na$animal_ID)
-    tem = vector('list', length(u.id))
-    for(k in 1:length(u.id)){
-      tem[[k]] = subset(tem.dat.non.na, animal_ID== u.id[k])
-      tem[[k]]$ID = as.numeric(as.factor(tem[[k]]$ID))
-    }
-  } else {
-    tem.dat.non.na = subset(dat, !is.na(ID))
-    tem.dat.na = subset(dat, is.na(ID))
-    u.session = unique(tem.dat.non.na$session)
-    tem = vector('list', length(u.session))
-    for(k in 1:length(u.session)){
-      tem[[k]] = subset(tem.dat.non.na, session == u.session[[k]])
-      tem[[k]]$ID = as.numeric(as.factor(tem[[k]]$ID))
-    }
-  }
-  tem.dat.non.na = do.call('rbind', tem)
-  dat = rbind(tem.dat.na, tem.dat.non.na)
   return(dat)
 }
 
@@ -859,7 +853,7 @@ ori_name = function(char){
   fulllist.par = c('g0', 'lambda0', 'z', 'shape.1',
                    'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
                    'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
-                   "sigma.b0.ss", 'D', 'sigma')
+                   "sigma.b0.ss", 'D', 'sigma', 'mu')
   #the pattern is the original parameter names followed by a dot
   pattern = paste(fulllist.par, ".", sep = "")
   n = length(char)

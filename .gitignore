@@ -11,3 +11,5 @@ HELP-release.txt
 *.pper
 .Rproj.user/
 .Rhistory
+*.dll
+*.o

@@ -361,81 +361,81 @@ Type det_th(const Type &dx, const vector<Type> &param){
 
 //ss
 //in ss, we do something different, here we use
-//the same input, but output is back-transformed essx
+//the same input, but output is back-transformed mu
 //instead of the probability be detected
 template<class Type>
-Type essx_ss_identical(const Type &dx, const vector<Type> &param){
+Type mu_ss_identical(const Type &dx, const vector<Type> &param){
   Type b0_ss = param(0);
   Type b1_ss = param(1);
-  Type essx = b0_ss - b1_ss * dx;
-  return essx;
+  Type mu = b0_ss - b1_ss * dx;
+  return mu;
 }
 
 template<class Type>
-Type essx_ss_log(const Type &dx, const vector<Type> &param){
+Type mu_ss_log(const Type &dx, const vector<Type> &param){
   Type b0_ss = param(0);
   Type b1_ss = param(1);
-  Type essx = exp(b0_ss - b1_ss * dx);
-  return essx;
+  Type mu = exp(b0_ss - b1_ss * dx);
+  return mu;
 }
 
 template<class Type>
-Type essx_ss_spherical(const Type &dx, const vector<Type> &param){
+Type mu_ss_spherical(const Type &dx, const vector<Type> &param){
   Type b0_ss = param(0);
   Type b1_ss = param(1);
-  Type essx = 0.0;
+  Type mu = 0.0;
   if(dx > 1){
-    essx += b0_ss - 20 * log10(dx) - b1_ss * (dx - 1);
+    mu += b0_ss - 20 * log10(dx) - b1_ss * (dx - 1);
   } else {
-    essx += b0_ss;
+    mu += b0_ss;
   }
-  return essx;
+  return mu;
 }
 
 //ss_dir
 template<class Type>
-Type essx_ss_dir_identical(const Type &dx, const vector<Type> &param){
+Type mu_ss_dir_identical(const Type &dx, const vector<Type> &param){
   Type b0_ss = param(0);
   Type b1_ss = param(1);
   Type b2_ss = param(2);
   Type theta = param(3);
-  Type essx = b0_ss - (b1_ss - b2_ss * (cos(theta) - 1)) * dx;
-  return essx;
+  Type mu = b0_ss - (b1_ss - b2_ss * (cos(theta) - 1)) * dx;
+  return mu;
 }
 
 template<class Type>
-Type essx_ss_dir_log(const Type &dx, const vector<Type> &param){
+Type mu_ss_dir_log(const Type &dx, const vector<Type> &param){
   Type b0_ss = param(0);
   Type b1_ss = param(1);
   Type b2_ss = param(2);
   Type theta = param(3);
-  Type essx = exp(b0_ss - (b1_ss - b2_ss * (cos(theta) - 1)) * dx);
-  return essx;
+  Type mu = exp(b0_ss - (b1_ss - b2_ss * (cos(theta) - 1)) * dx);
+  return mu;
 }
 
 template<class Type>
-Type essx_ss_dir_spherical(const Type &dx, const vector<Type> &param){
+Type mu_ss_dir_spherical(const Type &dx, const vector<Type> &param){
   Type b0_ss = param(0);
   Type b1_ss = param(1);
   Type b2_ss = param(2);
   Type theta = param(3);
-  Type essx = 0.0;
+  Type mu = 0.0;
   if(dx > 1){
-    essx += b0_ss;
+    mu += b0_ss;
   } else {
-    essx += b0_ss - 20 * log10(dx) - (b1_ss - b2_ss * (cos(theta) - 1)) * (dx - 1);
+    mu += b0_ss - 20 * log10(dx) - (b1_ss - b2_ss * (cos(theta) - 1)) * (dx - 1);
   }
-  return essx;
+  return mu;
 }
 
 //ss_het
 template<class Type>
-Type essx_ss_het(const Type &dx, const vector<Type> &param){
+Type mu_ss_het(const Type &dx, const vector<Type> &param){
   Type b0_ss = param(0);
   Type b1_ss = param(1);
   Type u = param(2);
-  Type essx = b0_ss - b1_ss * dx + u;
-  return essx;
+  Type mu = b0_ss - b1_ss * dx + u;
+  return mu;
 }
 
 //end of detection functions------------------------------------------------------------------------
@@ -594,24 +594,24 @@ Type objective_function<Type>::operator() ()
     n_detfn_param = 2;
   } else if(detfn_index == 6){
     if(ss_link == 1){
-      detfn = essx_ss_identical;
+      detfn = mu_ss_identical;
     } else if(ss_link == 2){
-      detfn = essx_ss_log;
+      detfn = mu_ss_log;
     } else if(ss_link == 4){
-      detfn = essx_ss_spherical;
+      detfn = mu_ss_spherical;
     }
     n_detfn_param = 2;
   } else if(detfn_index == 7){
     if(ss_link == 1){
-      detfn = essx_ss_dir_identical;
+      detfn = mu_ss_dir_identical;
     } else if(ss_link == 2){
-      detfn = essx_ss_dir_log;
+      detfn = mu_ss_dir_log;
     } else if(ss_link == 4){
-      detfn = essx_ss_dir_spherical;
+      detfn = mu_ss_dir_spherical;
     }
     n_detfn_param = 4;
   } else if(detfn_index == 8){
-    detfn = essx_ss_het;
+    detfn = mu_ss_het;
     n_detfn_param = 3;
   }
   //define the parameter vector which will be used later
@@ -947,8 +947,6 @@ Type objective_function<Type>::operator() ()
     D_vec_mask = D_DX_mask * D_mask;
   }
   
-  PARAMETER_VECTOR(mu);
-  
   //finally declare the latent variable "u"
   PARAMETER_VECTOR(u);
   
@@ -989,10 +987,10 @@ Type objective_function<Type>::operator() ()
   Type *p_sigma_b0_ss_tem = &sigma_b0_ss_tem;
   
   
-  //essx = E(ss|x), since it is "session-mask-trap"
+  //mu = E(ss|x), since it is "session-mask-trap"
   //level data, use data_dist_theta's index
-  vector<Type> essx(nrow_dx);
-  essx.setZero();
+  vector<Type> mu(nrow_dx);
+  mu.setZero();
   
   int index_data_mask;
   int index_data_full_D;
@@ -1050,7 +1048,7 @@ Type objective_function<Type>::operator() ()
   
   Type *p_dx;
   Type *p_theta;
-  Type *p_essx;
+  Type *p_mu;
   Type *p_capt_bin;
   Type *p_capt_bearing;
   Type *p_capt_dist;
@@ -1144,7 +1142,7 @@ Type objective_function<Type>::operator() ()
     
     p_dx = &dx[index_data_dist_theta];
     p_theta = &theta[index_data_dist_theta];
-    p_essx = &essx[index_data_dist_theta];
+    p_mu = &mu[index_data_dist_theta];
     
     esa(s - 1) = Type(0.0);
     
@@ -1297,10 +1295,10 @@ Type objective_function<Type>::operator() ()
           
           p_sigma_ss_full++;
           
-          *p_essx = (*detfn)(*p_dx, detfn_param);
-          p_k(m - 1, t - 1) = 1 - pnorm((cutoff - *p_essx) / sigma_ss_tem);
+          *p_mu = (*detfn)(*p_dx, detfn_param);
+          p_k(m - 1, t - 1) = 1 - pnorm((cutoff - *p_mu) / sigma_ss_tem);
           
-          p_essx++;
+          p_mu++;
         }
         p_dx++;
         
@@ -1483,13 +1481,13 @@ Type objective_function<Type>::operator() ()
                 //ss_origin
                 if(is_ss_origin == 1){
                   p_capt_ss = &capt_ss[index_data_full];
-                  p_essx = &essx[index_data_dist_theta];
+                  p_mu = &mu[index_data_dist_theta];
                   p_sigma_ss_full = &sigma_ss_vec_full[index_data_full];
                   
                   *p_sigma_ss_tem = *p_sigma_ss_full + *p_sigma_ss_mask;
                   trans(p_sigma_ss_tem, par_link(11));
                   
-                  fy_ss_log += dnorm(*p_capt_ss, *p_essx, sigma_ss_tem, true);
+                  fy_ss_log += dnorm(*p_capt_ss, *p_mu, sigma_ss_tem, true);
                   
                 }
                 
@@ -1559,13 +1557,13 @@ Type objective_function<Type>::operator() ()
                   //ss_origin
                   if(is_ss_origin == 1){
                     p_capt_ss = &capt_ss[index_data_full];
-                    p_essx = &essx[index_data_dist_theta];
+                    p_mu = &mu[index_data_dist_theta];
                     p_sigma_ss_full = &sigma_ss_vec_full[index_data_full];
                     
                     *p_sigma_ss_tem = *p_sigma_ss_full + *p_sigma_ss_mask;
                     trans(p_sigma_ss_tem, par_link(11));
                     
-                    fy_ss_log += dnorm(*p_capt_ss, *p_essx, sigma_ss_tem, true);
+                    fy_ss_log += dnorm(*p_capt_ss, *p_mu, sigma_ss_tem, true);
                   }
                   //end of loop of traps
                 }

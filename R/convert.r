@@ -52,8 +52,9 @@ create.mask <- function(traps, buffer, ...){
 #' @param n.traps 
 #' @param n.sessions 
 #' @param mrds.locs a list with length of n.sessions with data frames or matrices as components, each data.frame or matrix
-#'                  contains two columns record the Cartesian coordinates of each detected individual or call. If a session
-#'                  has no detection, keep the corresponding component as NULL.
+#'                  contains two columns record the Cartesian coordinates of each call. If a session has no detection,
+#'                  keep the corresponding component as NULL. If animal.model, then each component must be a data.frame
+#'                  with 4 columns: "animal_ID", "ID", "mrds_x" and "mrds_y".
 #'
 #' @return
 #' @export
@@ -176,8 +177,11 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
     #deal with mrds.locs. "ID" will be dealt with together as they are closely related
     #here we require mrds.locs a list with length of n.sessions, if there is no detection for
     #any sessions, the user should leave that component to be NULL.
-    
+    is.animalID = "animal_ID" %in% colnames(captures)
     is.mrds <- !is.null(mrds.locs)
+    
+    #initial check, for further check about each component of mrds.locs, will be processed later
+    #because there could be NULL for some component of this list.
     
     if (is.mrds){
         if(is(mrds.locs, "list")) {
@@ -185,16 +189,28 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
                 msg = paste0("mrds.locs must be a list with a length of n.sessions: ", n.sessions)
                 stop(msg)
             }
+            
+            if(is.animalID){
+                stopifnot(all(sapply(mrds.locs, function(x) is(x, 'data.frame') | is.null(x))))
+            } else {
+                stopifnot(all(sapply(mrds.locs, function(x) is(x, 'data.frame') | is(x, 'matrix') | is.null(x))))
+            }
+            
         } else {
-            stopifnot(n.sessions == 1, is.matrix(mrds.locs) | is.data.frame(mrds.locs))
+            stopifnot(n.sessions == 1)
+            
+            if(is.animalID){
+                stopifnot(is(x, 'data.frame'))
+            } else {
+                stopifnot(any(is(x, 'data.frame'), is(x, 'matrix')))
+            }
+            
+            #convert it to a list with one element only, to make it be in consistent format of multi-session case
             mrds.locs = list(mrds.locs)
         }
         
     }
     
-    
-
-    is.animalID = "animal_ID" %in% colnames(captures)
     
     dupli = duplicated(captures[,c("session", "animal_ID"[is.animalID], "ID", "trap")])
     if(any(dupli)){
@@ -205,18 +221,22 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
     #if not animal_ID data, use previous version output, which is a list with 'bincapt' and etc.
     #and if animal_ID data, then output a data frame directly since there is no necessary for compatibility
     
-    #since 'session' is already be garanteed to be successive natural numbers, we could directly aggregate
-    #captures based on 'session', the outputs's order will be correct.
+    #since 'session' is already be guaranteed to be successive natural numbers, we could directly aggregate
+    #captures based on 'session', the output's order will be correct.
     if(!is.animalID){
         #'n_IDs' will be used later to construct the matrices of output
         n_IDs = numeric(n.sessions)
         n_IDs[unique(captures$session)] = aggregate(captures$ID, list(session = captures$session),
                                                     function(x) length(unique(x)))$x
     } else {
-        #'n_animals' only used later to check 'mrds.locs'
+        #'n_animals_call' only used later to check 'mrds.locs'
+        n_animals_call = numeric(n.sessions)
+        n_animals_call[unique(captures$session)] = aggregate(paste(captures$animal_ID, captures$ID, sep = "_"),
+                                                             list(session = captures$session),
+                                                             function(x) length(unique(x)))$x
         n_animals = numeric(n.sessions)
         n_animals[unique(captures$session)] = aggregate(captures$animal_ID, list(session = captures$session),
-                                                    function(x) length(unique(x)))$x
+                                                        function(x) length(unique(x)))$x
     }
     
     #check mrds.locs with 'ID'/'animal_ID' together
@@ -224,7 +244,6 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
         n_col_mrds = lapply(mrds.locs, ncol)
         n_col_mrds = lapply(n_col_mrds, function(x) ifelse(is.null(x), 0, x))
         n_col_mrds = do.call('c', n_col_mrds)
-        stopifnot(!all(n_col_mrds %in% c(0, 2)))
         
         n_row_mrds = lapply(mrds.locs, nrow)
         n_row_mrds = lapply(n_row_mrds, function(x) ifelse(is.null(x), 0, x))
@@ -234,41 +253,35 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
         #and check whether the 'animal_ID' or 'ID' are successive natural numbers
         if(is.animalID){
 
-            stopifnot(all(n_row_mrds == n_animals))
-            is.natural_number = natural_number_check(captures$session, captures$animal_ID)
-            if(!is.natural_number) stop('As "mrds.locs" is provided, "animal_ID" only accepts successive natural numbers.')
-            #when is.animalID, we do not require the 'ID' to be successive natural numbers, so we convert them to that form.
-            captures = convert_natural_number(dat = captures, is.animalID = is.animalID, which.convert = "ID")
+            stopifnot(all(n_row_mrds == n_animals_call))
+            
             #merge 'mrds.locs' into captures, the Cartesian coordinates of mrds will be recorded as 'mrds_x' and 'mrds_y'
             #these column names matter, because they will be used in the model fitting function directly, so cannot be renamed
             for(s in 1:n.sessions){
-                if(!is.null(mrds.locs[[s]])){
-                    mrds.locs[[s]] = as.data.frame(mrds.locs[[s]])
-                    colnames(mrds.locs[[s]]) = c('mrds_x', 'mrds_y')
-                    mrds.locs[[s]]$session = s
-                    mrds.locs[[s]]$animal_ID = seq(n_animals[s])
-                } else {
-                    #if there is no detection in this session, generate a data frame with 0 rows
-                    mrds.locs[[s]] = data.frame(session = numeric(0), animal_ID = numeric(0), mrds_x = numeric(0), mrds_y = numeric(0))
+                tem = mrds.locs[[s]]
+                if(!is.null(tem)){
+                    stopifnot(ncol(tem) == 4)
+                    stopifnot(all(c('animal_ID', 'ID', 'mrds_x', 'mrds_y') %in% colnames(tem)))
+                    tem$session = s
                 }
+                #if it is NULL, just keep it as NULL
             }
             mrds.locs = do.call('rbind', mrds.locs)
-            captures = merge(captures, mrds.locs, by = c('session', 'animal_ID'), all.x = TRUE)
-            
+            captures = merge(captures, mrds.locs, by = c('session', 'animal_ID', 'ID'), all.x = TRUE)
+            #captures = convert_natural_number(dat = captures, is.animalID = is.animalID, which.convert = "both")
             
         } else {
-            #n_IDs is calculated 
             stopifnot(all(n_row_mrds == n_IDs))
             is.natural_number = natural_number_check(captures$session, captures$ID)
             if(!is.natural_number) stop('As "mrds.locs" is provided, "ID" only accepts successive natural numbers.')
         }
-    } else {
-        if(is.animalID){
-            captures = convert_natural_number(dat = captures, is.animalID = is.animalID, which.convert = 'both')
-        } else {
-            captures = convert_natural_number(dat = captures, is.animalID = is.animalID, which.convert = 'ID')
-        }
-    }
+    } #else {
+#        if(is.animalID){
+#            captures = convert_natural_number(dat = captures, is.animalID = is.animalID, which.convert = 'both')
+#        } else {
+#            captures = convert_natural_number(dat = captures, is.animalID = is.animalID, which.convert = 'ID')
+#        }
+#    }
     
     captures = sort.data(captures, 'data.full')
     
@@ -326,29 +339,29 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
         }
     } else {
         #if is.animal_ID, output the modified 'captures' directly
-        #to make the 'captures' be similar to the logic of previous output, insert the column of 'bincapt' 
-        #and the rows without any detection (bincapt = 0). And if one session does not have any detection
-        #then this session does not appear in 'captures'
-        #################################################################################3
-        #to be continued...
+        
         captures$bincapt = 1
 
         #create a data frame contains all combinations of "session-animal_ID-ID-trap", as captures does not
         #contain the row for the traps without detection for any call
-        #since 'ID' has been modified to be successive natural numbers for each 'session-animal_ID', take
-        #the max is the easiest way to find the number of call be detected for this animal
-        n_IDs_each_animal = aggregate(captures$ID, list(session = captures$session, animal_ID = captures$animal_ID), max)$x
-        index_ID = 1
+        #and if a session has no detection, then it should appear in the "capture" with n.traps[s] rows with NA "ID"
+
+        n_IDs_each_animal = aggregate(captures$ID, list(session = captures$session, animal_ID = captures$animal_ID),
+                                      function(x) length(unique(x)))
         
         tem_session = vector('list', n.sessions)
         for(s in 1:n.sessions){
             if(n_animals[s] > 0){
+                tem0 = subset(captures, session == s)
+                u.animal = unique(tem0$animal_ID)
                 tem_animal = vector('list', n_animals[s])
                 for(i in 1:n_animals[s]){
-                    tem_animal[[i]] = data.frame(session = s, animal_ID = i, ID = rep(1:n_IDs_each_animal[index_ID], 
-                                                                                      each = n.traps[s]),
-                                                 trap = rep(1:n.traps[s], n_IDs_each_animal[index_ID]))
-                    index_ID = index_ID + 1
+                    animal_label = u.animal[i]
+                    tem1 = subset(tem0, animal_ID == animal_label)
+                    u.id = unique(tem1$ID)
+                    tem_animal[[i]] = data.frame(session = s, animal_ID = animal_label, 
+                                                 ID = rep(u.id, each = n.traps[s]),
+                                                 trap = rep(1:n.traps[s], length(u.id)))
                 }
                 tem_session[[s]] = do.call('rbind', tem_animal)
             } else {
@@ -363,7 +376,7 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
         captures = captures[,which(colnames(captures) %in% c('session', 'animal_ID', 'ID', 'trap', 'bincapt',
                                                              'bearing', 'toa', 'dist', 'ss', 'mrds_x', 'mrds_y'))]
         for(i in colnames(captures)) captures[,i] = ifelse(is.na(captures[,i]) & !is.na(captures[,'ID']), 0, captures[,i])
-        
+        captures = sort.data(captures, 'data.full')
         return(captures)
     }
     

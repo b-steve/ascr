@@ -15,5 +15,8 @@ rm(demo_names, dir, i)
 captures = readRDS('./inst/demo_captures')
 traps = readRDS('./inst/demo_traps')
 masks = readRDS('./inst/demo_masks')
+par.extend = readRDS('./inst/demo_extend_no_animal_ID')
+ss.opts = readRDS('./inst/demo_ss_opts')
+
 capt = create.capt(captures, traps)
 capt2 = create.capt(captures[,-which(colnames(captures) == 'animal_ID')], traps)
