@@ -52,7 +52,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   data.traps = trap.fun(traps = traps, dims = dims)
   data.full = merge(data.full, data.traps, by = c('session', 'trap'), all = TRUE)
   data.full = sort.data(data.full, 'data.full')
-  
+
   ########################################################################################################
   o.mask = mask.fun(mask = mask, dims = dims, animal.model = animal.model,
                     data.traps = data.traps, data.full = data.full,
@@ -116,6 +116,17 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   data.full = sort.data(data.full, 'data.full')
   data.ID_mask = sort.data(data.ID_mask, 'data.ID_mask')
   
+  if(animal.model){
+    #n.animal.call is a vector with length of sum(n.animals), each element is the number of calls
+    #made by that animal, since the order of animal_ID matters, so we calculate it here
+    tem = subset(data.full, !is.na(data.full$animal_ID))
+    tem = agg_sort(tem, 'ID', c('session', 'animal_ID'), function(x) length(unique(x)))
+    dims$n.animal.call = tem$x
+  } else {
+    dims$n.animal.call = 0
+  }
+
+  
   #####################################################################################################
   o.ss = ss.fun(ss.opts = ss.opts, data.full = data.full, data.ID_mask = data.ID_mask, 
                 animal.model = animal.model, dims = dims, bucket_info = bucket_info,
@@ -167,12 +178,13 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   
   #############################################################################################################
   #uid stuffs
-  
+
   #dims$n.detection records the number of detectors with detection for every each 'ID' or 'animal_ID-ID'
   #so it is a vector with length of sum(n.animal.call) or sum(n.IDs)
   dims$n.detection = cal_n_det(data.full)
   
   if(!animal.model){
+    
     tem = extract_unique_id(data.full, dims)
     #these two dimensions are a little bit ambiguous
     #n.id.uid means the number of IDs under each unique capture history, this is a vector that
@@ -196,15 +208,13 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
                          function(x) {x = x[!uid_dup_data_full,,drop = FALSE]; x = x[order(data_u_bin$session, data_u_bin$u_id, data_u_bin$trap),,drop = FALSE]; return(x)})
     
     data_u_bin = sort.data(data_u_bin, "data_u_bin")
-    
+
     #this one is like the number of detection for each uid, like 'n.detection', this is a literately vector
     #if 3 sessions, and their n.uid is 3,0,2, then this "n.detection.uid" is vector with length of 5
     dims$n.detection.uid = cal_n_det(data_u_bin, is_uid = TRUE)
     
     #this is a literately vector as well, "n.detection.uid" must be used to extract the index of traps for one uid
-    index_traps_uid = aggregate(data_u_bin$bincapt, list(session = data_u_bin$session,
-                                                         u_id = data_u_bin$u_id), function(x) which(x == 1))
-    index_traps_uid = sort.data(index_traps_uid, "index_traps_uid")
+    index_traps_uid = agg_sort(data_u_bin, 'bincapt', c('session', 'u_id'), function(x) which(x == 1))
     index_traps_uid = do.call('c', index_traps_uid$x)
     
     
@@ -214,7 +224,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   } else {
     #for animal.model, we do not use unique capture history trick, set these related variables to zero
     dims$n.id.uid = 0
-    dims$n.uids = 0
+    dims$n.uids = numeric(dims$n.sessions)
     dims$n.detection.uid = 0
     data_u_bin = data.frame(bincapt = 0)
     DX.full.uid = vector('list', length(fulllist.par))
@@ -380,6 +390,8 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
     map[[par_name]] = factor(rep(NA, length(parameters[[par_name]])))
   }
   
+  browser()
+  
   #dev is a logical variable for development environment, default is FALSE
   dev = extra_args$dev
   if(is.null(dev)) dev = FALSE
@@ -388,8 +400,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   } else {
     dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
   }
-  
-  
+
   
   if(!("ss.het" %in% bucket_info)){
     obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, DLL="ascrTmb")

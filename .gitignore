@@ -13,3 +13,11 @@ HELP-release.txt
 .Rhistory
 *.dll
 *.o
+*.json
+.Rhistory
+.Rhistory
+*.exe
+inst/TMB/test.cpp
+.Rhistory
+*.Rd
+*.Rd

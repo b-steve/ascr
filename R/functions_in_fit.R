@@ -47,10 +47,8 @@ capture.fun = function(capt, animal.model){
               tem.data.capt[[i]] = tem.df
             }
             data.capt = do.call("rbind", tem.data.capt)
-            data.capt = sort.data(data.capt, "data.full")
             #n.animals is useless in this case, just use 0 to occupy the variable name
-            n.animals = 0
-            n.animal.call = 0
+            n.animals = numeric(n.sessions)
   #####################################################################################################          
   } else {
   #####################################################################################################
@@ -64,24 +62,21 @@ capture.fun = function(capt, animal.model){
               stop(paste0('columns: ', paste(base_cols, collapse = ", "), ", must be included."))
             }
     
-            #for animal included model, since there is no compatible consern, the "create.capt()" has
+            #for animal included model, since there is no compatible concern, the "create.capt()" has
             #already sorted out the data structure, here we just need to extract some basic information
             
             n.sessions = max(capt$session)
-            n.traps = aggregate(capt$trap, list(session = capt$session), max)$x
-            n.animals = aggregate(capt$animal_ID, list(session = capt$session), function(x) length(unique(x)))$x
-            no.det = aggregate(capt$animal_ID, list(session = capt$session), function(x) any(is.na(x)))$x
+            n.traps = agg_sort(capt, 'trap', 'session', max)$x
+            
+            n.animals = agg_sort(capt, 'animal_ID', 'session', function(x) length(unique(x)))$x
+
+            no.det = agg_sort(capt, 'animal_ID', 'session', function(x) any(is.na(x)))$x
+
+            
             n.animals = ifelse(no.det, 0, n.animals)
-            #n.animal.call is a vector with length of sum(n.animals), each element is the number of calls
-            #made by that animal
-            capt = sort.data(capt, 'data.full')
-            tem = subset(capt, !is.na(capt$animal_ID))
-            n.animal.call = aggregate(tem$ID, list(session = tem$session, animal_ID = tem$animal_ID),
-                                      function(x) length(unique(x)))$x
             
             #n.IDs becomes the number of length(unique(animal_ID, ID)) for each session
-            n.IDs = aggregate(paste(capt$animal_ID, capt$ID, sep = '---'), list(session = capt$session),
-                              function(x) length(unique(x)))$x
+            n.IDs = agg_sort(capt, c('animal_ID', 'ID'), 'session', function(x) length(unique(x)))$x
             n.IDs = ifelse(no.det, 0, n.IDs)
             
             is.mrds = "mrds_x" %in% colnames(capt)
@@ -95,8 +90,7 @@ capture.fun = function(capt, animal.model){
 
   
   return(list(data.capt = data.capt, dims = list(n.sessions = n.sessions, n.traps = n.traps,
-                                                 n.IDs = n.IDs, n.animals = n.animals, 
-                                                 n.animal.call = n.animal.call),
+                                                 n.IDs = n.IDs, n.animals = n.animals),
               bucket_info = c(bucket_info, "mrds"[is.mrds])))
   
 }
@@ -221,7 +215,6 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
   
   ################################################################################
   #deal with local argument
-  data.full = sort.data(data.full, "data.full")
   
   all.which.local <- vector(mode = "list", length = n.sessions)
   all.n.local <- vector(mode = "list", length = n.sessions)
@@ -247,21 +240,14 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
           #for each animal_ID, find the detectors have at least one record of any call of this animal
 
           tem = data.full[data.full$session == i, c("bincapt", "animal_ID", "trap")]
-          tem = aggregate(tem$bincapt, list(animal_ID = tem$animal_ID, trap = tem$trap),
-                              function(x) as.numeric(any(x == 1)))
-          tem = tem[order(tem$animal_ID, tem$trap),,drop = FALSE]
+          tem = agg_sort(tem, 'bincapt', c('animal_ID', 'trap'), function(x) as.numeric(any(x == 1)))
           bincapt = tem[, c('animal_ID', 'x')]
           colnames(bincapt) = c('animal_ID', 'bincapt')
-          bincapt = aggregate(bincapt$bincapt, list(animal_ID = bincapt$animal_ID),
-                              function(x) t(x))
-          
-          bincapt = bincapt[order(bincapt$animal_ID),]
+          bincapt = agg_sort(bincapt, 'bincapt', 'animal_ID', function(x) t(x))
           bincapt = bincapt[, -1]
         } else {
           bincapt = data.full[data.full$session == i, c("bincapt","ID")]
-          bincapt = aggregate(bincapt$bincapt, list(ID = bincapt$ID),
-                              function(x) t(x))
-          bincapt = bincapt[order(bincapt$ID),]
+          bincapt = agg_sort(bincapt, 'bincapt', "ID", function(x) t(x))
           bincapt = bincapt[, -1]
         }
         
@@ -335,14 +321,7 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
       #we take 'order' so careful because 'aggregate' returns
       #results based on sorted 'list(ID = xx)' argument
       if('toa' %in% bucket_info){
-        if(animal.model){
-          toa = aggregate(tem$toa, list(animal_ID = tem$animal_ID, ID = tem$ID),
-                          function(x) t(x))
-          toa = toa[order(toa$animal_ID, toa$ID),]
-        } else {
-          toa = aggregate(tem$toa, list(ID = tem$ID), function(x) t(x))
-          toa = toa[order(toa$ID),]
-        }
+        toa = agg_sort(tem, 'toa', c('animal_ID'[animal.model], 'ID'), function(x) t(x))
         toa.ssq = make_toa_ssq(toa$x, dists[[i]], sound.speed)
         #based on the designed structure of 'data.ID_mask' and the structure
         #of toa.ssq, it need to be transposed
@@ -373,7 +352,6 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
     data.ID_mask[['local']] = ifelse(is.na(data.ID_mask[['local']]), 0, data.ID_mask[['local']])
   }
   
-  data.ID_mask = sort.data(data.ID_mask, "data.ID_mask")
   
   return(list(mask = mask, dists = dists, thetas = thetas, n.masks = n.masks, A = A,
               buffer = buffer, all.which.local = all.which.local, all.n.local= all.n.local,
@@ -466,13 +444,15 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     
     #check 'data' component first
     
-    #we could include 'session', 'trap', 'animal_ID', 'mask' levels covariates,
+    #we could include 'session', 'trap', 'mask' levels covariates,
     #although some parameters such as 'mu' is only extendable under 'animal_ID'
     #level covariates in reality, but we do not make any restriction here
     
     input_data = par.extend$data
-    if(!all(names(input_data) %in% c('session', 'trap', 'animal_ID', 'mask'))){
-      stop("only 'session', 'trap', 'animal_ID' or 'mask' level data could be used as input.")
+    if(!all(names(input_data) %in% c('session', 'trap', 
+                                     #'animal_ID', 
+                                     'mask'))){
+      stop("only 'session', 'trap', or 'mask' level data could be used as input.")
     }
     
     data.par.non.mask = data.frame(session = 1:n.sessions)
@@ -649,6 +629,9 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
       
       #sigma_toa is not trap extendable
       if(i == 'sigma_toa' & any(foo_var %in% var.t)) stop("'sigma_toa' is not extendable in 'trap' level.")
+      
+      #in animal_ID embedded model, the parameter 'mu' is not extendable in 'trap' level either.
+      if(i == 'mu' & any(foo_var %in% var.t)) stop("'mu' is not extendable in 'trap' level.")
       #in fact there should be much more constraint such as "mu" should not be linked to any 'trap' level covariates.
       #however, from the perspective of code, there is no necessary to make these constraint since all parameters
       #are treated as the same since the data structure does not change. However, 'sigma_toa' is different, because 'toa_ssq'
@@ -844,8 +827,6 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     j = j + 1
   }
   
-  data.full = sort.data(data.full, "data.full")
-  
   data.mask = sort.data(data.mask, "data.mask")
   
   #fgam only be valid when 'D' is extended on mask level
@@ -1036,15 +1017,7 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, animal.model, dims, bucket_i
       data.ss[[i]] = ifelse(rem, 0, data.ss[[i]])
     }
     
-    
-    if(animal.model){
-      keep = aggregate(data.ss$bincapt, list(session = data.ss$session,
-                                             animal_ID = data.ss$animal_ID,
-                                             ID = data.ss$ID), sum)
-    } else {
-      keep = aggregate(data.ss$bincapt, list(session = data.ss$session,
-                                             ID = data.ss$ID), sum)
-    }
+    keep = agg_sort(data.ss, 'bincapt', c('session', 'animal_ID'[animal.model], 'ID'), sum)
     
     keep = subset(keep, x > 0)
     if(nrow(keep) == 0) stop("None of signal received is greater than the cut off threshold.")
@@ -1059,22 +1032,15 @@ ss.fun = function(ss.opts, data.full, data.ID_mask, animal.model, dims, bucket_i
     
     #refresh "dims"
     if(animal.model){
-      new.n.animals = aggregate(data.ss$animal_ID, list(session = data.ss$session),
-                                   function(x) length(unique(x)))
-      new.n.animals = new.n.animals[order(new.n.animals$session),]
-      new.n.IDs = aggregate(paste(data.ss$animal_ID, data.ss$ID, sep = '---'), list(session = data.ss$session),
-                            function(x) length(unique(x)))
-      new.n.animal.call = aggregate(data.ss$ID, list(session = data.ss$session, animal_ID = data.ss$animal_ID),
-                                    function(x) length(unique(x)))
-      new.n.animal.call = new.n.animal.call[order(new.n.animal.call$session, new.n.animal.call$animal_ID),]
+      new.n.animals = agg_sort(data.ss, 'animal_ID', 'session', function(x) length(unique(x)))
+      new.n.IDs = agg_sort(data.ss, c('animal_ID', 'ID'), 'session', function(x) length(unique(x)))
+      new.n.animal.call = agg_sort(data.ss, 'ID', c('session', 'animal_ID'), function(x) length(unique(x)))
+
       dims$n.animals[new.n.animals$session] = new.n.animals$x
       dims$n.animal.call = new.n.animal.call$x
     } else {
-      new.n.IDs = aggregate(data.ss$ID, list(session = data.ss$session),
-                            function(x) length(unique(x)))
+      new.n.IDs = agg_sort(data.ss, 'ID', 'session', function(x) length(unique(x)))
     }
-    
-    new.n.IDs = new.n.IDs[order(new.n.IDs$session),]
     
     n.removed = sum(dims$n.IDs) - sum(new.n.IDs$x)
     if(n.removed > 0){

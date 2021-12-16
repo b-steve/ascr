@@ -53,6 +53,31 @@ convert_natural_number = function(dat, is.animalID, which.convert){
 }
 
 
+agg_sort = function(dat, obj, lst, f){
+  if(length(obj) == 1){
+    x = dat[[obj]]
+  } else {
+    x = dat[[obj[1]]]
+    for(i in 2:length(obj)){
+      x = paste(x, dat[[obj[i]]], sep = '---')
+    }
+  }
+  
+  y = vector('list', length(lst))
+  names(y) = lst
+  for(i in lst) y[[i]] = dat[[i]]
+  output = aggregate(x, y, function(x) f(x))
+  
+  sort_by = vector('list', length(lst))
+  for(i in 1:length(lst)) sort_by[[i]] = output[[lst[i]]]
+  
+  o = do.call('order', sort_by)
+  output = output[o,]
+  return(output)
+}
+
+
+
 covariates_mask_check = function(dat, n.sessions, n.masks, identical_flag){
   #list and data.frame will all return TRUE for is.list()
   stopifnot(is.list(dat))
@@ -361,7 +386,7 @@ default.sv = function(param, info){
     }
   } else if(param == "b1.ss"){
     max.ss = max(data.full[["ss"]], na.rm = TRUE)
-    out = (max.ss - cutoff)/(buffer/2)
+    out = (max.ss - cutoff)/(mean(buffer)/2)
     if(ss.link == "log"){
       out = out/max.ss
     }
@@ -547,6 +572,12 @@ numeric_het_method = function(het_method){
 }
 
 cal_n_det = function(data, is_uid = FALSE){
+  if(is_uid){
+    data = subset(data, !is.na(u_id))
+  } else {
+    data = subset(data, !is.na(ID))
+  }
+
   if("animal_ID" %in% colnames(data)){
     tem = aggregate(data$bincapt, list(session = data$session,
                                        animal_ID = data$animal_ID,
