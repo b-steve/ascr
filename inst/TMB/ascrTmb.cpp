@@ -1740,7 +1740,8 @@ Type objective_function<Type>::operator() ()
           //for each call, how many detectors detected it
           vector<int> Zi_vec(ci);
           for(i = 1; i <= ci; i++){
-            index_zi = lookup_n_detection(is_animalID, s, a, i, n_IDs, n_calls_each_animal);
+            index_zi = lookup_n_detection(is_animalID, s, a, i,
+              n_animals, n_IDs, n_calls_each_animal);
             Zi_vec[i - 1] = n_detection[index_zi];
           }
 
