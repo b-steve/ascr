@@ -259,6 +259,12 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   #capt_dist = ifelse(is.na(data.full$dist), 0, data.full$dist)
   #capt_dist = ifelse(capt_dist == 0, 1e-20, capt_dist)
   
+  if(animal.model){
+    #due to the order of loop in the c++ template, re-order this data set
+    data.ID_mask = data.ID_mask[order(data.ID_mask$session, data.ID_mask$animal_ID, data.ID_mask$mask, data.ID_mask$ID), ]
+  }
+  
+  
   data <- list(n_sessions = dims$n.sessions,
                n_animals = dims$n.animals,
                n_IDs = dims$n.IDs,

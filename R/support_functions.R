@@ -510,6 +510,9 @@ sort.data = function(dat, name){
   
   if(name == "data.ID_mask"){
     if(is.animal_ID){
+      #the data.ID_mask in the c++ template will be sorted as
+      #session - animal_ID - mask - ID, which differs from this
+      #but in the data preparation process, we use this order
       dat = dat[order(dat$session, dat$animal_ID, dat$ID, dat$mask),]
     } else {
       dat = dat[order(dat$session, dat$ID, dat$mask), ]
