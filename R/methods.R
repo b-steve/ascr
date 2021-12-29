@@ -321,7 +321,13 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'defaul
                             qqplot = FALSE, ask = FALSE, ...){
   #source("support_functions.r", local = TRUE)
   #source("get_funs.r", local = TRUE)
+  ############################################################################################
+  
+  #modify here to make it compatible with boot
+  
   if(method != 'default') stop('Please apply bootstrap to the output of the model before using other methods.')
+  
+  #############################################################################################
   if(any(!types %in% c('all', 'fitted', 'linked', 'derived'))) stop("Argument 'types' must be a subset of {'fitted', 'linked', 'derived', 'all'}.")
   
   if ("all" %in% types){
