@@ -73,7 +73,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   data.dists.thetas = o.mask$data.dists.thetas
   data.ID_mask = o.mask$data.ID_mask
   data.mask = o.mask$data.mask
-
+  
   ########################################################################################################
   #in animal_ID model, the cue.rate is no longer an inputted argument, but a fitted argument, named as "mu"
   fulllist.par = c('g0', 'sigma', 'lambda0', 'z', 'shape.1',
@@ -395,7 +395,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
     par_name = name.fixed.par.4cpp[i]
     map[[par_name]] = factor(rep(NA, length(parameters[[par_name]])))
   }
-  
+
   #dev is a logical variable for development environment, default is FALSE
   dev = extra_args$dev
   if(is.null(dev)) dev = FALSE

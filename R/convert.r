@@ -345,9 +345,6 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
         #create a data frame contains all combinations of "session-animal_ID-ID-trap", as captures does not
         #contain the row for the traps without detection for any call
         #and if a session has no detection, then it should appear in the "capture" with n.traps[s] rows with NA "ID"
-
-        n_IDs_each_animal = aggregate(captures$ID, list(session = captures$session, animal_ID = captures$animal_ID),
-                                      function(x) length(unique(x)))
         
         tem_session = vector('list', n.sessions)
         for(s in 1:n.sessions){

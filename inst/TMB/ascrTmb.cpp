@@ -357,7 +357,7 @@ int lookup_n_call_ani(const int &s, const int &a, const vector<int> &n_a){
   int ans = 0;
   if(s > 1){
     for(int s_index = 1; s_index < s; s_index++){
-      ans = ans + n_a(s - 1);
+      ans = ans + n_a(s_index - 1);
     }
   }
 
@@ -513,7 +513,7 @@ Type objective_function<Type>::operator() ()
   Type *pointer_nll = &nll;
   Type Inf = std::numeric_limits<double>::infinity();
   Type *pointer_Inf = &Inf;
-  
+  Type pi = 3.14159265358979323846;
   
   DATA_INTEGER(n_sessions);
   DATA_IVECTOR(n_animals);
@@ -1412,6 +1412,14 @@ Type objective_function<Type>::operator() ()
           
           p_essx++;
         }
+
+        //if(s == 2 & m == 777){
+        //  std::cout << "session 2, m 777, trap " << t << ", dx: " << *p_dx << std::endl;
+        //  std::cout << "session 2, m 777, trap " << t << ", lambda0: " << detfn_param[0] << std::endl;
+        //  std::cout << "session 2, m 777, trap " << t << ", sigma: " << detfn_param[1] << std::endl;
+        //  std::cout << "session 2, m 777, trap " << t << ", p_k: " << p_k(m - 1, t - 1) << std::endl;
+        //}
+
         p_dx++;
         
         p_dot(m - 1) *= 1 - p_k(m - 1, t - 1);
@@ -1430,8 +1438,14 @@ Type objective_function<Type>::operator() ()
         esa(s - 1) += p_m(m - 1);
         lambda_theta += *p_D_tem * p_m(m - 1);
       }
-
       
+      //if(s == 2 & m == 777){
+      //  std::cout << "session 2, until m 777, lambda_theta: " << lambda_theta << std::endl;
+      //  std::cout << "session 2, m 777, p_dot: " << p_dot(m - 1) << std::endl;
+      //  std::cout << "session 2, m 777, p_m: " << p_m(m - 1) << std::endl;
+      //  std::cout << "session 2, m 777, D: " << *p_D_tem << std::endl;
+      //  std::cout << "session 2, m 777, mu: " << *p_mu_tem << std::endl;
+      //}
       
       p_D_mask++;
       p_D_tem++;
@@ -1729,8 +1743,10 @@ Type objective_function<Type>::operator() ()
 
         //initial index for data_mask
         index_data_mask = lookup_data_mask(s, 1, n_masks);
-
+        
         for(a = 1; a <= n_a; a++){
+          
+          //std::cout << "session: " << s << ", " << "animal: " << a << " begins." << std::endl;
           //likelihood of each animal
           l_i = Type(0.0);
 
@@ -1744,8 +1760,7 @@ Type objective_function<Type>::operator() ()
               n_animals, n_IDs, n_calls_each_animal);
             Zi_vec[i - 1] = n_detection[index_zi];
           }
-
-
+          
           //reset p_D_tem
           p_D_tem = &D_tem[0];
           //reset p_mu_tem
@@ -1758,7 +1773,8 @@ Type objective_function<Type>::operator() ()
           //the initial index in data_IDmask for this animal
           index_data_IDmask = lookup_data_IDmask(is_animalID, s, a, 1, 1,
             n_animals, n_IDs, n_calls_each_animal, n_masks);
-          
+        
+
           p_toa_ssq = &toa_ssq[index_data_IDmask];
           p_index_local = &index_local[index_data_IDmask];
           
@@ -1772,6 +1788,7 @@ Type objective_function<Type>::operator() ()
               index_data_full = index_data_full_initial;
               //likelihood for capture history
               l_w = Type(1.0);
+              //std::cout << "session: " << s << ", animal: " << a << ", mask: "<< m << " begins." << std::endl;
               for(i = 1; i <= ci; i++){
                 for(t = 1; t <= n_t; t++){
                   if(is_ss == 0){
@@ -1781,11 +1798,11 @@ Type objective_function<Type>::operator() ()
                     //pow(p_k(), capt_bin()) term could be cancelled out with fy_ss
                     l_w *= pow((1 - p_k(m - 1, t - 1)), (1 - capt_bin[index_data_full]));
                   }
-
-
                   index_data_full++;
                 }
               }
+
+              //std::cout << "session: " << s << ", animal: " << a << ", mask: "<< m << " l_w: " << l_w << std::endl;
 
               //likelihood for extra information
               fy_toa_log = Type(0.0);
@@ -1804,21 +1821,24 @@ Type objective_function<Type>::operator() ()
 
 
               index_data_dist_theta = lookup_data_dist_theta(s, 1, m, n_traps, n_masks);
-
               for(i = 1; i <= ci; i++){
+                //std::cout << "session: " << s << ", animal: " << a << ", mask: "<< m << ", id: " << i << ", loop for extra info begins." << std::endl;
                 n_det = Zi_vec[i - 1];
                 p_theta = &theta[index_data_dist_theta];
                 p_dx = &dx[index_data_dist_theta];
                 p_essx = &essx[index_data_dist_theta];
-
+                //std::cout << "check point 5" << std::endl;
                 //toa
                 if(is_toa == 1){
                   //"sigma_toa" is not trap extendable nor ID either, so take index_data_full_D as well
                   *p_sigma_toa_tem = *p_sigma_toa_full + *p_sigma_toa_mask;
                   trans(p_sigma_toa_tem, par_link(14));
-                  
+
                   fy_toa_log += (1 - n_det) * log(sigma_toa_tem) + (-0.5) * (*p_toa_ssq) / pow(sigma_toa_tem, 2);
                   
+                  if(s == 2 & m == 777 & a == 7){
+                    std::cout << "session 2, animal 7, ID " << i << " , mask 777, toa_ssq: " << *p_toa_ssq << std::endl;
+                  }
                   p_toa_ssq++;
                 }
 
@@ -1871,8 +1891,8 @@ Type objective_function<Type>::operator() ()
                 }
                 //end of call 'i'
               }
-
-              l_i += (*p_D_tem) * pow((*p_mu_tem), ci) * 
+              
+              l_i += (*p_D_tem) * pow((*p_mu_tem), ci) * l_w * 
                 exp((-1) * (*p_mu_tem) * servey_len * p_dot[m - 1]) * 
                 exp(fy_toa_log + fy_bear_log + fy_dist_log + fy_ss_log);
 
@@ -1998,15 +2018,18 @@ Type objective_function<Type>::operator() ()
                   //end of call 'i'
                 }
 
-                l_i += (*p_D_tem) * pow((*p_mu_tem), ci) * 
+                l_i += (*p_D_tem) * pow((*p_mu_tem), ci) * l_w * 
                 exp((-1) * (*p_mu_tem) * servey_len * p_dot[m - 1]) * 
                 exp(fy_toa_log + fy_bear_log + fy_dist_log + fy_ss_log);
                 //end of if(*p_local_index == 1)
 
+              } else {
+                p_toa_ssq += ci;
               }
 
               p_D_tem++;
               p_mu_tem++;
+              
               p_sigma_toa_mask++;
               p_kappa_mask++;
               p_alpha_mask++;
@@ -2034,7 +2057,6 @@ Type objective_function<Type>::operator() ()
     
     //end for session s
   }
-  
   
   ADREPORT(esa);
   return nll;

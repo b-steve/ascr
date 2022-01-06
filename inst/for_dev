@@ -1,5 +1,6 @@
 library('devtools')
 load_all()
+compile.ascr(T)
 
 demo_names = list.files("G:/")
 demo_names = demo_names[grepl("^fit_", demo_names)]
@@ -20,3 +21,16 @@ ss.opts = readRDS('./inst/demo_ss_opts')
 
 capt = create.capt(captures, traps)
 capt2 = create.capt(captures[,-which(colnames(captures) == 'animal_ID')], traps)
+
+
+#paper demo
+library('devtools')
+load_all()
+compile.ascr(T)
+captures = readRDS('./inst/capt_paper')
+traps = readRDS("./inst/traps_paper")
+masks = readRDS("./inst/mask_paper")
+capt = create.capt(captures, traps)
+tem = fit.ascr(capt = capt, traps, masks, detfn = 'hhn',
+  sv = list(D = 600, lambda0 = 9, sigma = 2, mu = 9, sigma.toa = 10),
+  dev = TRUE)

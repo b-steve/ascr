@@ -87,7 +87,12 @@ capture.fun = function(capt, animal.model){
               if(!i %in% colnames(data.capt)) data.capt[[i]] = 0
             }
   }
-
+  
+  if(animal.model){
+    data.capt$animal_ID = as.character(data.capt$animal_ID)
+  }
+  
+  data.capt$ID = as.character(data.capt$ID)
   
   return(list(data.capt = data.capt, dims = list(n.sessions = n.sessions, n.traps = n.traps,
                                                  n.IDs = n.IDs, n.animals = n.animals),
@@ -273,7 +278,6 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
     bucket_info = c(bucket_info, "local")
     tem.df = vector('list', n.sessions)
   }
-  
   
   #to avoid confusing, u.id is animal_ID-ID if animal.model, and the "ID" column is
   #temporarily to be animal_ID-ID as well until in the later step where we restore it

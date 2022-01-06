@@ -1,12 +1,20 @@
 #' @export
-compile.ascr <- function(dev = FALSE){
+compile.ascr <- function(dev = FALSE, debug.mode = FALSE){
   if(dev){
     dir = paste0(getwd(), '/inst/TMB/')
   } else {
     dir = paste0(system.file(package = "ascr"), "/TMB/")
   }
 
-  
-  TMB::compile(paste0(dir, "ascrTmb.cpp"))
+  if(!debug.mode){
+    TMB::compile(paste0(dir, "ascrTmb.cpp"))
+  } else {
+    if(Sys.info()['sysname'] == 'Windows'){
+      TMB::compile(paste0(dir, "ascrTmb.cpp"), "-O1 -g", DLLFLAGS="")
+    } else {
+      TMB::compile(paste0(dir, "ascrTmb.cpp"), "-O0 -g")
+    }
+    
+  }
 
 }
