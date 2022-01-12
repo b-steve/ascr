@@ -150,8 +150,8 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   
   bucket_info = o.CR_SL$bucket_info
   #this is the mean of cue.rate, and it will be generated anyway, but when animal.model = TRUE
-  #this "mu.rates" will not be used in the model.
-  mu.rates = o.CR_SL$mu.rates
+  #this "mean.cue.rates" will not be used in the model.
+  mean.cue.rates = o.CR_SL$mean.cue.rates
   
   
   ########################################################################################################
@@ -290,7 +290,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
                A = A,
                survey_length = survey.length,
                sound_speed = sound.speed,
-               cue_rates = mu.rates,
+               cue_rates = mean.cue.rates,
                
                #code of het_method:
                #1:NULL, 2:GH, 3:rect
@@ -434,8 +434,9 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
                fix.input = fix.input,
                bucket_info = bucket_info,
                cue.rates = cue.rates,
-               mu.rates = mu.rates,
+               mean.cue.rates = mean.cue.rates,
                A = A,
+               survey.length = survey.length,
                sound.speed = sound.speed,
                par.extend = par.extend,
                arg.input = arg.input,

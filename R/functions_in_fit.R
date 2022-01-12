@@ -1125,12 +1125,12 @@ CR_SL = function(cue.rates, survey.length, bucket_info, dims){
   
   if (!is.null(cue.rates)){
     bucket_info = c(bucket_info, "freqs")
-    mu.rates <- mean(cue.rates)
+    mean.cue.rates <- mean(cue.rates)
   } else {
-    mu.rates = 1
+    mean.cue.rates = 1
   }
   
-  return(list(bucket_info = bucket_info, mu.rates = mu.rates, survey.length = survey.length))
+  return(list(bucket_info = bucket_info, mean.cue.rates = mean.cue.rates, survey.length = survey.length))
   
 }
 
@@ -1479,8 +1479,8 @@ param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn
 
 
 outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas, detfn, param.og, param.og.4cpp, o, opt,
-                  name.fixed.par, name.extend.par, dims, DX.full, DX.mask, fix.input, bucket_info, cue.rates, mu.rates, A,
-                  sound.speed, par.extend, arg.input, fgam, gam_output, scale.covs, is.scale, ss.link, cutoff){
+                  name.fixed.par, name.extend.par, dims, DX.full, DX.mask, fix.input, bucket_info, cue.rates, mean.cue.rates, A,
+                  survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, scale.covs, is.scale, ss.link, cutoff){
   ###################################################################################################################
   #sort out output for the function
   out = vector('list', 36)
@@ -1493,7 +1493,7 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
   out[['output.tmb']] = vector('list', 19)
   names(out[['output.tmb']]) = c('coef_link', 'se_link', 'DX', 'detfn', 'param.og', 'param.extend', 'param.fix',
                                  'param.info.table', 'data.traps', 'data.full', 'data.mask', 'data.dists.thetas', 'dims',
-                                 'avg_cue_rates', 'sound.speed', 'area_unit', 'ss.link', 'cutoff', 'gam_output')
+                                 'avg_cue_rates', 'sound.speed', 'area_unit', 'survey.length', 'ss.link', 'cutoff', 'gam_output')
   
   #give an index to each parameter, to make it easier to find it in "data.par"
   par.id = 1:nrow(data.par)
@@ -1745,7 +1745,8 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
   out[['output.tmb']][['data.traps']] = data.traps
   out[['output.tmb']][['dims']] = dims
   out[['output.tmb']][['area_unit']] = A
-  out[['output.tmb']][['avg_cue_rates']] = mu.rates
+  out[['output.tmb']][['survey.length']] = survey.length
+  out[['output.tmb']][['avg_cue_rates']] = mean.cue.rates
   out[['output.tmb']][['data.full']] = data.full
   out[['output.tmb']][['data.mask']] = data.mask
   out[['output.tmb']][['data.dists.thetas']] = data.dists.thetas
