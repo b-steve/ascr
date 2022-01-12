@@ -395,7 +395,8 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
     par_name = name.fixed.par.4cpp[i]
     map[[par_name]] = factor(rep(NA, length(parameters[[par_name]])))
   }
-
+  
+  #browser()
   #dev is a logical variable for development environment, default is FALSE
   dev = extra_args$dev
   if(is.null(dev)) dev = FALSE

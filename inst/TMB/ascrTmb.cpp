@@ -1836,9 +1836,6 @@ Type objective_function<Type>::operator() ()
 
                   fy_toa_log += (1 - n_det) * log(sigma_toa_tem) + (-0.5) * (*p_toa_ssq) / pow(sigma_toa_tem, 2);
                   
-                  if(s == 2 & m == 777 & a == 7){
-                    std::cout << "session 2, animal 7, ID " << i << " , mask 777, toa_ssq: " << *p_toa_ssq << std::endl;
-                  }
                   p_toa_ssq++;
                 }
 
