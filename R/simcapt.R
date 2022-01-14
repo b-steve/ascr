@@ -1,5 +1,35 @@
-#' @export
-sim.capt = function(fit){
+sim.capt = function(fit, detfn, par, par.extend, traps, mask, survey.length, ss.opts, cue.rates, sound.speed = 330){
+  if(!is.null(fit)){
+    return(sim.from.fit(fit))
+  } else {
+    stopifnot(all(!is.null(detfn), !is.null(par), !is.null(traps), !is.null(mask)))
+    return(sim.from.par(detfn = detfn, par = par, par.extend = par.extend, traps = traps,
+    mask = mask, survey.length = survey.length, ss.opts = ss.opts, cue.rates = cue.rates,
+    sound.speed = sound.speed))
+  }
+
+}
+
+
+sim.from.par = function(detfn, par, par.extend, traps, mask, survey.length, ss.opts, cue.rates, sound.speed){
+  stopifnot(detfn %in% c('hn', 'hhn', 'hr', 'th', 'lth', 'ss'))
+  stopifnot(is(traps, 'list'))
+  stopifnot(is(mask, 'list'))
+  n.sessions = length(traps)
+  if(is.null(survey.length)) survey.length = rep(1, n.sessions)
+  
+
+
+
+}
+
+
+
+
+
+
+
+sim.from.fit = function(fit){
 
   #get pop density for each mask
   data_density = get_D_tmb(fit)
