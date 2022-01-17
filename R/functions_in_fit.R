@@ -508,30 +508,8 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
       var.t = NULL
     }
     
-    #check 'animal_ID' level data
-    if(!animal.model){
-      df.a = NULL  
-    } else {
-      df.a = input_data$animal_ID
-    }
     
-    if(!is.null(df.a)){
-      stopifnot(is(df.a, 'data.frame'))
-      name.a = colnames(df.a)
-      stopifnot(all(c('session', 'animal_ID') %in% name.a))
-      stopifnot(length(name.a) > 2)
-      if(any(duplicated(df.a[, c('session', 'animal_ID')]))) stop('duplicated "animal_ID" input.')
-      
-      stopifnot(all(paste(df.a$session, df.a$animal_ID, sep = '-') %in%
-                      unique(paste(data.full$session, data.full$animal_ID, sep = '-'))))
-      var.a = name.a[-which(name.a == 'session'| name.a == 'animal_ID')]
-      
-      data.par.non.mask = merge(data.par.non.mask, df.a, by ='session', all = TRUE)
-    } else {
-      var.a = NULL
-    }
-    
-    if(any(c('x', 'y') %in% c(var.a, var.s, var.t))){
+    if(any(c('x', 'y') %in% c(var.s, var.t))){
       stop("'x' and 'y' are reserved column names, please choose another name.")
     }
     
@@ -598,14 +576,14 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     
     #check whether there is duplicated column names across these  data sets
     
-    var.ex = c(var.s, var.t, var.a, var.m)
+    var.ex = c(var.s, var.t, var.m)
     
     if(any(duplicated(var.ex))) {
       stop('duplicated column name across different level data sets.')
     }
     
     #scale.covs needs to deal with each var.ex separately
-    #record their "mu" and "std"
+    #record their mean and std
     var.ex.info = vector('list', length(var.ex))
     names(var.ex.info) = var.ex
     for(i in var.ex){
@@ -809,24 +787,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
       df.par[j, 'link'] = link[[i]]
     } else {
       #set default 'link' if it is not provided
-      if(i == "mu") df.par[j, 'link'] = 'log'
-      if(i == "D") df.par[j, 'link'] = 'log'
-      if(i == "g0") df.par[j, 'link'] = 'logit'
-      if(i == "sigma") df.par[j, 'link'] = 'log'
-      if(i == "lambda0") df.par[j, 'link'] = 'log'
-      if(i == "z") df.par[j, 'link'] = 'log'
-      if(i == "shape.1") df.par[j, 'link'] = 'log'
-      if(i == "shape.2") df.par[j, 'link'] = 'identity'
-      if(i == "shape") df.par[j, 'link'] = 'identity'
-      if(i == "scale") df.par[j, 'link'] = 'log'
-      if(i == "b0.ss") df.par[j, 'link'] = 'log'
-      if(i == "b1.ss") df.par[j, 'link'] = 'log'
-      if(i == "b2.ss") df.par[j, 'link'] = 'log'
-      if(i == "sigma.ss") df.par[j, 'link'] = 'log'
-      if(i == "kappa") df.par[j, 'link'] = 'log'
-      if(i == "alpha") df.par[j, 'link'] = 'log'
-      if(i == "sigma.toa") df.par[j, 'link'] = 'log'
-      if(i == "sigma.b0.ss") df.par[j, 'link'] = 'log'
+      df.par[j, 'link'] = default.link(i)
     }
     j = j + 1
   }
@@ -1212,33 +1173,8 @@ param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn
   }
   
   #then, decide the original names of the parameters will be input into TMB
-  if('ss' %in% bucket_info){
-    param.og = c('b0.ss', 'b1.ss', 'sigma.ss')
-    if('ss.dir' %in% bucket_info){
-      param.og = c(param.og, 'b2.ss')
-    }
-    
-    if('ss.het' %in% bucket_info){
-      param.og = c(param.og, 'sigma.b0.ss')
-    }
-    
-  } else {
-    if(detfn == 'hn'){
-      param.og = c('g0', 'sigma')
-    }
-    if(detfn == 'hhn'){
-      param.og = c('lambda0', 'sigma')
-    }
-    if(detfn == 'hr'){
-      param.og = c('g0', 'sigma', 'z')
-    }
-    if(detfn == 'th'){
-      param.og = c('shape', 'scale')
-    }
-    if(detfn == 'lth'){
-      param.og = c('shape.1', 'shape.2', 'scale')
-    }
-  }
+  param.og = detfn.params(detfn)
+
   
   if('bearing' %in% bucket_info){
     param.og = c(param.og, 'kappa')

@@ -1,33 +1,103 @@
-sim.capt = function(fit, detfn, par, par.extend, traps, mask, survey.length, ss.opts, cue.rates, sound.speed = 330){
-  if(!is.null(fit)){
+#' Title
+#'
+#' @param fit 
+#' @param detfn 
+#' @param par a list with each parameter as its element's name. Each element is a numeric vector with the true values for the linear estimator for this parameter.
+#'            The link function for each parameter could be assigned in the argument "par.extend" if the default setting is not preferred.
+#' @param par.extend 
+#' @param traps 
+#' @param mask a list with a matrix of masks' coordinates of each session as each component. The coordination matrix must contains 'buffer' and 'area' as its attr.
+#' @param survey.length 
+#' @param ss.opts 
+#' @param cue.rates 
+#' @param sound.speed 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sim.capt = function(fit, detfn, par, par.extend, traps, mask, survey.length, ss.opts, cue.rates, n.sessions, sound.speed = 330){
+  if(!missing(fit)){
     return(sim.from.fit(fit))
   } else {
-    stopifnot(all(!is.null(detfn), !is.null(par), !is.null(traps), !is.null(mask)))
+    stopifnot(all(!missing(detfn), !missing(par), !missing(traps), !missing(mask)))
     return(sim.from.par(detfn = detfn, par = par, par.extend = par.extend, traps = traps,
     mask = mask, survey.length = survey.length, ss.opts = ss.opts, cue.rates = cue.rates,
-    sound.speed = sound.speed))
+    n.sessions = n.sessions, sound.speed = sound.speed))
   }
 
 }
 
+####################################################################################################################################
+#simulation from assigned parameters
 
-sim.from.par = function(detfn, par, par.extend, traps, mask, survey.length, ss.opts, cue.rates, sound.speed){
+sim.data.prepare = function(detfn, par, par.extend, traps, mask, survey.length, ss.opts, cue.rates, n.sessions, sound.speed){
   stopifnot(detfn %in% c('hn', 'hhn', 'hr', 'th', 'lth', 'ss'))
-  stopifnot(is(traps, 'list'))
-  stopifnot(is(mask, 'list'))
-  n.sessions = length(traps)
-  if(is.null(survey.length)) survey.length = rep(1, n.sessions)
   
-
-
+  #confirm n.sessions firstly
+  if(is(traps, 'list')){
+    if(!missing(n.sessions)) warning("'n.sessions' will be ignored as 'traps' is a list.")
+    n.sessions = length(traps)
+    if(is(mask, 'list')){
+      stopifnot(length(mask) == n.sessions)
+    } else {
+      stopifnot(any(is(mask, 'matrix'), is(mask, 'data.frame')))
+      tem = mask
+      mask = vector('list', n.sessions)
+      for(s in 1:n.sessions) mask[[s]] = tem
+    }
+  } else {
+    if(missing(n.sessions)) n.sessions = 1
+    stopifnot(any(is(mask, 'matrix'), is(mask, 'data.frame')))
+    stopifnot(any(is(traps, 'matrix'), is(traps, 'data.frame')))
+    tem_traps = traps
+    tem_mask = mask
+    traps = vector('list', n.sessions)
+    mask = vector('list', n.sessions)
+    for(s in 1:n.sessions){
+      traps[[s]] = tem_traps
+      mask[[s]] = tem_mask
+    }
+    
+  }
+  
+  
+  #fill with basic information
+  if(is.null(survey.length)) survey.length = rep(1, n.sessions)
+  n.traps = sapply(traps, nrow)
+  n.masks = sapply(mask, nrow)
+  buffer = numeric(n.sessions)
+  A = numeric(n.sessions)
+  for(s in 1:n.sessions){
+    buffer[s] = attr(masks[[s]], 'buffer')
+    A[s] = attr(masks[[s]], 'area')
+  }
+  
+  param.og = detfn.params(detfn)
+  
+  
+  animal.model = 'mu' %in% names(par)
+  is.toa = 'sigma.toa' %in% names(par)
+  is.bearing = 'kappa' %in% names(par)
+  is.dist = 'alpha' %in% names(par)
+  is.ss = detfn == 'ss'
+  
+  param.og = c(param.og, 'D')
+  if(animal.model) param.og = c(param.og, 'mu')
+  if(is.toa) param.og = c(param.og, 'sigma.toa')
+  if(is.bearing) param.og = c(param.og, 'kappa')
+  if(is.dist) param.og = c(param.og, 'alpha')
+  
+  #create a session-trap-mask data frame for everything
+  
 
 }
 
 
 
 
-
-
+######################################################################################################################################
+#simulation from model output, animal_ID embedded model is not included yet.
 
 sim.from.fit = function(fit){
 

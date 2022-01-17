@@ -121,7 +121,54 @@ covariates_mask_check = function(dat, n.sessions, n.masks, identical_flag){
 }
 
 
+default.link = function(i){
+  if(i == "mu") return('log')
+  if(i == "D") return('log')
+  if(i == "g0") return('logit')
+  if(i == "sigma") return('log')
+  if(i == "lambda0") return('log')
+  if(i == "z") return('log')
+  if(i == "shape.1") return('log')
+  if(i == "shape.2") return('identity')
+  if(i == "shape") return('identity')
+  if(i == "scale") return('log')
+  if(i == "b0.ss") return('log')
+  if(i == "b1.ss") return('log')
+  if(i == "b2.ss") return('log')
+  if(i == "sigma.ss") return('log')
+  if(i == "kappa") return('log')
+  if(i == "alpha") return('log')
+  if(i == "sigma.toa") return('log')
+  if(i == "sigma.b0.ss") return('log')
+}
 
+detfn.params = function(detfn){
+  if(detfn == 'hn'){
+    param.og = c('g0', 'sigma')
+  }
+  if(detfn == 'hhn'){
+    param.og = c('lambda0', 'sigma')
+  }
+  if(detfn == 'hr'){
+    param.og = c('g0', 'sigma', 'z')
+  }
+  if(detfn == 'th'){
+    param.og = c('shape', 'scale')
+  }
+  if(detfn == 'lth'){
+    param.og = c('shape.1', 'shape.2', 'scale')
+  }
+  if(detfn == 'ss'){
+    param.og = c('b0.ss', 'b1.ss', 'sigma.ss')
+  }
+  if(detfn == 'ss_dir'){
+    param.og = c('b0.ss', 'b1.ss', 'sigma.ss', 'b2.ss')
+  }
+  if(detfn == 'ss_het'){
+    param.og = c('b0.ss', 'b1.ss', 'sigma.ss', 'sigma.b0.ss')
+  }
+  return(param.og)
+}
 
 p.dot.defaultD = function(points = NULL, traps = NULL, detfn = NULL, ss_dir = NULL,
                           ss.link = NULL, pars = NULL, A, n.quadpoints = 8){
