@@ -77,6 +77,34 @@ agg_sort = function(dat, obj, lst, f){
 }
 
 
+extend_dat_check = function(dat, check_var, ori_dat, n.sessions, identical_flag){
+  stopifnot(is(dat, 'data.frame'))
+  stopifnot(check_var %in% colnames(dat))
+  
+  if('session' %in% colnames(dat)){
+    stopifnot(length(colnames(dat)) > 2)
+  } else {
+    #if all sessions share the same trap/mask, the user can skip 'session' in the traps/masks' covariates
+    #or there is only 1 session
+    stopifnot(length(colnames(dat)) > 1)
+    if(n.sessions > 1) stopifnot(identical_flag)
+    tem = vector('list', n.sessions)
+    for(s in 1:n.sessions){
+      tem[[s]] = dat
+      tem[[s]][['session']] = s
+    }
+    dat = do.call('rbind', tem)
+  }
+  
+  if(any(duplicated(dat[, c('session', check_var)]))) stop(paste0('duplicated ', check_var, ' input.'))
+  
+  stopifnot(all(paste(dat$session, dat[[check_var]], sep = '-') %in%
+                  unique(paste(ori_dat$session, ori_dat[[check_var]], sep = '-'))))
+  
+  return(dat)
+}
+
+
 
 covariates_mask_check = function(dat, n.sessions, n.masks, identical_flag){
   #list and data.frame will all return TRUE for is.list()
@@ -505,25 +533,24 @@ default.bounds = function(param){
 
 #link function
 link.fun = function(link, value){
-  if(link == "identity") return(value)
-  if(link == "log"){
-    if(any(value == 0)) value = value + 1e-20
-    
-    return(log(value))
+  if(!link %in% c("identity", "log", "logit")){
+    stop('Not a valid link function is assigned.')
   }
   
-  if(link == "logit"){
-    if(any(value == 0)) value = value + 1e-15
-    if(any(value == 1)) value = value - 1e-15
-    
-    return(log(value/(1 - value)))
-  }
+  if(link == "identity") return(cus_identity(value))
+  if(link == "log") return(cus_log(value))
+  if(link == "logit") return(cus_logit(value))
+  
 }
 
 unlink.fun = function(link, value){
+  if(!link %in% c("identity", "log", "logit")){
+    stop('Not a valid link function is assigned.')
+  }
+  
   if(link == "identity") return(value)
-  if(link == "log") return(round(exp(value), 19))
-  if(link == "logit") return(round(exp(value)/(1 + exp(value)), 14))
+  if(link == "log") return(cus_log_unlink(value))
+  if(link == "logit") return(cus_logit_unlink(value))
 }
 
 delta.fun = function(link, sd, est){

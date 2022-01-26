@@ -34,3 +34,113 @@ capt = create.capt(captures, traps)
 tem = fit.ascr(capt = capt, traps, masks, detfn = 'hhn',
   sv = list(D = 600, lambda0 = 9, sigma = 2, mu = 9, sigma.toa = 10),
   dev = TRUE)
+  
+
+
+
+#simulation based on the original paper demo
+library('devtools')
+load_all()
+demo_sim_origin = readRDS('./inst/demo_sim_origin')
+
+true_values = demo_sim_origin$param
+
+for(i in names(true_values)) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_origin, sim.capt(detfn = detfn, param = param, traps = traps,
+                                         mask = mask, n.sessions = n.sessions, n.rand = n.rand))
+
+sim_sigma = numeric(n.rand)
+sim_lambda0 = numeric(n.rand)
+sim_sigma.toa = numeric(n.rand)
+sim_D = numeric(n.rand)
+sim_mu = numeric(n.rand)
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_origin$traps)
+    fit = fit.ascr(capt, traps = demo_sim_origin$traps, mask = demo_sim_origin$mask, detfn = demo_sim_origin$detfn,
+                   sv = demo_sim_origin$param)
+    tem = coef(fit)
+    sim_sigma[i] = tem['sigma_link']
+    sim_lambda0[i] = tem['lambda0_link']
+    sim_sigma.toa[i] = tem['sigma.toa_link']
+    sim_D[i] = tem['D_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+close(pb)
+hist(sim_sigma, main = 'sigma_link simulation')
+abline(v = true_values$sigma, col = 2)
+hist(sim_lambda0, main = 'lambda0_link simulation')
+abline(v = true_values$lambda0, col = 2)
+hist(sim_sigma.toa, main = 'sigma.toa_link simulation')
+abline(v = true_values$sigma.toa, col = 2)
+hist(sim_D, main = 'D_link simulation')
+abline(v = true_values$D, col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)
+
+
+
+#simulation based on paper demo with further 'D' extension
+library('devtools')
+load_all()
+demo_sim_D_ext = readRDS('./inst/demo_sim_D_ext')
+
+true_values = demo_sim_D_ext$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+} 
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_D_ext, sim.capt(detfn = detfn, param = param, par.extend = par.extend, traps = traps,
+                                         mask = mask, n.sessions = n.sessions, n.rand = n.rand))
+
+sim_sigma = numeric(n.rand)
+sim_lambda0 = numeric(n.rand)
+sim_sigma.toa = numeric(n.rand)
+sim_D_int = numeric(n.rand)
+sim_D_noise = numeric(n.rand)
+sim_mu = numeric(n.rand)
+
+sv = demo_sim_D_ext$param
+sv$D = sv$D[1]
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_D_ext$traps)
+    fit = fit.ascr(capt, traps = demo_sim_D_ext$traps, mask = demo_sim_D_ext$mask, detfn = demo_sim_D_ext$detfn
+      , sv = sv, par.extend = demo_sim_D_ext$par.extend)
+    tem = coef(fit)
+    sim_sigma[i] = tem['sigma_link']
+    sim_lambda0[i] = tem['lambda0_link']
+    sim_sigma.toa[i] = tem['sigma.toa_link']
+    sim_D_int[i] = tem['D.(Intercept)_link']
+    sim_D_noise[i] = tem['D.noise_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+hist(sim_sigma, main = 'sigma_link simulation')
+abline(v = true_values$sigma, col = 2)
+hist(sim_lambda0, main = 'lambda0_link simulation')
+abline(v = true_values$lambda0, col = 2)
+hist(sim_sigma.toa, main = 'sigma.toa_link simulation')
+abline(v = true_values$sigma.toa, col = 2)
+hist(sim_D_int, main = 'D_link_int simulation')
+abline(v = true_values$D[1], col = 2)
+hist(sim_D_noise, main = 'D_link_noise simulation')
+abline(v = true_values$D[2], col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)
