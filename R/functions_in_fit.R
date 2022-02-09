@@ -480,6 +480,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     df.t = input_data$trap
     if(!is.null(df.t)){
       df.t = extend_dat_check(df.t, 'trap', data.full, n.sessions, identical_traps)
+      name.t = colnames(df.t)
       #stopifnot(is(df.t, 'data.frame'))
       #name.t = colnames(df.t)
       #stopifnot('trap' %in% name.t)

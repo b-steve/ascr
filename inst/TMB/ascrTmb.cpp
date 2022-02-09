@@ -514,7 +514,6 @@ Type objective_function<Type>::operator() ()
   Type Inf = std::numeric_limits<double>::infinity();
   Type *pointer_Inf = &Inf;
   Type pi = 3.14159265358979323846;
-  
   DATA_INTEGER(n_sessions);
   DATA_IVECTOR(n_animals);
   DATA_IVECTOR(n_IDs);
@@ -1174,7 +1173,7 @@ Type objective_function<Type>::operator() ()
     area_unit = A(s - 1);
     servey_len = survey_length(s - 1);
     n_uid = n_uid_session(s - 1);
-    
+    //std::cout << "session " << s << ", area unit: " << area_unit << std::endl;
     
     //firstly calculate lambda(theta), the rate of Poisson distribution
     
@@ -1415,8 +1414,9 @@ Type objective_function<Type>::operator() ()
 
         //if(s == 2 & m == 777){
         //  std::cout << "session 2, m 777, trap " << t << ", dx: " << *p_dx << std::endl;
-        //  std::cout << "session 2, m 777, trap " << t << ", lambda0: " << detfn_param[0] << std::endl;
-        //  std::cout << "session 2, m 777, trap " << t << ", sigma: " << detfn_param[1] << std::endl;
+        //  std::cout << "session 2, m 777, trap " << t << ", b0.ss: " << detfn_param[0] << std::endl;
+        //  std::cout << "session 2, m 777, trap " << t << ", b1.ss: " << detfn_param[1] << std::endl;
+        //  std::cout << "session 2, m 777, trap " << t << ", sigma.ss: " << *p_sigma_ss_tem << std::endl;
         //  std::cout << "session 2, m 777, trap " << t << ", p_k: " << p_k(m - 1, t - 1) << std::endl;
         //}
 
@@ -1444,7 +1444,11 @@ Type objective_function<Type>::operator() ()
       //  std::cout << "session 2, m 777, p_dot: " << p_dot(m - 1) << std::endl;
       //  std::cout << "session 2, m 777, p_m: " << p_m(m - 1) << std::endl;
       //  std::cout << "session 2, m 777, D: " << *p_D_tem << std::endl;
-      //  std::cout << "session 2, m 777, mu: " << *p_mu_tem << std::endl;
+      // std::cout << "session 2, m 777, mu: " << *p_mu_tem << std::endl;
+      //}
+
+      //if(s == 2){
+      //  std::cout << "session 2, until mask " << m << ", lambda_theta: " << lambda_theta << std::endl;
       //}
       
       p_D_mask++;
@@ -1466,19 +1470,21 @@ Type objective_function<Type>::operator() ()
       //end for mask m
     }
     
+    //std::cout << "session " << s << ", check point 1, lambda_theta: " << lambda_theta << std::endl;
+
     esa(s - 1) *= area_unit;
     if(is_animalID == 0){
       lambda_theta *= area_unit * servey_len * cue_rates;
     } else {
       lambda_theta *= area_unit;
     }
-    
+    //std::cout << "session " << s << ", check point 2, lambda_theta: " << lambda_theta << std::endl;
     //end of lambda_theta calculation
     
     
     //canceled out original likelihood: nll -= dpois(Type(n_i), lambda_theta, true);
     *pointer_nll += lambda_theta;
-
+    //std::cout << "until session "<< s <<", check point1, nll: " << *pointer_nll << std::endl;
 
     //just like D, sigma_toa is not id nor trap extentable, so just take
     //the first value in this session
@@ -2051,7 +2057,7 @@ Type objective_function<Type>::operator() ()
       }
       //end of animal_ID model
     }
-    
+    //std::cout << "until session "<< s <<", check point2, nll: " << *pointer_nll << std::endl;
     //end for session s
   }
   

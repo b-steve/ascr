@@ -2,26 +2,6 @@ library('devtools')
 load_all()
 compile.ascr(T)
 
-demo_names = list.files("G:/")
-demo_names = demo_names[grepl("^fit_", demo_names)]
-
-for(i in demo_names){
-  dir = paste0("G:/", i)
-  assign(i, readRDS(dir)$model_output)
-}
-
-rm(demo_names, dir, i)
-
-
-captures = readRDS('./inst/demo_captures')
-traps = readRDS('./inst/demo_traps')
-masks = readRDS('./inst/demo_masks')
-par.extend = readRDS('./inst/demo_extend_no_animal_ID')
-ss.opts = readRDS('./inst/demo_ss_opts')
-
-capt = create.capt(captures, traps)
-capt2 = create.capt(captures[,-which(colnames(captures) == 'animal_ID')], traps)
-
 
 #paper demo
 library('devtools')
@@ -37,8 +17,9 @@ tem = fit.ascr(capt = capt, traps, masks, detfn = 'hhn',
   
 
 
-
-#simulation based on the original paper demo
+################################################################################################################
+#simulation 1
+#simulation based on the original paper demo (toa, hhn)
 library('devtools')
 load_all()
 demo_sim_origin = readRDS('./inst/demo_sim_origin')
@@ -85,8 +66,10 @@ hist(sim_mu, main = 'mu_link simulation')
 abline(v = true_values$mu, col = 2)
 
 
+##########################################################################################################
+#simulation 2
 
-#simulation based on paper demo with further 'D' extension
+#simulation based on paper demo (toa, hhn) with further 'D' extension
 library('devtools')
 load_all()
 demo_sim_D_ext = readRDS('./inst/demo_sim_D_ext')
@@ -109,7 +92,7 @@ sim_D_noise = numeric(n.rand)
 sim_mu = numeric(n.rand)
 
 sv = demo_sim_D_ext$param
-sv$D = sv$D[1]
+sv$D = exp(sv$D[1])
 
 pb = utils::txtProgressBar(1, n.rand, style = 3)
 
@@ -144,3 +127,389 @@ hist(sim_D_noise, main = 'D_link_noise simulation')
 abline(v = true_values$D[2], col = 2)
 hist(sim_mu, main = 'mu_link simulation')
 abline(v = true_values$mu, col = 2)
+
+#############################################################################################################
+#simulation 3
+
+#simulation with ss
+library('devtools')
+load_all()
+demo_sim_ss = readRDS('./inst/demo_sim_ss')
+
+true_values = demo_sim_ss$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+} 
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_ss, sim.capt(detfn = detfn, param = param, traps = traps, mask = mask, 
+  ss.opts = ss.opts, n.sessions = n.sessions, n.rand = n.rand))
+
+sim_b0.ss = numeric(n.rand)
+sim_b1.ss = numeric(n.rand)
+sim_sigma.ss = numeric(n.rand)
+sim_D = numeric(n.rand)
+sim_mu = numeric(n.rand)
+
+sv = demo_sim_ss$param
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_ss$traps)
+    fit = fit.ascr(capt, traps = demo_sim_ss$traps, mask = demo_sim_ss$mask, detfn = demo_sim_ss$detfn
+      , sv = sv, ss.opts = demo_sim_ss$ss.opts)
+    tem = coef(fit)
+    sim_b0.ss[i] = tem['b0.ss_link']
+    sim_b1.ss[i] = tem['b1.ss_link']
+    sim_sigma.ss[i] = tem['sigma.ss_link']
+    sim_D[i] = tem['D_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+hist(sim_b0.ss, main = 'b0.ss_link simulation')
+abline(v = true_values$b0.ss, col = 2)
+hist(sim_b1.ss, main = 'b1.ss_link simulation')
+abline(v = true_values$b1.ss, col = 2)
+hist(sim_sigma.ss, main = 'sigma.ss_link simulation')
+abline(v = true_values$sigma.ss, col = 2)
+hist(sim_D, main = 'D_link simulation')
+abline(v = true_values$D, col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)
+
+################################################################################################################
+#simulation 4
+
+#simulation with detfn of ss, and D, b0.ss extended 
+library('devtools')
+load_all()
+demo_sim_ss_ext = readRDS('./inst/demo_sim_ss_ext')
+
+true_values = demo_sim_ss_ext$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+} 
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_ss_ext, sim.capt(detfn = detfn, param = param, par.extend = par.extend,
+  traps = traps, mask = mask, ss.opts = ss.opts, n.sessions = n.sessions, n.rand = n.rand))
+
+sim_b0.ss_int = numeric(n.rand)
+sim_b0.ss_PHILIPS = numeric(n.rand)
+sim_b0.ss_SONY = numeric(n.rand)
+sim_b0.ss_sunny = numeric(n.rand)
+sim_b1.ss = numeric(n.rand)
+sim_sigma.ss = numeric(n.rand)
+sim_D_int = numeric(n.rand)
+sim_D_noise = numeric(n.rand)
+sim_mu = numeric(n.rand)
+
+#since the intercept of 'b0.ss' is quite small, if we set it as start value, there will be
+#numeric issue
+#sv = demo_sim_ss_ext$param
+#sv$D = exp(sv$D[1])
+#sv$b0.ss = exp(sv$b0.ss[1])
+
+
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_ss_ext$traps)
+    fit = fit.ascr(capt, traps = demo_sim_ss_ext$traps, mask = demo_sim_ss_ext$mask, detfn = demo_sim_ss_ext$detfn
+      #, sv = sv
+      , ss.opts = demo_sim_ss_ext$ss.opts, par.extend = demo_sim_ss_ext$par.extend)
+    tem = coef(fit)
+    sim_b0.ss_int[i] = tem['b0.ss.(Intercept)_link']
+    sim_b0.ss_PHILIPS[i] = tem['b0.ss.brandPHILIPS_link']
+    sim_b0.ss_SONY[i] = tem['b0.ss.brandSONY_link']
+    sim_b0.ss_sunny[i] = tem['b0.ss.weathersunny_link']
+    sim_b1.ss[i] = tem['b1.ss_link']
+    sim_sigma.ss[i] = tem['sigma.ss_link']
+    sim_D_int[i] = tem['D.(Intercept)_link']
+    sim_D_noise[i] = tem['D.noise_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+#original 
+hist(sim_b0.ss_int, main = 'b0.ss_int_link simulation')
+abline(v = true_values$b0.ss[1], col = 2)
+hist(sim_b0.ss_PHILIPS, main = 'b0.ss_PHILIPS_link simulation')
+abline(v = true_values$b0.ss[2], col = 2)
+hist(sim_b0.ss_SONY, main = 'b0.ss_SONY_link simulation')
+abline(v = true_values$b0.ss[3], col = 2)
+hist(sim_b0.ss_sunny, main = 'b0.ss_sunny_link simulation')
+abline(v = true_values$b0.ss[4], col = 2)
+hist(sim_b1.ss, main = 'b1.ss_link simulation')
+abline(v = true_values$b1.ss, col = 2)
+hist(sim_sigma.ss, main = 'sigma.ss_link simulation')
+abline(v = true_values$sigma.ss, col = 2)
+hist(sim_D_int, main = 'D_int_link simulation')
+abline(v = true_values$D[1], col = 2)
+hist(sim_D_noise, main = 'D_noise_link simulation')
+abline(v = true_values$D[2], col = 2)
+
+#apparently there are several outlier, this is reasonable because this simulation
+#was designed to test whether the model work well when there is "no-detection" session,
+#so the b0.ss was set quite extreme as its intercept is -1 and this intercept will be applied to the second session,
+#exp(-1) means nothing comparing to the cutoff ss 60, this could make sure the second session has no detection,
+#but it may cause some numeric problem as well. It seems that the numeric problem does not happen as frequently
+#as I expected, so we could just remove several extreme result, and generate the hist() again
+
+hist(sim_b0.ss_int[sim_b0.ss_int > -10 & sim_b0.ss_int < 4], main = 'b0.ss_int_link simulation (without outlier)')
+abline(v = true_values$b0.ss[1], col = 2)
+hist(sim_b0.ss_PHILIPS[sim_b0.ss_PHILIPS < 0.5], main = 'b0.ss_PHILIPS_link simulation (without outlier)')
+abline(v = true_values$b0.ss[2], col = 2)
+hist(sim_b0.ss_SONY[sim_b0.ss_SONY < 1], main = 'b0.ss_SONY_link simulation (without outlier)')
+abline(v = true_values$b0.ss[3], col = 2)
+hist(sim_b0.ss_sunny[sim_b0.ss_sunny < 15 & sim_b0.ss_sunny > -4], main = 'b0.ss_sunny_link simulation (without outlier)')
+abline(v = true_values$b0.ss[4], col = 2)
+hist(sim_b1.ss, main = 'b1.ss_link simulation (without outlier)')
+abline(v = true_values$b1.ss, col = 2)
+hist(sim_sigma.ss, main = 'sigma.ss_link simulation (without outlier)')
+abline(v = true_values$sigma.ss, col = 2)
+hist(sim_D_int[sim_D_int > -5], main = 'D_int_link simulation (without outlier)')
+abline(v = true_values$D[1], col = 2)
+hist(sim_D_noise[sim_D_noise < 10 & sim_D_noise > -40], main = 'D_noise_link simulation (without outlier)')
+abline(v = true_values$D[2], col = 2)
+
+################################################################################################################
+#simulation 5
+
+#simulation with detfn of ss, and D, b0.ss extended
+#this is the same with simulation 4, but here we assign the b0.ss_int to a number that will generate some detections
+#in the second session, and this time, the result is obviously much more reasonable
+
+library('devtools')
+load_all()
+demo_sim_ss_ext_2nd = readRDS('./inst/demo_sim_ss_ext_2nd')
+
+true_values = demo_sim_ss_ext_2nd$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+} 
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_ss_ext_2nd, sim.capt(detfn = detfn, param = param, par.extend = par.extend,
+  traps = traps, mask = mask, ss.opts = ss.opts, n.sessions = n.sessions, n.rand = n.rand))
+
+sim_b0.ss_int = numeric(n.rand)
+sim_b0.ss_PHILIPS = numeric(n.rand)
+sim_b0.ss_SONY = numeric(n.rand)
+sim_b0.ss_sunny = numeric(n.rand)
+sim_b1.ss = numeric(n.rand)
+sim_sigma.ss = numeric(n.rand)
+sim_D_int = numeric(n.rand)
+sim_D_noise = numeric(n.rand)
+sim_mu = numeric(n.rand)
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_ss_ext_2nd$traps)
+    fit = fit.ascr(capt, traps = demo_sim_ss_ext_2nd$traps, mask = demo_sim_ss_ext_2nd$mask, detfn = demo_sim_ss_ext_2nd$detfn
+      , ss.opts = demo_sim_ss_ext_2nd$ss.opts, par.extend = demo_sim_ss_ext_2nd$par.extend)
+    tem = coef(fit)
+    sim_b0.ss_int[i] = tem['b0.ss.(Intercept)_link']
+    sim_b0.ss_PHILIPS[i] = tem['b0.ss.brandPHILIPS_link']
+    sim_b0.ss_SONY[i] = tem['b0.ss.brandSONY_link']
+    sim_b0.ss_sunny[i] = tem['b0.ss.weathersunny_link']
+    sim_b1.ss[i] = tem['b1.ss_link']
+    sim_sigma.ss[i] = tem['sigma.ss_link']
+    sim_D_int[i] = tem['D.(Intercept)_link']
+    sim_D_noise[i] = tem['D.noise_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+
+hist(sim_b0.ss_int, main = 'b0.ss_int_link simulation')
+abline(v = true_values$b0.ss[1], col = 2)
+hist(sim_b0.ss_PHILIPS, main = 'b0.ss_PHILIPS_link simulation')
+abline(v = true_values$b0.ss[2], col = 2)
+hist(sim_b0.ss_SONY, main = 'b0.ss_SONY_link simulation')
+abline(v = true_values$b0.ss[3], col = 2)
+hist(sim_b0.ss_sunny, main = 'b0.ss_sunny_link simulation')
+abline(v = true_values$b0.ss[4], col = 2)
+hist(sim_b1.ss, main = 'b1.ss_link simulation')
+abline(v = true_values$b1.ss, col = 2)
+hist(sim_sigma.ss, main = 'sigma.ss_link simulation')
+abline(v = true_values$sigma.ss, col = 2)
+hist(sim_D_int, main = 'D_int_link simulation')
+abline(v = true_values$D[1], col = 2)
+hist(sim_D_noise, main = 'D_noise_link simulation')
+abline(v = true_values$D[2], col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)
+
+
+
+
+
+################################################################################################################
+#simulation 6
+
+#simulation hn with D and sigma extended, and with different survey.length for each session
+library('devtools')
+load_all()
+demo_sim_hn_ext = readRDS('./inst/demo_sim_hn_ext')
+
+true_values = demo_sim_hn_ext$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+}
+
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_hn_ext, sim.capt(detfn = detfn, param = param, par.extend = par.extend,
+  traps = traps, mask = mask, survey.length = survey.length, n.sessions = n.sessions, n.rand = n.rand))
+  
+
+sim_sigma_int = numeric(n.rand)
+sim_sigma_PHILIPS = numeric(n.rand)
+sim_sigma_SONY = numeric(n.rand)
+sim_sigma_sunny = numeric(n.rand)
+sim_g0 = numeric(n.rand)
+sim_D_int = numeric(n.rand)
+sim_D_sunny = numeric(n.rand)
+sim_mu = numeric(n.rand)
+
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_hn_ext$traps)
+    fit = fit.ascr(capt, traps = demo_sim_hn_ext$traps, mask = demo_sim_hn_ext$mask, detfn = demo_sim_hn_ext$detfn
+      , survey.length = demo_sim_hn_ext$survey.length, par.extend = demo_sim_hn_ext$par.extend)
+    tem = coef(fit)
+    sim_sigma_int[i] = tem['sigma.(Intercept)_link']
+    sim_sigma_PHILIPS[i] = tem['sigma.brandPHILIPS_link']
+    sim_sigma_SONY[i] = tem['sigma.brandSONY_link']
+    sim_sigma_sunny[i] = tem['sigma.weathersunny_link']
+    sim_g0[i] = tem['g0_link']
+    sim_D_int[i] = tem['D.(Intercept)_link']
+    sim_D_sunny[i] = tem['D.weathersunny_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+hist(sim_g0, main = 'g0_link simulation')
+abline(v = true_values$g0, col = 2)
+hist(sim_sigma_int, main = 'sigma_int_link simulation')
+abline(v = true_values$sigma[1], col = 2)
+hist(sim_sigma_PHILIPS, main = 'sigma_philips_link simulation')
+abline(v = true_values$sigma[2], col = 2)
+hist(sim_sigma_SONY, main = 'sigma_sony_link simulation')
+abline(v = true_values$sigma[3], col = 2)
+hist(sim_sigma_sunny, main = 'sigma_sunny_link simulation')
+abline(v = true_values$sigma[4], col = 2)
+hist(sim_D_int, main = 'D_int_link simulation')
+abline(v = true_values$D[1], col = 2)
+hist(sim_D_sunny, main = 'D_sunny_link simulation')
+abline(v = true_values$D[2], col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)
+
+
+#################################################################################################################
+
+#simulation 7
+#bear, dist, alpha and D ext
+
+library('devtools')
+load_all()
+demo_sim_bearing_dist_ext = readRDS("./inst/demo_sim_bearing_dist_ext")
+
+true_values = demo_sim_bearing_dist_ext$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+}
+
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_bearing_dist_ext, sim.capt(detfn = detfn, param = param, par.extend = par.extend,
+  traps = traps, mask = mask, survey.length = survey.length, n.sessions = n.sessions, n.rand = n.rand))
+
+
+
+sim_sigma = numeric(n.rand)
+sim_g0 = numeric(n.rand)
+sim_D_int = numeric(n.rand)
+sim_D_sunny = numeric(n.rand)
+sim_mu = numeric(n.rand)
+sim_kappa = numeric(n.rand)
+sim_alpha_int = numeric(n.rand)
+sim_alpha_philips = numeric(n.rand)
+sim_alpha_sony = numeric(n.rand)
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_bearing_dist_ext$traps)
+    fit = fit.ascr(capt, traps = demo_sim_bearing_dist_ext$traps, mask = demo_sim_bearing_dist_ext$mask, detfn =          demo_sim_bearing_dist_ext$detfn, survey.length = demo_sim_bearing_dist_ext$survey.length,
+      par.extend = demo_sim_bearing_dist_ext$par.extend)
+    tem = coef(fit)
+    sim_sigma[i] = tem['sigma_link']
+    sim_g0[i] = tem['g0_link']
+    sim_D_int[i] = tem['D.(Intercept)_link']
+    sim_D_sunny[i] = tem['D.weathersunny_link']
+    sim_mu[i] = tem['mu_link']
+    sim_kappa[i] = tem['kappa_link']
+    sim_alpha_int[i] = tem['alpha.(Intercept)_link']
+    sim_alpha_philips[i] = tem['alpha.brandPHILIPS_link']
+    sim_alpha_sony[i] = tem['alpha.brandSONY_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+hist(sim_g0, main = 'g0_link simulation')
+abline(v = true_values$g0, col = 2)
+hist(sim_sigma, main = 'sigma_link simulation')
+abline(v = true_values$sigma, col = 2)
+hist(sim_kappa, main = 'kappa_link simulation')
+abline(v = true_values$kappa, col = 2)
+hist(sim_alpha_int, main = 'alpha_int_link simulation')
+abline(v = true_values$alpha[1], col = 2)
+hist(sim_alpha_philips, main = 'alpha_philips_link simulation')
+abline(v = true_values$alpha[2], col = 2)
+hist(sim_alpha_sony, main = 'alpha_sony_link simulation')
+abline(v = true_values$alpha[3], col = 2)
+hist(sim_D_int, main = 'D_int_link simulation')
+abline(v = true_values$D[1], col = 2)
+hist(sim_D_sunny, main = 'D_sunny_link simulation')
+abline(v = true_values$D[2], col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)
+

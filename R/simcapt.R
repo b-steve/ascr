@@ -2,10 +2,13 @@
 sim.capt = function(fit, detfn, param, par.extend = NULL, traps, mask, survey.length = NULL, ss.opts = NULL, cue.rates = NULL,
                     n.sessions = NULL, n.rand = 1, random.location = FALSE, sound.speed = 330){
   if(!missing(fit)){
-    return(sim.from.fit(fit))
+    detfn = get_detfn(fit)
+    
+    
+    
+    
   } else {
     stopifnot(all(!missing(detfn), !missing(param), !missing(traps), !missing(mask)))
-    
     tem = sim.data.prepare(detfn, param, par.extend, traps, mask,
                            survey.length, random.location, n.sessions)
     dat_pars = tem$dat_pars
@@ -90,8 +93,7 @@ sim.data.prepare = function(detfn, param, par.extend, traps, mask, survey.length
     }
     
   }
-  
-  
+
   #fill with basic information
   n.traps = sapply(traps, nrow)
   n.masks = sapply(mask, nrow)
@@ -223,7 +225,6 @@ sim.data.prepare = function(detfn, param, par.extend, traps, mask, survey.length
     #sort it to make sure it has the same order with 'dat'
     tem_dat = sort.data(tem_dat, "data.dists.thetas")
     tem_dat$gam.resp = 1
-    
     for(i in param.og){
       par.value = param[[i]]
       if(is.null(par.value)) stop(paste0('please provide parameter: ', i))
@@ -352,8 +353,9 @@ sim.from.param = function(detfn, dat_pars, dat.density, random.location, dims, i
   
   if(info.bucket$is.ss){
     ss.link = ss.opts[['ss.link']]
+    if(is.null(ss.link)) ss.link = 'identity'
     cut_off = ss.opts[['cutoff']]
-    stopifnot(any(is.null(ss.link), is.null(cut_off)))
+    stopifnot(!is.null(cut_off))
     #ss is a little different, if the simulated ss > cut off, the detection probability is 1
     #and 0 otherwise
     essx = det_prob(detfn, param.det, dat_capt$dx, ss.link)

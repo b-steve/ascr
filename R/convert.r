@@ -59,7 +59,7 @@ create.mask <- function(traps, buffer, ...){
 #' @return
 #' @export
 create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NULL,
-                        mrds.locs = NULL){
+                        mrds.locs = NULL, ind_model = NULL){
     
     #captures must be provided as a matrix or data frame with at least 4 columns
     #traps could be list, matrix or data frame
@@ -177,7 +177,18 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
     #deal with mrds.locs. "ID" will be dealt with together as they are closely related
     #here we require mrds.locs a list with length of n.sessions, if there is no detection for
     #any sessions, the user should leave that component to be NULL.
-    is.animalID = "animal_ID" %in% colnames(captures)
+    is.animalID.included = "animal_ID" %in% colnames(captures)
+    
+    if(is.null(ind_model)){
+      is.animalID = is.animalID.included
+    } else {
+      is.animalID = is.animalID.included & ind_model
+    }
+    
+    #when animalID is included but the user assign not to fit individual embedded model,
+    #exclude the animalID information from the capture history
+    if(is.animalID.included & !is.animalID) captures[,-which(colnames(captures) == "animal_ID")]
+    
     is.mrds <- !is.null(mrds.locs)
     
     #initial check, for further check about each component of mrds.locs, will be processed later

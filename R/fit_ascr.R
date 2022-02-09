@@ -1,7 +1,6 @@
 #' @export
-fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = NULL, bounds = NULL, 
-                    fix = NULL, ss.opts = NULL, cue.rates = NULL, survey.length = NULL, sound.speed = 330,
-                    local = FALSE, par.extend = NULL, ...){
+fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
+                    cue.rates = NULL, survey.length = NULL, sound.speed = 330, local = FALSE, par.extend = NULL, ...){
   
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
@@ -16,28 +15,22 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
   extra_args = list(...)
   
   ####################################################################################################
-  #depend on 'animal.model', there will be two models, so sort this argument out first
-  if(animal.model){
-    if(!is(capt, 'data.frame')){
-      stop('argument "capt" only accepts data.frame as input.')
-    }
-    if(!is.null(cue.rates)){
-      cue.rates = NULL
-      warning('argument "cue.rates" is ignored since "animal.model" is TRUE.')
-    }
-    if(!"animal_ID" %in% colnames(capt)){
+  #there are two kinds of models (individual identification <included/not included> model), so sort this out first
+  if(is(capt, 'data.frame')){
+    if('animal_ID' %in% colnames(capt)){
+      animal.model = TRUE
+      
+      if(!is.null(cue.rates)){
+        cue.rates = NULL
+        warning('argument "cue.rates" is ignored since "animal.model" is TRUE.')
+      }
+      
+    } else {
       stop('information about "animal_ID" is not provided.')
     }
   } else {
-    if(is(capt, 'data.frame')){
-      #in this case, it might be the user forget to change the argument of animal.model to be TRUE
-      #so set it to be TRUE
-      if(all(c('session', 'animal_ID', 'ID', 'trap', 'bincapt') %in% colnames(capt))){
-        animal.model = TRUE
-      } else {
-        stop('invalid input "capt", "create.capt()" is recommended for obtaining valid input object.')
-      }
-    }
+    animal.model = FALSE
+    if(!is(capt, 'list')) stop('invalid input "capt", "create.capt()" is recommended for obtaining valid input object.')
   }
   
   
@@ -396,7 +389,6 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
     map[[par_name]] = factor(rep(NA, length(parameters[[par_name]])))
   }
   
-  #browser()
   #dev is a logical variable for development environment, default is FALSE
   dev = extra_args$dev
   if(is.null(dev)) dev = FALSE
@@ -406,7 +398,7 @@ fit.ascr = function(capt, traps, mask, animal.model = FALSE, detfn = NULL, sv = 
     dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
   }
 
-  
+  #browser()
   if(!("ss.het" %in% bucket_info)){
     obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, DLL="ascrTmb")
   } else {
