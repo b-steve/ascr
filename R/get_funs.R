@@ -165,6 +165,10 @@ get_DX_new_gam = function(mod, newdata){
   return(output)
 }
 
+get_scale_cov = function(fit){
+  output = fit$scale.covs
+  return(output)
+}
 
 get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked, new_covariates){
   if(n_col_full > 1){

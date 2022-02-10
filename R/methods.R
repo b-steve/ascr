@@ -89,6 +89,10 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
           if(nrow(new_covariates) != 1){
             stop('Argument "new_covariates" can only accept 1 row.')
           } else {
+            #deal with scaling
+            scale_fun = get_scale_cov(object)
+            new_covariates = scale_fun(new_covariates)
+            
             gam = get_gam(object, i)
             tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask, values_link, new_covariates)})
             if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided. Defaulty all parameters are assigned as "par".')
@@ -240,9 +244,9 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
         output[[type]] = delta_method_ascr_tmb(cov_linked, param_values, link_funs = link_funs)
         dimnames(output[[type]]) = list(name_dim, name_dim)
       } else {
-        
-        #standardize new_covariates first
-        new_covariates = object$scale.covs(new_covariates)
+        #deal with scaling
+        scale_fun = get_scale_cov(object)
+        new_covariates = scale_fun(new_covariates)
         
         gam.output = get_gam(object)
         tem = try({output[[type]] = delta_method_ascr_tmb(cov_linked, param_values, new_covariates = new_covariates, pars = pars,

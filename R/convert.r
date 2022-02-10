@@ -58,8 +58,8 @@ create.mask <- function(traps, buffer, ...){
 #'
 #' @return
 #' @export
-create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NULL,
-                        mrds.locs = NULL, ind_model = NULL){
+create.capt <- function(captures, traps = NULL, ind_model = NULL, n.sessions = NULL, n.traps = NULL, 
+                        mrds.locs = NULL){
     
     #captures must be provided as a matrix or data frame with at least 4 columns
     #traps could be list, matrix or data frame
@@ -187,7 +187,11 @@ create.capt <- function(captures, traps = NULL, n.traps = NULL, n.sessions = NUL
     
     #when animalID is included but the user assign not to fit individual embedded model,
     #exclude the animalID information from the capture history
-    if(is.animalID.included & !is.animalID) captures[,-which(colnames(captures) == "animal_ID")]
+    if(is.animalID.included & !is.animalID){
+      #re-assign cue ID to make sure no duplication ID after removing animal_ID
+      captures$ID = as.numeric(as.factor(paste(captures$session, captures$animal_ID, captures$ID, sep = "-")))
+      captures[,-which(colnames(captures) == "animal_ID")]
+    } 
     
     is.mrds <- !is.null(mrds.locs)
     
