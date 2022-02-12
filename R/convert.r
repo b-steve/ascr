@@ -45,12 +45,13 @@ create.mask <- function(traps, buffer, ...){
 }
 
 
-#' Creating capture history object.
+#' Title
 #'
 #' @param captures 
 #' @param traps 
-#' @param n.traps 
+#' @param ind_model 
 #' @param n.sessions 
+#' @param n.traps 
 #' @param mrds.locs a list with length of n.sessions with data frames or matrices as components, each data.frame or matrix
 #'                  contains two columns record the Cartesian coordinates of each call. If a session has no detection,
 #'                  keep the corresponding component as NULL. If animal.model, then each component must be a data.frame
@@ -58,6 +59,8 @@ create.mask <- function(traps, buffer, ...){
 #'
 #' @return
 #' @export
+#'
+#' @examples
 create.capt <- function(captures, traps = NULL, ind_model = NULL, n.sessions = NULL, n.traps = NULL, 
                         mrds.locs = NULL){
     

@@ -34,8 +34,26 @@ get_data_mask = function(fit){
   return(output)
 }
 
+get_mask = function(fit){
+  output = fit$args$mask
+  return(output)
+}
+
 get_data_trap = function(fit){
   output = fit$output.tmb$data.traps
+  return(output)
+}
+
+get_trap = function(fit){
+  df.traps = get_data_trap(fit)
+  colnames(df.traps)[1:2] = c('x', 'y')
+  n.sessions = max(df.traps$session)
+  output = vector('list', n.sessions)
+  
+  for(s in 1:n.sessions){
+    output[[s]] = as.matrix(subset(df.traps, session == s, select = c('x', 'y')))
+  }
+  
   return(output)
 }
 
@@ -111,6 +129,11 @@ get_ss_link = function(fit){
 
 get_cutoff = function(fit){
   output = fit$output.tmb$cutoff
+  return(output)
+}
+
+get_ss.opts = function(fit){
+  output = fit$args$ss.opts
   return(output)
 }
 

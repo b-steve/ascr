@@ -1,6 +1,26 @@
+#' Title
+#'
+#' @param capt 
+#' @param traps 
+#' @param mask 
+#' @param detfn 
+#' @param sv 
+#' @param bounds 
+#' @param fix 
+#' @param ss.opts 
+#' @param cue.rates 
+#' @param survey.length 
+#' @param sound.speed 
+#' @param local 
+#' @param par.extend 
+#' @param ... 
+#'
+#' @return
 #' @export
-fit.ascr = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
-                    cue.rates = NULL, survey.length = NULL, sound.speed = 330, local = FALSE, par.extend = NULL, ...){
+#'
+#' @examples
+fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
+                    cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, ...){
   
   #keep all original input arguments
   arg.names <- names(as.list(environment()))

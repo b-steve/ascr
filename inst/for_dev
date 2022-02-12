@@ -11,7 +11,7 @@ captures = readRDS('./inst/capt_paper')
 traps = readRDS("./inst/traps_paper")
 masks = readRDS("./inst/mask_paper")
 capt = create.capt(captures, traps)
-tem = fit.ascr(capt = capt, traps, masks, detfn = 'hhn',
+tem = fit_og(capt = capt, traps, masks, detfn = 'hhn',
   sv = list(D = 600, lambda0 = 9, sigma = 2, mu = 9, sigma.toa = 10),
   dev = TRUE)
   
@@ -42,7 +42,7 @@ for(i in 1:n.rand){
   
   if(nrow(sim_out[[i]]) > 0){
     capt = create.capt(sim_out[[i]], demo_sim_origin$traps)
-    fit = fit.ascr(capt, traps = demo_sim_origin$traps, mask = demo_sim_origin$mask, detfn = demo_sim_origin$detfn,
+    fit = fit_og(capt, traps = demo_sim_origin$traps, mask = demo_sim_origin$mask, detfn = demo_sim_origin$detfn,
                    sv = demo_sim_origin$param)
     tem = coef(fit)
     sim_sigma[i] = tem['sigma_link']
@@ -100,8 +100,8 @@ for(i in 1:n.rand){
   
   if(nrow(sim_out[[i]]) > 0){
     capt = create.capt(sim_out[[i]], demo_sim_D_ext$traps)
-    fit = fit.ascr(capt, traps = demo_sim_D_ext$traps, mask = demo_sim_D_ext$mask, detfn = demo_sim_D_ext$detfn
-      , sv = sv, par.extend = demo_sim_D_ext$par.extend)
+    fit = fit_og(capt, traps = demo_sim_D_ext$traps, mask = demo_sim_D_ext$mask, detfn = demo_sim_D_ext$detfn
+      , par.extend = demo_sim_D_ext$par.extend)
     tem = coef(fit)
     sim_sigma[i] = tem['sigma_link']
     sim_lambda0[i] = tem['lambda0_link']
@@ -160,7 +160,7 @@ for(i in 1:n.rand){
   
   if(nrow(sim_out[[i]]) > 0){
     capt = create.capt(sim_out[[i]], demo_sim_ss$traps)
-    fit = fit.ascr(capt, traps = demo_sim_ss$traps, mask = demo_sim_ss$mask, detfn = demo_sim_ss$detfn
+    fit = fit_og(capt, traps = demo_sim_ss$traps, mask = demo_sim_ss$mask, detfn = demo_sim_ss$detfn
       , sv = sv, ss.opts = demo_sim_ss$ss.opts)
     tem = coef(fit)
     sim_b0.ss[i] = tem['b0.ss_link']
@@ -227,7 +227,7 @@ for(i in 1:n.rand){
   
   if(nrow(sim_out[[i]]) > 0){
     capt = create.capt(sim_out[[i]], demo_sim_ss_ext$traps)
-    fit = fit.ascr(capt, traps = demo_sim_ss_ext$traps, mask = demo_sim_ss_ext$mask, detfn = demo_sim_ss_ext$detfn
+    fit = fit_og(capt, traps = demo_sim_ss_ext$traps, mask = demo_sim_ss_ext$mask, detfn = demo_sim_ss_ext$detfn
       #, sv = sv
       , ss.opts = demo_sim_ss_ext$ss.opts, par.extend = demo_sim_ss_ext$par.extend)
     tem = coef(fit)
@@ -325,7 +325,7 @@ for(i in 1:n.rand){
   
   if(nrow(sim_out[[i]]) > 0){
     capt = create.capt(sim_out[[i]], demo_sim_ss_ext_2nd$traps)
-    fit = fit.ascr(capt, traps = demo_sim_ss_ext_2nd$traps, mask = demo_sim_ss_ext_2nd$mask, detfn = demo_sim_ss_ext_2nd$detfn
+    fit = fit_og(capt, traps = demo_sim_ss_ext_2nd$traps, mask = demo_sim_ss_ext_2nd$mask, detfn = demo_sim_ss_ext_2nd$detfn
       , ss.opts = demo_sim_ss_ext_2nd$ss.opts, par.extend = demo_sim_ss_ext_2nd$par.extend)
     tem = coef(fit)
     sim_b0.ss_int[i] = tem['b0.ss.(Intercept)_link']
@@ -403,7 +403,7 @@ for(i in 1:n.rand){
   
   if(nrow(sim_out[[i]]) > 0){
     capt = create.capt(sim_out[[i]], demo_sim_hn_ext$traps)
-    fit = fit.ascr(capt, traps = demo_sim_hn_ext$traps, mask = demo_sim_hn_ext$mask, detfn = demo_sim_hn_ext$detfn
+    fit = fit_og(capt, traps = demo_sim_hn_ext$traps, mask = demo_sim_hn_ext$mask, detfn = demo_sim_hn_ext$detfn
       , survey.length = demo_sim_hn_ext$survey.length, par.extend = demo_sim_hn_ext$par.extend)
     tem = coef(fit)
     sim_sigma_int[i] = tem['sigma.(Intercept)_link']
@@ -476,7 +476,8 @@ for(i in 1:n.rand){
   
   if(nrow(sim_out[[i]]) > 0){
     capt = create.capt(sim_out[[i]], demo_sim_bearing_dist_ext$traps)
-    fit = fit.ascr(capt, traps = demo_sim_bearing_dist_ext$traps, mask = demo_sim_bearing_dist_ext$mask, detfn =          demo_sim_bearing_dist_ext$detfn, survey.length = demo_sim_bearing_dist_ext$survey.length,
+    fit = fit_og(capt, traps = demo_sim_bearing_dist_ext$traps, mask = demo_sim_bearing_dist_ext$mask,
+      detfn = demo_sim_bearing_dist_ext$detfn, survey.length = demo_sim_bearing_dist_ext$survey.length,
       par.extend = demo_sim_bearing_dist_ext$par.extend)
     tem = coef(fit)
     sim_sigma[i] = tem['sigma_link']

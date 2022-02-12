@@ -2,15 +2,15 @@
 % Please edit documentation in R/convert.r
 \name{create.capt}
 \alias{create.capt}
-\title{Creating capture history object.}
+\title{Title}
 \usage{
 create.capt(
   captures,
   traps = NULL,
-  n.traps = NULL,
+  ind_model = NULL,
   n.sessions = NULL,
-  mrds.locs = NULL,
-  use.name = FALSE
+  n.traps = NULL,
+  mrds.locs = NULL
 )
 }
 \arguments{
@@ -18,17 +18,24 @@ create.capt(
 
 \item{traps}{}
 
-\item{n.traps}{}
+\item{ind_model}{}
 
 \item{n.sessions}{}
 
-\item{mrds.locs}{}
+\item{n.traps}{}
 
-\item{use.name}{}
+\item{mrds.locs}{a list with length of n.sessions with data frames or matrices as components, each data.frame or matrix
+contains two columns record the Cartesian coordinates of each call. If a session has no detection,
+keep the corresponding component as NULL. If animal.model, then each component must be a data.frame
+with 4 columns: "animal_ID", "ID", "mrds_x" and "mrds_y".}
 }
 \value{
 
 }
 \description{
-Creating capture history object.
+Title
+}
+\examples{
+n_IDs' will be used later to construct the matrices of output
+n_animals_call' only used later to check 'mrds.locs'
 }

@@ -1,38 +1,62 @@
 #' @export
 sim.capt = function(fit, detfn, param, par.extend = NULL, traps, mask, survey.length = NULL, ss.opts = NULL, cue.rates = NULL,
-                    n.sessions = NULL, n.rand = 1, random.location = FALSE, sound.speed = 330){
+                    n.sessions = NULL, n.rand = 1, random.location = FALSE, sound.speed = 331){
   if(!missing(fit)){
+    #if 'fit' is provided, get all information from the fitted object
+    
     detfn = get_detfn(fit)
     
+    #get the data frame which contains link function for each parameter
+    dat_par = get_data_param(fit)
     
+    #then get the parameter's values before back transforming
+    param = get_coef(fit)
     
-    
-  } else {
-    stopifnot(all(!missing(detfn), !missing(param), !missing(traps), !missing(mask)))
-    tem = sim.data.prepare(detfn, param, par.extend, traps, mask,
-                           survey.length, random.location, n.sessions)
-    dat_pars = tem$dat_pars
-    dat.density = tem$dat.density
-    dims = tem$dims
-    info.bucket = tem$info.bucket
-    
-    if(n.rand == 1){
-      output = sim.from.param(detfn, dat_pars, dat.density, random.location,
-                              dims, info.bucket, ss.opts, cue.rates, sound.speed)
-    } else {
-      output = vector('list', n.rand)
-      pb = utils::txtProgressBar(1, n.rand, style = 3)
-      for(i in 1:n.rand){
-        output[[i]] = sim.from.param(detfn, dat_pars, dat.density, random.location,
-                                     dims, info.bucket, ss.opts, cue.rates, sound.speed)
-        utils::setTxtProgressBar(pb, i)
+    #the "param" in simulation requires back transformed value
+    for(i in names(param)){
+      #if the length of one parameter is greater than 1, means it is extended
+      #in this case, keep the values the same. we only do back transformation
+      #when it is not extended
+      if(length(param[[i]]) == 1){
+        par_link = dat_par[which(dat_par$par == i), 'link']
+        param[[i]] = link.fun(par_link, param[[i]])
       }
-      close(pb)
     }
     
-    return(output)
+    par.extend = get_par_extend(fit)
+    traps = get_trap(fit)
+    mask = get_mask(fit)
+    survey.length = get_survey_length(fit)
+    cue.rates = get_cue_rates(fit)
+    sound.speed = get_sound_speed(fit)
+    ss.opts = get_ss.opts(fit)
+  } else {
+    stopifnot(all(!missing(detfn), !missing(param), !missing(traps), !missing(mask)))
   }
-
+  
+  tem = sim.data.prepare(detfn, param, par.extend, traps, mask,
+                         survey.length, random.location, n.sessions)
+  dat_pars = tem$dat_pars
+  dat.density = tem$dat.density
+  dims = tem$dims
+  info.bucket = tem$info.bucket
+  
+  if(n.rand == 1){
+    output = sim.from.param(detfn, dat_pars, dat.density, random.location,
+                            dims, info.bucket, ss.opts, cue.rates, sound.speed)
+  } else {
+    output = vector('list', n.rand)
+    pb = utils::txtProgressBar(1, n.rand, style = 3)
+    for(i in 1:n.rand){
+      output[[i]] = sim.from.param(detfn, dat_pars, dat.density, random.location,
+                                   dims, info.bucket, ss.opts, cue.rates, sound.speed)
+      utils::setTxtProgressBar(pb, i)
+    }
+    close(pb)
+  }
+  
+  return(output)
+  
 }
 
 ####################################################################################################################################

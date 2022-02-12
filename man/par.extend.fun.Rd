@@ -3,12 +3,13 @@
 \name{par.extend.fun}
 \alias{par.extend.fun}
 \title{fgam' is an object for compatibility with ADMB model
-ID',}
+animal_ID',}
 \usage{
 par.extend.fun(
   par.extend,
   data.full,
   data.mask,
+  animal.model,
   dims,
   fulllist.par,
   extra_args
@@ -16,5 +17,5 @@ par.extend.fun(
 }
 \description{
 fgam' is an object for compatibility with ADMB model
-ID',
+animal_ID',
 }
