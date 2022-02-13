@@ -323,10 +323,7 @@ print.std_ascr_tmb = function(x){
 confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'default',
                             linked = FALSE, pars = NULL, new_covariates = NULL,
                             qqplot = FALSE, ask = FALSE, ...){
-  #source("support_functions.r", local = TRUE)
-  #source("get_funs.r", local = TRUE)
-  ############################################################################################
-  
+
   #modify here to make it compatible with boot
   
   if(method != 'default') stop('Please apply bootstrap to the output of the model before using other methods.')

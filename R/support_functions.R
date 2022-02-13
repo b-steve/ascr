@@ -77,9 +77,12 @@ agg_sort = function(dat, obj, lst, f){
 }
 
 
-extend_dat_check = function(dat, check_var, ori_dat, n.sessions, identical_flag){
+extend_dat_check = function(dat, check_var, ori_dat, n.sessions, n.var, identical_flag){
   stopifnot(is(dat, 'data.frame'))
-  stopifnot(check_var %in% colnames(dat))
+  if(!(check_var %in% colnames(dat))){
+    stopifnot(nrow(dat) == n.var[1])
+    dat[[check_var]] = seq(n.var[1])
+  }
   
   if('session' %in% colnames(dat)){
     stopifnot(length(colnames(dat)) > 2)
@@ -107,8 +110,7 @@ extend_dat_check = function(dat, check_var, ori_dat, n.sessions, identical_flag)
 
 
 covariates_mask_check = function(dat, n.sessions, n.masks, identical_flag){
-  #list and data.frame will all return TRUE for is.list()
-  stopifnot(is.list(dat))
+  stopifnot(is(dat, 'list') | is(dat, 'data.frame'))
   
   if(is(dat, 'list')){
     if(length(dat) > 1){

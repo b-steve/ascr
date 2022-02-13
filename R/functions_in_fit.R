@@ -479,30 +479,9 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     #check 'trap' level data
     df.t = input_data$trap
     if(!is.null(df.t)){
-      df.t = extend_dat_check(df.t, 'trap', data.full, n.sessions, identical_traps)
+      df.t = extend_dat_check(df.t, 'trap', data.full, n.sessions, n.traps, identical_traps)
       name.t = colnames(df.t)
-      #stopifnot(is(df.t, 'data.frame'))
-      #name.t = colnames(df.t)
-      #stopifnot('trap' %in% name.t)
-      
-      #if('session' %in% name.t){
-      #  stopifnot(length(name.t) > 2)
-      #} else {
-        #if all sessions share the same trap, the user can skip 'session' in the traps' covariates
-        #or there is only 1 session
-      #  stopifnot(length(name.t) > 1)
-      #  if(n.sessions > 1) stopifnot(identical_traps)
-      #  tem = vector('list', n.sessions)
-      #  for(s in 1:n.sessions){
-      #    tem[[s]] = df.t
-      #    tem[[s]][['session']] = s
-      #  }
-      #  df.t = do.call('rbind', tem)
-      #}
-      
-      #if(any(duplicated(df.t[, c('session', 'trap')]))) stop('duplicated "trap" input.')
-      #stopifnot(all(paste(df.t$session, df.t$trap, sep = '-') %in%
-      #                unique(paste(data.full$session, data.full$trap, sep = '-'))))
+
       var.t = name.t[-which(name.t == 'session'| name.t == 'trap')]
       data.par.non.mask = merge(data.par.non.mask, df.t, by = 'session', all = TRUE)
     } else {
@@ -528,28 +507,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     
     df.m = input_data$mask
     if(!is.null(df.m)){
-      df.m = extend_dat_check(df.m, 'mask', data.mask, n.sessions, identical_masks)
-      #stopifnot(is(df.m, 'data.frame'))
-      #stopifnot('mask' %in% colnames(df.m))
-      
-      #if('session' %in% colnames(df.m)){
-      #  stopifnot(length(colnames(df.m)) > 2)
-      #} else {
-        #if all sessions share the same trap, the user can skip 'session' in the traps' covariates
-        #or there is only 1 session
-      #  stopifnot(length(colnames(df.m)) > 1)
-      #  if(n.sessions > 1) stopifnot(identical_masks)
-      #  tem = vector('list', n.sessions)
-      #  for(s in 1:n.sessions){
-      #    tem[[s]] = df.m
-      #    tem[[s]][['session']] = s
-      #  }
-      #  df.m = do.call('rbind', tem)
-      #}
-      
-      #if(any(duplicated(df.m[, c('session', 'mask')]))) stop('duplicated "mask" input.')
-      #stopifnot(all(paste(df.m$session, df.m$mask, sep = '-') %in%
-      #                unique(paste(data.mask$session, data.mask$mask, sep = '-'))))
+      df.m = extend_dat_check(df.m, 'mask', data.mask, n.sessions, n.masks, identical_masks)
       
       #when both old argument 'ihd.opts' and par.extend$data$mask are provided,
       #we need to merge them together after confirming they have no identical covariates
@@ -564,7 +522,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
         }
         
         df.m = merge(df.m, ihd_data, by = c('session', 'mask'))
-      } 
+      }
       
       name.m = colnames(df.m)
       var.m = name.m[-which(name.m == 'session'| name.m == 'mask')]
