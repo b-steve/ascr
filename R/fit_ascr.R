@@ -347,8 +347,8 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
                is_local = as.numeric("local" %in% bucket_info),
                is_freqs = as.numeric("freqs" %in% bucket_info),
                
-               u_id_match = u_id_match$ID,
-               capt_bin_uid = data_u_bin$bincapt,
+               u_id_match = as.numeric(u_id_match$ID),
+               capt_bin_uid = as.numeric(data_u_bin$bincapt),
                
                capt_bin = ifelse(is.na(data.full$bincapt), 0, data.full$bincapt),
                capt_bearing = ifelse(is.na(data.full$bearing), 0, data.full$bearing),
