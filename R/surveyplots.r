@@ -21,11 +21,11 @@
 #' @export
 show.survey <- function(fit = NULL, traps = NULL, mask = NULL, session = 1, ...){
     if (!is.null(fit)){
-        traps <- get.traps(fit, session, as.list = FALSE)
-        mask <- get.mask(fit, session, as.list = FALSE)
         if (!is.null(traps) | !is.null(mask)){
             warning("The 'traps' and 'mask' arguments are being ignored because a fitted model object has been provided")
         }
+        traps <- get.traps(fit, session, as.list = FALSE)
+        mask <- get.mask(fit, session, as.list = FALSE)
     } else {
         if (is.matrix(traps)){
             traps <- list(traps)
