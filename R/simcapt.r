@@ -562,10 +562,10 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
         ## Keeping identities of captured individuals.
         capt.ids <- individual[captures]
         ## Locations of captured individuals.
-        capt.popn <- popn[captures, ]
+        capt.popn <- popn[captures, , drop = FALSE]
         ## IDs of captured individuals.
         ## Capture distances.
-        capt.dists <- dists[captures, ]
+        capt.dists <- dists[captures, , drop = FALSE]
         ## Simulating additional information.
         if (sim.bearings){
             bearings <- t(bearings(traps, capt.popn))
