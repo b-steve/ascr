@@ -319,7 +319,7 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
-    if (!identical(sort(par.names), sort(names(pars)))){
+    if (!all(c(detpar.names, suppar.names) %in% par.names)){
         msg <- paste("The following must be named components of the list 'pars': ",
                      paste(par.names, collapse = ", "), ".", sep = "")
         stop(msg)
@@ -329,6 +329,9 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
     out <- vector(mode = "list", length = n.sessions)
     for (s in 1:n.sessions){
         mask <- full.mask[[s]]
+        if (!is.null(ihd.surf) & !("mask" %in% class(mask))){
+            mask <- read.mask(data = mask)
+        }
         traps <- full.traps[[s]]
         survey.length <- full.survey.length[s]
         ## Specifies the area in which animal locations can be generated.
