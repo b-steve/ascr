@@ -372,7 +372,7 @@ default.sv = function(param, info){
   survey.length = info[["survey.length"]]
   param.og = info[['param.og']]
   sv = info[['sv']]
-  
+  animal.model = info[['animal.model']]
   
   
   if(param == 'sigma'){
@@ -436,8 +436,12 @@ default.sv = function(param, info){
     }
     esa <- p.dot.defaultD(points = mask, traps = traps, detfn = detfn, ss_dir = ss_dir,
                           ss.link = ss.link, pars = pars, A = A, n.quadpoints = 8)
+    if(animal.model){
+      return(dims$n.animals[session_to_use]/(esa*survey.length))
+    } else {
+      return(dims$n.IDs[session_to_use]/(esa*survey.length))
+    }
     
-    return(dims$n.IDs[session_to_use]/(esa*survey.length))
     #this part in the original function is difficult, better to ask for help
   } else if(param == "g0"){
     return(0.95)

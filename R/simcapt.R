@@ -225,11 +225,12 @@ sim.data.prepare = function(detfn, param, par.extend, traps, mask, survey.length
       tem_dat = merge(tem_dat, input_data$session, by = 'session', all.x = T)
     } 
     if(!is.null(input_data$trap)){
-      input_data$trap = extend_dat_check(input_data$trap, 'trap', tem_dat, n.sessions, identical_traps)
+      input_data$trap = extend_dat_check(input_data$trap, 'trap', tem_dat, n.sessions, n.traps, identical_traps)
       tem_dat = merge(tem_dat, input_data$trap, by = c('session', 'trap'), all.x = T)
-    } 
+    }
+    
     if(!is.null(input_data$mask)){
-      input_data$mask = extend_dat_check(input_data$mask, 'mask', tem_dat, n.sessions, identical_masks)
+      input_data$mask = extend_dat_check(input_data$mask, 'mask', tem_dat, n.sessions, n.masks, identical_masks)
       tem_dat = merge(tem_dat, input_data$mask, by = c('session', 'mask'), all.x = T)
     }
     
@@ -328,7 +329,6 @@ sim.from.param = function(detfn, dat_pars, dat.density, random.location, dims, i
     }
     dat.density = do.call('rbind', tem_list)
   }
-  
   
   #generate random n_calls
   if(info.bucket$animal.model){

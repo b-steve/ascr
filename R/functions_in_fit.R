@@ -1238,7 +1238,7 @@ param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn
           #if sv is not assigned, assign a default value
           sv[[i]] = default.sv(i, info = list(data.full = data.full, data.mask = data.mask,
                                               buffer = buffer, A = A, ss.opts = ss.opts,
-                                              detfn = detfn, dims = dims,
+                                              detfn = detfn, dims = dims, animal.model = animal.model,
                                               survey.length = survey.length, param.og = param.og,
                                               sv = sv))
           
@@ -1278,7 +1278,7 @@ param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn
           
           sv[[i]] = default.sv(i, info = list(data.full = data.full, data.mask = data.mask,
                                               buffer = buffer, A = A, ss.opts = ss.opts,
-                                              detfn = detfn, dims = dims,
+                                              detfn = detfn, dims = dims, animal.model = animal.model,
                                               survey.length = survey.length, param.og = param.og,
                                               sv = sv))
           

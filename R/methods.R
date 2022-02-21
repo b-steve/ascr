@@ -410,3 +410,21 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'defaul
   
   return(output)
 }
+
+
+#' Title
+#'
+#' @param object 
+#' @param k 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+AIC.ascr_tmb = function(object, k = 2){
+  if(object$fit.freqs){
+    message("NOTE: Use of AIC for this model relies on independence between locations of calls from the same animal, which may not be appropriate")
+    return(NA)
+  }
+  return(k * length(coef(object)) - 2 * object$loglik)
+}
