@@ -1029,3 +1029,93 @@ mean_diy = function(vec){
     }
   }
 }
+
+#weight method refers to Shepard and Modified Shepard
+
+location_cov_to_mask = function(mask, loc_cov, control_nn2 = list(k = 10), 
+                                control_weight = list(q = 2, method = 'Shepard', r = 0)){
+  #declare function nn2 from RANN
+  f = RANN::nn2
+  
+  stopifnot(is(mask, 'list'))
+  n.sessions = length(mask)
+  n.masks = sapply(mask, nrow)
+  
+  if(is(loc_cov, 'data.frame') | is(loc_cov, 'matrix')){
+    one_loc_cov = TRUE
+    name_cov = colnames(loc_cov)[-which(colnames(loc_cov) %in% c('x', 'y'))]
+  } else {
+    one_loc_cov = FALSE
+    stopifnot(is(loc_cov, 'list'))
+    stopifnot(length(loc_cov) == n.sessions)
+    name_cov = colnames(loc_cov[[1]])[-which(colnames(loc_cov[[1]]) %in% c('x', 'y'))]
+  }
+  
+  output = vector('list', n.sessions)
+  
+  for(s in 1:n.sessions){
+    tem_mask = mask[[s]]
+    if(one_loc_cov){
+      tem_cov = loc_cov
+    } else {
+      tem_cov = loc_cov[[s]]
+    }
+    output[[s]] = data.frame(session = s, mask = 1:n.masks[s])
+    stopifnot(ncol(tem_cov) > 2)
+    stopifnot(all(c('x', 'y') %in% colnames(tem_cov)))
+    
+    for(i in name_cov){
+      values = tem_cov[,i]
+      
+      tem = control_nn2
+      tem$data = tem_cov[, c('x', 'y')]
+      tem$query = tem_mask
+      o_nn2 = do.call('f', tem)
+      #remove zero index which may happen when we do "radius" search
+      zero_index = which(apply(o_nn2$nn.idx, 2, sum) == 0)
+      if(length(zero_index) > 0){
+        o_nn2$nn.idx = o_nn2$nn.idx[, -zero_index, drop = FALSE]
+        o_nn2$nn.dists = o_nn2$nn.dists[,-zero_index, drop = FALSE]
+        if(ncol(o_nn2$nn.idx) == 0){
+          stop('Please specify a larger radius for radius searching.')
+        }
+      }
+
+      #calculate weight matrix (for any row of w, sum(w[i,]) === 1)
+      if(control_weight$method == 'Shepard'){
+        w = (1/o_nn2$nn.dists) ^ control_weight$q
+        w = w / apply(w, 1, sum)
+      } else if(control_weight$method == 'Modified'){
+        if(control_weight$r == 0){
+          stop('please specify a valid radius for Modified Shepard Weight by control_weight$r = xx')
+        }
+        w = (max(0, control_weight$r - o_nn2$nn.dists) / (control_weight$r * o_nn2$nn.dists)) ^ control_weight$q
+        w = w / apply(w, 1, sum)
+      } else {
+        stop('weight method only suppors "Shepard" and "Modified" currently.')
+      }
+
+      if(is.numeric(values)){
+        mat_values = matrix(values[o_nn2$nn.idx], nrow = n.masks[s])
+        output[[s]][[i]] = apply(mat_values * w, 1, sum)
+      } else {
+        values = as.character(values)
+        mat_values = matrix(values[o_nn2$nn.idx], nrow = n.masks[s])
+        v = character(n.masks[s])
+        
+        #for each row, randomly select one element from the closest points with the weight as prop
+        #currently I have no idea how to get rid of this ugly loop, work it out later
+        for(n in 1:n.masks[s]){
+          v[n] = sample(mat_values[1,], size = 1, prob = w[1,])
+        }
+        output[[s]][[i]] = v
+      }
+      #end of co-variate i
+    }
+    #end of session s
+  }
+  return(do.call('rbind', output))
+  
+}
+
+

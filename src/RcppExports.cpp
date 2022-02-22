@@ -120,6 +120,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// squarify
+NumericMatrix squarify(const NumericMatrix& mask, const NumericVector& D_mask);
+RcppExport SEXP _ascr_squarify(SEXP maskSEXP, SEXP D_maskSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type D_mask(D_maskSEXP);
+    rcpp_result_gen = Rcpp::wrap(squarify(mask, D_mask));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ascr_find_incomplete_blocks", (DL_FUNC) &_ascr_find_incomplete_blocks, 1},
@@ -131,6 +143,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ascr_bearings", (DL_FUNC) &_ascr_bearings, 2},
     {"_ascr_make_toa_ssq", (DL_FUNC) &_ascr_make_toa_ssq, 3},
     {"_ascr_find_local", (DL_FUNC) &_ascr_find_local, 3},
+    {"_ascr_squarify", (DL_FUNC) &_ascr_squarify, 2},
     {NULL, NULL, 0}
 };
 

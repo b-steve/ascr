@@ -30,7 +30,8 @@ Imports:
     viridis,
     TMB,
     RcppEigen,
-    Rcpp
+    Rcpp,
+    RANN
 Suggests:
     knitr,
     xtable

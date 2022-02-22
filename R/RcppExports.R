@@ -63,3 +63,7 @@ find_local <- function(capt, dists, buffer) {
     .Call('_ascr_find_local', PACKAGE = 'ascr', capt, dists, buffer)
 }
 
+squarify <- function(mask, D_mask) {
+    .Call('_ascr_squarify', PACKAGE = 'ascr', mask, D_mask)
+}
+
