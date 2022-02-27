@@ -513,4 +513,112 @@ hist(sim_D_sunny, main = 'D_sunny_link simulation')
 abline(v = true_values$D[2], col = 2)
 hist(sim_mu, main = 'mu_link simulation')
 abline(v = true_values$mu, col = 2)
+################################################################################################################
+#simulation 8
 
+#simulation with ss and ss.link = 'log'
+library('devtools')
+load_all()
+demo_sim_ss_log = readRDS('./inst/demo_sim_ss_log')
+
+true_values = demo_sim_ss_log$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+} 
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_ss_log, sim.capt(detfn = detfn, param = param, traps = traps, mask = mask, 
+  ss.opts = ss.opts, n.sessions = n.sessions, n.rand = n.rand))
+
+sim_b0.ss = numeric(n.rand)
+sim_b1.ss = numeric(n.rand)
+sim_sigma.ss = numeric(n.rand)
+sim_D = numeric(n.rand)
+sim_mu = numeric(n.rand)
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_ss_log$traps)
+    fit = fit_og(capt, traps = demo_sim_ss_log$traps, mask = demo_sim_ss_log$mask, detfn = demo_sim_ss_log$detfn
+      , ss.opts = demo_sim_ss_log$ss.opts)
+    tem = coef(fit)
+    sim_b0.ss[i] = tem['b0.ss_link']
+    sim_b1.ss[i] = tem['b1.ss_link']
+    sim_sigma.ss[i] = tem['sigma.ss_link']
+    sim_D[i] = tem['D_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+hist(sim_b0.ss, main = 'b0.ss_link simulation')
+abline(v = true_values$b0.ss, col = 2)
+hist(sim_b1.ss, main = 'b1.ss_link simulation')
+abline(v = true_values$b1.ss, col = 2)
+hist(sim_sigma.ss, main = 'sigma.ss_link simulation')
+abline(v = true_values$sigma.ss, col = 2)
+hist(sim_D, main = 'D_link simulation')
+abline(v = true_values$D, col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)
+
+################################################################################################################
+#simulation 9
+
+#simulation with ss and ss.link = 'log'
+library('devtools')
+load_all()
+demo_sim_ss_sp = readRDS('./inst/demo_sim_ss_sp')
+
+true_values = demo_sim_ss_sp$param
+
+for(i in names(true_values)){
+  if(length(true_values[[i]]) == 1) true_values[[i]] = link.fun(default.link(i), true_values[[i]])
+} 
+set.seed(810)
+n.rand = 100
+sim_out = with(demo_sim_ss_sp, sim.capt(detfn = detfn, param = param, traps = traps, mask = mask, 
+                                         ss.opts = ss.opts, n.sessions = n.sessions, n.rand = n.rand))
+
+sim_b0.ss = numeric(n.rand)
+sim_b1.ss = numeric(n.rand)
+sim_sigma.ss = numeric(n.rand)
+sim_D = numeric(n.rand)
+sim_mu = numeric(n.rand)
+
+pb = utils::txtProgressBar(1, n.rand, style = 3)
+
+for(i in 1:n.rand){
+  
+  if(nrow(sim_out[[i]]) > 0){
+    capt = create.capt(sim_out[[i]], demo_sim_ss_sp$traps)
+    fit = fit_og(capt, traps = demo_sim_ss_sp$traps, mask = demo_sim_ss_sp$mask, detfn = demo_sim_ss_sp$detfn
+                 , ss.opts = demo_sim_ss_sp$ss.opts)
+    tem = coef(fit)
+    sim_b0.ss[i] = tem['b0.ss_link']
+    sim_b1.ss[i] = tem['b1.ss_link']
+    sim_sigma.ss[i] = tem['sigma.ss_link']
+    sim_D[i] = tem['D_link']
+    sim_mu[i] = tem['mu_link']
+  }
+  utils::setTxtProgressBar(pb, i)
+}
+
+close(pb)
+
+hist(sim_b0.ss, main = 'b0.ss_link simulation')
+abline(v = true_values$b0.ss, col = 2)
+hist(sim_b1.ss, main = 'b1.ss_link simulation')
+abline(v = true_values$b1.ss, col = 2)
+hist(sim_sigma.ss, main = 'sigma.ss_link simulation')
+abline(v = true_values$sigma.ss, col = 2)
+hist(sim_D, main = 'D_link simulation')
+abline(v = true_values$D, col = 2)
+hist(sim_mu, main = 'mu_link simulation')
+abline(v = true_values$mu, col = 2)

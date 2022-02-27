@@ -25,11 +25,7 @@ det_prob = function(det_fn, det_par, dx, ss.link = NULL, orientation = NULL){
     } else if(ss.link == 'log'){
       out = exp(b0.ss - b1.ss * dx)
     } else if(ss.link == 'spherical'){
-      if(dx > 1){
-        out = b0.ss - 20 * log10(dx) - b1.ss * (dx - 1)
-      } else {
-        out = b0.ss
-      }
+      out = ifelse(dx > 1, b0.ss - 20 * log10(dx) - b1.ss * (dx - 1), b0.ss)
     }
   }
   

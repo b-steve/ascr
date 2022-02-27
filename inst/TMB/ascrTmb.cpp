@@ -638,6 +638,11 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(D_bound);
   DATA_MATRIX(mu_bound);
   
+  std::cout << "is_ss_origin: " << is_ss_origin << std::endl;
+  std::cout << "detfn_index: " << detfn_index << std::endl;
+  std::cout << "ss.link: " << ss_link << std::endl;
+
+
   //define a pointer variable which point to a detect function
   //based on our input "detfn_index"
   //and also point out the number of parameters for that detfn
@@ -1412,17 +1417,19 @@ Type objective_function<Type>::operator() ()
           
           *p_essx = (*detfn)(*p_dx, detfn_param);
           p_k(m - 1, t - 1) = 1 - pnorm((cutoff - *p_essx) / sigma_ss_tem);
-          
+
+          if(s == 2 & m == 777){
+            std::cout << "session 2, m 777, trap " << t << ", dx: " << *p_dx << std::endl;
+            std::cout << "session 2, m 777, trap " << t << ", b0.ss: " << detfn_param[0] << std::endl;
+            std::cout << "session 2, m 777, trap " << t << ", b1.ss: " << detfn_param[1] << std::endl;
+            std::cout << "session 2, m 777, trap " << t << ", sigma.ss: " << *p_sigma_ss_tem << std::endl;
+            std::cout << "session 2, m 777, trap " << t << ", E(ss|x): " << *p_essx << std::endl;
+            std::cout << "session 2, m 777, trap " << t << ", p_k: " << p_k(m - 1, t - 1) << std::endl;
+          }
           p_essx++;
         }
 
-        //if(s == 2 & m == 777){
-        //  std::cout << "session 2, m 777, trap " << t << ", dx: " << *p_dx << std::endl;
-        //  std::cout << "session 2, m 777, trap " << t << ", b0.ss: " << detfn_param[0] << std::endl;
-        //  std::cout << "session 2, m 777, trap " << t << ", b1.ss: " << detfn_param[1] << std::endl;
-        //  std::cout << "session 2, m 777, trap " << t << ", sigma.ss: " << *p_sigma_ss_tem << std::endl;
-        //  std::cout << "session 2, m 777, trap " << t << ", p_k: " << p_k(m - 1, t - 1) << std::endl;
-        //}
+
 
         p_dx++;
         
