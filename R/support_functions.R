@@ -1032,13 +1032,17 @@ mean_diy = function(vec){
 
 #weight method refers to Shepard and Modified Shepard
 
-location_cov_to_mask = function(mask, loc_cov, control_nn2 = list(k = 10), 
-                                control_weight = list(q = 2, method = 'Shepard', r = NULL),
-                                control_char = list(char_random = TRUE, weighted_closest = FALSE, k = NULL)){
+location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weight = NULL, control_char = NULL){
   #declare function nn2 from RANN
   f = RANN::nn2
   
   #set default values
+  #when user does not assign any value to these arguments
+  if(is.null(control_nn2)) control_nn2 = list(k = 10)
+  if(is.null(control_weight)) control_weight = list(q = 2, method = 'Shepard', r = NULL)
+  if(is.null(control_char)) control_char = list(char_random = TRUE, weighted_closest = FALSE, k = NULL)
+
+  #when user only assign part of components in these arguments
   if(is.null(control_char$weighted_closest)) control_char$weighted_closest = !is.null(control_char$char_random)
   if(is.null(control_char$char_random)) control_char$char_random = TRUE
   if(is.null(control_weight$method)) control_weight$method = 'Shepard'
