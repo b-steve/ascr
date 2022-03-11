@@ -1,8 +1,8 @@
 Package: ascr
 Type: Package
 Title: Acoustic spatial capture-recapture
-Version: 2.2.3
-Date: 2020-08-25
+Version: 2.2.4
+Date: 2022-03-11
 Author: Ben Stevenson <ben.stevenson@auckland.ac.nz>
 Maintainer: Ben Stevenson <ben.stevenson@auckland.ac.nz>
 Depends:
