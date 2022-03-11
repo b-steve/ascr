@@ -97,7 +97,7 @@ test_that("simulation errors", {
     expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask,
                          pars = list(D = 2000, g0 = 0.75, sigma = 5,
                              sigma.toa = 0.002)),
-                throws_error("The following must be named components of the list 'pars': "))
+                throws_error("The following parameters provided by the list 'pars' are not in this model: "))
     ## Missing parameter.
     expect_that(sim.capt(traps = example.data$traps, mask = example.data$mask,
                          pars = list(D = 2000, g0 = 0.75)),
