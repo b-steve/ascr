@@ -319,9 +319,15 @@ sim.capt <- function(fit = NULL, traps = NULL, mask = NULL, popn = NULL,
                            log.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"),
                            spherical.ss = c("b0.ss", "b1.ss", "b2.ss", "sigma.b0.ss", "sigma.ss"))
     par.names <- c("D", detpar.names, suppar.names)
-    if (!all(c(detpar.names, suppar.names) %in% par.names)){
+    if (!all(c(detpar.names, suppar.names) %in% names(pars))){
         msg <- paste("The following must be named components of the list 'pars': ",
                      paste(par.names, collapse = ", "), ".", sep = "")
+        stop(msg)
+    }
+    pars.noD <- pars[substr(names(pars), 1, 1) != "D"]
+    if (!all(names(pars.noD) %in% c(detpar.names, suppar.names))){
+        msg <- paste("The following parameters provided by the list 'pars' are not in this model: ",
+                     paste(names(pars.noD)[!names(pars.noD) %in% c(detpar.names, suppar.names)]))
         stop(msg)
     }
     ## Grabbing detection function parameters.
