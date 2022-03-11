@@ -5,6 +5,10 @@ ascr 2.2.4
   and estimated bearings and distances without needing to fit a model
   first.
 
+* Bug fix for when show.survey() is used for a multi-session model.
+
+* Various minor bug fixes to show.Dsurf() and sim.capt().
+
 ascr 2.2.3
 ----------
 
