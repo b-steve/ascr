@@ -152,223 +152,41 @@ show_detfn_tmb <- function(fit, new_covariates = NULL, param_extend_skip = NULL,
 
 
 
+
 #' Title
 #'
 #' @param fit 
 #' @param session 
+#' @param show.cv 
+#' @param new_data 
+#' @param D_cov 
 #' @param xlim 
 #' @param ylim 
+#' @param x_pixels 
+#' @param y_pixels 
 #' @param zlim 
 #' @param scale 
-#' @param plot.contours 
+#' @param plot_contours 
 #' @param add 
-#' @param D_cov a list; 2 possible components: "session", a data frame with only one row which contains
-#' session level extended covariates, and "mask", a data frame contains location (coordinators by columns x and y)
-#' and the location related covariates
-#' @param control_convert a list; used for control the convert from D_cov$mask to model fitting mask
+#' @param control_convert 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-show_Dsurf <- function(fit, session = 1, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
+show_Dsurf <- function(fit, session = 1, show.cv = FALSE, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
                         x_pixels = 50, y_pixels = 50, zlim = NULL, scale = 1, plot_contours = TRUE,
                         add = FALSE, control_convert = NULL){
   
-  if(is.null(new_data)){
+  pred = predict(fit, session_select = session, new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
+                 x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv)
+  
 
-    #if new_data is not provided, but xlim and ylim provided, we use xlim and ylim to build mask instead of 
-    #extracting mask from fit
-    if(any(!is.null(xlim), !is.null(ylim))){
-      if(!all(!is.null(xlim), !is.null(ylim))) stop('please provide both xlim and ylim.')
-      x = seq(from = xlim[1], to = xlim[2], length.out = x_pixels)
-      y = seq(from = ylim[1], to = ylim[2], length.out = y_pixels)
-      mask = data.frame(x = rep(x, each = y_pixels), y = rep(y, x_pixels))
-      is_new_mask = TRUE
-    } else {
-      mask = get_mask(fit)[[session]]
-      is_new_mask = FALSE
-    }
-    
+  if(!show.cv){
+    D.mask = pred
   } else {
-
-    #if new_data is provided, then xlim and ylim will just do what they are supposed to do,
-    #to trim the plot instead of building "mask"
-    stopifnot(any(is(new_data, 'data.frame'), is(new_data, 'matrix')))
-    stopifnot(all(c('x', 'y') %in% colnames(new_data)))
-    mask = new_data[, c('x', 'y')]
-    is_new_mask = TRUE
+    D.mask = pred[,2] / pred[,1]
   }
-  
-  traps = get_trap(fit)[[session]]
-  
-  if('D' %in% get_par_extend_name(fit)){
-
-
-    #firstly deal with all scenarios that there may be any new covariate provided 
-    if(!is.null(D_cov) | !is.null(new_data)){
-
-      if(!is.null(D_cov)){
-        stopifnot(is(D_cov, 'list'))
-        stopifnot(any(c('session', 'mask') %in% names(D_cov)))
-      }
-
-      #considering the possibility that user may only want to change part of covariates and remains other as the same
-      #as the model, for example, 3 covariates related to D, 'weather' (session related), 'noise' and 'forest_type'(loc related)
-      #and user only want to change weather, or to change noise, or to change noise and forest_type, and etc.
-
-      #so we create 2 data frame, one for all new covariates, and one for old covariates. We must make sure these two data frame
-      #contains the same mask points, and then replace the covariates in the "old" data frame with the same column in the "new",
-      #if the same covariate appears in the "new" data frame.
-      if(!is.nul(new_data)){
-        #in new_data, user could include any location related covariates directly, and it also contains x and y,
-        #so we could directly use it instead of mask
-        new_covariates = as.data.frame(new_data)
-      } else {
-        new_covariates = as.data.frame(mask)
-      }
-
-      old_covariates = as.data.frame(mask)
-      
-      #build the new_covariates based on all information we could have
-      if(!is.null(D_cov$mask)){
-        if(is.null(control_convert)){
-          control_convert = vector('list', 2)
-          names(control_convert) = c('mask', 'loc_cov')
-          control_convert$mask = list(mask)
-          control_convert$loc_cov = D_cov$mask
-        } else {
-          control_convert$mask = list(mask)
-          control_convert$loc_cov = D_cov$mask
-        }
-        
-        cov_mask = do.call('location_cov_to_mask', control_convert)
-        new_covariates = cbind(new_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
-      }
-      
-
-      if(!is.null(D_cov$session)){
-        stopifnot(nrow(D_cov$session) == 1)
-        for(i in colnames(D_cov$session)) new_covariates[[i]] = D_cov$session[,i]
-        
-      }
-      
-      #build the old_covariates
-      ##for location related covariates, if user assigns new mask points by either new_data or xlim & ylim
-      ##we need to do interpolation again, otherwise use the argument from the fit
-      data_in_model = get_par_extend_data(fit)
-      if(is_new_mask){
-        old_loc_cov = get_loc_cov(fit)
-
-        if(!is.null(old_loc_cov)){
-          if(is.null(control_convert)){
-            control_convert = vector('list', 2)
-            names(control_convert) = c('mask', 'loc_cov')
-            control_convert$mask = list(mask)
-            control_convert$loc_cov = old_loc_cov
-          } else {
-            control_convert$mask = list(mask)
-            control_convert$loc_cov = old_loc_cov
-          }
-
-          cov_mask = do.call('location_cov_to_mask', control_convert)
-          old_covariates = cbind(old_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
-        }
-
-
-      } else if(!is.null(data_in_model$mask)){
-        tem = data_in_model$mask
-        col_names_tem = colnames(tem)
-        if('session' %in% col_names_tem){
-          tem = tem[tem$session == session, , drop = FALSE]
-          tem = tem[, -which(col_names_tem == 'session'), drop = FALSE]
-        }
-
-        if('mask' %in% col_names_tem){
-          tem = tem[order(tem$mask),]
-          tem = tem[, -which(col_names_tem == 'mask'), drop = FALSE]
-        }
-        
-        old_covariates = cbind(old_covariates, tem)
-      }
-
-      ##for session related covariates, it is simple, just take them from the input argument of fit
-      
-      if(!is.null(data_in_model$session)){
-        tem = data_in_model$session[which(data_in_model$session == session), , drop = FALSE]
-        tem = tem[, -which(colnames(tem) == 'session'), drop = FALSE]
-        for(i in colnames(tem)) old_covariates[[i]] = tem[,i]
-      }
-
-
-      #update the old_covariates by the new_covariates
-
-      for(i in colnames(old_covariates)){
-        if(all(i != 'x', i != 'y', i %in% colnames(new_covariates))){
-          old_covariates[[i]] = new_covariates[[i]]
-        }
-      }
-
-      
-      par_info = get_data_param(fit)
-      par_info = subset(par_info, par == 'D')
-      gam = get_gam(fit, 'D')
-      values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
-      tem = try({D.mask = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates)})
-      if(is(tem, 'try-error')) stop('Please make sure all covariates needed for "D" are provided.')
-      D.mask = unlink.fun(link = par_info$link, value = D.mask)
-    } else {
-      if(is_new_mask){
-        #in this scenario, we need to extract the location related covariates (not mask, but the data provided by user)
-        #and do the "location_cov_to_mask" again.
-        old_covariates = as.data.frame(mask)
-        old_loc_cov = get_loc_cov(fit)
-
-        if(!is.null(old_loc_cov)){
-          if(is.null(control_convert)){
-            control_convert = vector('list', 2)
-            names(control_convert) = c('mask', 'loc_cov')
-            control_convert$mask = list(mask)
-            control_convert$loc_cov = old_loc_cov
-          } else {
-            control_convert$mask = list(mask)
-            control_convert$loc_cov = old_loc_cov
-          }
-
-          cov_mask = do.call('location_cov_to_mask', control_convert)
-          old_covariates = cbind(old_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
-        }
-
-        data_in_model = get_par_extend_data(fit)
-        if(!is.null(data_in_model$session)){
-          tem = data_in_model$session[which(data_in_model$session == session), , drop = FALSE]
-          tem = tem[, -which(colnames(tem) == 'session'), drop = FALSE]
-          for(i in colnames(tem)) old_covariates[[i]] = tem[,i]
-        }
-
-        par_info = get_data_param(fit)
-        par_info = subset(par_info, par == 'D')
-        gam = get_gam(fit, 'D')
-        values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
-        tem = try({D.mask = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates)})
-        if(is(tem, 'try-error')) stop('Please make sure all covariates needed for "D" are provided.')
-        D.mask = unlink.fun(link = par_info$link, value = D.mask)
-
-
-      } else {
-        D.mask <- fit$D.mask[[session]]
-      }
-      
-    }
-
-  } else {
-    #when D is not extended, it is literally a constant, just take the 1st estimated D from session 1
-    #if D varies between sessions, it is extended, so there is no problem to just take session1
-    D.mask <- rep(fit$D.mask[[1]][1], nrow(mask))
-
-  }
-  
-  
   
   if (is.null(xlim)){
     xlim <- range(mask[, 'x'])
@@ -385,10 +203,10 @@ show_Dsurf <- function(fit, session = 1, new_data = NULL, D_cov = NULL, xlim = N
   unique.y <- sort(unique(mask[, 2]))
   z <- squarify(mask, D.mask[mask.keep])
   
-  #not sure what "show.cv" does
-  #if(!show.cv){
+
+  if(!show.cv){
     z <- scale*z
-  #}
+  }
   
   if (is.null(zlim)){
     zlim <- c(0, max(z, na.rm = TRUE))
@@ -399,6 +217,9 @@ show_Dsurf <- function(fit, session = 1, new_data = NULL, D_cov = NULL, xlim = N
     plot(mask, type = "n", asp = 1, xlab = "", ylab = "")
   }
   fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis::viridis(100), add = TRUE)
+  
+  traps = get_trap(fit)[[session]]
+  
   points(traps, col = "black", pch = 4, lwd = 2)
   if (plot_contours){
     contour(x = unique.x, y = unique.y, z = z, levels = levels,

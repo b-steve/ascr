@@ -771,6 +771,9 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     j = j + 1
   }
   
+  #D only accepts log as its link function
+  stopifnot(df.par[which(df.par$par == 'D'), 'link'] == 'log')
+  
   data.mask = sort.data(data.mask, "data.mask")
   
   #fgam only be valid when 'D' is extended on mask level

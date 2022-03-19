@@ -1,24 +1,3 @@
-#' Title
-#'
-#' @param capt 
-#' @param traps 
-#' @param mask 
-#' @param detfn 
-#' @param sv 
-#' @param bounds 
-#' @param fix 
-#' @param ss.opts 
-#' @param cue.rates 
-#' @param survey.length 
-#' @param sound.speed 
-#' @param local 
-#' @param par.extend 
-#' @param ... 
-#'
-#' @return
-#' @export
-#'
-#' @examples
 fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
                     cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, ...){
   #keep all original input arguments
@@ -537,11 +516,13 @@ fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
         stopifnot(length(mask) == n.sessions)
         control_convert$mask = mask
       }
-      loc_cov = do.call('location_cov_to_mask', control_convert)
+      mask_cov = do.call('location_cov_to_mask', control_convert)
+    } else {
+      mask_cov = NULL
     }
 
-    if(any(!is.null(loc_cov), !is.null(session_cov), !is.null(trap_cov))){
-      par.extend$data = list(session = session_cov, trap = trap_cov, mask = loc_cov)
+    if(any(!is.null(mask_cov), !is.null(session_cov), !is.null(trap_cov))){
+      par.extend$data = list(session = session_cov, trap = trap_cov, mask = mask_cov)
     }
     
     par.extend$scale = is_scale
@@ -566,6 +547,7 @@ fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
 
   if(fit){
     output = do.call('fit_og', arg)
+    output$loc_cov = loc_cov
     return(output)
   } else {
     return(arg)

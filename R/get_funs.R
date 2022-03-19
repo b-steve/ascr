@@ -13,9 +13,7 @@ get_D_tmb = function(fit){
   tem = do.call('rbind', tem)
   output = cbind(output, tem)
   row.names(output) = NULL
-  data_mask = get_data_mask(fit)
-  output = merge(output, data_mask, by = c('session', 'mask'))
-  output = sort.data(output, 'data.mask')
+
   return(output)
 }
 
@@ -205,7 +203,7 @@ get_scale_cov = function(fit){
   return(output)
 }
 
-get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked, new_covariates){
+get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked, new_covariates, DX_output = FALSE){
   if(n_col_full > 1){
     gam.model = gam$gam_non_mask
     DX_full_new = get_DX_new_gam(gam.model, new_covariates)
@@ -224,7 +222,12 @@ get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked,
   
   DX_new = cbind(DX_full_new, DX_mask_new)
   output = as.vector(DX_new %*% as.matrix(par_value_linked, ncol = 1))
-  return(output)
+  if(DX_output){
+    return(list(output = output, DX = DX_new))
+  } else {
+    return(output)
+  }
+  
 }
 
 #for numeric columns in the data frames in par.extend$data, the mean will be

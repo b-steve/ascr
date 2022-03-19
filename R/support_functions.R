@@ -941,6 +941,34 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
   
 }
 
+
+#since DX could be very large, we only calculate and return the diagonal element
+delta_for_pred = function(DX, par_value_linked, vcov_matrix, log_scale){
+  #only use for D, so only consider the situation that link function is log
+  n = nrow(DX)
+  p = ncol(DX)
+  
+  if(!log_scale){
+    G = exp(DX %*% par_value_linked)
+    G = matrix(rep(G, p), ncol = p)
+    G = G * DX
+  } else {
+    G = DX
+  }
+
+  
+  output = numeric(n)
+  for(i in 1:n){
+    tem_G = G[i, , drop = FALSE]
+    output[i] = (tem_G %*% vcov_matrix %*% t(tem_G))[1,1]
+  }
+  
+  return(output)
+  
+}
+
+
+
 vector_to_df = function(vec){
   name = names(vec)
   if(is.null(name)) name = seq(length(vec))

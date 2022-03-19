@@ -423,8 +423,201 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'defaul
 #' @examples
 AIC.ascr_tmb = function(object, k = 2){
   if(object$fit.freqs){
-    message("NOTE: Use of AIC for this model relies on independence between locations of calls from the same animal, which may not be appropriate")
+    message("NOTE: Use of AIC for this model relies on independence between locations of calls from the same animal, which may not be appropriate.")
     return(NA)
   }
   return(k * length(coef(object)) - 2 * object$loglik)
 }
+
+
+
+
+
+#' Title
+#'
+#' @param fit 
+#' @param session_select 
+#' @param new_data 
+#' @param D_cov 
+#' @param xlim 
+#' @param ylim 
+#' @param x_pixels 
+#' @param y_pixels 
+#' @param se_fit 
+#' @param log_scale 
+#' @param set_zero 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
+                            x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, ...){
+  
+  
+  if(!is.null(set_zero) & se_fit){
+    warning('when se_fit is TRUE, set_zero cannot be assigned.')
+    set_zero = NULL
+  }
+  
+  
+  if(is.null(new_data)){
+    
+    #if new_data is not provided, but xlim and ylim provided, we use xlim and ylim to build mask instead of 
+    #extracting mask from fit
+    if(any(!is.null(xlim), !is.null(ylim))){
+      if(!all(!is.null(xlim), !is.null(ylim))) stop('please provide both xlim and ylim.')
+      x = seq(from = xlim[1], to = xlim[2], length.out = x_pixels)
+      y = seq(from = ylim[1], to = ylim[2], length.out = y_pixels)
+      mask = data.frame(x = rep(x, each = y_pixels), y = rep(y, x_pixels))
+    } else {
+      mask = get_mask(fit)[[session_select]]
+    }
+    
+  } else {
+    
+    #if new_data is provided, then xlim and ylim will just do what they are supposed to do,
+    #to trim the plot instead of building "mask"
+    stopifnot(any(is(new_data, 'data.frame'), is(new_data, 'matrix')))
+    stopifnot(all(c('x', 'y') %in% colnames(new_data)))
+    mask = new_data[, c('x', 'y')]
+  }
+  
+
+  
+  
+  
+  if('D' %in% get_par_extend_name(fit)){
+    
+    scale_fun = get_scale_cov(fit)
+    
+    #build the old_covariates
+    ##we interpolate it again no matter there is new mask grid or not because in theory, user
+    ##could use the same mask grid but different control_convert
+    
+    old_covariates = as.data.frame(mask)
+    old_loc_cov = get_loc_cov(fit)
+    
+    if(!is.null(old_loc_cov)){
+      if(is.null(control_convert)){
+        control_convert = vector('list', 2)
+        names(control_convert) = c('mask', 'loc_cov')
+      }
+      control_convert$mask = list(mask)
+      control_convert$loc_cov = old_loc_cov
+      
+      
+      cov_mask = do.call('location_cov_to_mask', control_convert)
+      old_covariates = cbind(old_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
+    }
+    
+    
+    
+    session_data_in_model = get_par_extend_data(fit)$session
+    ##for session related covariates, it is simple, just take them from the input argument of fit
+    
+    if(!is.null(session_data_in_model)){
+      tem = session_data_in_model[which(session_data_in_model$session == session_select), , drop = FALSE]
+      tem = tem[, -which(colnames(tem) == 'session'), drop = FALSE]
+      for(i in colnames(tem)) old_covariates[[i]] = tem[1,i]
+    }
+    
+    
+    if(!is.null(D_cov) | !is.null(new_data)){
+      #firstly deal with all scenarios that there may be any new covariate provided 
+      if(!is.null(D_cov)){
+        stopifnot(is(D_cov, 'list'))
+        stopifnot(any(c('session', 'location') %in% names(D_cov)))
+      }
+      
+      #considering the possibility that user may only want to change part of covariates and remains other as the same
+      #as the model, for example, 3 covariates related to D, 'weather' (session related), 'noise' and 'forest_type'(loc related)
+      #and user only want to change weather, or to change noise, or to change noise and forest_type, and etc.
+      
+      #so we create 2 data frame, one for all new covariates, and one for old covariates. We must make sure these two data frame
+      #contains the same mask points, and then replace the covariates in the "old" data frame with the same column in the "new",
+      #if the same covariate appears in the "new" data frame.
+      if(!is.nul(new_data)){
+        #in new_data, user could include any location related covariates directly, and it also contains x and y,
+        #so we could directly use it instead of mask
+        new_covariates = as.data.frame(new_data)
+      } else {
+        new_covariates = as.data.frame(mask)
+      }
+      
+      
+      
+      #build the new_covariates based on all information we could have
+      if(!is.null(D_cov$location)){
+        if(is.null(control_convert)){
+          control_convert = vector('list', 2)
+          names(control_convert) = c('mask', 'loc_cov')
+        }
+        control_convert$mask = list(mask)
+        control_convert$loc_cov = D_cov$location
+        
+        
+        cov_mask = do.call('location_cov_to_mask', control_convert)
+        new_covariates = cbind(new_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
+      }
+      
+      
+      #since we only plot one session, the number of row for D_cov$session should be only 1
+      if(!is.null(D_cov$session)){
+        stopifnot(nrow(D_cov$session) == 1)
+        for(i in colnames(D_cov$session)) new_covariates[[i]] = D_cov$session[1,i]
+        
+      }
+    
+      #update the old_covariates by the new_covariates
+      
+      for(i in colnames(old_covariates)){
+        if(all(i != 'x', i != 'y', i %in% colnames(new_covariates))){
+          old_covariates[[i]] = new_covariates[[i]]
+        }
+      }
+    }
+      
+    par_info = get_data_param(fit)
+    par_info = subset(par_info, par == 'D')
+    gam.model = get_gam(fit, 'D')
+    values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
+    if(!is.null(set_zero)) values_link[set_zero] = 0
+    old_covariates = scale_fun(old_covariates)
+    browser()
+    tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates, DX_output = TRUE)
+    D.mask = unlink.fun(link = par_info$link, value = tem$output)
+      
+    if(se_fit){
+      DX = tem$DX
+      vcov_matrix = vcov(fit, types = 'linked', pars = 'D')
+      D.se = sqrt(delta_for_pred(DX, values_link, vcov_matrix, log_scale))
+    }
+    
+    
+  } else {
+    #when D is not extended, it is literally a constant, just take the 1st estimated D from session 1
+    #if D varies between sessions, it is extended, so there is no problem to just take session1
+    D.mask <- rep(fit$D.mask[[1]][1], nrow(mask))
+    if(se_fit){
+      if(log_scale){
+        type = "linked"
+      } else {
+        type = "fitted"
+      }
+      D.se = as.vector(rep(stdEr(fit, types = type, pars = 'D'), nrow(mask)))
+    }
+    
+  }
+  
+  output = D.mask
+  if(se_fit){
+    output = cbind(D.mask, D.se)
+    colnames(output) = c('est', 'std')
+  }
+  
+  return(output)
+}
+
+
