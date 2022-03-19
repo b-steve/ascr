@@ -1036,126 +1036,173 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
   #declare function nn2 from RANN
   f = RANN::nn2
   
-  #set default values
-  #when user does not assign any value to these arguments
-  if(is.null(control_nn2)) control_nn2 = list(k = 10)
-  if(is.null(control_weight)) control_weight = list(q = 2, method = 'Shepard', r = NULL)
-  if(is.null(control_char)) control_char = list(char_random = TRUE, weighted_closest = FALSE, k = NULL)
-
-  #when user only assign part of components in these arguments
-  if(is.null(control_char$weighted_closest)) control_char$weighted_closest = !is.null(control_char$char_random)
-  if(is.null(control_char$char_random)) control_char$char_random = TRUE
-  if(is.null(control_weight$method)) control_weight$method = 'Shepard'
-  if(is.null(control_weight$q)) control_weight$q = 2
-
-
-
   stopifnot(is(mask, 'list'))
   n.sessions = length(mask)
   n.masks = sapply(mask, nrow)
   
   if(is(loc_cov, 'data.frame') | is(loc_cov, 'matrix')){
-    one_loc_cov = TRUE
+    stopifnot(all(c('x', 'y') %in% colnames(loc_cov)))
+    stopifnot(ncol(loc_cov) > 2)
+    n_loc_cov = 1
     name_cov = colnames(loc_cov)[-which(colnames(loc_cov) %in% c('x', 'y'))]
+    #this is the index to indicate which covariate is extracted from which element of loc_cov
+    index_name_cov = rep(1, length(name_cov))
+    loc_cov = list(loc_cov)
   } else {
-    one_loc_cov = FALSE
     stopifnot(is(loc_cov, 'list'))
-    stopifnot(length(loc_cov) == n.sessions)
-    name_cov = colnames(loc_cov[[1]])[-which(colnames(loc_cov[[1]]) %in% c('x', 'y'))]
+    n_loc_cov = length(loc_cov)
+    name_cov = vector('list', n_loc_cov)
+    #this is the index to indicate which covariate is extracted from which element of loc_cov
+    index_name_cov = vector('list', n_loc_cov)
+    for(i in 1:n_loc_cov){
+      stopifnot(all(c('x', 'y') %in% colnames(loc_cov[[i]])))
+      stopifnot(ncol(loc_cov[[i]]) > 2)
+      name_cov[[i]] = colnames(loc_cov[[i]])[-which(colnames(loc_cov[[i]]) %in% c('x', 'y'))]
+      index_name_cov[[i]] = rep(i, length(name_cov[[i]]))
+    }
+
+    name_cov = do.call('c', name_cov)
+    index_name_cov = do.call('c', index_name_cov)
   }
+
+  if(any(duplicated(name_cov))) stop('duplicated covariates found.')
+  
+
+  #set default values
+  #when user does not assign any value to these arguments
+  if(is.null(control_nn2)) control_nn2 = list(k = 10)
+  if(is.null(control_weight)) control_weight = list(q = 2, method = 'Shepard', r = NULL)
+  if(is.null(control_char)) control_char = list(weighted_nn = FALSE, k = 1)
+
+  #when user only assign part of components in these arguments
+  if(is.null(control_char$weighted_nn)) control_char$weighted_nn = FALSE
+  if(is.null(control_char$k)) control_char$k = 1
+  if(is.null(control_weight$method)) control_weight$method = 'Shepard'
+  if(is.null(control_weight$q)) control_weight$q = 2
   
   output = vector('list', n.sessions)
   
   for(s in 1:n.sessions){
     tem_mask = mask[[s]]
-    if(one_loc_cov){
-      tem_cov = loc_cov
-    } else {
-      tem_cov = loc_cov[[s]]
-    }
     output[[s]] = data.frame(session = s, mask = 1:n.masks[s])
-    stopifnot(ncol(tem_cov) > 2)
-    stopifnot(all(c('x', 'y') %in% colnames(tem_cov)))
-    
-    tem_nn2_par = control_nn2
-    tem_nn2_par$k = min(tem_nn2_par$k, nrow(tem_cov))
-    tem_nn2_par$data = tem_cov[, c('x', 'y')]
-    tem_nn2_par$query = tem_mask
-    o_nn2 = do.call('f', tem_nn2_par)
-    #remove zero index which may happen when we do "radius" search
-    zero_index = which(apply(o_nn2$nn.idx, 2, sum) == 0)
-    if(length(zero_index) > 0){
-      o_nn2$nn.idx = o_nn2$nn.idx[, -zero_index, drop = FALSE]
-      o_nn2$nn.dists = o_nn2$nn.dists[,-zero_index, drop = FALSE]
-      if(ncol(o_nn2$nn.idx) == 0){
-        stop('Please specify a larger radius for radius searching.')
+
+    o_nn2 = vector('list', n_loc_cov)
+    w = vector('list', n_loc_cov)
+
+    for(i in 1:n_loc_cov){
+      tem_cov = loc_cov[[i]]
+      tem_nn2_par = control_nn2
+      tem_nn2_par$k = min(tem_nn2_par$k, nrow(tem_cov))
+      tem_nn2_par$data = tem_cov[, c('x', 'y')]
+      tem_nn2_par$query = tem_mask
+
+      #the range denoted by tem_nn2_par$data should cover all tem_nn2_par$query ideally, or
+      #at least the boundary of tem_nn2_par$query should not exceed tem_nn2_par$data too far
+      #here the term of "too far" means 20% of the range of xlim of data or ylim of data
+      xlim_data = range(tem_nn2_par$data[, 'x'])
+      xscale_data = diff(xlim_data)
+      #when x cordinates are the same for data, such as the data is provided in a line
+      #i'm not sure how to determine the "scale", just take the abs(x) temporarily,
+      if(xscale_data == 0) xscale_data = abs(xlim_data[1])
+      xlim_data_max = c(xlim_data[1] - 0.2 * xscale_data, xlim_data[2] + 0.2 * xscale_data)
+      xlim_query = range(tem_nn2_par$query[,'x'])
+
+      ylim_data = range(tem_nn2_par$data[, 'y'])
+      yscale_data = diff(ylim_data)
+      if(yscale_data == 0) yscale_data = abs(ylim_data[1])
+      ylim_data_max = c(ylim_data[1] - 0.2 * yscale_data, ylim_data[2] + 0.2 * yscale_data)
+      ylim_query = range(tem_nn2_par$query[,'y'])
+
+      if(any(xlim_query[1] < xlim_data_max[1], xlim_query[2] > xlim_data_max[2],
+            ylim_query[1] < ylim_data_max[1], ylim_query[2] > ylim_data_max[2])){
+        
+        warning(paste0("for ", i, "'th element of 'loc_cov', the masks generated by the traps ",
+                        "of ", s, "'th session exceeds the area boundary provided too much, ",
+                        "it is recommened to provide location related covariates with a larger range."))
+        
       }
+
+
+
+      o_nn2[[i]] = do.call('f', tem_nn2_par)
+
+      #remove zero index which may happen when we do "radius" search
+      zero_index = which(apply(o_nn2[[i]]$nn.idx, 2, sum) == 0)
+      if(length(zero_index) > 0){
+        o_nn2[[i]]$nn.idx = o_nn2[[i]]$nn.idx[, -zero_index, drop = FALSE]
+        o_nn2[[i]]$nn.dists = o_nn2[[i]]$nn.dists[,-zero_index, drop = FALSE]
+        if(ncol(o_nn2[[i]]$nn.idx) == 0){
+          stop('Please specify a larger radius for radius searching.')
+        }
+      }
+
+      #calculate weight matrix (for any row of w, sum(w[i,]) === 1)
+      if(control_weight$method == 'Shepard'){
+        w[[i]] = (1/o_nn2[[i]]$nn.dists) ^ control_weight$q
+        w[[i]] = w[[i]] / apply(w[[i]], 1, sum)
+      } else if(control_weight$method == 'Modified'){
+        if(is.null(control_weight$r)){
+          stop('please specify a valid radius for Modified Shepard Weight by control_weight$r = xx')
+        }
+        w[[i]] = (max(0, control_weight$r - o_nn2[[i]]$nn.dists) / (control_weight$r * o_nn2[[i]]$nn.dists)) ^ control_weight$q
+        w[[i]] = w[[i]] / apply(w[[i]], 1, sum)
+      } else {
+        stop('weight method only suppors "Shepard" and "Modified" currently.')
+      }
+
     }
 
-    #calculate weight matrix (for any row of w, sum(w[i,]) === 1)
-    if(control_weight$method == 'Shepard'){
-      w = (1/o_nn2$nn.dists) ^ control_weight$q
-      w = w / apply(w, 1, sum)
-    } else if(control_weight$method == 'Modified'){
-      if(is.null(control_weight$r)){
-        stop('please specify a valid radius for Modified Shepard Weight by control_weight$r = xx')
-      }
-      w = (max(0, control_weight$r - o_nn2$nn.dists) / (control_weight$r * o_nn2$nn.dists)) ^ control_weight$q
-      w = w / apply(w, 1, sum)
-    } else {
-      stop('weight method only suppors "Shepard" and "Modified" currently.')
-    }
 
-    for(i in name_cov){
-      values = tem_cov[,i]
+    for(j in name_cov){
+      #firstly, locate the index of element from where we got this covariate
+      i = index_name_cov[which(j == name_cov)]
+      values = loc_cov[[i]][, j]
       
       if(is.numeric(values)){
-        #generate a matrix with the same dimension as o_nn2$nn.idx, and
-        #mat_values[i, j] = values[o_nn2$nn.idx[i, j]]
-        mat_values = matrix(values[o_nn2$nn.idx], nrow = n.masks[s])
-        output[[s]][[i]] = apply(mat_values * w, 1, sum)
+        #generate a matrix with the same dimension as o_nn2[[i]]$nn.idx, and
+        #mat_values[i, j] = values[o_nn2[[i]]$nn.idx[i, j]]
+        mat_values = matrix(values[o_nn2[[i]]$nn.idx], nrow = n.masks[s])
+        output[[s]][[j]] = apply(mat_values * w[[i]], 1, sum)
       } else {
         values = as.character(values)
-        #generate a matrix with the same dimension as o_nn2$nn.idx, and
-        #mat_values[i, j] = values[o_nn2$nn.idx[i, j]]
-        mat_values = matrix(values[o_nn2$nn.idx], nrow = n.masks[s])
+        #generate a matrix with the same dimension as o_nn2[[i]]$nn.idx, and
+        #mat_values[i, j] = values[o_nn2[[i]]$nn.idx[i, j]]
+        mat_values = matrix(values[o_nn2[[i]]$nn.idx], nrow = n.masks[s])
         v = character(n.masks[s])
         
-        if(control_char$weighted_closest){
-          #for each row, select the element from the closest points with the weight as prop
-          #currently I have no idea how to get rid of this ugly loop, work it out later
-          #from the owl study, it is noticable that when the number of mask is large,
-          #this process could be extremely slow, unspurisingly. So there is another method use
-          #samplling method with the weight as samplling probability to make it faster
+        if(control_char$weighted_nn){
+          #for each row, select the element from the 'nearest neighbours' in terms of weight
           for(n in 1:n.masks[s]){
-            if(control_char$char_random){
-              v[n] = sample(mat_values[n,], size = 1, prob = w[n,])
-            } else {
-              tem_v = mat_values[n,]
-              tem_w = w[n,]
-              tem_agg = aggregate(tem_w, list(v = tem_v), sum)
-              v[n] = tem_agg$v[which.max(tem_agg$x)]
-            }
+            tem_v = mat_values[n,]
+            tem_w = w[[i]][n,]
+            tem_agg = aggregate(tem_w, list(v = tem_v), sum)
+            v[n] = tem_agg$v[which.max(tem_agg$x)]
           }
         } else {
           #if not use weighted closest, we could simply select the KNN method for classification
-          if(!is.null(control_char$k)){
-            #since the KNN is based on nn2's result,the k here must be smaller or equal to the number of
-            #"closet points" generated by nn2
-            stopifnot(control_char$k <= ncol(o_nn2$nn.idx))
 
-            #drop the (k + 1)'th and after columns
-            mat_values = mat_values[, 1:k]
+          #since the KNN is based on nn2's result,the k here must be smaller or equal to the number of
+          #"closet points" generated by nn2
+          stopifnot(control_char$k <= ncol(o_nn2[[i]]$nn.idx))
+
+          #drop the (k + 1)'th and after columns
+          mat_values = mat_values[, 1:control_char$k, drop = FALSE]
+
+
+          if(control_char$k != 1){
+            #for each row, select the value with the largest frequency from its k's cloest neighbors 
+            v = apply(mat_values, 1, function(x) names(which.max(table(x))))
+          } else {
+            #if k == 1, then it means we only take the nearst neighbour, and mat_values is a n*1 matrix, super easy
+            v = as.vector(mat_values)
+
+
           }
-
-          #for each row, select the value with the largest frequency from its k's cloest neighbors 
-          v = apply(mat_values, 1, function(x) names(which.max(table(x))))
         }
 
-
-        output[[s]][[i]] = v
+        output[[s]][[j]] = v
       }
-      #end of co-variate i
+      #end of co-variate j
     }
     #end of session s
   }

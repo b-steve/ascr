@@ -21,7 +21,6 @@
 #' @examples
 fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
                     cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, ...){
-  
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))
@@ -462,3 +461,118 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
   
   return(out)
 }
+
+
+
+
+#' Title
+#'
+#' @param captures 
+#' @param traps 
+#' @param detfn 
+#' @param sv 
+#' @param bounds 
+#' @param fix 
+#' @param ss.opts 
+#' @param control_create_mask 
+#' @param control_create_capt 
+#' @param loc_cov 
+#' @param control_convert 
+#' @param session_cov 
+#' @param trap_cov 
+#' @param par_extend_model 
+#' @param is_scale 
+#' @param cue.rates 
+#' @param survey.length 
+#' @param sound.speed 
+#' @param local 
+#' @param fit 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
+                    control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
+                    control_convert = list(), session_cov = NULL, trap_cov = NULL, par_extend_model = NULL,
+                    is_scale = TRUE, cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE,
+                    fit = TRUE, ...){
+  
+  arg = list(...)
+  control_create_capt$captures = captures
+  control_create_capt$traps = traps
+  capt = do.call('create.capt', control_create_capt)
+
+  #obtain n.sessions, the output of create.capt differs based on the model type, if individual id included, then
+  #it is data.frame, otherwise, it is a list
+  if(is(capt, 'data.frame')){
+    n.sessions = max(capt$session)
+  } else {
+    if("bincapt" %in% names(capt)){
+      n.sessions = 1
+    } else {
+      n.sessions = length(capt)
+    }
+    
+  }
+  
+  stopifnot(!is.null(control_create_mask$buffer))
+  control_create_mask$traps = traps
+  mask = do.call('create.mask', control_create_mask)
+  
+  #if par_extend_model is assigned, we need to construct "par.extend" for model fitting
+  if(!is.null(par_extend_model)){
+    par.extend = list()
+    par.extend$model = par_extend_model
+
+    #if location related covariates provided, convert it to mask-level data frame
+    if(!is.null(loc_cov)){
+      control_convert$loc_cov = loc_cov
+      
+      if(!is(mask, 'list')){
+        control_convert$mask = vector('list', n.sessions)
+        for(s in 1:n.sessions) control_convert$mask[[s]] = mask
+      } else {
+        stopifnot(length(mask) == n.sessions)
+        control_convert$mask = mask
+      }
+      loc_cov = do.call('location_cov_to_mask', control_convert)
+    }
+
+    if(any(!is.null(loc_cov), !is.null(session_cov), !is.null(trap_cov))){
+      par.extend$data = list(session = session_cov, trap = trap_cov, mask = loc_cov)
+    }
+    
+    par.extend$scale = is_scale
+
+  } else (
+    par.extend = NULL
+  )
+
+  arg$capt = capt
+  arg$traps = traps
+  arg$mask = mask
+  arg$detfn = detfn
+  arg$sv = sv
+  arg$bounds = bounds
+  arg$fix = fix
+  arg$ss.opts = ss.opts
+  arg$par.extend = par.extend
+  arg$cue.rates = cue.rates
+  arg$survey.length = survey.length
+  arg$sound.speed = sound.speed
+  arg$local = local
+
+  if(fit){
+    output = do.call('fit_og', arg)
+    return(output)
+  } else {
+    return(arg)
+  }
+
+}
+
+
+
+

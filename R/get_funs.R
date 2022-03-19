@@ -19,6 +19,12 @@ get_D_tmb = function(fit){
   return(output)
 }
 
+get_loc_cov = function(fit){
+  output = fit$loc_cov
+  return(output)
+}
+
+
 get_esa = function(fit){
   output = fit$esa
   return(output)
@@ -59,6 +65,12 @@ get_trap = function(fit){
 
 get_par_extend = function(fit){
   output = fit$args$par.extend
+  return(output)
+}
+
+get_par_extend_data = function(fit){
+  output = get_par_extend(fit)
+  output = output$data
   return(output)
 }
 
@@ -223,7 +235,7 @@ get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked,
 #this function could help
 
 get_default_covariates = function(fit){
-  dat = fit$args$par.extend$data
+  dat = get_par_extend_data(fit)
   dat_name = names(dat)
   o = vector('list', length(dat_name))
   names(o) = dat_name

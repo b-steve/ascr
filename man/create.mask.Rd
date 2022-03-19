@@ -7,6 +7,8 @@
 create.mask(traps, buffer, ...)
 }
 \arguments{
+\item{traps}{}
+
 \item{buffer}{The minimum distance between trap locations and the
 edge of the generated mask.}
 
