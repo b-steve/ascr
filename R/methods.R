@@ -446,14 +446,17 @@ AIC.ascr_tmb = function(object, k = 2){
 #' @param se_fit 
 #' @param log_scale 
 #' @param set_zero 
+#' @param control_convert_loc2mask 
 #' @param ... 
+#' 
 #'
 #' @return
 #' @export
 #'
 #' @examples
 predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
-                            x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, ...){
+                            x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, 
+                            control_convert_loc2mask = NULL, ...){
   
   
   if(!is.null(set_zero) & se_fit){
@@ -494,21 +497,21 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
     
     #build the old_covariates
     ##we interpolate it again no matter there is new mask grid or not because in theory, user
-    ##could use the same mask grid but different control_convert
+    ##could use the same mask grid but different control_convert_loc2mask
     
     old_covariates = as.data.frame(mask)
     old_loc_cov = get_loc_cov(fit)
     
     if(!is.null(old_loc_cov)){
-      if(is.null(control_convert)){
-        control_convert = vector('list', 2)
-        names(control_convert) = c('mask', 'loc_cov')
+      if(is.null(control_convert_loc2mask)){
+        control_convert_loc2mask = vector('list', 2)
+        names(control_convert_loc2mask) = c('mask', 'loc_cov')
       }
-      control_convert$mask = list(mask)
-      control_convert$loc_cov = old_loc_cov
+      control_convert_loc2mask$mask = list(mask)
+      control_convert_loc2mask$loc_cov = old_loc_cov
       
       
-      cov_mask = do.call('location_cov_to_mask', control_convert)
+      cov_mask = do.call('location_cov_to_mask', control_convert_loc2mask)
       old_covariates = cbind(old_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
     }
     
@@ -550,15 +553,15 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
       
       #build the new_covariates based on all information we could have
       if(!is.null(D_cov$location)){
-        if(is.null(control_convert)){
-          control_convert = vector('list', 2)
-          names(control_convert) = c('mask', 'loc_cov')
+        if(is.null(control_convert_loc2mask)){
+          control_convert_loc2mask = vector('list', 2)
+          names(control_convert_loc2mask) = c('mask', 'loc_cov')
         }
-        control_convert$mask = list(mask)
-        control_convert$loc_cov = D_cov$location
+        control_convert_loc2mask$mask = list(mask)
+        control_convert_loc2mask$loc_cov = D_cov$location
         
         
-        cov_mask = do.call('location_cov_to_mask', control_convert)
+        cov_mask = do.call('location_cov_to_mask', control_convert_loc2mask)
         new_covariates = cbind(new_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
       }
       

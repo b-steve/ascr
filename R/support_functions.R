@@ -77,6 +77,19 @@ agg_sort = function(dat, obj, lst, f){
 }
 
 
+df_to_list = function(df, n.sessions){
+  if(is(df, 'list')){
+    stopifnot(length(df) == n.sessions)
+    return(df)
+  } else {
+    stopifnot(any(is(df, 'data.frame'), is(df, 'matrix')))
+    output = vector('list', n.sessions)
+    for(s in 1:n.sessions) output[[s]] = df
+    return(output)
+  }
+}
+
+
 extend_dat_check = function(dat, check_var, ori_dat, n.sessions, n.var, identical_flag){
   stopifnot(is(dat, 'data.frame'))
   if(!(check_var %in% colnames(dat))){
@@ -1239,3 +1252,56 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
 }
 
 
+par_extend_create = function(model, loc_cov = NULL, mask = NULL, control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL){
+  
+  
+  if(!is.null(model)){
+    par.extend = list()
+    par.extend$model = par_extend_model
+    
+    #if location related covariates provided, convert it to mask-level data frame
+    if(!is.null(loc_cov)){
+      control_convert_loc2mask$loc_cov = loc_cov
+      control_convert_loc2mask$mask = mask
+      
+      mask_cov = do.call('location_cov_to_mask', control_convert_loc2mask)
+    } else {
+      mask_cov = NULL
+    }
+    
+    if(any(!is.null(mask_cov), !is.null(session_cov), !is.null(trap_cov))){
+      par.extend$data = list(session = session_cov, trap = trap_cov, mask = mask_cov)
+    }
+    
+    par.extend$scale = is_scale
+    
+  } else (
+    par.extend = NULL
+  )
+  
+  return(par.extend)
+}
+
+
+sim_args_generator = function(sim_name){
+  #generate some common settings
+  traps = data.frame(x = rep(c(0,5) ,each = 3), y = rep(c(0, 5, 10), 2))
+  control_create_mask = list(buffer = 30)
+  session_cov = data.frame(session = 1:3, weather = c('sunny', 'rainy', 'sunny'))
+  trap_cov = data.frame(trap = 1:6, brand = rep(c('sony', 'panasonic'), each = 3))
+  loc_cov = data.frame(x = rep(c(-20, 2.5, 25), each = 3), y = rep(c(-20, 5, 30), 3),
+                       noise = c(6, 10, 11, 7, 12, 10, 11, 9, 8),
+                       forest_volumn = c(rep('high', 2), rep('median', 3), rep('low', 4)))
+  
+  
+  
+  
+  
+  if(sim_name == 'dist_hn'){
+    param = list(g0 = 36, sigma = 2, alpha = 2, D = 7.7)
+    detfn = 'hn'
+    
+  }
+  
+  
+}

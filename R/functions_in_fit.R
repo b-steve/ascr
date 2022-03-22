@@ -108,16 +108,7 @@ trap.fun = function(traps, dims){
   n.sessions = dims$n.sessions
   n.traps = dims$n.traps
   #make traps to a list with length == n.sessions
-  if(any(is(traps, 'list') & length(traps) == 1, is.data.frame(traps), is.matrix(traps))){
-    tem.traps = vector('list', n.sessions)
-    for(i in 1:n.sessions){
-      if(is(traps, 'list')) tem.traps[[i]] = traps[[1]]
-      if(is.data.frame(traps) | is.matrix(traps)) tem.traps[[i]] = traps
-    }
-    traps = tem.traps
-  } else {
-    stopifnot(length(traps) == n.sessions)
-  }
+  traps = df_to_list(traps, n.sessions)
   stopifnot(all(sapply(traps, nrow) == n.traps), all(sapply(traps, ncol) == 2))
   
   
@@ -141,19 +132,7 @@ mask.fun = function(mask, dims, animal.model, data.traps, data.full, bucket_info
   n.traps = dims$n.traps
   n.IDs = dims$n.IDs
   
-  if(any(is(mask, 'list') & length(mask) == 1, is.data.frame(mask), is.matrix(mask))){
-    tem.mask = vector('list', n.sessions)
-    for(i in 1:n.sessions){
-      if(is(mask, 'list')){
-        tem.mask[[i]] = mask[[1]]
-      } else {
-        tem.mask[[i]] = mask
-      }
-    }
-    mask = tem.mask
-  } else {
-    stopifnot(length(mask) == n.sessions)
-  }
+  mask = df_to_list(mask, n.sessions)
   
   n.masks <- sapply(mask, nrow)
   

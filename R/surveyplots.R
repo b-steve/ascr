@@ -168,7 +168,7 @@ show_detfn_tmb <- function(fit, new_covariates = NULL, param_extend_skip = NULL,
 #' @param scale 
 #' @param plot_contours 
 #' @param add 
-#' @param control_convert 
+#' @param control_convert_loc2mask
 #'
 #' @return
 #' @export
@@ -176,10 +176,10 @@ show_detfn_tmb <- function(fit, new_covariates = NULL, param_extend_skip = NULL,
 #' @examples
 show_Dsurf <- function(fit, session = 1, show.cv = FALSE, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
                         x_pixels = 50, y_pixels = 50, zlim = NULL, scale = 1, plot_contours = TRUE,
-                        add = FALSE, control_convert = NULL){
+                        add = FALSE, control_convert_loc2mask= NULL){
   
   pred = predict(fit, session_select = session, new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
-                 x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv)
+                 x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv, control_convert_loc2mask= control_convert)
   
 
   if(!show.cv){
