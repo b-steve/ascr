@@ -588,7 +588,6 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
     values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
     if(!is.null(set_zero)) values_link[set_zero] = 0
     old_covariates = scale_fun(old_covariates)
-    browser()
     tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates, DX_output = TRUE)
     D.mask = unlink.fun(link = par_info$link, value = tem$output)
       
@@ -614,11 +613,10 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
     
   }
   
-  output = D.mask
-  if(se_fit){
-    output = cbind(D.mask, D.se)
-    colnames(output) = c('est', 'std')
-  }
+  output = as.data.frame(mask)
+  output$est = D.mask
+  if(se_fit) output$std = D.se
+  
   
   return(output)
 }

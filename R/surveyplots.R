@@ -179,13 +179,13 @@ show_Dsurf <- function(fit, session = 1, show.cv = FALSE, new_data = NULL, D_cov
                         add = FALSE, control_convert_loc2mask= NULL){
   
   pred = predict(fit, session_select = session, new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
-                 x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv, control_convert_loc2mask= control_convert)
+                 x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv, control_convert_loc2mask= control_convert_loc2mask)
   
-
+  mask = as.matrix(pred[, c('x', 'y')])
   if(!show.cv){
-    D.mask = pred
+    D.mask = pred[,'est']
   } else {
-    D.mask = pred[,2] / pred[,1]
+    D.mask = pred[,'std'] / pred[,'est']
   }
   
   if (is.null(xlim)){

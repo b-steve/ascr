@@ -14,16 +14,8 @@ sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_c
     param = get_coef(fit)
     
     #the "param" in simulation requires back transformed value
-    for(i in names(param)){
-      #if the length of one parameter is greater than 1, means it is extended
-      #in this case, keep the values unchanged. we only do back transformation
-      #when it is not extended
-      if(length(param[[i]]) == 1){
-        par_link = dat_par[which(dat_par$par == i), 'link']
-        param[[i]] = link.fun(par_link, param[[i]])
-      }
-    }
-    
+    param = param_transform(param, dat_par, back = TRUE)
+
     n.sessions = get_dims_tmb(fit)$n.sessions
     par.extend = get_par_extend(fit)
     traps = get_trap(fit)
@@ -55,11 +47,10 @@ sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_c
     #create mask, traps is guaranteed to be a list, so mask must be a list
     control_create_mask$traps = traps
     mask = do.call('create.mask', control_create_mask)
-    
     #if par_extend_model is assigned, we need to construct "par.extend" for simulation
-    par.extend = par_extend_create(par_extend_model, loc_cov = loc_cov, mask = mask,
+    par.extend = par_extend_create(model = par_extend_model, loc_cov = loc_cov, mask = mask,
                                    control_convert_loc2mask = control_convert_loc2mask,
-                                   session_cov = session_cov, trap_cov = trap_cov)
+                                   session_cov = session_cov, trap_cov = trap_cov, is_scale = NULL)
   }
 
   
@@ -69,6 +60,13 @@ sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_c
   dat.density = tem$dat.density
   dims = tem$dims
   info.bucket = tem$info.bucket
+  
+  #for ihd with catagorical covariate, the model seems not work well, here is the example with sim_study('ihd', fit = T)
+  #true value for D is c(7.3, -0.2, -0.1) with a three levels factor variable.
+  #and by the code below, we could confirm the simulated density in log scale is really between 7.1 to 7.3, which is correct
+  #a = attr(mask[[1]], 'area')
+  #log(range(dat.density$D)/a)
+  #however, the estimation of D is just wild, needs Ben's help about this issue.  
   
   if(n.rand == 1){
     output = sim.from.param(detfn, dat_pars, dat.density, random.location,

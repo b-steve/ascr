@@ -1,3 +1,13 @@
+fulllist.par.generator = function(){
+  #this order matters, in the function "ori_name()", we must try to match 'sigma.b0.ss' and 'sigma.toa' first
+  #otherwise "sigma.b0.ss.(Intercept)" will be recognized as 'sigma'
+  #so we must put 'sigma' behind any 'sigma.xx' parameters
+  return(c('g0', 'lambda0', 'z', 'shape.1',
+            'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
+            'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
+            "sigma.b0.ss", 'D', 'sigma', 'mu'))
+}
+
 natural_number_check = function(session, key){
   output = TRUE
   for(s in unique(session)){
@@ -184,6 +194,8 @@ default.link = function(i){
   if(i == "sigma.toa") return('log')
   if(i == "sigma.b0.ss") return('log')
 }
+
+
 
 detfn.params = function(detfn){
   if(detfn == 'hn'){
@@ -753,6 +765,8 @@ cus_identity = function(x){
 cus_log_unlink = .Primitive('exp')
 
 cus_logit_unlink = function(x){
+  x = pmax(x, cus_logit(0))
+  x = pmin(x, cus_logit(1))
   return(exp(x)/(exp(x) + 1))
 }
 
@@ -1001,14 +1015,9 @@ confint_gaussian_cal = function(object, types, pars, new_covariates, q_lower, q_
   return(output)
 }
 
+
 ori_name = function(char){
-  #this order matters, we must try to match 'sigma.b0.ss' and 'sigma.toa' first
-  #otherwise "sigma.b0.ss.(Intercept)" will be recognized as 'sigma'
-  #so we must put 'sigma' behind any 'sigma.xx' parameters
-  fulllist.par = c('g0', 'lambda0', 'z', 'shape.1',
-                   'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
-                   'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
-                   "sigma.b0.ss", 'D', 'sigma', 'mu')
+  fulllist.par = fulllist.par.generator()
   #the pattern is the original parameter names followed by a dot
   pattern = paste(fulllist.par, ".", sep = "")
   n = length(char)
@@ -1145,13 +1154,13 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
       #when x cordinates are the same for data, such as the data is provided in a line
       #i'm not sure how to determine the "scale", just take the abs(x) temporarily,
       if(xscale_data == 0) xscale_data = abs(xlim_data[1])
-      xlim_data_max = c(xlim_data[1] - 0.2 * xscale_data, xlim_data[2] + 0.2 * xscale_data)
+      xlim_data_max = c(xlim_data[1] - 0.7 * xscale_data, xlim_data[2] + 0.7 * xscale_data)
       xlim_query = range(tem_nn2_par$query[,'x'])
 
       ylim_data = range(tem_nn2_par$data[, 'y'])
       yscale_data = diff(ylim_data)
       if(yscale_data == 0) yscale_data = abs(ylim_data[1])
-      ylim_data_max = c(ylim_data[1] - 0.2 * yscale_data, ylim_data[2] + 0.2 * yscale_data)
+      ylim_data_max = c(ylim_data[1] - 0.7 * yscale_data, ylim_data[2] + 0.7 * yscale_data)
       ylim_query = range(tem_nn2_par$query[,'y'])
 
       if(any(xlim_query[1] < xlim_data_max[1], xlim_query[2] > xlim_data_max[2],
@@ -1252,12 +1261,13 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
 }
 
 
-par_extend_create = function(model, loc_cov = NULL, mask = NULL, control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL){
+par_extend_create = function(model, loc_cov = NULL, mask = NULL, control_convert_loc2mask = list(),
+                             session_cov = NULL, trap_cov = NULL, is_scale = TRUE){
   
   
   if(!is.null(model)){
     par.extend = list()
-    par.extend$model = par_extend_model
+    par.extend$model = model
     
     #if location related covariates provided, convert it to mask-level data frame
     if(!is.null(loc_cov)){
@@ -1284,9 +1294,15 @@ par_extend_create = function(model, loc_cov = NULL, mask = NULL, control_convert
 
 
 sim_args_generator = function(sim_name){
+  output = list()
   #generate some common settings
   traps = data.frame(x = rep(c(0,5) ,each = 3), y = rep(c(0, 5, 10), 2))
   control_create_mask = list(buffer = 30)
+  par_extend_model = NULL
+  survey.length = NULL
+  ss.opts = NULL
+  cue.rates = NULL
+  n.sessions = NULL
   session_cov = data.frame(session = 1:3, weather = c('sunny', 'rainy', 'sunny'))
   trap_cov = data.frame(trap = 1:6, brand = rep(c('sony', 'panasonic'), each = 3))
   loc_cov = data.frame(x = rep(c(-20, 2.5, 25), each = 3), y = rep(c(-20, 5, 30), 3),
@@ -1294,14 +1310,200 @@ sim_args_generator = function(sim_name){
                        forest_volumn = c(rep('high', 2), rep('median', 3), rep('low', 4)))
   
   
-  
-  
-  
   if(sim_name == 'dist_hn'){
-    param = list(g0 = 36, sigma = 2, alpha = 2, D = 7.7)
+    param = list(g0 = 1, sigma = 5.33, alpha = 5.62, D = 2300)
     detfn = 'hn'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+  } else if(sim_name == 'bearing_dist_hn'){
+    param = list(g0 = 1, sigma = 5.39, kappa = 51.12, alpha = 5.02, D = 2265)
+    detfn = 'hn'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+  } else if(sim_name == 'bearing_hn'){
+    param = list(g0 = 1, sigma = 5.53, kappa = 53.88, D = 2172)
+    detfn = 'hn'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+  } else if(sim_name == 'ihd'){
+    param = list(g0 = 1, sigma = 5.38, D = c(7.3, -0.2, -0.1))
+    detfn = 'hn'
+    par_extend_model = list(D = ~forest_volumn)
+    session_cov = NULL
+    trap_cov = NULL    
+  } else if(sim_name == 'ihd_ext'){
+    param = list(g0 = 1, sigma = c(1.7, -0.1), D = c(7.3, -0.1))
+    detfn = 'hn'
+    par_extend_model = list(D = ~noise, sigma = ~brand)
+    session_cov = NULL
+  } else if(sim_name == 'mul_ses'){
+    param = list(g0 = 0.7135, sigma = 3.3, kappa = 14.8, alpha = 3.77, D = 2533)
+    traps = list(traps, data.frame(x = rep(20, 3), y = c(20, 25, 30)))
+    control_create_mask = list(buffer = 15)
+    detfn = 'hn'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+    
+  } else if(sim_name == 'mul_ses_ext'){
+    param = list(g0 = c(1.172, -0.8), sigma = c(1.1383, 0.1407), kappa = 14.8, alpha = 3.77, D = 2533)
+    traps = list(traps, data.frame(x = rep(20, 3), y = c(20, 25, 30)))
+    control_create_mask = list(buffer = 15)
+    detfn = 'hn'
+    session_cov = session_cov[1:2,]
+    trap_cov = rbind(trap_cov, data.frame(trap = 1:3, brand = c('sony', 'panasonic', 'panasonic')))
+    trap_cov$session = c(rep(1, 6), rep(2, 3))
+    loc_cov = NULL
+    par_extend_model = list(g0 = ~weather, sigma = ~brand)
+    
+  } else if(sim_name == 'simple_hhn'){
+    param = list(sigma = 3.66, lambda0 = 4.29, D = 2657)
+    detfn = 'hhn'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+    
+  } else if(sim_name == 'hhn_cue'){
+    param = list(sigma = 3.66, lambda0 = 4.29, D = 500)
+    detfn = 'hhn'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+    cue.rates = c(5, 4, 11, 2, 3)
+    survey.length = 1
+  } else if(sim_name == 'simple_hr'){
+    param = list(g0 = 0.88, sigma = 7, z = 7.5, D = 2665)
+    detfn = 'hr'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+  } else if(sim_name == 'ss'){
+    param = list(b0.ss = 89.07, b1.ss = 4.13, sigma.ss = 9.52, D = 2657)
+    detfn = 'ss'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+    ss.opts = list(cutoff = 60)
+  } else if(sim_name == 'ss_toa'){
+    
+  } else if(sim_name == 'toa'){
+    
+  } else if(sim_name == 'ind_bearing_dist'){
+    
+  } else if(sim_name == 'ind_toa_hhn'){
+    
+  } else if(sim_name == 'ind_ss'){
+    
+  } else if(sim_name == 'ind_ss_log'){
+    
+  } else if(sim_name == 'ind_ss_sp'){
     
   }
   
   
+  #include all arguments that may differ from default
+  output$detfn = detfn
+  output$param = param
+  output$par_extend_model = par_extend_model
+  output$traps = traps
+  output$control_create_mask = control_create_mask
+  output$session_cov = session_cov
+  output$trap_cov = trap_cov
+  output$loc_cov = loc_cov
+  output$survey.length = survey.length
+  output$ss.opts = ss.opts
+  output$cue.rates = cue.rates
+  output$n.sessions = n.sessions
+  
+  return(output)
+  
+}
+
+
+fit_args_generator = function(sim_name, sim_args){
+  #most arguments for fit.ascr() and sim.capt() are the same
+  output = sim_args
+  
+  #remove the redundant ones firstly
+  output$param = NULL
+  output$random.location = NULL
+  output$n.rand = NULL
+  if(!is.null(output$n.sessions)){
+    output$control_create_capt = list(n.sessions = output$n.sessions)
+    output$n.sessions = NULL
+  }
+  
+  if(sim_name == 'dist_hn'){
+    output$fix = list(g0 = 1)
+  } else if(sim_name == 'bearing_dist_hn'){
+    output$fix = list(g0 = 1)
+  } else if(sim_name == 'bearing_hn'){
+    output$fix = list(g0 = 1)
+  } else if(sim_name == 'ihd'){
+    output$fix = list(g0 = 1)
+  } else if(sim_name == 'ihd_ext'){
+    output$fix = list(g0 = 1)
+  } else if(sim_name == 'mul_ses'){
+    output$sv = list(kappa = 20)
+  } else if(sim_name == 'mul_ses_ext'){
+    output$sv = list(kappa = 20)
+  } else if(sim_name == 'simple_hhn'){
+    #nothing need to be done
+  } else if(sim_name == 'hhn_cue'){
+    #nothing need to be done
+  } else if(sim_name == 'simple_hr'){
+    output$sv = list(z = 5)
+  } else if(sim_name == 'ss'){
+    output$sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10)
+  } else if(sim_name == 'ss_toa'){
+    
+  } else if(sim_name == 'toa'){
+    
+  } else if(sim_name == 'ind_bearing_dist'){
+    
+  } else if(sim_name == 'ind_toa_hhn'){
+    
+  } else if(sim_name == 'ind_ss'){
+    
+  } else if(sim_name == 'ind_ss_log'){
+    
+  } else if(sim_name == 'ind_ss_sp'){
+    
+  }
+  
+  return(output)
+}
+
+
+param_transform = function(param, df_link, back = FALSE){
+  par_names = names(param)
+  which_trans = par_names[which(sapply(param, function(x) length(x) == 1))]
+  
+  if(back){
+    for(i in which_trans){
+      link = df_link[which(df_link$par == i), 'link']
+      param[[i]] = unlink.fun(link, param[[i]])
+    }
+  } else {
+    for(i in which_trans){
+      link = df_link[which(df_link$par == i), 'link']
+      param[[i]] = link.fun(link, param[[i]])
+    }
+  }
+  
+  
+  return(param)
+}
+
+
+default_df_link = function(){
+  pars = fulllist.par.generator()
+  output = data.frame(par = pars, link = character(length(pars)))
+  for(i in 1:length(pars)){
+    output[i,'link'] = default.link(pars[i])
+  }
+  return(output)
 }

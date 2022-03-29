@@ -1,5 +1,5 @@
-fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
-                    cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, ...){
+fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL, cue.rates = NULL,
+                  survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, tracing = TRUE, ...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))
@@ -67,10 +67,7 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
   
   ########################################################################################################
   #in animal_ID model, the cue.rate is no longer an inputted argument, but a fitted argument, named as "mu"
-  fulllist.par = c('g0', 'sigma', 'lambda0', 'z', 'shape.1',
-                   'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
-                   'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
-                   "sigma.b0.ss", 'D', 'mu')
+  fulllist.par = fulllist.par.generator()
 
   o.par.extend = par.extend.fun(par.extend = par.extend, data.full = data.full, data.mask = data.mask,
                                 animal.model = animal.model, dims = dims, fulllist.par = fulllist.par,
@@ -398,9 +395,9 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 
   #browser()
   if(!("ss.het" %in% bucket_info)){
-    obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, DLL="ascrTmb")
+    obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, slient = (!tracing), DLL="ascrTmb")
   } else {
-    obj <- TMB::MakeADFun(data = data, parameters = parameters, random = "u", map = map, DLL="ascrTmb")
+    obj <- TMB::MakeADFun(data = data, parameters = parameters, random = "u", map = map, slient = (!tracing), DLL="ascrTmb")
   }
   
   obj$hessian <- TRUE
@@ -470,6 +467,32 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 #' @param ... 
 
 #'
+#' @param captures 
+#' @param traps 
+#' @param detfn 
+#' @param sv 
+#' @param bounds 
+#' @param fix 
+#' @param ss.opts 
+#' @param control_create_mask 
+#' @param control_create_capt 
+#' @param loc_cov a list or a data.frame/matrix, if it is a data.frame/matrix, contains 'x' and 'y' as location and corresponding covariates. if 
+#' it is a list, each element is a data.frame/matrix with the same requirement of above, by imputing it as a list, users could provide different
+#' covariates measured in different sets of locations.
+#' @param control_convert_loc2mask 
+#' @param session_cov 
+#' @param trap_cov 
+#' @param par_extend_model 
+#' @param is_scale 
+#' @param cue.rates 
+#' @param survey.length 
+#' @param sound.speed 
+#' @param local 
+#' @param fit 
+#' @param tracing 
+#' @param prepared_args 
+#' @param ... 
+#'
 #' @return
 #' @export
 #'
@@ -478,7 +501,17 @@ fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
                     control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL, par_extend_model = NULL,
                     is_scale = TRUE, cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE,
-                    fit = TRUE, prepared_args = NULL, ...){
+                    fit = TRUE, tracing = TRUE, prepared_args = NULL, ...){
+  #keep all original input arguments
+  arg.names <- names(as.list(environment()))
+  arg.input <- vector('list', length(arg.names))
+  names(arg.input) <- arg.names
+  for(i in arg.names) {
+    if(!is.null(get(i))){
+      arg.input[[i]] = get(i)
+    }
+  }
+  
   
   if(is.null(prepared_args)){
     arg = list(...)
@@ -524,10 +557,11 @@ fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
     arg$survey.length = survey.length
     arg$sound.speed = sound.speed
     arg$local = local
+    arg$tracing = tracing
     
     if(fit){
       output = do.call('fit_og', arg)
-      output$loc_cov = loc_cov
+      output$arg_input = arg.input
       return(output)
     } else {
       return(arg)
@@ -535,7 +569,7 @@ fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
   } else {
     if(fit){
       output = do.call('fit_og', prepared_args)
-      output$loc_cov = loc_cov
+      output$arg_input = arg.input
       return(output)
     } else {
       return(prepared_args)

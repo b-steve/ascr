@@ -38,7 +38,7 @@ demo_fit = function(data_name, fit = TRUE, dev = FALSE){
 #' @examples
 show_demo_options = function(table_print = TRUE){
   output = c('bearing_dist_hn', 'bearing_hn', 'dist_hn', 'ihd', 'ihd_ext', 'mul_ses', 'mul_ses_ext',
-             'simple_hhn', 'simple_hn', 'simple_hr', 'ss', 'ss_toa', 'toa',
+             'simple_hhn', 'simple_hn_cue', 'simple_hr', 'ss', 'ss_toa', 'toa',
              'ind_bearing_dist', 'ind_toa_hhn', 'ind_ss', 'ind_ss_log', 'ind_ss_sp')
   if(table_print){
     descriptions = matrix(c('hn' ,'bearing & dist' ,'NULL' ,'FALSE' ,'1',
@@ -49,7 +49,7 @@ show_demo_options = function(table_print = TRUE){
                             'hn' ,'bearing & dist' ,'NULL' ,'FALSE' ,'2',
                             'hn' ,'bearing & dist' ,'g0 & sigma' ,'FALSE' ,'2',
                             'hhn' ,'NULL' ,'NULL' ,'FALSE' ,'1',
-                            'hn' ,'NULL' ,'NULL' ,'FALSE' ,'1',
+                            'hn' ,'cue_rates' ,'NULL' ,'FALSE' ,'1',
                             'hr' ,'NULL' ,'NULL' ,'FALSE' ,'1',
                             'ss' ,'ss' ,'NULL' ,'FALSE' ,'1',
                             'ss' ,'ss & toa' ,'NULL' ,'FALSE' ,'1',

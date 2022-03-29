@@ -18,7 +18,7 @@ get_D_tmb = function(fit){
 }
 
 get_loc_cov = function(fit){
-  output = fit$loc_cov
+  output = fit$arg_input$loc_cov
   return(output)
 }
 
