@@ -1,11 +1,9 @@
 fulllist.par.generator = function(){
-  #this order matters, in the function "ori_name()", we must try to match 'sigma.b0.ss' and 'sigma.toa' first
-  #otherwise "sigma.b0.ss.(Intercept)" will be recognized as 'sigma'
-  #so we must put 'sigma' behind any 'sigma.xx' parameters
-  return(c('g0', 'lambda0', 'z', 'shape.1',
+  #the order matters, cannot be changed.
+  return(c('g0', 'sigma', 'lambda0', 'z', 'shape.1',
             'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
             'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
-            "sigma.b0.ss", 'D', 'sigma', 'mu'))
+            "sigma.b0.ss", 'D', 'mu'))
 }
 
 natural_number_check = function(session, key){
@@ -1017,7 +1015,13 @@ confint_gaussian_cal = function(object, types, pars, new_covariates, q_lower, q_
 
 
 ori_name = function(char){
-  fulllist.par = fulllist.par.generator()
+  #this order matters, we must try to match 'sigma.b0.ss' and 'sigma.toa' first
+  #otherwise "sigma.b0.ss.(Intercept)" will be recognized as 'sigma'
+  #so we must put 'sigma' behind any 'sigma.xx' parameters
+  fulllist.par = c('g0', 'lambda0', 'z', 'shape.1',
+                   'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
+                   'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
+                   "sigma.b0.ss", 'D', 'sigma', 'mu')
   #the pattern is the original parameter names followed by a dot
   pattern = paste(fulllist.par, ".", sep = "")
   n = length(char)
