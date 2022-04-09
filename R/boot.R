@@ -114,19 +114,20 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
     res = matrix(NA, nrow = N, ncol = ncol_res)
     colnames(res) = colnames_res
     
-    for(n in 1:N){
+
     ########################################################
-      res[n,] = boot_one_step(seed = seed_boot[n],
-                              fit = fit,
-                              arguments = arguments,
-                              dims = dims,
-                              infotypes = fit$infotypes,
-                              is_sim_cue = is_sim_cue,
-                              cue.rates = cue.rates,
-                              len_output = ncol_res,
-                              name_output = colnames_res)
+    res = boot_step(seed = seed_boot,
+                    N = N,
+                    fit = fit,
+                    arguments = arguments,
+                    dims = dims,
+                    infotypes = fit$infotypes,
+                    is_sim_cue = is_sim_cue,
+                    cue.rates = cue.rates,
+                    len_output = ncol_res,
+                    name_output = colnames_res)
     ########################################################
-    }
+    
     
     #Additional bootstraps
     if(!is.null(infotypes)){
@@ -136,7 +137,7 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
       for (i in seq(from = 1, by = 1, along.with = infotypes)){
         new_args <- arguments
         new_args$capt <- arguments$capt[c("bincapt", infotypes[[i]])]
-        new_fit <- suppressWarnings(do.call("fit.ascr", new_args))
+        new_fit <- suppressWarnings(do.call("fit_og", new_args))
         tem = coef(new_fit, 'linked')
         
         new_ncol_res = length(tem) + 1
@@ -144,19 +145,20 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
         extra.res[[i]] <- matrix(NA, nrow = N, ncol = new_ncol_res)
         colnames(extra.res[[i]]) <- new_colnames_res
         
-        for (n in 1:N){
+ 
         ####################################################################################  
-          extra.res[[i]][n, ] <- suppressWarnings(boot_one_step(seed = seed_boot[n],
-                                                                fit = new_fit,
-                                                                arguments = new_args,
-                                                                dims = dims,
-                                                                infotypes = infotypes[[i]],
-                                                                is_sim_cue = is_sim_cue,
-                                                                cue.rates = cue.rates,
-                                                                len_output = new_ncol_res,
-                                                                name_output = new_colnames_res))
+        extra.res[[i]] <- suppressWarnings(boot_step(seed = seed_boot,
+                                                     N = N,
+                                                     fit = new_fit,
+                                                     arguments = new_args,
+                                                     dims = dims,
+                                                     infotypes = infotypes[[i]],
+                                                     is_sim_cue = is_sim_cue,
+                                                     cue.rates = cue.rates,
+                                                     len_output = new_ncol_res,
+                                                     name_output = new_colnames_res))
         ####################################################################################
-        }
+        
         
       }
       
@@ -215,39 +217,42 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
   return(out)
 }
 
-
-boot_one_step = function(seed, fit, arguments, dims, infotypes, is_sim_cue, 
-                         cue.rates, len_output, name_output){
+#continue from here========================================================================
+boot_step = function(seed, N, fit, arguments, dims, infotypes, is_sim_cue, 
+                     cue.rates, len_output, name_output){
   set.seed(seed)
-  output = rep(NA, len_output)
+  output = matrix(NA, nrow = N, ncol = len_output)
   #main bootstrap
-  capture_sim = sim.capt(fit)
-  if(nrow(capture_sim) > 0){
-    arguments$capt = get_capt_for_boot(capture_sim, dims, infotypes)
-    if(is_sim_cue){
-      arguments$cue.rates = sample(cue.rates, replace = TRUE)
+  capture_sim = sim.capt(fit = fit, n.rand = N)$capt
+  for(n in 1:N){
+    if(nrow(capture_sim[[n]]) > 0){
+      arguments$capt = get_capt_for_boot(capture_sim[[n]], dims, infotypes)
+      if(is_sim_cue){
+        arguments$cue.rates = sample(cue.rates, replace = TRUE)
+      }
+      
+      fit_boot = suppressWarnings(try(do.call('fit_og', arguments), silent = TRUE))
+      #If unconverged, refit model with default start values.
+      if ("try-error" %in% class(fit_boot) || fit_boot$maxgrad < -0.01){
+        arguments$sv <- NULL
+        fit_boot <- suppressWarnings(try(do.call("fit_og", arguments), silent = TRUE))
+      }
+      #If still unconverged, give up and report NA, which is the default value of the output,
+      #so we need to do nothing. And if it converged, assign result to the output
+      if (!("try-error" %in% class(fit_boot) || fit_boot$maxgrad < -0.01)){
+        output[n,] = c(coef(fit_boot, 'linked'), fit_boot$maxgrad)
+      } 
+      
+    } else {
+      #default of output is NA, so no need to modify the columns of parameters excluding "D" related parameter
+      #change the intercept or its equivalent to -Inf, and other "D" related coefficients to 0
+      i_D_int = which(name_output %in% c('D_link', 'D.(Intercept)_link'))
+      i_D_other = setdiff(which(grepl("^D", name_output)), i_D_int)
+      output[n, i_D_int] = -Inf
+      output[n, i_D_other] = 0
     }
-    
-    fit_boot = suppressWarnings(try(do.call('fit.ascr', arguments), silent = TRUE))
-    #If unconverged, refit model with default start values.
-    if ("try-error" %in% class(fit_boot) || fit_boot$maxgrad < -0.01){
-      arguments$sv <- NULL
-      fit_boot <- suppressWarnings(try(do.call("fit.ascr", arguments), silent = TRUE))
-    }
-    #If still unconverged, give up and report NA, which is the default value of the output,
-    #so we need to do nothing. And if it converged, assign result to the output
-    if (!("try-error" %in% class(fit_boot) || fit_boot$maxgrad < -0.01)){
-      output = c(coef(fit_boot, 'linked'), fit_boot$maxgrad)
-    } 
-    
-  } else {
-    #default of output is NA, so no need to modify the columns of parameters excluding "D" related parameter
-    #change the intercept or its equivalent to -Inf, and other "D" related coefficients to 0
-    i_D_int = which(name_output %in% c('D_link', 'D.(Intercept)_link'))
-    i_D_other = setdiff(which(grepl("^D", name_output)), i_D_int)
-    output[i_D_int] = -Inf
-    output[i_D_other] = 0
   }
+  
   
   
   return(output)

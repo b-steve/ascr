@@ -768,27 +768,6 @@ cus_logit_unlink = function(x){
   return(exp(x)/(exp(x) + 1))
 }
 
-scale.closure = function(var.ex.info){
-  #although named as "numeric.cov" here, but for numeric covariates under scale = FALSE
-  #this "numeric.cov" will still be FALSE
-  numeric.cov = !sapply(var.ex.info, is.null)
-  cov.names = names(var.ex.info)
-  
-  out.fun = function(covariates_df){
-    cov.names.new <- colnames(covariates_df)
-    out <- covariates_df
-    for (i in cov.names){
-      if (numeric.cov[i] & (i %in% cov.names.new)){
-        out[, i] <- (out[, i] - var.ex.info[[i]][1])/var.ex.info[[i]][2]
-      }
-    }
-    
-    return(out)
-  }
-  
-  return(out.fun)
-}
-
 #extract values without name from a vector
 
 val = function(vec){
@@ -1333,13 +1312,13 @@ sim_args_generator = function(sim_name){
     trap_cov = NULL  
     loc_cov = NULL
   } else if(sim_name == 'ihd'){
-    param = list(g0 = 1, sigma = 5.38, D = c(7.3, -0.2, -0.1))
+    param = list(g0 = 1, sigma = 5.38, D = c(8.3, -0.2, -0.1))
     detfn = 'hn'
     par_extend_model = list(D = ~forest_volumn)
     session_cov = NULL
     trap_cov = NULL    
   } else if(sim_name == 'ihd_ext'){
-    param = list(g0 = 1, sigma = c(1.7, -0.1), D = c(7.3, -0.1))
+    param = list(g0 = 1, sigma = c(1.95, -0.25), D = c(8.3, -0.1))
     detfn = 'hn'
     par_extend_model = list(D = ~noise, sigma = ~brand)
     session_cov = NULL
@@ -1392,12 +1371,29 @@ sim_args_generator = function(sim_name){
     loc_cov = NULL
     ss.opts = list(cutoff = 60)
   } else if(sim_name == 'ss_toa'){
-    
-  } else if(sim_name == 'toa'){
-    
+    param = list(b0.ss = 90, b1.ss = 4, sigma.ss = 9.34, sigma.toa = 0.002, D = 2430)
+    detfn = 'ss'
+    session_cov = NULL
+    trap_cov = NULL  
+    loc_cov = NULL
+    ss.opts = list(cutoff = 60)
   } else if(sim_name == 'ind_bearing_dist'){
-    
+    param = list(g0 = 0.68, sigma = 9.8, kappa = 10, alpha = c(0.56, 0.16), D = c(4.15, 0.62), mu = 8.8)
+    detfn = 'hn'
+    control_create_mask = list(buffer = 15)
+    loc_cov = NULL
+    par_extend_model = list(D = ~weather, alpha = ~brand)
+    n.sessions = 3
+    survey.length = c(1, 2, 1)
   } else if(sim_name == 'ind_toa_hhn'){
+    param = list(sigma = 2.13, lambda0 = 8.33, sigma.toa = 0.0011, D = c(6.21, 0.05), mu = 8.2)
+    detfn = 'hhn'
+    control_create_mask = list(buffer = 15)
+    session_cov = NULL
+    trap_cov = NULL
+    #loc_cov = NULL
+    par_extend_model = list(D = ~noise)
+    n.sessions = 2
     
   } else if(sim_name == 'ind_ss'){
     
@@ -1427,19 +1423,10 @@ sim_args_generator = function(sim_name){
 }
 
 
-fit_args_generator = function(sim_name, sim_args){
-  #most arguments for fit.ascr() and sim.capt() are the same
-  output = sim_args
-  
-  #remove the redundant ones firstly
-  output$param = NULL
-  output$random.location = NULL
-  output$n.rand = NULL
-  if(!is.null(output$n.sessions)){
-    output$control_create_capt = list(n.sessions = output$n.sessions)
-    output$n.sessions = NULL
-  }
-  
+fit_args_generator_from_sim = function(sim_name, fit_args){
+
+  output = fit_args
+
   if(sim_name == 'dist_hn'){
     output$fix = list(g0 = 1)
   } else if(sim_name == 'bearing_dist_hn'){
@@ -1463,13 +1450,11 @@ fit_args_generator = function(sim_name, sim_args){
   } else if(sim_name == 'ss'){
     output$sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10)
   } else if(sim_name == 'ss_toa'){
-    
-  } else if(sim_name == 'toa'){
-    
+    output$sv = list(b0.ss = 90, b1.ss = 4, sigma.ss = 10)
   } else if(sim_name == 'ind_bearing_dist'){
-    
+    #nothing need to be done
   } else if(sim_name == 'ind_toa_hhn'){
-    
+    #nothing need to be done
   } else if(sim_name == 'ind_ss'){
     
   } else if(sim_name == 'ind_ss_log'){
@@ -1511,3 +1496,23 @@ default_df_link = function(){
   }
   return(output)
 }
+
+
+diag_block_combine = function(lst){
+  n_lst = sapply(lst, nrow)
+  n = sum(n_lst)
+  out = matrix(0, nrow = n, ncol = n)
+  
+  start_point = 1
+  
+  for(i in 1:length(lst)){
+    end_point = start_point + n_lst[i] - 1
+    indices = seq(from = start_point, to = end_point)
+    out[indices, indices] = lst[[i]]
+    start_point = start_point + n_lst[i]
+  }
+  
+  return(out)
+  
+}
+

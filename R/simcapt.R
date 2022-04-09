@@ -53,7 +53,7 @@ sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_c
                                    session_cov = session_cov, trap_cov = trap_cov, is_scale = NULL)
   }
 
-  
+  #write.csv(par.extend$data$mask, 'df_m_sim.csv', row.names = F)
   tem = sim.data.prepare(detfn, param, par.extend, traps, mask,
                          survey.length, random.location, n.sessions)
   dat_pars = tem$dat_pars
@@ -69,20 +69,21 @@ sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_c
   #however, the estimation of D is just wild, needs Ben's help about this issue.  
   
   if(n.rand == 1){
-    output = sim.from.param(detfn, dat_pars, dat.density, random.location,
+    capt = sim.from.param(detfn, dat_pars, dat.density, random.location,
                             dims, info.bucket, ss.opts, cue.rates, sound.speed)
   } else {
-    output = vector('list', n.rand)
+    capt = vector('list', n.rand)
     pb = utils::txtProgressBar(1, n.rand, style = 3)
     for(i in 1:n.rand){
-      output[[i]] = sim.from.param(detfn, dat_pars, dat.density, random.location,
+      capt[[i]] = sim.from.param(detfn, dat_pars, dat.density, random.location,
                                    dims, info.bucket, ss.opts, cue.rates, sound.speed)
       utils::setTxtProgressBar(pb, i)
     }
     close(pb)
   }
   
-  return(output)
+  return(list(capt = capt, args = list(detfn = detfn, traps = traps, mask = mask, par.extend = par.extend, ss.opts = ss.opts,
+                                       cue.rates = cue.rates, sound.speed = sound.speed, survey.length = survey.length)))
   
 }
 

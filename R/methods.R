@@ -89,10 +89,6 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
           if(nrow(new_covariates) != 1){
             stop('Argument "new_covariates" can only accept 1 row.')
           } else {
-            #deal with scaling
-            scale_fun = get_scale_cov(object)
-            new_covariates = scale_fun(new_covariates)
-            
             gam = get_gam(object, i)
             tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask, values_link, new_covariates)})
             if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided. Defaulty all parameters are assigned as "par".')
@@ -244,10 +240,6 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
         output[[type]] = delta_method_ascr_tmb(cov_linked, param_values, link_funs = link_funs)
         dimnames(output[[type]]) = list(name_dim, name_dim)
       } else {
-        #deal with scaling
-        scale_fun = get_scale_cov(object)
-        new_covariates = scale_fun(new_covariates)
-        
         gam.output = get_gam(object)
         tem = try({output[[type]] = delta_method_ascr_tmb(cov_linked, param_values, new_covariates = new_covariates, pars = pars,
                                                           name_og = name_og, name_extend = name_extend, df_param = df_param,
@@ -375,10 +367,14 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'defaul
                                      q_upper = q_upper)
     output_fitted = as.matrix(df_linked[, c('lower', 'upper')])
     df_param = get_data_param(object)
+    name_par_extend = get_par_extend_name(object)
+    
     for(i in 1:nrow(output_fitted)){
       par_name = ori_name(df_linked$par[i])
-      link = df_param[which(df_param$par == par_name), 'link']
-      output_fitted[i,] = unlink.fun(link = link, value = output_fitted[i,])
+      if(!par_name %in% name_par_extend){
+        link = df_param[which(df_param$par == par_name), 'link']
+        output_fitted[i,] = unlink.fun(link = link, value = output_fitted[i,])
+      }
     }
     rownames(output_fitted) = gsub("_link", "", df_linked$par)
     colnames(output_fitted) = col_name
@@ -492,9 +488,7 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
   
   
   if('D' %in% get_par_extend_name(fit)){
-    
-    scale_fun = get_scale_cov(fit)
-    
+
     #build the old_covariates
     ##we interpolate it again no matter there is new mask grid or not because in theory, user
     ##could use the same mask grid but different control_convert_loc2mask
@@ -587,7 +581,6 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
     gam.model = get_gam(fit, 'D')
     values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
     if(!is.null(set_zero)) values_link[set_zero] = 0
-    old_covariates = scale_fun(old_covariates)
     tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates, DX_output = TRUE)
     D.mask = unlink.fun(link = par_info$link, value = tem$output)
       

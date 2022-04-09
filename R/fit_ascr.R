@@ -80,8 +80,7 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
   #fgam is for compatibility with ADMB model
   fgam = o.par.extend$fgam
   gam_output = o.par.extend$gam_output
-  #scale.covs is used for scaling new input of covariates (if it is scaled in modeling)
-  scale.covs = o.par.extend$scale.covs
+  lst_mean_std = o.par.extend$lst_mean_std
   is.scale = o.par.extend$is.scale
   
   #we didn't modify the 'animal_ID' and 'ID' to successive natural number because in 'animal_ID' level
@@ -393,16 +392,66 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
     dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
   }
 
-  #browser()
+
   if(!("ss.het" %in% bucket_info)){
     obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, slient = (!tracing), DLL="ascrTmb")
   } else {
     obj <- TMB::MakeADFun(data = data, parameters = parameters, random = "u", map = map, slient = (!tracing), DLL="ascrTmb")
   }
-  
   obj$hessian <- TRUE
   opt = stats::nlminb(obj$par, obj$fn, obj$gr)
   o = TMB::sdreport(obj)
+  
+  #browser()
+  
+  #if is.scale, restore the estimated parameters' estimation and variance matrix to original scale
+  if(is.scale){
+    est_names = names(o$value)
+    u_names = unique(est_names)
+    #contains the first derivative matrices for each parameter
+    G_lst = vector('list', length(u_names))
+    names(G_lst) = u_names
+    
+    for(i in u_names){
+      index_u_name = which(est_names == i)
+      np = length(index_u_name)
+      if(i %in% name.extend.par){
+        #extract the mean_sd matrix. this matrix's first row is mean, and the 2nd row is sd.
+        #indices of columns correspond to location of each coefficient within the formula for
+        #that extended parameter
+        mean_sd = lst_mean_std[[i]]
+        G_lst[[i]] = matrix(0, nrow = np, ncol = np)
+        for(j in 1:np){
+          
+          if(j == 1){
+            G_lst[[i]][j, 1] = 1
+            for(k in 2:np){
+              G_lst[[i]][j, k] = -1 * mean_sd[1,k]/mean_sd[2,k]
+            }
+          } else {
+            G_lst[[i]][j, j] = 1/mean_sd[2, j]
+          }
+          
+        }
+        
+        
+        o$value[index_u_name] = G_lst[[i]] %*% o$value[index_u_name]
+        
+      } else {
+        G_lst[[i]] = diag(nrow = np)
+      }
+    }
+    
+    #restore the names
+    names(o$value) = est_names
+    
+    #combine all these matrix for all coefficient
+    G = diag_block_combine(G_lst)
+    o$cov = G %*% o$cov %*% t(G)
+    o$sd = sqrt(diag(o$cov))
+  }
+  
+  #browser()
   out = outFUN(data.par = data.par,
                data.full = data.full,
                data.traps = data.traps,
@@ -429,7 +478,6 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
                arg.input = arg.input,
                fgam = fgam,
                gam_output = gam_output,
-               scale.covs = scale.covs,
                is.scale = is.scale,
                ss.link = ss.link,
                cutoff = cutoff)
@@ -439,6 +487,24 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 }
 
 
+
+
+#' Title
+#'
+#'
+#' @param data 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+fit.ascr = function(data){
+  #extract the original input and pass it to the final output
+  arg.input = data$arg.input
+  data$arg.input = NULL
+  output = do.call('fit_og', data)
+  output$arg_input = arg.input
+}
 
 
 #' Title
@@ -462,46 +528,18 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 #' @param survey.length 
 #' @param sound.speed 
 #' @param local 
-#' @param fit 
-#' @param prepared_args 
-#' @param ... 
-
-#'
-#' @param captures 
-#' @param traps 
-#' @param detfn 
-#' @param sv 
-#' @param bounds 
-#' @param fix 
-#' @param ss.opts 
-#' @param control_create_mask 
-#' @param control_create_capt 
-#' @param loc_cov a list or a data.frame/matrix, if it is a data.frame/matrix, contains 'x' and 'y' as location and corresponding covariates. if 
-#' it is a list, each element is a data.frame/matrix with the same requirement of above, by imputing it as a list, users could provide different
-#' covariates measured in different sets of locations.
-#' @param control_convert_loc2mask 
-#' @param session_cov 
-#' @param trap_cov 
-#' @param par_extend_model 
-#' @param is_scale 
-#' @param cue.rates 
-#' @param survey.length 
-#' @param sound.speed 
-#' @param local 
-#' @param fit 
 #' @param tracing 
-#' @param prepared_args 
 #' @param ... 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
+fit.data = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
                     control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL, par_extend_model = NULL,
-                    is_scale = TRUE, cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE,
-                    fit = TRUE, tracing = TRUE, prepared_args = NULL, ...){
+                    is_scale = TRUE, cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, 
+                    tracing = TRUE, ...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))
@@ -513,72 +551,53 @@ fit.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
   }
   
   
-  if(is.null(prepared_args)){
-    arg = list(...)
-    control_create_capt$captures = captures
-    control_create_capt$traps = traps
-    capt = do.call('create.capt', control_create_capt)
-    
-    #obtain n.sessions, the output of create.capt differs based on the model type, if individual id included, then
-    #it is data.frame, otherwise, it is a list
-    if(is(capt, 'data.frame')){
-      n.sessions = max(capt$session)
-    } else {
-      if("bincapt" %in% names(capt)){
-        n.sessions = 1
-      } else {
-        n.sessions = length(capt)
-      }
-      
-    }
-    
-    traps = df_to_list(traps, n.sessions)
-    
-    stopifnot(!is.null(control_create_mask$buffer))
-    control_create_mask$traps = traps
-    mask = do.call('create.mask', control_create_mask)
-    
-    #if par_extend_model is assigned, we need to construct "par.extend" for model fitting
-    par.extend = par_extend_create(par_extend_model, loc_cov = loc_cov, mask = mask,
-                                   control_convert_loc2mask = control_convert_loc2mask,
-                                   session_cov = session_cov, trap_cov = trap_cov)
-    
-    
-    arg$capt = capt
-    arg$traps = traps
-    arg$mask = mask
-    arg$detfn = detfn
-    arg$sv = sv
-    arg$bounds = bounds
-    arg$fix = fix
-    arg$ss.opts = ss.opts
-    arg$par.extend = par.extend
-    arg$cue.rates = cue.rates
-    arg$survey.length = survey.length
-    arg$sound.speed = sound.speed
-    arg$local = local
-    arg$tracing = tracing
-    
-    if(fit){
-      output = do.call('fit_og', arg)
-      output$arg_input = arg.input
-      return(output)
-    } else {
-      return(arg)
-    }
+
+  output = list(...)
+  control_create_capt$captures = captures
+  control_create_capt$traps = traps
+  capt = do.call('create.capt', control_create_capt)
+  
+  #obtain n.sessions, the output of create.capt differs based on the model type, if individual id included, then
+  #it is data.frame, otherwise, it is a list
+  if(is(capt, 'data.frame')){
+    n.sessions = max(capt$session)
   } else {
-    if(fit){
-      output = do.call('fit_og', prepared_args)
-      output$arg_input = arg.input
-      return(output)
+    if("bincapt" %in% names(capt)){
+      n.sessions = 1
     } else {
-      return(prepared_args)
+      n.sessions = length(capt)
     }
+    
   }
   
-
+  traps = df_to_list(traps, n.sessions)
+  
+  stopifnot(!is.null(control_create_mask$buffer))
+  control_create_mask$traps = traps
+  mask = do.call('create.mask', control_create_mask)
+  
+  #if par_extend_model is assigned, we need to construct "par.extend" for model fitting
+  par.extend = par_extend_create(par_extend_model, loc_cov = loc_cov, mask = mask,
+                                 control_convert_loc2mask = control_convert_loc2mask,
+                                 session_cov = session_cov, trap_cov = trap_cov)
+  
+  output$capt = capt
+  output$traps = traps
+  output$mask = mask
+  output$detfn = detfn
+  output$sv = sv
+  output$bounds = bounds
+  output$fix = fix
+  output$ss.opts = ss.opts
+  output$par.extend = par.extend
+  output$cue.rates = cue.rates
+  output$survey.length = survey.length
+  output$sound.speed = sound.speed
+  output$local = local
+  output$tracing = tracing
+  
+  #arg.input is not used for fit_og, but we need this to be passed to the final model fit object
+  output$arg.input = arg.input
+  return(output)
 }
-
-
-
 

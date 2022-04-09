@@ -7,8 +7,6 @@
 convert.traps(traps, ss = FALSE)
 }
 \arguments{
-\item{traps}{}
-
 \item{ss}{Logical, set to \code{TRUE} if a signal strength
 detection function is to be used.}
 }

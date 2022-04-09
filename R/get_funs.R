@@ -198,11 +198,6 @@ get_DX_new_gam = function(mod, newdata){
   return(output)
 }
 
-get_scale_cov = function(fit){
-  output = fit$scale.covs
-  return(output)
-}
-
 get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked, new_covariates, DX_output = FALSE){
   if(n_col_full > 1){
     gam.model = gam$gam_non_mask
@@ -247,7 +242,6 @@ get_default_covariates = function(fit){
     tem = dat[[i]]
     tem = tem[, which(!colnames(tem) %in% c('session','ID','trap','mask')), drop = FALSE]
     tem = as.data.frame(apply(tem, 2, mean_diy, simplify = FALSE))
-    tem = fit$scale.covs(tem)
     o[[i]] = tem
   }
   

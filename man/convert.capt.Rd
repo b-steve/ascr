@@ -18,8 +18,6 @@ convert.capt.to.secr(capt, traps, capthist = TRUE, cutoff = NULL)
 \code{convert.capt.to.ascr}, or an \code{ascr} capture
 history object for \code{convert.capt.to.secr}.}
 
-\item{traps}{}
-
 \item{capthist}{Logical, if \code{TRUE}, a \code{capthist} object
 is returned. Otherwise a data frame is returned, which is
 suitable for the \code{captures} argument to the

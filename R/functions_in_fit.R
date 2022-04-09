@@ -395,6 +395,9 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
   fgam = NULL
   
   #scale default is set as TRUE
+  #create a list to store the mean and std of each
+  #component in the formula
+  lst_mean_std = list()
   if(is.null(par.extend$scale)){
     is.scale = TRUE
   } else {
@@ -540,20 +543,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
       stop('duplicated column name across different level data sets.')
     }
     
-    #scale.covs needs to deal with each var.ex separately
-    #record their mean and std
-    var.ex.info = vector('list', length(var.ex))
-    names(var.ex.info) = var.ex
-    for(i in var.ex){
-      if(!(i %in% var.m)){
-        tem = data.par.non.mask[, i]
-      } else {
-        tem = data.par.mask[, i]
-      }
-      if(is.scale & is.numeric(tem)) var.ex.info[[i]] = c(mean(tem), sd(tem))
-    }
     
-    scale.covs = scale.closure(var.ex.info)
     
     gam_output = vector('list', length = length(name.extend.par))
     names(gam_output) = name.extend.par
@@ -592,6 +582,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
       gam_output[[i]] = vector('list', 2)
       names(gam_output[[i]]) = c('gam_non_mask', 'gam_mask')
       
+      
       if(length(foo_full_var) > 0){
         #avoid any NA
         tem = as.data.frame(lapply(data.par.non.mask[, foo_full_var, drop = FALSE], is.na), stringsAsFactors = FALSE)
@@ -604,16 +595,6 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
         tem.data = data.par.non.mask
         tem.data[['gam.resp']] = 1
         
-        for(j in foo_full_var){
-          if(is.scale){
-            if(is(tem.data[[j]], 'numeric')){
-              mu = mean(tem.data[[j]])
-              std = stats::sd(tem.data[[j]])
-              if(std == 0) stop(paste0("input of ", j, " is constant."))
-              tem.data[[j]] = (tem.data[[j]] - mu)/std
-            }
-          }
-        }
         
         tem_model = mgcv::gam(foo_full, data = tem.data, fit = FALSE)
         gam_output[[i]][['gam_non_mask']] = tem_model
@@ -621,6 +602,24 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
         n_col_full = ncol(design.matrix)
         design.matrix = as.data.frame(design.matrix, stringsAsFactors = FALSE)
         colnames(design.matrix) = paste(i, "_", colnames(design.matrix), sep = " ")
+        
+        #standardize the design matrix if is.scale
+        if(is.scale){
+          col_mean = apply(design.matrix, 2, mean)
+          col_sd = apply(design.matrix, 2, stats::sd)
+          
+          lst_mean_std[[i]] = rbind(col_mean, col_sd)
+          nrow_X = nrow(design.matrix)
+          mean_matrix = matrix(rep(col_mean, nrow_X), nrow = nrow_X, byrow = T)
+          #modify its first column to be 0 as we do not scale intercept column, it should be just 1
+          mean_matrix[,1] = 0
+          sd_matrix = matrix(rep(col_sd, nrow_X), nrow = nrow_X, byrow = T)
+          #modify its first column to be 1 as we do not scale intercept column, it should be just 1
+          sd_matrix[,1] = 1
+          design.matrix = (design.matrix - mean_matrix)/sd_matrix
+        }
+        
+        
         design.matrix[['session']] = tem.data[['session']]
         if(!is.null(tem.data[['trap']])) design.matrix[['trap']] = tem.data[['trap']]
         if(!is.null(tem.data[['animal_ID']])) design.matrix[['animal_ID']] = tem.data[['animal_ID']]
@@ -634,6 +633,10 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
         #there is no intercept column in data.mask
         data.par.non.mask[[paste0(i, ' _ (Intercept)')]] = 1
         n_col_full = 1
+        if(is.scale){
+          lst_mean_std[[i]] = matrix(c(1, 0), nrow = 2, dimnames = list(c('col_mean', 'col_sd'), 
+                                                                        paste0(i, ' _ (Intercept)')))
+        }
       }
       
       
@@ -647,16 +650,6 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
         tem.data = data.par.mask
         tem.data[['gam.resp']] = 1
         
-        for(j in foo_mask_var){
-          if(is.scale){
-            if(is(tem.data[[j]], 'numeric')){
-              mu = mean(tem.data[[j]])
-              std = stats::sd(tem.data[[j]])
-              if(std == 0) stop(paste0("input of ", j, " is constant."))
-              tem.data[[j]] = (tem.data[[j]] - mu)/std
-            }
-          }
-        }
         
         #delete the first column, which is intercept
         tem_model = mgcv::gam(foo_mask, data = tem.data, fit = FALSE)
@@ -666,6 +659,23 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
         n_col_mask = ncol(design.matrix)
         design.matrix = as.data.frame(design.matrix, stringsAsFactors = FALSE)
         colnames(design.matrix) = paste(i, "_", colnames(design.matrix), sep = " ")
+        
+        #standardize the design matrix if is.scale
+        if(is.scale){
+          col_mean = apply(design.matrix, 2, mean)
+          col_sd = apply(design.matrix, 2, stats::sd)
+          
+          lst_mean_std[[i]] = cbind(lst_mean_std[[i]], rbind(col_mean, col_sd))
+          
+          nrow_X = nrow(design.matrix)
+          mean_matrix = matrix(rep(col_mean, nrow_X), nrow = nrow_X, byrow = T)
+          sd_matrix = matrix(rep(col_sd, nrow_X), nrow = nrow_X, byrow = T)
+          
+          #here we do not modify the first column because in the mask related design matrx, the
+          #intercept column has been removed.
+          design.matrix = (design.matrix - mean_matrix)/sd_matrix
+        }
+        
         design.matrix[['session']] = tem.data[['session']]
         design.matrix[['mask']] = tem.data[['mask']]
         data.par.mask = merge(data.par.mask, design.matrix,
@@ -715,8 +725,6 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
     }
     name.extend.par = NULL
     gam_output = NULL
-    #if nothing extended, scale.covs just return the input
-    scale.covs = function(covariates) return(covariates)
   }
   
   #finally, record the link, here we only check whether the name is in the full list of parameters,
@@ -765,7 +773,7 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
   
   return(list(data.full = data.full, data.mask = data.mask, data.par = df.par, is.scale = is.scale,
               name.extend.par = name.extend.par, fgam = fgam, gam_output= gam_output,
-              scale.covs = scale.covs))
+              lst_mean_std = lst_mean_std))
 }
 
 
@@ -1377,14 +1385,14 @@ param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn
 
 outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas, detfn, param.og, param.og.4cpp, o, opt,
                   name.fixed.par, name.extend.par, dims, DX.full, DX.mask, fix.input, bucket_info, cue.rates, mean.cue.rates, A,
-                  survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, scale.covs, is.scale, ss.link, cutoff){
+                  survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, is.scale, ss.link, cutoff){
   ###################################################################################################################
   #sort out output for the function
-  out = vector('list', 36)
+  out = vector('list', 35)
   names(out) = c("fn", "coefficients", "coeflist", "se", "loglik", "maxgrad", "cor", "vcov", "npar", "npar_re",
                  "npar_sdrpt", "npar_rep", "npar_total", "hes", "eratio", "D.mask", "mm.ihd", "args", "n.sessions",
                  "fit.types", "infotypes", "detpars", "suppars", "D.betapars", "phases", "par.links", "par.unlinks",
-                 "fit.ihd", "re.detfn", "fit.freqs", "first.calls", "scale.covs", "model.formula", "fgam", "all.covariates",
+                 "fit.ihd", "re.detfn", "fit.freqs", "first.calls", "model.formula", "fgam", "all.covariates",
                  "output.tmb")
   #create output for TMB model
   out[['output.tmb']] = vector('list', 20)
@@ -1857,15 +1865,9 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
   out$first.calls = FALSE
   
   
-  #######################################################################################################
-  #the 32nd component: 'scale.covs'
-  #from the code, it seems this is a function receive data.frame as input and output a data.frame as well
-  #not 100% sure
-  
-  out$scale.covs = scale.covs
   
   #######################################################################################################
-  #the 33rd component: 'model.formula'
+  #the 32nd component: 'model.formula'
   if('D' %in% name.extend.par){
     out$model.formula = stats::as.formula(paste(c('gam.resp', as.character(par.extend$model$D)), collapse = ''))
   } else {
@@ -1873,11 +1875,11 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
   }
   
   ########################################################################################################
-  #the 34th component: 'fgam'
+  #the 33rd component: 'fgam'
   out$fgam = fgam
   
   ########################################################################################################
-  #the 35th component: 'all.covariates'
+  #the 34th component: 'all.covariates'
   if(is(out$args$mask, 'list')){
     out$all.covariates = do.call('rbind', out$args$mask)
   } else {

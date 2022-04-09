@@ -31,7 +31,6 @@ outFUN(
   arg.input,
   fgam,
   gam_output,
-  scale.covs,
   is.scale,
   ss.link,
   cutoff
