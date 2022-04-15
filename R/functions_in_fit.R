@@ -750,6 +750,10 @@ par.extend.fun = function(par.extend, data.full, data.mask, animal.model, dims, 
       #currently we only support three link functions
       stopifnot(link[[j]] %in% c('log', 'logit', 'identity'))
       
+      #currently we only support log function as the link function for density
+      #because of the function delta_for_pred() in the file "support_functions.R"
+      if(i == 'D') stopifnot(link[[i]] == 'log')
+      
       df.par[j, 'link'] = link[[i]]
     } else {
       #set default 'link' if it is not provided

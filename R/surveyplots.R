@@ -174,12 +174,13 @@ show_detfn_tmb <- function(fit, new_covariates = NULL, param_extend_skip = NULL,
 #' @export
 #'
 #' @examples
-show_Dsurf <- function(fit, session = 1, show.cv = FALSE, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
+show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
                         x_pixels = 50, y_pixels = 50, zlim = NULL, scale = 1, plot_contours = TRUE,
-                        add = FALSE, control_convert_loc2mask= NULL){
+                        add = FALSE, control_convert_loc2mask= NULL, ...){
+  extra_args = list(...)
   
-  pred = predict(fit, session_select = session, new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
-                 x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv, control_convert_loc2mask= control_convert_loc2mask)
+  pred = predict_with_location(fit, session_select = ifelse(is.null(session), 1, session), new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
+                                x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv, control_convert_loc2mask= control_convert_loc2mask)
   
   mask = as.matrix(pred[, c('x', 'y')])
   if(!show.cv){
@@ -196,12 +197,9 @@ show_Dsurf <- function(fit, session = 1, show.cv = FALSE, new_data = NULL, D_cov
   }
   
 
-  mask.keep <- xlim[1] <= mask[, 1] & xlim[2] >= mask[, 1] &
-    ylim[1] <= mask[, 2] & ylim[2] >= mask[, 2]
-  mask <- mask[mask.keep, ]
   unique.x <- sort(unique(mask[, 1]))
   unique.y <- sort(unique(mask[, 2]))
-  z <- squarify(mask, D.mask[mask.keep])
+  z <- squarify(mask, D.mask)
   
 
   if(!show.cv){
@@ -214,17 +212,26 @@ show_Dsurf <- function(fit, session = 1, show.cv = FALSE, new_data = NULL, D_cov
   z[z > zlim[2]] <- zlim[2]
   levels <- pretty(zlim, 10)
   if (!add){
-    plot(mask, type = "n", asp = 1, xlab = "", ylab = "")
+    plot(mask, type = "n", asp = 1, xlab = "", ylab = "", xlim = xlim, ylim = ylim)
   }
   fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis::viridis(100), add = TRUE)
   
-  traps = get_trap(fit)[[session]]
+  if(!is.null(session)){
+    traps = get_trap(fit)[[session]]
+    trap_plot = extra_args$trap_plot
+    if(is.null(trap_plot$col)) trap_col = 1
+    if(is.null(trap_plot$pch)) trap_pch = 4
+    if(is.null(trap_plot$lwd)) trap_lwd = 2
+    points(traps, col = trap_col, pch = trap_pch, lwd = trap_lwd)
+  }
   
-  points(traps, col = "black", pch = 4, lwd = 2)
+  
+  
   if (plot_contours){
     contour(x = unique.x, y = unique.y, z = z, levels = levels,
             drawlabels = TRUE, add = TRUE)
   }
+  invisible(pred)
 }
 
 

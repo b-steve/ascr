@@ -1386,21 +1386,46 @@ sim_args_generator = function(sim_name){
     n.sessions = 3
     survey.length = c(1, 2, 1)
   } else if(sim_name == 'ind_toa_hhn'){
-    param = list(sigma = 2.13, lambda0 = 8.33, sigma.toa = 0.0011, D = c(6.21, 0.05), mu = 8.2)
+    param = list(sigma = 2.13, lambda0 = 8.33, sigma.toa = 0.0011, D = c(6.81, -0.12), mu = 8.2)
     detfn = 'hhn'
     control_create_mask = list(buffer = 15)
     session_cov = NULL
     trap_cov = NULL
-    #loc_cov = NULL
     par_extend_model = list(D = ~noise)
     n.sessions = 2
     
   } else if(sim_name == 'ind_ss'){
-    
+    param = list(b0.ss = c(4.72, 0.14), b1.ss = 0.8872, sigma.ss = 10.1, D = c(4.3, -0.1), mu = 8.3)
+    detfn = 'ss'
+    control_create_mask = list(buffer = 15)
+    session_cov = NULL
+    par_extend_model = list(D=~noise, b0.ss=~brand)
+    n.sessions = 3
+    ss.opts = list(cutoff = 60)
   } else if(sim_name == 'ind_ss_log'){
-    
+    ##################################################################################################
+    #seems that the estimation is biased, check it further
+    param = list(b0.ss = 5.35, b1.ss = 0.08, sigma.ss = 9.788, D = 67, mu = 8.3)
+    detfn = 'ss'
+    control_create_mask = list(buffer = 15)
+    session_cov = NULL
+    trap_cov = NULL
+    loc_cov = NULL
+    n.sessions = 3
+    ss.opts = list(cutoff = 75, ss.link = 'log')
+    ####################################################################################################
   } else if(sim_name == 'ind_ss_sp'){
-    
+    ##################################################################################################
+    #seems that the estimation is biased, check it further
+    param = list(b0.ss = 100.25, b1.ss = 0.082, sigma.ss = 9.788, D = 52, mu = 9.1)
+    detfn = 'ss'
+    control_create_mask = list(buffer = 15)
+    session_cov = NULL
+    trap_cov = NULL
+    loc_cov = NULL
+    n.sessions = 3
+    ss.opts = list(cutoff = 75, ss.link = 'spherical')
+    ##################################################################################################
   }
   
   
@@ -1456,11 +1481,11 @@ fit_args_generator_from_sim = function(sim_name, fit_args){
   } else if(sim_name == 'ind_toa_hhn'){
     #nothing need to be done
   } else if(sim_name == 'ind_ss'){
-    
+    #nothing need to be done
   } else if(sim_name == 'ind_ss_log'){
-    
+    #nothing need to be done
   } else if(sim_name == 'ind_ss_sp'){
-    
+    #nothing need to be done
   }
   
   return(output)

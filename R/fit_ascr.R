@@ -504,6 +504,8 @@ fit.ascr = function(data){
   data$arg.input = NULL
   output = do.call('fit_og', data)
   output$arg_input = arg.input
+  
+  return(output)
 }
 
 

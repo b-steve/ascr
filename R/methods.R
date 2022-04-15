@@ -351,7 +351,7 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'defaul
   
   types = unique(types)
   
-  if(level < 0.5) stop('argument "level" cannot be above 0.5')
+  stopifnot(all(level < 1 & level > 0))
   p_upper = 0.5 + 0.5 * level
   p_lower = 0.5 - 0.5 * level
   col_name = paste(c(p_lower, p_upper) * 100, "%", sep = " ")
@@ -430,29 +430,137 @@ AIC.ascr_tmb = function(object, k = 2){
 
 
 #' Title
-#'
-#' @param fit 
-#' @param session_select 
-#' @param new_data 
-#' @param D_cov 
-#' @param xlim 
-#' @param ylim 
-#' @param x_pixels 
-#' @param y_pixels 
-#' @param se_fit 
-#' @param log_scale 
-#' @param set_zero 
-#' @param control_convert_loc2mask 
+#' 
+#' @param object 
+#' @param newdata 
+#' @param session 
+#' @param type 
+#' @param se.fit 
+#' @param confidence 
+#' @param level 
 #' @param ... 
 #' 
-#'
 #' @return
 #' @export
 #'
 #' @examples
-predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
-                            x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, 
-                            control_convert_loc2mask = NULL, ...){
+predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link', se.fit = FALSE, confidence = FALSE, level = 0.95, ...){
+  
+  if(is.null(newdata) & is.null(session)) session = 1
+  if(!is.null(newdata) & !is.null(session)){
+    warning("argument 'newdata' and 'session' could not be assigned at the same time, 'session' will be ignored.")
+    session = NULL
+  }
+  
+  stopifnot(type %in% c('link', 'response'))
+  
+  if(confidence){
+    se.fit = TRUE
+    stopifnot(all(level < 1 & level > 0))
+  }
+  
+  
+  if('D' %in% get_par_extend_name(object)){
+    
+    if(is.null(newdata)){
+      #use the selected session's masks and corresponding covariates as newdata
+      
+      mask = get_mask(object)
+      if(is(mask, 'list')) mask = mask[[session]]
+      colnames(mask) = c('x', 'y')
+      newdata = as.data.frame(mask)
+      cov_mask = get_par_extend_data(object)$mask
+      if(!is.null(cov_mask)){
+        if('session' %in% colnames(cov_mask)) cov_mask = cov_mask[cov_mask$session == session, ,drop = FALSE]
+        if(any(c('x', 'y') %in% colnames(cov_mask))) cov_mask = cov_mask[, which(!colnames(cov_mask) %in% c('x', 'y')),drop = FALSE]
+        stopifnot(nrow(mask) == nrow(cov_mask))
+        newdata = cbind(newdata, cov_mask)
+      }
+      
+      cov_session = get_par_extend_data(object)$session
+      if(!is.null(cov_session)){
+        cov_session = cov_session[cov_session$session == session, ,drop = FALSE]
+        cov_session = cov_session[,which(colnames(cov_session) != 'session'), drop = FALSE]
+        stopifnot(nrow(cov_session) == 1)
+        newdata = cbind(newdata, cov_session)
+      }
+    }
+    
+      
+    par_info = get_data_param(object)
+    par_info = subset(par_info, par == 'D')
+    gam.model = get_gam(object, 'D')
+    values_link = as.vector(coef(object, types = 'linked', pars = 'D'))
+
+    tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask, values_link, newdata, DX_output = TRUE)
+    if(type == 'link'){
+      est = tem$output
+    } else if(type == 'response'){
+      est = unlink.fun(link = par_info$link, value = tem$output)
+    }
+      
+    if(se.fit){
+      DX = tem$DX
+      vcov_matrix = vcov(fit, types = 'linked', pars = 'D')
+      if(type == 'link'){
+        log_scale = TRUE
+      } else if(type == 'response'){
+        log_scale = FALSE
+      }
+      std = sqrt(delta_for_pred(DX, values_link, vcov_matrix, log_scale))
+    }
+    
+    
+  } else {
+    #when D is not extended, it is just a constant
+    if(type == 'link'){
+      tem = 'linked'
+    } else if(type == 'response'){
+      tem = 'fitted'
+    }
+    
+    est <- coef(object, types = tem, pars = 'D')
+    if(se.fit){
+      std = stdEr(object, types = tem, pars = 'D')
+    }
+    
+  }
+  output = est
+  col_name = c('est')
+  if(se.fit){
+    col_name = c(col_name, 'std')
+    output = cbind(est, std)
+    colnames(output) = col_name
+  }
+  
+  
+  if(confidence){
+    p_upper = 0.5 + 0.5 * level
+    p_lower = 0.5 - 0.5 * level
+    
+    q_upper = qnorm(p_upper)
+    q_lower = qnorm(p_lower)
+    upper_lim = est + q_upper * std
+    lower_lim = est + q_lower * std
+    col_name = c(col_name, paste(c(p_lower, p_upper) * 100, "%", sep = " "))
+    output = cbind(output, lower_lim)
+    output = cbind(output, upper_lim)
+    colnames(output) = col_name
+  }
+  
+  return(output)
+}
+
+
+
+
+
+#predict density with information of locations coordinates, only used in the plot currently
+#this function is a little bit ambiguous that I'm not sure this function should be here or the "support_functions.R"
+#leave it here temporarily.
+predict_with_location = function(fit, session_select = 1, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
+                                  x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, 
+                                  control_convert_loc2mask = NULL, ...){
   
   
   if(!is.null(set_zero) & se_fit){
@@ -483,12 +591,12 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
     mask = new_data[, c('x', 'y')]
   }
   
-
+  
   
   
   
   if('D' %in% get_par_extend_name(fit)){
-
+    
     #build the old_covariates
     ##we interpolate it again no matter there is new mask grid or not because in theory, user
     ##could use the same mask grid but different control_convert_loc2mask
@@ -535,7 +643,7 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
       #so we create 2 data frame, one for all new covariates, and one for old covariates. We must make sure these two data frame
       #contains the same mask points, and then replace the covariates in the "old" data frame with the same column in the "new",
       #if the same covariate appears in the "new" data frame.
-      if(!is.nul(new_data)){
+      if(!is.null(new_data)){
         #in new_data, user could include any location related covariates directly, and it also contains x and y,
         #so we could directly use it instead of mask
         new_covariates = as.data.frame(new_data)
@@ -566,7 +674,7 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
         for(i in colnames(D_cov$session)) new_covariates[[i]] = D_cov$session[1,i]
         
       }
-    
+      
       #update the old_covariates by the new_covariates
       
       for(i in colnames(old_covariates)){
@@ -575,7 +683,7 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
         }
       }
     }
-      
+    
     par_info = get_data_param(fit)
     par_info = subset(par_info, par == 'D')
     gam.model = get_gam(fit, 'D')
@@ -583,7 +691,7 @@ predict.ascr_tmb = function(fit, session_select = 1, new_data = NULL, D_cov = NU
     if(!is.null(set_zero)) values_link[set_zero] = 0
     tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates, DX_output = TRUE)
     D.mask = unlink.fun(link = par_info$link, value = tem$output)
-      
+    
     if(se_fit){
       DX = tem$DX
       vcov_matrix = vcov(fit, types = 'linked', pars = 'D')

@@ -191,6 +191,10 @@ get_DX_new_gam = function(mod, newdata){
   newdata = newdata[, names(mod$var.summary), drop = FALSE]
   
   newdata$gam.resp = 1
+  #it is poissible that the olddata here is super big, but considering the fact that we need to make sure
+  #include all levels for the categorical variable, we can only do it in this way.
+  #try to make it more efficient by generating design matrix based on the newdata only, maybe we could 
+  #read all levels for any categorical variables from the "mod" object, and do the trick
   olddata = mod$mf
   dat = rbind(olddata, newdata)
   output = mgcv::gam(mod$formula, data = dat, fit = FALSE)$X
