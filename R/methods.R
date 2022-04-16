@@ -501,7 +501,7 @@ predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link
       
     if(se.fit){
       DX = tem$DX
-      vcov_matrix = vcov(fit, types = 'linked', pars = 'D')
+      vcov_matrix = vcov(object, types = 'linked', pars = 'D')
       if(type == 'link'){
         log_scale = TRUE
       } else if(type == 'response'){
