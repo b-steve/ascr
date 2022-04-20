@@ -212,9 +212,13 @@ show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_
   z[z > zlim[2]] <- zlim[2]
   levels <- pretty(zlim, 10)
   if (!add){
-    plot(mask, type = "n", asp = 1, xlab = "", ylab = "", xlim = xlim, ylim = ylim)
+    #plot(mask, type = "n", asp = 1, xlab = "", ylab = "", xlim = xlim, ylim = ylim)
+    fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis::viridis(100), 
+                       asp = 1, xlim = xlim, ylim = ylim, xlab = "", ylab = "")
+  } else {
+    fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis::viridis(100), add = TRUE)
   }
-  fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis::viridis(100), add = TRUE)
+  
   
   if(!is.null(session)){
     traps = get_trap(fit)[[session]]

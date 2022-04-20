@@ -568,6 +568,7 @@ predict_with_location = function(fit, session_select = 1, new_data = NULL, D_cov
     set_zero = NULL
   }
   
+  original_mask = FALSE
   
   if(is.null(new_data)){
     
@@ -580,19 +581,16 @@ predict_with_location = function(fit, session_select = 1, new_data = NULL, D_cov
       mask = data.frame(x = rep(x, each = y_pixels), y = rep(y, x_pixels))
     } else {
       mask = get_mask(fit)[[session_select]]
+      original_mask = TRUE
     }
     
   } else {
-    
     #if new_data is provided, then xlim and ylim will just do what they are supposed to do,
     #to trim the plot instead of building "mask"
     stopifnot(any(is(new_data, 'data.frame'), is(new_data, 'matrix')))
     stopifnot(all(c('x', 'y') %in% colnames(new_data)))
     mask = new_data[, c('x', 'y')]
   }
-  
-  
-  
   
   
   if('D' %in% get_par_extend_name(fit)){
@@ -602,19 +600,67 @@ predict_with_location = function(fit, session_select = 1, new_data = NULL, D_cov
     ##could use the same mask grid but different control_convert_loc2mask
     
     old_covariates = as.data.frame(mask)
+    
     old_loc_cov = get_loc_cov(fit)
     
-    if(!is.null(old_loc_cov)){
-      if(is.null(control_convert_loc2mask)){
-        control_convert_loc2mask = vector('list', 2)
-        names(control_convert_loc2mask) = c('mask', 'loc_cov')
+    #when we cannot find loc_cov from the model fitting object, it is possible the D is
+    #not mask-level extended, it is also possible that the model fitting object comes
+    #from simulation_study/demo, in the demo, we directly assign mask-level covariates
+    #on each mask point
+    mask_level_dat_extract = FALSE
+    if(is.null(old_loc_cov)){
+      old_loc_cov = get_par_extend_data(fit)$mask
+      if(!is.null(old_loc_cov)){
+        mask_level_dat_extract = TRUE
+        if('session' %in% colnames(old_loc_cov)){
+          old_loc_cov = subset(old_loc_cov, session == session_select)
+        }
+        
+        #when locations/mask in prediction is assigned by xlim/ylim or new_data, we use
+        #the original mask_level data as loc_cov, otherwise, we do not need to do
+        #conversion in the first place
+        if(!original_mask){
+          
+          if('session' %in% colnames(old_loc_cov)){
+            old_loc_cov = old_loc_cov[,which(colnames(old_loc_cov)!='session'),drop = FALSE]
+          }
+          if('mask' %in% colnames(old_loc_cov)){
+            old_loc_cov = old_loc_cov[,which(colnames(old_loc_cov)!='mask'),drop = FALSE]
+          }
+          
+          tem_mask = get_mask(fit)
+          if(is(tem_mask, 'list')) tem_mask = tem_mask[[session_select]]
+          stopifnot(nrow(old_loc_cov) == nrow(tem_mask))
+          old_loc_cov = cbind(tem_mask, old_loc_cov)
+          
+        }
       }
-      control_convert_loc2mask$mask = list(mask)
-      control_convert_loc2mask$loc_cov = old_loc_cov
+
+    }
+    
+    
+    if(!is.null(old_loc_cov)){
+      #like mentioned right above, if we are using original mask data, and mask-level covariates data
+      #we do not need to do conversion at all
+      if(mask_level_dat_extract & original_mask){
+        cov_mask = old_loc_cov
+      } else {
+        if(is.null(control_convert_loc2mask)){
+          control_convert_loc2mask = vector('list', 2)
+          names(control_convert_loc2mask) = c('mask', 'loc_cov')
+        }
+        control_convert_loc2mask$mask = list(mask)
+        control_convert_loc2mask$loc_cov = old_loc_cov
+        
+        cov_mask = do.call('location_cov_to_mask', control_convert_loc2mask)
+      }
       
+      if(any(colnames(cov_mask) %in% c('session', 'mask'))){
+        old_covariates = cbind(old_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
+      } else {
+        old_covariates = cbind(old_covariates, cov_mask)
+      }
       
-      cov_mask = do.call('location_cov_to_mask', control_convert_loc2mask)
-      old_covariates = cbind(old_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
     }
     
     
@@ -689,6 +735,7 @@ predict_with_location = function(fit, session_select = 1, new_data = NULL, D_cov
     gam.model = get_gam(fit, 'D')
     values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
     if(!is.null(set_zero)) values_link[set_zero] = 0
+
     tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates, DX_output = TRUE)
     D.mask = unlink.fun(link = par_info$link, value = tem$output)
     
