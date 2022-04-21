@@ -188,15 +188,45 @@ get_gam = function(fit, param = NULL, which.level = NULL){
 }
 
 get_DX_new_gam = function(mod, newdata){
-  newdata = newdata[, names(mod$var.summary), drop = FALSE]
+  var_names = names(mod$var.summary)
+  try({newdata = newdata[, var_names, drop = FALSE]})
+  #make sure the new data are in the right data type
+  for(i in var_names){
+    if(is.null(newdata[[i]])) stop(paste0('covariate: ', i, " is not provided."))
+    if(is(mod$var.summary[[i]], 'factor')) newdata[[i]] = as.character(newdata[[i]])
+    if(is(mod$var.summary[[i]], 'numeric')) newdata[[i]] = as.numeric(newdata[[i]])
+  } 
   
-  newdata$gam.resp = 1
-  #it is poissible that the olddata here is super big, but considering the fact that we need to make sure
-  #include all levels for the categorical variable, we can only do it in this way.
-  #try to make it more efficient by generating design matrix based on the newdata only, maybe we could 
-  #read all levels for any categorical variables from the "mod" object, and do the trick
-  olddata = mod$mf
+  #construct the "old data", make sure it has all levels for all categorical variables
+  olddata = vector('list', length(var_names))
+  names(olddata) = var_names
+  for(i in var_names){
+    if(is(mod$var.summary[[i]], 'factor')){
+      #var.summary[[i]] is a factor is the explanatory variable is a categorical one
+      #and the levels() returns a character vector, just what we want
+      #one potential problem, if the gam object was built by the data which contains "factor" class
+      #column in the first place, and it contains for example 5 levels, but in the data, this column
+      #only has 4 levels. However, I guess this scenario is extremely unlikely to happen.
+      olddata[[i]] = levels(mod$var.summary[[i]])
+    } else if(is(mod$var.summary[[i]], 'numeric')){
+      olddata[[i]] = 1
+    } else {
+      #actually I never see any other class, just leave an "in-case" step here
+      stop(paste0('unknown data type in one of gam model objects, the variable name is: ', i, 
+                  ', please check the relevant data.'))
+    }
+  }
+  
+  #adjust the length, make sure all element in this list have the same length
+  len = max(sapply(olddata, 'length'))
+  
+  for(i in var_names) olddata[[i]] = rep(olddata[[i]], length = len)
+  
+  
+  olddata = as.data.frame(olddata)
+  
   dat = rbind(olddata, newdata)
+  dat$gam.resp = 1
   output = mgcv::gam(mod$formula, data = dat, fit = FALSE)$X
   output = output[(nrow(olddata) + 1):nrow(dat), , drop = FALSE]
   return(output)

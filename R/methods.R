@@ -91,7 +91,9 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
           } else {
             gam = get_gam(object, i)
             tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask, values_link, new_covariates)})
-            if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided. Defaulty all parameters are assigned as "par".')
+            if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
+                                          Defaulty all parameters are assigned as "par".
+                                          And please make sure all categorical variables do not contain any new category.')
             names(values_fitted) = i
           }
         }
