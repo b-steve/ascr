@@ -1,3 +1,25 @@
+#' Title
+#'
+#' @param capt 
+#' @param traps 
+#' @param mask 
+#' @param detfn 
+#' @param sv 
+#' @param bounds 
+#' @param fix 
+#' @param ss.opts 
+#' @param cue.rates 
+#' @param survey.length 
+#' @param sound.speed 
+#' @param local 
+#' @param par.extend 
+#' @param tracing 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL, cue.rates = NULL,
                   survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, tracing = TRUE, ...){
   #keep all original input arguments
