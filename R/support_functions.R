@@ -1276,21 +1276,52 @@ par_extend_create = function(model, loc_cov = NULL, mask = NULL, control_convert
 }
 
 
+demo_traps = function(){
+  o = data.frame(x = rep(c(0,5) ,each = 3), y = rep(c(0, 5, 10), 2))
+  return(o)
+}
+
+demo_traps2 = function(){
+  o = data.frame(x = rep(20, 3), y = c(20, 25, 30))
+  return(o)
+}
+
+demo_session_cov = function(){
+  o = data.frame(session = 1:3, weather = c('sunny', 'rainy', 'sunny'))
+  return(o)
+}
+
+demo_trap_cov = function(){
+  o = data.frame(trap = 1:6, brand = rep(c('sony', 'panasonic'), each = 3))
+  return(o)
+}
+
+demo_trap_cov2 = function(){
+  o = data.frame(trap = 1:3, brand = c('sony', 'panasonic', 'panasonic'))
+  return(o)
+}
+
+demo_loc_cov = function(){
+  o = data.frame(x = rep(c(-20, 2.5, 25), each = 3), y = rep(c(-20, 5, 30), 3),
+                 noise = c(6, 10, 11, 7, 12, 10, 11, 9, 8),
+                 forest_volumn = c(rep('high', 2), rep('median', 3), rep('low', 4)))
+  return(o)
+}
+
+
 sim_args_generator = function(sim_name){
   output = list()
   #generate some common settings
-  traps = data.frame(x = rep(c(0,5) ,each = 3), y = rep(c(0, 5, 10), 2))
+  traps = demo_traps()
   control_create_mask = list(buffer = 30)
   par_extend_model = NULL
   survey.length = NULL
   ss.opts = NULL
   cue.rates = NULL
   n.sessions = NULL
-  session_cov = data.frame(session = 1:3, weather = c('sunny', 'rainy', 'sunny'))
-  trap_cov = data.frame(trap = 1:6, brand = rep(c('sony', 'panasonic'), each = 3))
-  loc_cov = data.frame(x = rep(c(-20, 2.5, 25), each = 3), y = rep(c(-20, 5, 30), 3),
-                       noise = c(6, 10, 11, 7, 12, 10, 11, 9, 8),
-                       forest_volumn = c(rep('high', 2), rep('median', 3), rep('low', 4)))
+  session_cov = demo_session_cov()
+  trap_cov = demo_trap_cov()
+  loc_cov = demo_loc_cov()
   
   
   if(sim_name == 'dist_hn'){
@@ -1324,7 +1355,7 @@ sim_args_generator = function(sim_name){
     session_cov = NULL
   } else if(sim_name == 'mul_ses'){
     param = list(g0 = 0.7135, sigma = 3.3, kappa = 14.8, alpha = 3.77, D = 2533)
-    traps = list(traps, data.frame(x = rep(20, 3), y = c(20, 25, 30)))
+    traps = list(traps, demo_traps2())
     control_create_mask = list(buffer = 15)
     detfn = 'hn'
     session_cov = NULL
@@ -1333,11 +1364,11 @@ sim_args_generator = function(sim_name){
     
   } else if(sim_name == 'mul_ses_ext'){
     param = list(g0 = c(1.172, -0.8), sigma = c(1.1383, 0.1407), kappa = 14.8, alpha = 3.77, D = 2533)
-    traps = list(traps, data.frame(x = rep(20, 3), y = c(20, 25, 30)))
+    traps = list(traps, demo_traps2())
     control_create_mask = list(buffer = 15)
     detfn = 'hn'
     session_cov = session_cov[1:2,]
-    trap_cov = rbind(trap_cov, data.frame(trap = 1:3, brand = c('sony', 'panasonic', 'panasonic')))
+    trap_cov = rbind(trap_cov, demo_trap_cov2())
     trap_cov$session = c(rep(1, 6), rep(2, 3))
     loc_cov = NULL
     par_extend_model = list(g0 = ~weather, sigma = ~brand)

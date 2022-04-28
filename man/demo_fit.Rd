@@ -4,7 +4,7 @@
 \alias{demo_fit}
 \title{Show demo}
 \usage{
-demo_fit(data_name, fit = TRUE, dev = FALSE)
+demo_fit(data_name, fit = TRUE)
 }
 \arguments{
 \item{data_name}{}

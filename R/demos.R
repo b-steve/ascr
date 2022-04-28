@@ -5,24 +5,16 @@
 #'
 #' @return
 #' @export
-demo_fit = function(data_name, fit = TRUE, dev = FALSE){
-  #data_name could be one of follows (also could be found in ./data/):
-  #bearing_dist_hn, bearing_hn, dist_hn, ihd, ihd_ext, mul_ses, mul_ses_ext,
-  #simple_hhn, simple_hn, simple_hr, ss, ss_toa, toa
-  
-  #for individual identification included model, the names of demo data are:
-  #ind_bearing_dist, ind_toa_hhn, ind_ss
-  
+demo_fit = function(data_name, fit = TRUE){
   dat = get(data_name)
-  dat$dev = dev
+  
+  dat_model = do.call('fit.data', dat)
+  
   if(fit){
-    model_output = with(dat, fit_og(capt = capt_input, traps = traps, mask = mask, sv = sv_input, fix = fix_input,
-                                      detfn = detfn, local = local_input, bounds = bounds_input, cue.rates = cue.rates,
-                                      sound.speed = sound.speed, ss.opts = ss.opts, survey.length = survey.length,
-                                      par.extend = par.extend, dev = dev))
-    return(list(data = dat, model_output = model_output))
+    model_output = fit.ascr(dat_model)
+    return(list(data_input = dat, data_for_model = dat_model, model_output = model_output))
   } else {
-    return(list(data = dat, model_output = NULL))
+    return(list(data = dat, data_for_model = dat_model, model_output = NULL))
   }
 }
 
@@ -38,7 +30,7 @@ demo_fit = function(data_name, fit = TRUE, dev = FALSE){
 #' @examples
 show_demo_options = function(table_print = TRUE){
   output = c('bearing_dist_hn', 'bearing_hn', 'dist_hn', 'ihd', 'ihd_ext', 'mul_ses', 'mul_ses_ext',
-             'simple_hhn', 'simple_hn_cue', 'simple_hr', 'ss', 'ss_toa', 
+             'simple_hhn', 'hhn_cue', 'simple_hr', 'ss', 'ss_toa', 
              'ind_bearing_dist', 'ind_toa_hhn', 'ind_ss', 'ind_ss_log', 'ind_ss_sp')
   if(table_print){
     descriptions = matrix(c('hn' ,'bearing & dist' ,'NULL' ,'FALSE' ,'1',

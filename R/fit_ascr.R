@@ -514,17 +514,17 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 #' Title
 #'
 #'
-#' @param data 
+#' @param dat 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-fit.ascr = function(data){
+fit.ascr = function(dat){
   #extract the original input and pass it to the final output
-  arg.input = data$arg.input
-  data$arg.input = NULL
-  output = do.call('fit_og', data)
+  arg.input = dat$arg.input
+  dat$arg.input = NULL
+  output = do.call('fit_og', dat)
   output$arg_input = arg.input
   
   return(output)
