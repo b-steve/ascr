@@ -97,6 +97,11 @@ get_survey_length = function(fit){
   return(output)
 }
 
+get_infotypes = function(fit){
+  output = fit$infotypes
+  return(output)
+}
+
 get_dist_theta = function(fit){
   output = fit$output.tmb$data.dists.thetas
   return(output)

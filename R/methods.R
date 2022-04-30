@@ -13,7 +13,9 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
   #source('support_functions.r', local = TRUE)
   
   #deal with default setting for 'types'
-  if(any(!types %in% c('all', 'fitted', 'linked', 'derived'))) stop("Argument 'types' must be a subset of {'fitted', 'linked', 'derived', 'all'}.")
+  if(any(!types %in% c('all', 'fitted', 'linked', 'derived'))){
+    stop("Argument 'types' must be a subset of {'fitted', 'linked', 'derived', 'all'}.")
+  } 
   
   if('esa' %in% pars){
     pars = pars[-which(pars == 'esa')]
@@ -772,3 +774,101 @@ predict_with_location = function(fit, session_select = 1, new_data = NULL, D_cov
 }
 
 
+
+#' Title
+#'
+#' @param object 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+summary.ascr_tmb = function(object, ...){
+  coefs = coef(object, types = 'fitted')
+  derived = coef(object, types = 'derived')
+  coefs_se = stdEr(object, types = 'fitted')
+  derived_se = stdEr(object, types = 'derived')
+  infotypes = get_infotypes(object)
+  detfn = get_detfn(object)
+  n.sessions = object$n.sessions
+  
+  pars_ext = get_par_extend_name(object)
+  
+  if(!is.null(pars_ext)){
+    df_parm = get_data_param(object)
+    df_parm = df_parm[df_parm$par %in% pars_ext, , drop = FALSE]
+    pars_ext_links = df_parm$link
+    names(pars_ext_links) = df_parm$par
+  } else {
+    pars_ext_links = NULL
+  }
+  
+  if('ss' %in% infotypes){
+    ss_link = get_ss_link(object)
+    ss_cutoff = get_ss.opts(object)$cutoff
+    ss_opts = list(cutoff = ss_cutoff, link = ss_link)
+  } else {
+    ss_opts = NULL
+  }
+  
+  output = list(coefs = coefs, derived = derived,
+                coefs_se = coefs_se, derived_se = derived_se,
+                infotypes = infotypes, detfn = detfn,
+                n.sessions = n.sessions, pars_ext_links = pars_ext_links,
+                ss_opts = ss_opts)
+  class(output) = c("summary_ascr_tmb", class(output))
+  return(output)
+}
+
+
+#' Title
+#'
+#' @param x 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+print.summary_ascr_tmb = function(x, ...){
+  n.coefs <- length(x$coefs)
+  n.derived <- length(x$derived)
+  mat <- matrix(0, nrow = n.coefs + n.derived + 1, ncol = 2)
+  mat[1:n.coefs, 1] <- as.vector(x$coefs)
+  mat[1:n.coefs, 2] <- as.vector(x$coefs_se)
+  mat[n.coefs + 1, ] <- NA
+  mat[(n.coefs + 2):(n.coefs + n.derived + 1), ] <- c(x$derived, x$derived_se)
+  rownames(mat) <- c(names(x$coefs), "---", names(x$derived))
+  colnames(mat) <- c("Estimate", "Std. Error")
+  detfn <- c(hn = "Halfnormal", hhn = "Hazard halfnormal", hr = "Hazard rate", th = "Threshold",
+             lth = "Log-link threshold", ss = "Signal strength")[x$detfn]
+  infotypes <- c(bearing = "Bearings", dist = "Distances", ss = "Signal strengths",
+                 toa = "Times of arrival", mrds = "Exact locations")[x$infotypes]
+  
+  pars_ext_links = x$pars_ext_links
+  ss_opts = x$ss_opts
+  cutoff = ss_opts$cutoff
+  ss_link = ss_opts$link
+  
+  cat("Detection function:", detfn, "\n")
+  cat("Number of sessions:", x$n.sessions, "\n")
+  cat("Information types: ")
+  cat(infotypes, sep = ", ")
+
+  cat("\n", "\n", "Parameters:", "\n")
+  stats::printCoefmat(mat, na.print = "")
+  
+  if(!is.null(pars_ext_links)){
+    cat("\n", "\n", "Extended parameters link functions:", "\n")
+    for(i in names(pars_ext_links)){
+      cat(i, ":", pars_ext_links[i], "\n")
+    }
+  }
+  
+  if(!is.null(ss_opts)){
+    cat("\n", "Signal strength related information:", "\n")
+    cat("cutoff: ", cutoff, "\n")
+    cat("link function:", ss_link, "\n")
+  }
+}
