@@ -41,7 +41,7 @@ show_demo_options = function(table_print = TRUE){
                             'hn' ,'bearing & dist' ,'NULL' ,'FALSE' ,'2',
                             'hn' ,'bearing & dist' ,'g0 & sigma' ,'FALSE' ,'2',
                             'hhn' ,'NULL' ,'NULL' ,'FALSE' ,'1',
-                            'hn' ,'cue_rates' ,'NULL' ,'FALSE' ,'1',
+                            'hhn' ,'cue_rates' ,'NULL' ,'FALSE' ,'1',
                             'hr' ,'NULL' ,'NULL' ,'FALSE' ,'1',
                             'ss' ,'ss' ,'NULL' ,'FALSE' ,'1',
                             'ss' ,'ss & toa' ,'NULL' ,'FALSE' ,'1',

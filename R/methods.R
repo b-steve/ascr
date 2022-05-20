@@ -442,13 +442,14 @@ AIC.ascr_tmb = function(object, k = 2){
 #' @param se.fit 
 #' @param confidence 
 #' @param level 
+#' @param linked 
 #' @param ... 
 #' 
 #' @return
 #' @export
 #'
 #' @examples
-predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link', se.fit = FALSE, confidence = FALSE, level = 0.95, ...){
+predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link', se.fit = FALSE, confidence = FALSE, level = 0.95, linked = FALSE, ...){
   
   if(is.null(newdata) & is.null(session)) session = 1
   if(!is.null(newdata) & !is.null(session)){
@@ -458,11 +459,20 @@ predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link
   
   stopifnot(type %in% c('link', 'response'))
   
+  if(linked){
+    type = 'response'
+    confidence = TRUE
+  } 
+  
   if(confidence){
     se.fit = TRUE
     stopifnot(all(level < 1 & level > 0))
   }
   
+  
+  
+  par_info = get_data_param(object)
+  par_info = subset(par_info, par == 'D')
   
   if('D' %in% get_par_extend_name(object)){
     
@@ -490,9 +500,7 @@ predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link
       }
     }
     
-      
-    par_info = get_data_param(object)
-    par_info = subset(par_info, par == 'D')
+    
     gam.model = get_gam(object, 'D')
     values_link = as.vector(coef(object, types = 'linked', pars = 'D'))
 
@@ -502,13 +510,15 @@ predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link
     } else if(type == 'response'){
       est = unlink.fun(link = par_info$link, value = tem$output)
     }
+    
+    if(linked) est_link = tem$output
       
     if(se.fit){
       DX = tem$DX
       vcov_matrix = vcov(object, types = 'linked', pars = 'D')
-      if(type == 'link'){
+      if(type == 'link' | linked){
         log_scale = TRUE
-      } else if(type == 'response'){
+      } else if(type == 'response' & !linked){
         log_scale = FALSE
       }
       std = sqrt(delta_for_pred(DX, values_link, vcov_matrix, log_scale))
@@ -523,15 +533,21 @@ predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link
       tem = 'fitted'
     }
     
+    if(linked) est_link = coef(object, types = 'linked', pars = 'D')
     est <- coef(object, types = tem, pars = 'D')
     if(se.fit){
-      std = stdEr(object, types = tem, pars = 'D')
+      if(!linked){
+        std = stdEr(object, types = tem, pars = 'D')
+      } else {
+        std = stdEr(object, types = 'linked', pars = 'D')
+      }
+      
     }
     
   }
   output = est
   col_name = c('est')
-  if(se.fit){
+  if(se.fit & !linked){
     col_name = c(col_name, 'std')
     output = cbind(est, std)
     colnames(output) = col_name
@@ -544,12 +560,20 @@ predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link
     
     q_upper = qnorm(p_upper)
     q_lower = qnorm(p_lower)
-    upper_lim = est + q_upper * std
-    lower_lim = est + q_lower * std
+    if(!linked){
+      upper_lim = est + q_upper * std
+      lower_lim = est + q_lower * std
+    } else {
+      upper_lim = unlink.fun(link = par_info$link, value = est_link + q_upper * std)
+      lower_lim = unlink.fun(link = par_info$link, value = est_link + q_lower * std)
+    }
+    
+    
     col_name = c(col_name, paste(c(p_lower, p_upper) * 100, "%", sep = " "))
     output = cbind(output, lower_lim)
     output = cbind(output, upper_lim)
     colnames(output) = col_name
+
   }
   
   return(output)
