@@ -25,6 +25,7 @@ Imports:
     plyr,
     secr,
     stats,
+    numDeriv,
     truncnorm,
     utils,
     viridis,

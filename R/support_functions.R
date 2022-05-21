@@ -830,6 +830,16 @@ split_item = function(dat, item){
 }
 
 
+
+list_2vector_4value = function(param){
+  tem = sapply(param, length)
+  output = do.call('c', param)
+  names(output) = rep(names(tem), tem)
+  return(output)
+}
+
+
+
 delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new_covariates = NULL,
                                  pars = NULL, name_og = NULL, name_extend = NULL, df_param = NULL,
                                  gam.model.full = NULL, gam.output = NULL){
