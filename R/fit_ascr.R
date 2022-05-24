@@ -14,7 +14,8 @@
 #' @param local 
 #' @param par.extend 
 #' @param tracing 
-#' @param ... 
+#' @param gr_skip 
+#' @param ...
 #'
 #' @return
 #' @export
@@ -414,7 +415,7 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
     dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
   }
   
-  browser()
+  #browser()
   if(!gr_skip){
     if(!("ss.het" %in% bucket_info)){
       obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, slient = (!tracing), DLL="ascrTmb")
