@@ -5,8 +5,9 @@
 #'
 #' @return
 #' @export
-demo_fit = function(data_name, fit = TRUE){
+demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE){
   dat = get(data_name)
+  dat$gr_skip = gradient_free
   
   dat_model = do.call('fit.data', dat)
   

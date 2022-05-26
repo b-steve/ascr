@@ -14,14 +14,15 @@
 #' @param local 
 #' @param par.extend 
 #' @param tracing 
-#' @param ... 
+#' @param gr_skip 
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
 fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL, cue.rates = NULL,
-                  survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, tracing = TRUE, ...){
+                  survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, tracing = TRUE, gr_skip = FALSE, ...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))
@@ -413,16 +414,37 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
   } else {
     dyn.load(TMB::dynlib(paste0(system.file(package = "ascr"), "/TMB/ascrTmb")))
   }
-
-
-  if(!("ss.het" %in% bucket_info)){
-    obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, slient = (!tracing), DLL="ascrTmb")
+  
+  #browser()
+  if(!gr_skip){
+    if(!("ss.het" %in% bucket_info)){
+      obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, slient = (!tracing), DLL="ascrTmb")
+    } else {
+      obj <- TMB::MakeADFun(data = data, parameters = parameters, random = "u", map = map, slient = (!tracing), DLL="ascrTmb")
+    }
+    obj$hessian <- TRUE
+    opt = stats::nlminb(obj$par, obj$fn, obj$gr)
+    o = TMB::sdreport(obj)
   } else {
-    obj <- TMB::MakeADFun(data = data, parameters = parameters, random = "u", map = map, slient = (!tracing), DLL="ascrTmb")
+    
+    if(!("ss.het" %in% bucket_info)){
+      obj <- TMB::MakeADFun(data = data, parameters = parameters, map = map, slient = (!tracing), DLL="ascrTmb", type = 'Fun')
+    } else {
+      obj <- TMB::MakeADFun(data = data, parameters = parameters, random = "u", map = map, slient = (!tracing), DLL="ascrTmb", type = 'Fun')
+    }
+    
+    par_name_fitted = param.og.4cpp[which(!param.og.4cpp %in% name.fixed.par.4cpp)]
+    #the name of this ini_par_val is not right, do it later
+    ini_par_val = list_2vector_4value(parameters[par_name_fitted])
+    
+    fn = function(par) environment(obj$fn)$f(par, type = 'double')
+    opt = stats::nlminb(ini_par_val, fn)
+    H = stats::optimHess(opt$par, fn)
+    H = solve(H)
+    o = gr_free_o_restore(fn, opt, H, parameters, param.og.4cpp, dims$n.sessions)
   }
-  obj$hessian <- TRUE
-  opt = stats::nlminb(obj$par, obj$fn, obj$gr)
-  o = TMB::sdreport(obj)
+  
+
   
   #browser()
   
@@ -563,7 +585,7 @@ fit.data = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
                     control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL, par_extend_model = NULL,
                     is_scale = TRUE, cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, 
-                    tracing = TRUE, ...){
+                    tracing = TRUE, gr_skip = FALSE, ...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))
@@ -619,7 +641,7 @@ fit.data = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
   output$sound.speed = sound.speed
   output$local = local
   output$tracing = tracing
-  
+  output$gr_skip = gr_skip
   #arg.input is not used for fit_og, but we need this to be passed to the final model fit object
   output$arg.input = arg.input
   return(output)

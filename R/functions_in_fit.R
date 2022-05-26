@@ -1387,6 +1387,60 @@ param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn
 
 
 
+gr_free_o_restore = function(fn, opt, H, parameters, param.og.4cpp, n.sessions){
+  parameters = parameters[param.og.4cpp]
+  name_fitted_par = unique(names(opt$par))
+  for(i in name_fitted_par) parameters[[i]] = val(opt$par[which(names(opt$par) == i)])
+  o_val = list_2vector_4value(parameters)
+  esa = numeric(n.sessions)
+  names(esa) = rep('esa', n.sessions)
+  o_val = c(o_val, esa)
+  
+  len = length(o_val)
+  o_val_names = names(o_val)
+  i_fitted_par = which(o_val_names %in% name_fitted_par)
+  
+  
+  sd_fixed = sqrt(diag(H))
+  o_sd = numeric(len)
+  o_sd[i_fitted_par] = sd_fixed
+  
+  o_cov = matrix(0, nrow = len, ncol = len)
+  o_cov[i_fitted_par, i_fitted_par] = H
+  
+  o = vector('list', 5)
+  names(o) = c('value', 'sd', 'cov', 'cov.fixed', 'gradient.fixed')
+  o$value = o_val
+  o$sd = o_sd
+  o$cov = o_cov
+  o$cov.fixed = H
+  o$gradient.fixed = matrix(numDeriv::grad(fn, opt$par), nrow = 1)
+  return(o)
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas, detfn, param.og, param.og.4cpp, o, opt,
                   name.fixed.par, name.extend.par, dims, DX.full, DX.mask, fix.input, bucket_info, cue.rates, mean.cue.rates, A,
                   survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, is.scale, ss.link, cutoff){
