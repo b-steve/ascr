@@ -2,12 +2,15 @@
 #'
 #' @param data_name 
 #' @param fit 
+#' @param gradient_free 
+#' @param sv_link 
 #'
 #' @return
 #' @export
-demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE){
+demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE, sv_link = NULL){
   dat = get(data_name)
   dat$gr_skip = gradient_free
+  dat$sv_link = sv_link
   
   dat_model = do.call('fit.data', dat)
   
@@ -15,7 +18,7 @@ demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE){
     model_output = fit.ascr(dat_model)
     return(list(data_input = dat, data_for_model = dat_model, model_output = model_output))
   } else {
-    return(list(data = dat, data_for_model = dat_model, model_output = NULL))
+    return(list(data_input = dat, data_for_model = dat_model, model_output = NULL))
   }
 }
 

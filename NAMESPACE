@@ -3,6 +3,7 @@
 S3method(AIC,ascr_tmb)
 S3method(coef,ascr_tmb)
 S3method(confint,ascr_tmb)
+S3method(plot,ascr_data)
 S3method(predict,ascr_tmb)
 S3method(print,coef_ascr_tmb)
 S3method(print,std_ascr_tmb)

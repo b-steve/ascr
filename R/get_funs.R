@@ -43,6 +43,11 @@ get_mask = function(fit){
   return(output)
 }
 
+get_mask_from_data = function(dat){
+  output = dat$mask
+  return(output)
+}
+
 get_data_trap = function(fit){
   output = fit$output.tmb$data.traps
   return(output)
@@ -58,6 +63,11 @@ get_trap = function(fit){
     output[[s]] = as.matrix(subset(df.traps, session == s, select = c('x', 'y')))
   }
   
+  return(output)
+}
+
+get_trap_from_data = function(dat){
+  output = dat$traps
   return(output)
 }
 

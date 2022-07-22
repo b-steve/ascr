@@ -5,6 +5,9 @@ compile.ascr <- function(dev = FALSE, debug.mode = FALSE){
   } else {
     dir = paste0(system.file(package = "ascr"), "/TMB/")
   }
+  
+  if(file.exists(paste0(dir, "ascrTmb.o"))) unlink(paste0(dir, "ascrTmb.o"))
+  if(file.exists(paste0(dir, "ascrTmb.dll"))) unlink(paste0(dir, 'ascrTmb.dll'))
 
   if(!debug.mode){
     TMB::compile(paste0(dir, "ascrTmb.cpp"))

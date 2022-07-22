@@ -169,6 +169,8 @@ show_detfn_tmb <- function(fit, new_covariates = NULL, param_extend_skip = NULL,
 #' @param plot_contours 
 #' @param add 
 #' @param control_convert_loc2mask
+#' @param arg_col 
+#' @param ... 
 #'
 #' @return
 #' @export
@@ -176,7 +178,7 @@ show_detfn_tmb <- function(fit, new_covariates = NULL, param_extend_skip = NULL,
 #' @examples
 show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
                         x_pixels = 50, y_pixels = 50, zlim = NULL, scale = 1, plot_contours = TRUE,
-                        add = FALSE, control_convert_loc2mask= NULL, ...){
+                        add = FALSE, control_convert_loc2mask= NULL, arg_col = list(n = 100), ...){
   extra_args = list(...)
   
   pred = predict_with_location(fit, session_select = ifelse(is.null(session), 1, session), new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
@@ -211,12 +213,15 @@ show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_
   }
   z[z > zlim[2]] <- zlim[2]
   levels <- pretty(zlim, 10)
+  
+  col_fn = viridis::viridis
+  
   if (!add){
     #plot(mask, type = "n", asp = 1, xlab = "", ylab = "", xlim = xlim, ylim = ylim)
-    fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis::viridis(100), 
+    fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = do.call("col_fn", arg_col), 
                        asp = 1, xlim = xlim, ylim = ylim, xlab = "", ylab = "")
   } else {
-    fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = viridis::viridis(100), add = TRUE)
+    fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = do.call("col_fn", arg_col), add = TRUE)
   }
   
   
@@ -241,5 +246,24 @@ show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_
 
 
 
+#' Title
+#'
+#' @param dat 
+#' @param session 
+#' @param type 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot.ascr_data <- function(dat, session = 1, type = NULL,...){
+  if(is.null(type)) stop('please specify the argument "type".')
+  if(type == 'survey'){
+    mask = get_mask_from_data(dat)[[session]]
+    plot(mask, pch = ".", cex = 3, asp = 1)
+    points(get_trap_from_data(dat)[[session]], pch = 16, col = "red")
+  }
 
+}
 
