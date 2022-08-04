@@ -1430,25 +1430,6 @@ gr_free_o_restore = function(fn, opt, H, parameters, param.og.4cpp, n.sessions){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas, detfn, param.og, param.og.4cpp, o, opt,
                   name.fixed.par, name.extend.par, dims, DX.full, DX.mask, fix.input, bucket_info, cue.rates, mean.cue.rates, A,
                   survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, is.scale, ss.link, cutoff){

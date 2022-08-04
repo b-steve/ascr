@@ -595,7 +595,7 @@ delta.fun = function(link, sd, est){
   }
 }
 
-sort.data = function(dat, name){
+sort.data = function(dat,  name){
   is.animal_ID = "animal_ID" %in% colnames(dat)
   
   if(name == 'data.full'){
@@ -1580,5 +1580,51 @@ diag_block_combine = function(lst){
   
   return(out)
   
+}
+
+dist_ss_rescale = function(capt_session, buffer, is.ss, is.dist, is.bearing){
+  if(!is.ss & !is.dist){
+    return(capt_session)
+  } else {
+    #in the plot function, the scenario of is.ss & is.dist has been removed, so here
+    #we must have either is.ss or is.dist, and we have one of them only
+    
+    if(!is.bearing){
+      #if no bearing, we will use geom_point() to draw a circle, so we scale
+      #ss or dist to (10, 100) as the size of the point.
+      if(is.ss) capt_session$ss = scale_convert(capt_session$ss, c(10, 100))
+      if(is.dist) capt_session$dist = scale_convert(capt_session$dist, c(10, 100))
+    } else {
+      #if bearing is provided, then for dist, we scale dist to [0.1, 1] * buffer
+      if(is.dist) capt_session$dist = scale_convert(capt_session$dist, c(0.1 * buffer, buffer))
+      #for ss, we scale -1*ss to [0.1, 1] * buffer
+      if(is.ss) capt_session$ss = scale_convert(-1 * capt_session$ss, c(0.1 * buffer, buffer))
+      
+    }
+    
+    return(capt_session)
+  }
+  
+}
+
+scale_convert = function(from, to){
+  max_to = max(to)
+  min_to = min(to)
+  
+  if(length(from) == 1){
+    output = 0.5 * (max_to + min_to)
+  } else {
+    min_from = min(from)
+    dist_og = max(from) - min_from
+    dist_to = max_to - min_to
+    if(dist_og == 0){
+      output = 0.5 * (max_to + min_to)
+    } else {
+      output = (from - min_from) * dist_to / dist_og + min_to
+    }
+  }
+
+
+  return(output)
 }
 

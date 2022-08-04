@@ -32,7 +32,8 @@ Imports:
     TMB,
     RcppEigen,
     Rcpp,
-    RANN
+    RANN,
+    ggplot2
 Suggests:
     knitr,
     xtable

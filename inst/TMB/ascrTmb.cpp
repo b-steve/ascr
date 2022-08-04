@@ -761,11 +761,9 @@ Type objective_function<Type>::operator() ()
   
   //z
   PARAMETER_VECTOR(z);
-  
   for(i = 0; i < (par_n_col(3, 0) + par_n_col(3, 1)); i++){
     if(z(i) < z_bound(0, i) || z(i) > z_bound(1, i)) *pointer_nll += *pointer_Inf;
   }
-  
   
   vector<Type> z_full = z.head(par_n_col(3, 0));
   vector<Type> z_mask = z.tail(par_n_col(3, 1));
@@ -777,6 +775,7 @@ Type objective_function<Type>::operator() ()
   } else {
     z_vec_mask = z_DX_mask * z_mask;
   }
+
   if(incheck_scalar(4, param_og) == 1) ADREPORT(z);
   
   //shape_1
