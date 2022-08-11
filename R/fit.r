@@ -1398,7 +1398,7 @@ fit.ascr <- function(capt, traps, mask, detfn = "hn", sv = NULL, bounds = NULL,
             gbs.cmd <- NULL
         }
         if (!is.null(ams)){
-            ams.cmd <- paste(" -gbs", format(gbs, scientific = FALSE))
+            ams.cmd <- paste(" -ams", format(ams, scientific = FALSE))
         } else {
             ams.cmd <- NULL
         }
