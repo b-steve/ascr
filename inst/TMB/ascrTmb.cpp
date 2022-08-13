@@ -722,41 +722,41 @@ Type objective_function<Type>::operator() ()
   if(incheck_scalar(1, param_og) == 1) ADREPORT(g0);
   
   //sigma
-  PARAMETER_VECTOR(sigma);
+  PARAMETER(sigma);
   
-  for(i = 0; i < (par_n_col(1, 0) + par_n_col(1, 1)); i++){
-    if(sigma(i) < sigma_bound(0, i) || sigma(i) > sigma_bound(1, i)) *pointer_nll += *pointer_Inf;
-  }
+  //for(i = 0; i < (par_n_col(1, 0) + par_n_col(1, 1)); i++){
+  //  if(sigma(i) < sigma_bound(0, i) || sigma(i) > sigma_bound(1, i)) *pointer_nll += *pointer_Inf;
+  //}
   
-  vector<Type> sigma_full = sigma.head(par_n_col(1, 0));
-  vector<Type> sigma_mask = sigma.tail(par_n_col(1, 1));
-  vector<Type> sigma_vec_full = sigma_DX * sigma_full;
-  vector<Type> sigma_vec_mask(nrow_data_mask);
+  //vector<Type> sigma_full = sigma.head(par_n_col(1, 0));
+  //vector<Type> sigma_mask = sigma.tail(par_n_col(1, 1));
+  //vector<Type> sigma_vec_full = sigma_DX * sigma_full;
+  //vector<Type> sigma_vec_mask(nrow_data_mask);
   
-  if(par_n_col(1, 1) == 0){
-    sigma_vec_mask.setZero();
-  } else {
-    sigma_vec_mask = sigma_DX_mask * sigma_mask;
-  }
+  //if(par_n_col(1, 1) == 0){
+  //  sigma_vec_mask.setZero();
+  //} else {
+  //  sigma_vec_mask = sigma_DX_mask * sigma_mask;
+  //}
   if(incheck_scalar(2, param_og) == 1) ADREPORT(sigma);
   
   //lambda0
-  PARAMETER_VECTOR(lambda0);
+  PARAMETER(lambda0);
   
-  for(i = 0; i < (par_n_col(2, 0) + par_n_col(2, 1)); i++){
-    if(lambda0(i) < lambda0_bound(0, i) || lambda0(i) > lambda0_bound(1, i)) *pointer_nll += *pointer_Inf;
-  }
+  //for(i = 0; i < (par_n_col(2, 0) + par_n_col(2, 1)); i++){
+  //  if(lambda0(i) < lambda0_bound(0, i) || lambda0(i) > lambda0_bound(1, i)) *pointer_nll += *pointer_Inf;
+  //}
   
-  vector<Type> lambda0_full = lambda0.head(par_n_col(2, 0));
-  vector<Type> lambda0_mask = lambda0.tail(par_n_col(2, 1));
-  vector<Type> lambda0_vec_full = lambda0_DX * lambda0_full;
-  vector<Type> lambda0_vec_mask(nrow_data_mask);
+  //vector<Type> lambda0_full = lambda0.head(par_n_col(2, 0));
+  //vector<Type> lambda0_mask = lambda0.tail(par_n_col(2, 1));
+  //vector<Type> lambda0_vec_full = lambda0_DX * lambda0_full;
+  //vector<Type> lambda0_vec_mask(nrow_data_mask);
   
-  if(par_n_col(2, 1) == 0){
-    lambda0_vec_mask.setZero();
-  } else {
-    lambda0_vec_mask = lambda0_DX_mask * lambda0_mask;
-  }
+  //if(par_n_col(2, 1) == 0){
+  //  lambda0_vec_mask.setZero();
+  //} else {
+  //  lambda0_vec_mask = lambda0_DX_mask * lambda0_mask;
+  //}
   if(incheck_scalar(3, param_og) == 1) ADREPORT(lambda0);
   
   //z
@@ -1110,10 +1110,10 @@ Type objective_function<Type>::operator() ()
   //essentially this is "Type *pointer_g0_vec_full;" below are the same
   Type *p_g0_full;
   Type *p_g0_mask;
-  Type *p_sigma_full;
-  Type *p_sigma_mask;
-  Type *p_lambda0_full;
-  Type *p_lambda0_mask;
+  //Type *p_sigma_full;
+  //Type *p_sigma_mask;
+  //Type *p_lambda0_full;
+  //Type *p_lambda0_mask;
   Type *p_z_full;
   Type *p_z_mask;
   Type *p_shape_1_full;
@@ -1235,9 +1235,9 @@ Type objective_function<Type>::operator() ()
     p_D_mask = &D_vec_mask[index_data_mask];
     p_g0_mask = &g0_vec_mask[index_data_mask];
     
-    p_sigma_mask = &sigma_vec_mask[index_data_mask];
+    //p_sigma_mask = &sigma_vec_mask[index_data_mask];
     
-    p_lambda0_mask = &lambda0_vec_mask[index_data_mask];
+    //p_lambda0_mask = &lambda0_vec_mask[index_data_mask];
     
     p_z_mask = &z_vec_mask[index_data_mask];
     
@@ -1275,9 +1275,9 @@ Type objective_function<Type>::operator() ()
       
       p_g0_full = &g0_vec_full[index_data_full];
       
-      p_sigma_full = &sigma_vec_full[index_data_full];
+      //p_sigma_full = &sigma_vec_full[index_data_full];
       
-      p_lambda0_full = &lambda0_vec_full[index_data_full];
+      //p_lambda0_full = &lambda0_vec_full[index_data_full];
       
       p_z_full = &z_vec_full[index_data_full];
       
@@ -1303,23 +1303,23 @@ Type objective_function<Type>::operator() ()
         if(detfn_index == 1){
           *p_g0_tem = *p_g0_full + *p_g0_mask;
           trans(p_g0_tem, par_link(0));
-          *p_sigma_tem = *p_sigma_full + *p_sigma_mask;
+          *p_sigma_tem = sigma;
           trans(p_sigma_tem, par_link(1));
           
           p_g0_full++;
-          p_sigma_full++;
+          //p_sigma_full++;
           
           detfn_param(0) = g0_tem;
           detfn_param(1) = sigma_tem;
           
         } else if(detfn_index == 2){
-          *p_lambda0_tem = *p_lambda0_full + *p_lambda0_mask;
+          *p_lambda0_tem = lambda0;
           trans(p_lambda0_tem, par_link(2));
-          *p_sigma_tem = *p_sigma_full + *p_sigma_mask;
+          *p_sigma_tem = sigma;
           trans(p_sigma_tem, par_link(1));
           
-          p_lambda0_full++;
-          p_sigma_full++;
+          //p_lambda0_full++;
+          //p_sigma_full++;
           
           detfn_param(0) = lambda0_tem;
           detfn_param(1) = sigma_tem;
@@ -1327,13 +1327,13 @@ Type objective_function<Type>::operator() ()
         } else if(detfn_index == 3){
           *p_g0_tem = *p_g0_full + *p_g0_mask;
           trans(p_g0_tem, par_link(0));
-          *p_sigma_tem = *p_sigma_full + *p_sigma_mask;
+          *p_sigma_tem = sigma;
           trans(p_sigma_tem, par_link(1));
           *p_z_tem = *p_z_full + *p_z_mask;
           trans(p_z_tem, par_link(3));
           
           p_g0_full++;
-          p_sigma_full++;
+          //p_sigma_full++;
           p_z_full++;
           
           
@@ -1417,14 +1417,6 @@ Type objective_function<Type>::operator() ()
           *p_essx = (*detfn)(*p_dx, detfn_param);
           p_k(m - 1, t - 1) = 1 - pnorm((cutoff - *p_essx) / sigma_ss_tem);
 
-          if(s == 2 & m == 777){
-            std::cout << "session 2, m 777, trap " << t << ", dx: " << *p_dx << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", b0.ss: " << detfn_param[0] << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", b1.ss: " << detfn_param[1] << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", sigma.ss: " << *p_sigma_ss_tem << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", E(ss|x): " << *p_essx << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", p_k: " << p_k(m - 1, t - 1) << std::endl;
-          }
           p_essx++;
         }
 
@@ -1449,23 +1441,12 @@ Type objective_function<Type>::operator() ()
         lambda_theta += *p_D_tem * p_m(m - 1);
       }
       
-      //if(s == 2 & m == 777){
-      //  std::cout << "session 2, until m 777, lambda_theta: " << lambda_theta << std::endl;
-      //  std::cout << "session 2, m 777, p_dot: " << p_dot(m - 1) << std::endl;
-      //  std::cout << "session 2, m 777, p_m: " << p_m(m - 1) << std::endl;
-      //  std::cout << "session 2, m 777, D: " << *p_D_tem << std::endl;
-      // std::cout << "session 2, m 777, mu: " << *p_mu_tem << std::endl;
-      //}
-
-      //if(s == 2){
-      //  std::cout << "session 2, until mask " << m << ", lambda_theta: " << lambda_theta << std::endl;
-      //}
       
       p_D_mask++;
       p_D_tem++;
       p_g0_mask++;
-      p_sigma_mask++;
-      p_lambda0_mask++;
+      //p_sigma_mask++;
+      //p_lambda0_mask++;
       p_z_mask++;
       p_shape_1_mask++;
       p_shape_2_mask++;
