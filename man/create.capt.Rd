@@ -29,9 +29,6 @@ contains two columns record the Cartesian coordinates of each call. If a session
 keep the corresponding component as NULL. If animal.model, then each component must be a data.frame
 with 4 columns: "animal_ID", "ID", "mrds_x" and "mrds_y".}
 }
-\value{
-
-}
 \description{
 Title
 }

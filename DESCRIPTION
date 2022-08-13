@@ -32,7 +32,9 @@ Imports:
     TMB,
     RcppEigen,
     Rcpp,
-    RANN
+    RANN,
+    ggplot2,
+    gganimate
 Suggests:
     knitr,
     xtable
@@ -50,5 +52,5 @@ License: GPL
 URL: https://github.com/b-steve/ascr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Config/testthat/edition: 3

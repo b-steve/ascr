@@ -43,6 +43,11 @@ get_mask = function(fit){
   return(output)
 }
 
+get_mask_from_data = function(dat){
+  output = dat$mask
+  return(output)
+}
+
 get_data_trap = function(fit){
   output = fit$output.tmb$data.traps
   return(output)
@@ -58,6 +63,11 @@ get_trap = function(fit){
     output[[s]] = as.matrix(subset(df.traps, session == s, select = c('x', 'y')))
   }
   
+  return(output)
+}
+
+get_trap_from_data = function(dat){
+  output = dat$traps
   return(output)
 }
 
@@ -375,5 +385,71 @@ get_capt_for_boot = function(captures, dims, infotypes){
   
   return(output)
   
+}
+
+#obtain capture history from the ascr_data object
+get_capt_for_plot = function(dat){
+  all.types <- c("bearing", "dist", "ss", "toa")
+  
+  capt = dat$capt
+  
+  #according to current data conversion function, if capt is a data frame, it means
+  #the data is individual identification embedded data, or "animal_ID" is included.
+  if(is(capt, 'data.frame')){
+    #firstly convert animal_ID and ID to natural successive numbers
+    data.capt = convert_natural_number(capt, TRUE, "both")
+    
+  } else {
+    if("bincapt" %in% names(capt)){
+      n.sessions = 1
+      n.traps = ncol(capt$bincapt)
+      n.IDs = nrow(capt$bincapt)
+      extra_info <- all.types[all.types %in% names(capt)]
+      is.mrds = "mrds" %in% names(capt)
+    } else {
+      n.sessions = length(capt)
+      n.traps = sapply(capt, function(x) ncol(x$bincapt))
+      n.IDs = sapply(capt, function(x) nrow(x$bincapt))
+      extra_info <- all.types[all.types %in% names(capt[[1]])]
+      is.mrds = "mrds" %in% names(capt[[1]])
+    }
+    
+    tem.data.capt = vector('list', n.sessions)
+    for(i in 1:n.sessions){
+      if(n.sessions == 1){
+        tem = capt
+      } else {
+        tem = capt[[i]]
+      }
+      
+      number.row = n.IDs[i] * n.traps[i]
+      tem.df = data.frame(session = rep(i, number.row), ID = numeric(number.row))
+      for(j in c("trap", "bincapt", extra_info)) tem.df[[j]] = numeric(number.row)
+      if(is.mrds) tem.df[,c('mrds_x', 'mrds_y')] = 0
+      
+      if(number.row > 0){
+        tem.df$ID = rep(1:nrow(tem$bincapt), n.traps[i])
+        tem.df$trap = rep(1:n.traps[i], each = n.IDs[i])
+        for(k in c('bincapt', extra_info)) tem.df[[k]] = as.vector(tem[[k]])
+        
+        if(is.mrds){
+          tem$mrds = as.data.frame(tem$mrds, stringsAsFactors = FALSE)
+          colnames(tem$mrds) = c('mrds_x', 'mrds_y')
+          tem$mrds$ID = 1:nrow(tem$mrds)
+          tem.df = merge(tem.df, tem$mrds, by = "ID")
+        }
+        
+      }
+      tem.data.capt[[i]] = tem.df
+    }
+    data.capt = do.call("rbind", tem.data.capt)
+    data.capt = convert_natural_number(data.capt, FALSE, "ID")
+  }
+  
+  data.capt = sort.data(data.capt, "data.full")
+  data.capt = subset(data.capt, bincapt == 1)
+  data.capt = data.capt[, -which(colnames(data.capt) == 'bincapt')]
+  
+  return(data.capt)
 }
 

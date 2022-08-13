@@ -15,14 +15,16 @@
 #' @param par.extend 
 #' @param tracing 
 #' @param gr_skip 
-#' @param ...
+#' @param sv_link a list; this is mostly for development purpose, not recommended to use
+#' @param ... 
 #'
 #' @return
 #' @export
 #'
 #' @examples
 fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL, cue.rates = NULL,
-                  survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, tracing = TRUE, gr_skip = FALSE, ...){
+                  survey.length = NULL, sound.speed = 331, local = FALSE, par.extend = NULL, tracing = TRUE, gr_skip = FALSE, 
+                  sv_link = NULL, ...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))
@@ -169,7 +171,7 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
                             name.extend.par = name.extend.par, detfn = detfn, data.full = data.full,
                             data.mask = data.mask, data.par = data.par, ss.opts = ss.opts, 
                             bucket_info = bucket_info, fulllist.par = fulllist.par, A = A, buffer = buffer,
-                            survey.length = survey.length, dims = dims)
+                            survey.length = survey.length, dims = dims, sv_link = sv_link)
   
   DX.full = o.param$design.matrices.full
   DX.mask = o.param$design.matrices.mask
@@ -575,7 +577,9 @@ fit.ascr = function(dat){
 #' @param sound.speed 
 #' @param local 
 #' @param tracing 
-#' @param ... 
+#' @param gr_skip 
+#' @param sv_link a list; this is mostly for development purpose, not recommended to use
+#' @param ...
 #'
 #' @return
 #' @export
@@ -585,7 +589,7 @@ fit.data = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
                     control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL, par_extend_model = NULL,
                     is_scale = TRUE, cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, 
-                    tracing = TRUE, gr_skip = FALSE, ...){
+                    tracing = TRUE, gr_skip = FALSE, sv_link = NULL,...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))
@@ -642,8 +646,10 @@ fit.data = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
   output$local = local
   output$tracing = tracing
   output$gr_skip = gr_skip
+  output$sv_link = sv_link
   #arg.input is not used for fit_og, but we need this to be passed to the final model fit object
   output$arg.input = arg.input
+  class(output) <- "ascr_data"
   return(output)
 }
 

@@ -4,15 +4,16 @@
 \alias{demo_fit}
 \title{Show demo}
 \usage{
-demo_fit(data_name, fit = TRUE)
+demo_fit(data_name, fit = TRUE, gradient_free = FALSE, sv_link = NULL)
 }
 \arguments{
 \item{data_name}{}
 
 \item{fit}{}
-}
-\value{
 
+\item{gradient_free}{}
+
+\item{sv_link}{}
 }
 \description{
 Show demo

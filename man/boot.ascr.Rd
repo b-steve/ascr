@@ -19,9 +19,6 @@ boot.ascr(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NULL)
 
 \item{seed}{}
 }
-\value{
-
-}
 \description{
 Title
 }
