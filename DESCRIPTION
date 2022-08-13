@@ -33,7 +33,8 @@ Imports:
     RcppEigen,
     Rcpp,
     RANN,
-    ggplot2
+    ggplot2,
+    gganimate
 Suggests:
     knitr,
     xtable
