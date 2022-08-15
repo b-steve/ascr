@@ -1171,6 +1171,16 @@ Type objective_function<Type>::operator() ()
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //begin of likelihood function
 
+  *p_lambda0_tem = lambda0;
+  trans(p_lambda0_tem, par_link(2));
+  *p_sigma_tem = sigma;
+  trans(p_sigma_tem, par_link(1));
+  detfn_param(0) = lambda0_tem;
+  detfn_param(1) = sigma_tem;
+
+
+
+
   for(s = 1; s <= n_sessions; s++){
     n_m = n_masks(s - 1);
     n_t = n_traps(s - 1);
@@ -1300,108 +1310,6 @@ Type objective_function<Type>::operator() ()
       
       for(t = 1; t <= n_t; t++){
         
-        if(detfn_index == 1){
-          *p_g0_tem = *p_g0_full + *p_g0_mask;
-          trans(p_g0_tem, par_link(0));
-          *p_sigma_tem = sigma;
-          trans(p_sigma_tem, par_link(1));
-          
-          p_g0_full++;
-          //p_sigma_full++;
-          
-          detfn_param(0) = g0_tem;
-          detfn_param(1) = sigma_tem;
-          
-        } else if(detfn_index == 2){
-          *p_lambda0_tem = lambda0;
-          trans(p_lambda0_tem, par_link(2));
-          *p_sigma_tem = sigma;
-          trans(p_sigma_tem, par_link(1));
-          
-          //p_lambda0_full++;
-          //p_sigma_full++;
-          
-          detfn_param(0) = lambda0_tem;
-          detfn_param(1) = sigma_tem;
-          
-        } else if(detfn_index == 3){
-          *p_g0_tem = *p_g0_full + *p_g0_mask;
-          trans(p_g0_tem, par_link(0));
-          *p_sigma_tem = sigma;
-          trans(p_sigma_tem, par_link(1));
-          *p_z_tem = *p_z_full + *p_z_mask;
-          trans(p_z_tem, par_link(3));
-          
-          p_g0_full++;
-          //p_sigma_full++;
-          p_z_full++;
-          
-          
-          detfn_param(0) = g0_tem;
-          detfn_param(1) = sigma_tem;	
-          detfn_param(2) = z_tem;	
-          
-        } else if(detfn_index == 5){
-          *p_shape_1_tem = *p_shape_1_full + *p_shape_1_mask;
-          trans(p_shape_1_tem, par_link(4));
-          *p_shape_2_tem = *p_shape_2_full + *p_shape_2_mask;
-          trans(p_shape_2_tem, par_link(5));
-          *p_scale_tem = *p_scale_full + *p_scale_mask;
-          trans(p_scale_tem, par_link(7));
-          
-          p_shape_1_full++;
-          p_shape_2_full++;
-          p_scale_full++;
-          
-          detfn_param(0) = shape_1_tem;
-          detfn_param(1) = shape_2_tem;	
-          detfn_param(2) = scale_tem;
-          
-        } else if(detfn_index == 4){
-          *p_shape_tem = *p_shape_full + *p_shape_mask;
-          trans(p_shape_tem, par_link(6));
-          *p_scale_tem = *p_scale_full + *p_scale_mask;
-          trans(p_scale_tem, par_link(7));
-          
-          p_shape_full++;
-          p_scale_full++;
-          
-          
-          detfn_param(0) = shape_tem;
-          detfn_param(1) = scale_tem;	
-        } else if(detfn_index == 6){
-          *p_b0_ss_tem = *p_b0_ss_full + *p_b0_ss_mask;
-          trans(p_b0_ss_tem, par_link(8));
-          *p_b1_ss_tem = *p_b1_ss_full + *p_b1_ss_mask;
-          trans(p_b1_ss_tem, par_link(9));
-          
-          p_b0_ss_full++;
-          p_b1_ss_full++;
-          
-          
-          detfn_param(0) = b0_ss_tem;
-          detfn_param(1) = b1_ss_tem;
-          
-        } else if(detfn_index == 7){
-          *p_b0_ss_tem = *p_b0_ss_full + *p_b0_ss_mask;
-          trans(p_b0_ss_tem, par_link(8));
-          *p_b1_ss_tem = *p_b1_ss_full + *p_b1_ss_mask;
-          trans(p_b1_ss_tem, par_link(9));
-          *p_b2_ss_tem = *p_b2_ss_full + *p_b2_ss_mask;
-          trans(p_b2_ss_tem, par_link(10));
-          
-          p_b0_ss_full++;
-          p_b1_ss_full++;
-          p_b2_ss_full++;
-          
-          
-          detfn_param(0) = b0_ss_tem;
-          detfn_param(1) = b1_ss_tem;
-          detfn_param(2) = b2_ss_tem;
-          detfn_param(3) = *p_theta;
-          
-          p_theta++;
-        } 
         //het is detfn_index == 8, not sure how to do it yet
         
         
