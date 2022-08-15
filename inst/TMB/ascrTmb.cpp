@@ -1416,15 +1416,6 @@ Type objective_function<Type>::operator() ()
           
           *p_essx = (*detfn)(*p_dx, detfn_param);
           p_k(m - 1, t - 1) = 1 - pnorm((cutoff - *p_essx) / sigma_ss_tem);
-
-          if(s == 2 & m == 777){
-            std::cout << "session 2, m 777, trap " << t << ", dx: " << *p_dx << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", b0.ss: " << detfn_param[0] << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", b1.ss: " << detfn_param[1] << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", sigma.ss: " << *p_sigma_ss_tem << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", E(ss|x): " << *p_essx << std::endl;
-            std::cout << "session 2, m 777, trap " << t << ", p_k: " << p_k(m - 1, t - 1) << std::endl;
-          }
           p_essx++;
         }
 
@@ -1449,17 +1440,6 @@ Type objective_function<Type>::operator() ()
         lambda_theta += *p_D_tem * p_m(m - 1);
       }
       
-      //if(s == 2 & m == 777){
-      //  std::cout << "session 2, until m 777, lambda_theta: " << lambda_theta << std::endl;
-      //  std::cout << "session 2, m 777, p_dot: " << p_dot(m - 1) << std::endl;
-      //  std::cout << "session 2, m 777, p_m: " << p_m(m - 1) << std::endl;
-      //  std::cout << "session 2, m 777, D: " << *p_D_tem << std::endl;
-      // std::cout << "session 2, m 777, mu: " << *p_mu_tem << std::endl;
-      //}
-
-      //if(s == 2){
-      //  std::cout << "session 2, until mask " << m << ", lambda_theta: " << lambda_theta << std::endl;
-      //}
       
       p_D_mask++;
       p_D_tem++;
