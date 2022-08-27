@@ -6,6 +6,9 @@
 \usage{
 convert.mask(mask)
 }
+\arguments{
+\item{mask}{}
+}
 \value{
 An object of class \code{mask}.
 }

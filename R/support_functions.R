@@ -1254,13 +1254,12 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
 }
 
 
-par_extend_create = function(model, loc_cov = NULL, mask = NULL, control_convert_loc2mask = list(),
-                             session_cov = NULL, trap_cov = NULL, is_scale = TRUE){
+par_extend_create = function(loc_cov = NULL, mask = NULL, control_convert_loc2mask = list(),
+                             session_cov = NULL, trap_cov = NULL){
   
   
-  if(!is.null(model)){
+  if(any(!is.null(loc_cov), !is.null(session_cov), !is.null(trap_cov))){
     par.extend = list()
-    par.extend$model = model
     
     #if location related covariates provided, convert it to mask-level data frame
     if(!is.null(loc_cov)){
@@ -1271,13 +1270,8 @@ par_extend_create = function(model, loc_cov = NULL, mask = NULL, control_convert
     } else {
       mask_cov = NULL
     }
-    
-    if(any(!is.null(mask_cov), !is.null(session_cov), !is.null(trap_cov))){
-      par.extend$data = list(session = session_cov, trap = trap_cov, mask = mask_cov)
-    }
-    
-    par.extend$scale = is_scale
-    
+
+    par.extend$data = list(session = session_cov, trap = trap_cov, mask = mask_cov)
   } else (
     par.extend = NULL
   )
@@ -1582,30 +1576,6 @@ diag_block_combine = function(lst){
   
 }
 
-dist_ss_rescale = function(capt_session, buffer, is.ss, is.dist, is.bearing){
-  if(!is.ss & !is.dist){
-    return(capt_session)
-  } else {
-    #in the plot function, the scenario of is.ss & is.dist has been removed, so here
-    #we must have either is.ss or is.dist, and we have one of them only
-    
-    if(!is.bearing){
-      #if no bearing, we will use geom_point() to draw a circle, so we scale
-      #ss or dist to (10, 100) as the size of the point.
-      if(is.ss) capt_session$ss = scale_convert(capt_session$ss, c(10, 100))
-      if(is.dist) capt_session$dist = scale_convert(capt_session$dist, c(10, 100))
-    } else {
-      #if bearing is provided, then for dist, we scale dist to [0.1, 1] * buffer
-      if(is.dist) capt_session$dist = scale_convert(capt_session$dist, c(0.1 * buffer, buffer))
-      #for ss, we scale -1*ss to [0.1, 1] * buffer
-      if(is.ss) capt_session$ss = scale_convert(-1 * capt_session$ss, c(0.1 * buffer, buffer))
-      
-    }
-    
-    return(capt_session)
-  }
-  
-}
 
 scale_convert = function(from, to){
   max_to = max(to)
@@ -1628,3 +1598,36 @@ scale_convert = function(from, to){
   return(output)
 }
 
+
+
+circleFun <- function(centre = data.frame(x = 0, y = 0), r = 0.5, npoints = 50){
+  n = nrow(centre)
+  if(length(r) != n) r = rep(r, length.out = n)
+  output = vector('list', n)
+  for(i in 1:n){
+    tt <- seq(0, 2*pi, length.out = npoints)
+    xx <- centre[i, 1] + r[i] * cos(tt)
+    yy <- centre[i, 2] + r[i] * sin(tt)
+    output[[i]] = data.frame(x = xx, y = yy, cir_index = i)
+  }
+  
+  output = do.call('rbind', output)
+  
+  return(output)
+}
+
+
+homo_digit = function(x){
+  x = as.character(x)
+  n_digit = nchar(x)
+  max_digit = max(n_digit)
+  
+  n_zero = max_digit - n_digit
+  
+  y = character(length(x))
+  for(i in 1:length(x)){
+    y[i] = paste(rep('0', n_zero[i]), collapse = "")
+  }
+  output = paste(y, x, sep = "")
+  return(output)
+}

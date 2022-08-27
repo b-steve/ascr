@@ -12,7 +12,7 @@ demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE, sv_link = NULL
   dat$gr_skip = gradient_free
   dat$sv_link = sv_link
   
-  dat_model = do.call('fit.data', dat)
+  dat_model = do.call('read.ascr', dat)
   
   if(fit){
     model_output = fit.ascr(dat_model)
@@ -26,17 +26,17 @@ demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE, sv_link = NULL
 
 #' Title
 #'
-#' @param table_print 
+#' @param table_return 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-show_demo_options = function(table_print = TRUE){
+show_demo_options = function(table_return = TRUE){
   output = c('bearing_dist_hn', 'bearing_hn', 'dist_hn', 'ihd', 'ihd_ext', 'mul_ses', 'mul_ses_ext',
              'simple_hhn', 'hhn_cue', 'simple_hr', 'ss', 'ss_toa', 
              'ind_bearing_dist', 'ind_toa_hhn', 'ind_ss', 'ind_ss_log', 'ind_ss_sp')
-  if(table_print){
+  if(table_return){
     descriptions = matrix(c('hn' ,'bearing & dist' ,'NULL' ,'FALSE' ,'1',
                             'hn' ,'bearing' ,'NULL' ,'FALSE' ,'1',
                             'hn' ,'dist' ,'NULL' ,'FALSE' ,'1',
@@ -60,9 +60,11 @@ show_demo_options = function(table_print = TRUE){
     colnames(descriptions) = c('index', 'det_fn', 'extra_info', 'extended_par', 'individual_id', 'n_sessions')
     rownames(descriptions) = output
     descriptions = as.data.frame(descriptions)
-    print(descriptions)
+
+    return(descriptions)
+  } else {
+    return(output)
   }
-  
-  invisible(output)
+
 }
 

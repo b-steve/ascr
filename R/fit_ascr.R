@@ -539,15 +539,65 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 #'
 #'
 #' @param dat 
+#' @param par_extend_model 
+#' @param control_create_mask 
+#' @param mask 
+#' @param control_convert_loc2mask 
+#' @param is_scale 
+#' @param par_extend_link 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-fit.ascr = function(dat){
+fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, mask = NULL,
+                    control_convert_loc2mask = list(), is_scale = TRUE, par_extend_link = NULL){
   #extract the original input and pass it to the final output
   arg.input = dat$arg.input
   dat$arg.input = NULL
+  mask_override = FALSE
+  #if "mask" is provided, overwrite the "mask" in "dat" directly,
+  #if "mask" is not provided but "control_create_mask" is, then use it to create mask
+  if(!is.null(mask)){
+    dat$mask = mask
+    if(!is.null(control_create_mask)){
+      warning("Argument of 'mask' is provided, 'control_create_mask' will be ignored.")
+    }
+    mask_override = TRUE
+  } else if(!is.null(control_create_mask)){
+    stopifnot(!is.null(control_create_mask$buffer))
+    control_create_mask$traps = dat$traps
+    mask = do.call('create.mask', control_create_mask)
+    dat$mask = mask
+    mask_override = TRUE
+  }
+  
+  
+  #this par_extend_model is the key component, if it is NULL, the component of 
+  #dat$par.extend will be forced to NULL no matter whether there was data provided
+  if(!is.null(par_extend_model)){
+    if(is.null(dat$par.extend)){
+      dat$par.extend = list(model = par_extend_model)
+    } else {
+      dat$par.extend$model = par_extend_model
+    }
+    dat$par.extend$scale = is_scale
+    dat$par.extend$link = par_extend_link
+    
+    #when there was any 'mask' level data been provided before, and the 'mask'
+    #is overrode, then create the 'mask' leve data again to override it.
+    if(mask_override & !is.null(dat$par.extend$data$mask)){
+      control_convert_loc2mask$loc_cov = arg.input$loc_cov
+      control_convert_loc2mask$mask = mask
+      
+      dat$par.extend$data$mask = do.call('location_cov_to_mask', control_convert_loc2mask)
+    }
+
+  } else {
+    dat$par.extend = NULL
+  }
+  
+  
   output = do.call('fit_og', dat)
   output$arg_input = arg.input
   
@@ -570,8 +620,6 @@ fit.ascr = function(dat){
 #' @param control_convert_loc2mask 
 #' @param session_cov 
 #' @param trap_cov 
-#' @param par_extend_model 
-#' @param is_scale 
 #' @param cue.rates 
 #' @param survey.length 
 #' @param sound.speed 
@@ -585,10 +633,10 @@ fit.ascr = function(dat){
 #' @export
 #'
 #' @examples
-fit.data = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
+read.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
-                    control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL, par_extend_model = NULL,
-                    is_scale = TRUE, cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, 
+                    control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL,
+                    cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, 
                     tracing = TRUE, gr_skip = FALSE, sv_link = NULL,...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
@@ -627,7 +675,7 @@ fit.data = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix
   mask = do.call('create.mask', control_create_mask)
   
   #if par_extend_model is assigned, we need to construct "par.extend" for model fitting
-  par.extend = par_extend_create(par_extend_model, loc_cov = loc_cov, mask = mask,
+  par.extend = par_extend_create(loc_cov = loc_cov, mask = mask,
                                  control_convert_loc2mask = control_convert_loc2mask,
                                  session_cov = session_cov, trap_cov = trap_cov)
   

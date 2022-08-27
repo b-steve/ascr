@@ -2,14 +2,14 @@ sim_study = function(sim_name, n.rand = 1, fit = FALSE, seed = 810){
   sim_args = sim_args_generator(sim_name)
   sim_args$n.rand = n.rand
   set.seed(seed)
-  if(n.rand != 1) cat("simulation progress:\n")
+  if(n.rand != 1) message("simulation progress:")
   simulated_capt = do.call('sim.capt', sim_args)
   output = list()
   output$sim_capt = simulated_capt$capt
   output$sim_args = sim_args
   
   if(fit){
-    cat("modelling started.\n")
+    message("modelling started.")
     #sort out arguments required for model fitting first (excluding capt, as this could vary depends on n.rand)
     fit_args = fit_args_generator_from_sim(sim_name, simulated_capt$args)
     
@@ -36,7 +36,7 @@ sim_study = function(sim_name, n.rand = 1, fit = FALSE, seed = 810){
         fit_args$capt = create.capt(simulated_capt$capt[[i]], fit_args$traps)
         sim_fit = do.call('fit_og', fit_args)
         est_values[[i]] = get_coef(sim_fit)
-        cat(paste0("finished: ", i, "/", n.rand, "\n"))
+        message(paste0("finished: ", i, "/", n.rand))
         #write.csv(sim_fit$args$par.extend$data$mask, paste0('df_m_fit', i, '.csv'), row.names = F)
       }
       

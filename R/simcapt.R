@@ -245,7 +245,7 @@ sim.data.prepare = function(detfn, param, par.extend, traps, mask, survey.length
         foo = stats::as.formula(paste(c('gam.resp', as.character(par.extend$model[[i]])), collapse = ""))
         tem_model = mgcv::gam(foo, data = tem_dat, fit = FALSE)
         DX = tem_model$X
-        cat(paste0("For extended parameter ", i, ", the corresponding covariates are: ", paste(colnames(DX), collapse = ", "), ".\n", 
+        message(paste0("For extended parameter ", i, ", the corresponding covariates are: ", paste(colnames(DX), collapse = ", "), ".\n", 
                    "Please make sure the order of coefficients values in the 'param' for this parameter is correct.\n"))
         if(is.null(par.extend$link[[i]])){
           link = default.link(i)

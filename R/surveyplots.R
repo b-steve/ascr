@@ -62,7 +62,7 @@ show_detfn <- function(fit, new_covariates = NULL, param_extend_skip = NULL, xli
   #if no new_covariates assigned, skip all extended parameters
   if(is.null(new_covariates) & is.null(param_extend_skip)){
     if(length(par_extend_name) > 0){
-      print('No new data of covariates provided, only the intercept will be used for all extended parameters.')
+      message('No new data of covariates provided, only the intercept will be used for all extended parameters.')
       param_extend_skip = par_extend_name
     }
   }
@@ -70,7 +70,7 @@ show_detfn <- function(fit, new_covariates = NULL, param_extend_skip = NULL, xli
   if(!is.null(new_covariates)){
     #standardize new_covariates first
     new_covariates = fit$scale.covs(new_covariates)
-    print(paste0("Covariates for detect function's parameters are provided. Please make sure that, ",
+    message(paste0("Covariates for detect function's parameters are provided. Please make sure that, ",
                  "for each extended parameter which are not included in the argument 'param_extend_skip',",
                  "all covariates are provided"))
   }
@@ -257,14 +257,16 @@ show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_
 #' @param control a list,
 #' @param anime 
 #' @param ask 
-#' @param ... 
+#' @param xlim 
+#' @param ylim 
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
 plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, control = NULL,
-                           ask = TRUE, ...){
+                           ask = TRUE, xlim = NULL, ylim = NULL, ...){
   if(is.null(types)) stop('please specify the argument "types".')
   n.sessions = length(dat$traps)
   extra_args = list(...)
@@ -273,7 +275,7 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
   if(types == 'survey'){
     if(is.null(session)){
       session = 1
-      cat("Argument 'session' is missing, the 1st session is plotted by default.\n")
+      message("Argument 'session' is missing, the 1st session is plotted by default.")
     }
     
     stopifnot(session <= n.sessions)
@@ -327,18 +329,13 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
     if("ss" %in% c_names) is.ss = TRUE else is.ss = FALSE
     if("animal_ID" %in% c_names) animal.model = TRUE else animal.model = FALSE
     
-    if(is.ss & is.dist){
-      cat("Extra information of 'signal strengh' and 'distance' are both probvided, 'distance' will be discarded.\n")
-      is.dist = FALSE
-      capt = capt[, -which(c_names == "dist"),drop = FALSE]
-    }
     
     
     #when animal ID or call ID equals to zero, it means all detection.
     #currently, animation could only be applied for single session.
     if(any(!is.null(control$animal_ID), !is.null(control$ID), anime) & session == 0){
       session = 1
-      cat("Argument 'session' is missing, the 1st session is plotted by default.\n")
+      message("Argument 'session' is missing, the 1st session is plotted by default.")
     }
     
     if(animal.model){
@@ -350,7 +347,7 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
         a_id = control$animal_ID
         if(anime){
           a_id = 0
-          cat("Assigned animal_ID will be ignored as animated capture history will be generated.\n")
+          message("Assigned animal_ID will be ignored as animated capture history will be generated.")
         }
       }
     }
@@ -361,7 +358,7 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
       c_id = control$ID
       if(anime){
         c_id = 0
-        cat("Assigned ID will be ignored as animated capture history will be generated.\n")
+        message("Assigned ID will be ignored as animated capture history will be generated.")
       }
     } 
     
@@ -380,95 +377,109 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
       masks = as.data.frame(masks)
       
       capt_session = subset(capt, capt$session == s)
-      #for dist model, re-scale ss and dist for plotting purpose 
-      capt_session = dist_ss_rescale(capt_session, buffer, is.ss, is.dist, is.bearing)
       
-      if(animal.model){
-        capt_session$keys = paste(capt_session$animale_ID, capt_session$ID, sep = '-')
-      } else {
-        capt_session$keys = capt_session$ID
-      }
+      #constrain the dist below buffer, need to be confirmed with Ben
+      if(is.dist) capt_session$dist = pmin(buffer, capt_session$dist)
       
+
       capt_session = merge(capt_session, traps, by = "trap", all.x = TRUE)
       capt_session = sort.data(capt_session, 'data.full')
       
+      
+      if(animal.model){
+        capt_session$keys = paste(homo_digit(capt_session$animal_ID),
+                                  homo_digit(capt_session$ID), sep = '-')
+      } else {
+        capt_session$keys = homo_digit(capt_session$ID)
+      }
+      
+      
+      #we only plot one session under animation situation, just override arguments "xlim" and "ylim"
+      if(is.null(xlim)) xlim = range(masks$x) 
+      if(is.null(ylim)) ylim = range(masks$y)
+      
       #plot basic info
-      base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
-        coord_quickmap(xlim = range(masks$x), ylim = range(masks$y)) +
-        theme_void()
+
+      if(is.ss){
+        base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
+          coord_quickmap(xlim = xlim, ylim = ylim)
+        
+        point_out_plot = c(max(masks$x) + 0.3 * (max(masks$x) - min(masks$y)),
+                           max(masks$y) + 0.3 * (max(masks$y) - min(masks$y)))
+        
+        base_plot = base_plot + 
+          geom_point(data = capt_session, mapping = aes(x = point_out_plot[1], y = point_out_plot[2], colour = ss)) +
+          guides(colour = guide_colourbar(order = 1))
+        
+      } else {
+        base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
+          coord_quickmap(xlim = xlim, ylim = ylim)
+      }
+      
       trap_plot = base_plot + 
         geom_point(data = traps, mapping = aes(x = trap_x, y = trap_y, shape = 4), size = cex_det) + 
         scale_shape_identity()
       
       
-      #if is.bearing, plot arrow, otherwise plot circle or just point
-      if(is.bearing){
-        if(is.ss){
-          #if is.dist or is.ss, use length of the arrow to indicate dist or -1*ss,
-          #the information in column "dist" and "ss" are already been rescaled
-          #in the previous step by function dist_ss_rescale(), so here we use them directly
-
-          capt_session$arrow_len = capt_session$ss
-          trap_plot = trap_plot + labs(caption = "arrow length shows re-scaled -1*ss.")
-        } else if(is.dist){
-          capt_session$arrow_len = capt_session$dist
-          trap_plot = trap_plot + labs(caption = "arrow length shows re-scaled dist.")
-        } else {
-          capt_session$arrow_len = rep(0.5*buffer, nrow(capt_session))
-        }
-        
+      if(is.ss){
         capt_plot = trap_plot +
-          geom_point(data = capt_session, mapping = aes(x = trap_x, y = trap_y, group = keys),
-                     size = cex_capt, colour = "red") +
-          geom_segment(data = capt_session, mapping = aes(x = trap_x, y = trap_y,
-                                                          xend = trap_x + sin(bearing) * arrow_len,
-                                                          yend = trap_y + cos(bearing) * arrow_len,
-                                                          group = keys),
-                       arrow = arrow(length = unit(0.02, "npc")), colour = "red")
-        
- 
-        #end of bearing plot
+          geom_point(data = capt_session, mapping = aes(x = trap_x, y = trap_y, group = keys, colour = ss),
+                     size = cex_capt)
       } else {
-        #if not bearing, use circle if dist or ss is available, use literally point otherwise
         capt_plot = trap_plot +
           geom_point(data = capt_session, mapping = aes(x = trap_x, y = trap_y, group = keys),
                      size = cex_capt, colour = "red")
-        
-
-        #if is.dist or is.ss, use radius of circle to indicate scaled -1*dist or ss, since the values
-        #have been re scaled, use them directly as radius
-        if(is.ss){
-          capt_plot = capt_plot +
-            geom_point(data = capt_session, mapping = aes(x = trap_x, y = trap_y, group = keys),
-                       size = capt_session$ss, colour = "red", shape = 1) +
-            labs(caption = "radius shows re-scaled ss.")
-        } else if(is.dist){
-          capt_plot = capt_plot +
-            geom_point(data = capt_session, mapping = aes(x = trap_x, y = trap_y, group = keys),
-                       size = capt_session$dist, colour = "red", shape = 1) +
-            labs(caption = "radius shows re-scaled dist.")
-        }
-        #end of non-bearing plot
       }
       
       
+      if(is.bearing){
+        if(is.dist){
+
+          capt_plot = capt_plot +
+            geom_segment(data = capt_session, mapping = aes(x = trap_x, y = trap_y,
+                                                            xend = trap_x + sin(bearing) * dist,
+                                                            yend = trap_y + cos(bearing) * dist,
+                                                            group = keys),
+                         arrow = arrow(length = unit(0.02, "npc")), colour = "blue") +
+            labs(caption = "arrow length shows dist.")
+        } else {
+          if(is.null(control$arrow_len)) arrow_len = 0.382 * buffer else arrow_len = control$arrow_len
+          capt_plot = capt_plot +
+            geom_segment(data = capt_session, mapping = aes(x = trap_x, y = trap_y,
+                                                            xend = trap_x + sin(bearing) * arrow_len,
+                                                            yend = trap_y + cos(bearing) * arrow_len,
+                                                            group = keys),
+                         arrow = arrow(length = unit(0.02, "npc")), colour = "blue")
+
+        }
+
+      } else if(is.dist){
+
+        if(is.null(control$circle_acc)) npoints = 50 else npoints = control$circle_acc
+        data_cir = circleFun(centre = capt_session[,c('trap_x', 'trap_y')], r = capt_session$dist, npoints = npoints)
+        data_cir$keys = rep(capt_session$key, each = npoints)
+        capt_plot = capt_plot + 
+          geom_path(data = data_cir, mapping = aes(x = x, y = y, group = interaction(keys, cir_index)), colour = "blue")
+      }
+      
+
       anime_plot = capt_plot +
-        gganimate::transition_time(keys)
+        transition_manual(keys)
       
       if(animal.model){
         anime_plot = anime_plot + 
-          ggtitle(paste0('session ', s,', animal_ID - call_ID: {frame_time}'),
+          ggtitle(paste0('session ', s,', animal_ID - call_ID: {current_frame}'),
                   subtitle = 'Frame {frame} of {nframes}')
       } else {
         anime_plot = anime_plot + 
-          ggtitle(paste0('session ', s, ', call_ID: {frame_time}'),
+          ggtitle(paste0('session ', s, ', call_ID: {current_frame}'),
                   subtitle = 'Frame {frame} of {nframes}')
       }
       
       
       n_keys = length(unique(capt_session$keys))
-      animate(anime_plot, nframes = n_keys, fps = fps)
-      
+
+      print(animate(anime_plot, nframes = n_keys, fps = fps))
       #end of animation plotting 
       
     } else {
@@ -493,8 +504,9 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
         buffer = attr(masks, 'buffer')
         masks = as.data.frame(masks)
         capt_session = subset(capt, capt$session == s)
-        #for dist model, re-scale ss and dist for plotting purpose 
-        capt_session = dist_ss_rescale(capt_session, buffer, is.ss, is.dist, is.bearing)
+        
+        #constrain the dist below buffer, need to be confirmed with Ben
+        if(is.dist) capt_session$dist = pmin(buffer, capt_session$dist)
         
         if(animal.model){
           if(a_id != 0){
@@ -512,102 +524,97 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
         }
         
         u_keys = unique(keys)
-
+        
+        #because argument of x,ylim should work for each session, we cannot override "xlim" or "ylim",
+        #so we create 2 tem variables xlim_plot and ylim_plot for each session
+        if(is.null(xlim)){
+          xlim_plot = range(masks$x)
+        } else {
+          xlim_plot = xlim
+        }
+        
+        if(is.null(ylim)){
+          ylim_plot = range(masks$y)
+        } else {
+          ylim_plot = ylim
+        }
+        
         #plot basic info
-        base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
-          coord_quickmap(xlim = range(masks$x), ylim = range(masks$y)) +
-          theme_void()
+        if(is.ss){
+          base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
+            coord_quickmap(xlim = xlim_plot, ylim = ylim_plot)
+          
+          point_out_plot = c(max(masks$x) + 0.3 * (max(masks$x) - min(masks$y)),
+                             max(masks$y) + 0.3 * (max(masks$y) - min(masks$y)))
+          
+          base_plot = base_plot + 
+            geom_point(data = capt_session, mapping = aes(x = point_out_plot[1], y = point_out_plot[2], colour = ss)) +
+            guides(colour = guide_colourbar(order = 1))
+          
+        } else {
+          base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
+            coord_quickmap(xlim = xlim_plot, ylim = ylim_plot)
+        }
+
+        
         trap_plot = base_plot + 
           geom_point(data = traps, mapping = aes(x = x, y = y, shape = 4), size = cex_det) + 
           scale_shape_identity()
         
         
-        if(is.bearing){
-          #if bearing, use arrow
-          #bearing: x1 = x0 + sin(bearing) * length, y1 = y0 + cos(bearing) * length
+        #plot calls one by one
+        for(k in u_keys){
+          i_k = which(keys == k)
+          one_call = capt_session[i_k,,drop = FALSE]
+          actived_traps = traps[one_call$trap,]
           
-          if(is.ss){
-            #if is.dist or is.ss, use length of the arrow to indicate dist or -1*ss,
-            #the information in column "dist" and "ss" are already been rescaled
-            #in the previous step by function dist_ss_rescale(), so here we use them directly
-            len = capt_session$ss
-            trap_plot = trap_plot + labs(caption = "arrow length shows re-scaled -1*ss")
-          } else if(is.dist){
-            len = capt_session$dist
-            trap_plot = trap_plot + labs(caption = "arrow length shows re-scaled dist")
+          if(animal.model){
+            sub_title = paste0("session: ",s, ", animal ID: ", one_call$animal_ID[1],
+                               ", call ID: ", one_call$ID[1])
           } else {
-            len = rep(0.5*buffer, nrow(capt_session))
+            sub_title = paste0("session: ",s, ", call ID: ", one_call$ID[1])
           }
           
-          for(k in u_keys){
-            i_k = which(keys == k)
-            one_call = capt_session[i_k,,drop = FALSE]
-            actived_traps = traps[one_call$trap,]
-            len_1call = len[i_k]
-            if(animal.model){
-              sub_title = paste0("session: ",s, ", animal ID: ", one_call$animal_ID[1],
-                                 ", call ID: ", one_call$ID[1])
-            } else {
-              sub_title = paste0("session: ",s, ", call ID: ", one_call$ID[1])
-            }
-
-            plot_one_call = trap_plot + 
-              geom_point(data = actived_traps, mapping = aes(x = x, y = y), size = cex_capt, colour = "red") +
-              geom_segment(data = actived_traps, mapping = aes(x = x, y = y,
-                                                               xend = x + sin(one_call$bearing) * len_1call,
-                                                               yend = y + cos(one_call$bearing) * len_1call),
-                           arrow = arrow(length = unit(0.02, "npc")), colour = "red") +
-              labs(subtitle = sub_title)
-            
-            print(plot_one_call)
-            
-          }
+          plot_with_lab = trap_plot + labs(subtitle = sub_title)
           
-          
-          #end of if(is.bearing)
-        } else {
-          #if not bearing, use circle if dist or ss is available, use literally point otherwise
-          
-          #if is.dist or is.ss, use radius of circle to indicate scaled -1*dist or ss, since the values
-          #have been re scaled, use them directly as radius
           if(is.ss){
-            rad = capt_session$ss
-            trap_plot = trap_plot + labs(caption = "radius shows re-scaled ss.")
-          } else if(is.dist){
-            rad = capt_session$dist
-            trap_plot = trap_plot + labs(caption = "radius shows re-scaled dist.")
+            plot_one_call = plot_with_lab + 
+              geom_point(data = actived_traps, mapping = aes(x = x, y = y, colour = one_call$ss), size = cex_capt)
+          } else {
+            plot_one_call = plot_with_lab + 
+              geom_point(data = actived_traps, mapping = aes(x = x, y = y), size = cex_capt, colour = "red")
           }
-            
           
-          for(k in u_keys){
-            i_k = which(keys == k)
-            one_call = capt_session[i_k,,drop = FALSE]
-            actived_traps = traps[one_call$trap,]
-            
-            if(animal.model){
-              sub_title = paste0("session: ",s, ", animal ID: ", one_call$animal_ID[1],
-                                 ", call ID: ", one_call$ID[1])
+          #if is.bearing, draw arrows (arrow length will be 0.382 * buffer or dist if is.dist);
+          #else if is.dist, draw circles, use dist as radius; else then it is !is.bearing & !is.dist, do nothing
+          if(is.bearing){
+            if(is.dist){
+              arrow_len = one_call$dist
+              plot_one_call = plot_one_call + labs(caption = "arrow length shows dist")
             } else {
-              sub_title = paste0("session: ",s, ", call ID: ", one_call$ID[1])
+              if(is.null(control$arrow_len)) arrow_len = 0.382 * buffer else arrow_len = control$arrow_len
             }
             
-            plot_one_call = trap_plot + 
-              geom_point(data = actived_traps, mapping = aes(x = x, y = y), size = cex_capt, colour = "red") +
-              labs(subtitle = sub_title)
+            plot_one_call = plot_one_call + 
+              geom_segment(data = actived_traps, mapping = aes(x = x, y = y,
+                                                               xend = x + sin(one_call$bearing) * arrow_len,
+                                                               yend = y + cos(one_call$bearing) * arrow_len),
+                           arrow = arrow(length = unit(0.02, "npc")), colour = "blue")
             
-            #if is.dist or is.ss, add circles
-            if(is.dist | is.ss){
-
-              rad_1call = rad[i_k]
-              plot_one_call = plot_one_call +
-                geom_point(data = actived_traps, mapping = aes(x = x, y = y), size = rad_1call, shape = 1,
-                           colour = "red")
-            } 
-            print(plot_one_call)
+          } else if(is.dist){
+            if(is.null(control$circle_acc)) npoints = 50 else npoints = control$circle_acc
+            data_cir = circleFun(centre = actived_traps, r = one_call$dist, npoints = npoints)
+            
+            plot_one_call = plot_one_call + 
+              geom_path(data = data_cir, mapping = aes(x = x, y = y, group = cir_index), colour = "blue")
             
           }
-          #end of !is.bearing plot
+          
+          
+          print(plot_one_call)
+          #end of plot for one call
         }
+        
         
        #end of session s 
       }
@@ -624,33 +631,41 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
   if(types == 'covariates'){
     if(is.null(session)){
       session = 1
-      cat("Argument 'session' is missing, the 1st session is plotted by default.\n")
+      message("Argument 'session' is missing, the 1st session is plotted by default.")
     }
     
     masks = as.data.frame(get_mask_from_data(dat)[[session]])
     masks$mask = seq(nrow(masks))
+    
+    if(is.null(xlim)) xlim <- range(masks[, 'x'])
+    if(is.null(ylim)) ylim <- range(masks[, 'y'])
+    
+    masks = subset(masks, masks$x <= xlim[2] & masks$x >= xlim[1] & masks$y <= ylim[2] & masks$y >= ylim[1])
+    
     masks_mat = as.matrix(masks[, c('x', 'y'), drop = FALSE])
     D_cov_for_model = dat$par.extend$data$mask
+
+    
     if(is.null(D_cov_for_model)){
       stop('There is no location related covariates, nothing to plot.')
     }
-    
-    D_cov_input = dat$arg.input$loc_cov
     
     
     D_cov_for_model = D_cov_for_model[D_cov_for_model$session == session,
                                       -which(colnames(D_cov_for_model) == 'session')]
     
-    D_cov_for_model = merge(D_cov_for_model, masks, by = 'mask')
+    D_cov_for_model = merge(D_cov_for_model, masks, by = 'mask', all = FALSE)
+    D_cov_for_model = D_cov_for_model[order(D_cov_for_model$mask),]
     D_cov_for_model = D_cov_for_model[, -which(colnames(D_cov_for_model) == 'mask')]
     
     cov_list = colnames(D_cov_for_model)
     cov_list = cov_list[-which(cov_list == 'x' | cov_list == 'y')]
     
+    
     unique.x <- sort(unique(masks[, 'x']))
     unique.y <- sort(unique(masks[, 'y']))
-    xlim <- range(masks[, 'x'])
-    ylim <- range(masks[, 'y'])
+    
+    
     col_fn = viridis::viridis
     if(is.null(control$arg_col)) arg_col = list(n = 100, option = "D")
     if(is.null(control$plot_contours)) plot_contours = TRUE
