@@ -1,3 +1,21 @@
+#' @param fit 
+#' @param detfn 
+#' @param param 
+#' @param par_extend_model 
+#' @param traps 
+#' @param control_create_mask 
+#' @param session_cov 
+#' @param trap_cov 
+#' @param loc_cov 
+#' @param control_convert_loc2mask 
+#' @param survey.length 
+#' @param ss.opts 
+#' @param cue.rates 
+#' @param n.sessions 
+#' @param n.rand 
+#' @param random.location 
+#' @param sound.speed 
+#'
 #' @export
 sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_create_mask = list(), session_cov = NULL, trap_cov = NULL, loc_cov = NULL,
                     control_convert_loc2mask = list(), survey.length = NULL, ss.opts = NULL, cue.rates = NULL, n.sessions = NULL, n.rand = 1,
@@ -48,9 +66,10 @@ sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_c
     control_create_mask$traps = traps
     mask = do.call('create.mask', control_create_mask)
     #if par_extend_model is assigned, we need to construct "par.extend" for simulation
-    par.extend = par_extend_create(model = par_extend_model, loc_cov = loc_cov, mask = mask,
+    par.extend = par_extend_create(loc_cov = loc_cov, mask = mask,
                                    control_convert_loc2mask = control_convert_loc2mask,
-                                   session_cov = session_cov, trap_cov = trap_cov, is_scale = NULL)
+                                   session_cov = session_cov, trap_cov = trap_cov)
+    par.extend$model = par_extend_model
   }
 
   #write.csv(par.extend$data$mask, 'df_m_sim.csv', row.names = F)

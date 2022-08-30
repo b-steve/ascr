@@ -1271,7 +1271,10 @@ par_extend_create = function(loc_cov = NULL, mask = NULL, control_convert_loc2ma
       mask_cov = NULL
     }
 
-    par.extend$data = list(session = session_cov, trap = trap_cov, mask = mask_cov)
+    par.extend$data = list()
+    par.extend$data$session = session_cov
+    par.extend$data$trap = trap_cov
+    par.extend$data$mask = mask_cov
   } else (
     par.extend = NULL
   )

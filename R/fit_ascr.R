@@ -545,13 +545,17 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 #' @param control_convert_loc2mask 
 #' @param is_scale 
 #' @param par_extend_link 
+#' @param local 
+#' @param tracing 
+#' @param gr_skip 
 #'
 #' @return
 #' @export
 #'
 #' @examples
 fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, mask = NULL,
-                    control_convert_loc2mask = list(), is_scale = TRUE, par_extend_link = NULL){
+                    control_convert_loc2mask = list(), is_scale = NULL, par_extend_link = NULL,
+                    local = FALSE, tracing = TRUE, gr_skip = FALSE){
   #extract the original input and pass it to the final output
   arg.input = dat$arg.input
   dat$arg.input = NULL
@@ -598,6 +602,10 @@ fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, ma
   }
   
   
+  dat$local = local
+  dat$tracing = tracing
+  dat$gr_skip = gr_skip
+  
   output = do.call('fit_og', dat)
   output$arg_input = arg.input
   
@@ -623,9 +631,6 @@ fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, ma
 #' @param cue.rates 
 #' @param survey.length 
 #' @param sound.speed 
-#' @param local 
-#' @param tracing 
-#' @param gr_skip 
 #' @param sv_link a list; this is mostly for development purpose, not recommended to use
 #' @param ...
 #'
@@ -636,8 +641,7 @@ fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, ma
 read.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
                     control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL,
-                    cue.rates = NULL, survey.length = NULL, sound.speed = 331, local = FALSE, 
-                    tracing = TRUE, gr_skip = FALSE, sv_link = NULL,...){
+                    cue.rates = NULL, survey.length = NULL, sound.speed = 331, sv_link = NULL,...){
   #keep all original input arguments
   arg.names <- names(as.list(environment()))
   arg.input <- vector('list', length(arg.names))

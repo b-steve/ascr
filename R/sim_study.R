@@ -1,3 +1,14 @@
+#' Title
+#'
+#' @param sim_name 
+#' @param n.rand 
+#' @param fit 
+#' @param seed 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 sim_study = function(sim_name, n.rand = 1, fit = FALSE, seed = 810){
   sim_args = sim_args_generator(sim_name)
   sim_args$n.rand = n.rand

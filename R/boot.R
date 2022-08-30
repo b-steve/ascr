@@ -178,6 +178,7 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
   res <- res[, -ncol(res), drop = FALSE]
   se <- apply(res, 2, sd, na.rm = TRUE)
   names(se) <- par_names
+  colnames(res) <- par_names
   corr <- diag(n_pars)
   dimnames(corr) <- list(par_names, par_names)
   vcov <- diag(se^2)
@@ -199,6 +200,7 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
     mce.boot <- matrix(sample(converged, size = n.converged*M,
                               replace = TRUE), nrow = M,
                        ncol = n.converged)
+    #browser()
     for (i in par_names){
       par.boot <- matrix(res[mce.boot, i], nrow = M, ncol = n.converged)
       bias.mce[i] <- sd(apply(par.boot, 1, mean) - coefs[i] - bias[i])
