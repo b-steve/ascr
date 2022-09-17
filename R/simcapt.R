@@ -88,21 +88,29 @@ sim.capt = function(fit, detfn, param, par_extend_model = NULL, traps, control_c
   #however, the estimation of D is just wild, needs Ben's help about this issue.  
   
   if(n.rand == 1){
-    capt = sim.from.param(detfn, dat_pars, dat.density, random.location,
+    tem = sim.from.param(detfn, dat_pars, dat.density, random.location,
                             dims, info.bucket, ss.opts, cue.rates, sound.speed)
+    
+    capt = tem$o_capt
+    o_cue_rates = tem$o_cue_rates
+    
   } else {
     capt = vector('list', n.rand)
+    o_cue_rates = vector('list', n.rand)
     pb = utils::txtProgressBar(1, n.rand, style = 3)
     for(i in 1:n.rand){
-      capt[[i]] = sim.from.param(detfn, dat_pars, dat.density, random.location,
+      tem = sim.from.param(detfn, dat_pars, dat.density, random.location,
                                    dims, info.bucket, ss.opts, cue.rates, sound.speed)
+      capt[[i]] = tem$o_capt
+      if(!is.null(tem$o_cue_rates)) o_cue_rates[[i]] = tem$o_cue_rates
       utils::setTxtProgressBar(pb, i)
     }
     close(pb)
   }
   
-  return(list(capt = capt, args = list(detfn = detfn, traps = traps, mask = mask, par.extend = par.extend, ss.opts = ss.opts,
-                                       cue.rates = cue.rates, sound.speed = sound.speed, survey.length = survey.length)))
+  return(list(capt = capt, sim_cue_rates = o_cue_rates, 
+              args = list(detfn = detfn, traps = traps, mask = mask, par.extend = par.extend, ss.opts = ss.opts,
+                          cue.rates = cue.rates, sound.speed = sound.speed, survey.length = survey.length)))
   
 }
 
@@ -338,6 +346,7 @@ sim.from.param = function(detfn, dat_pars, dat.density, random.location, dims, i
   
   #generate random n_calls
   if(info.bucket$animal.model){
+    cue.rates = NULL
     dat.density$animal_ID = 1:nrow(dat.density)
     #since "n_animals" has been split, each row only denotes one animal, so here we could
     #literally use mu*survey.length as lambda for the Poisson distribution
@@ -441,7 +450,7 @@ sim.from.param = function(detfn, dat_pars, dat.density, random.location, dims, i
     output = output[order(output$session, output$ID, output$trap), ]
   }
   
-  return(output)
+  return(list(o_capt = output, o_cue_rates = cue.rates))
   
 }
 

@@ -113,6 +113,11 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
   #it as original input, but after dealing with 'par.extend', there is no interaction with users about
   #'animal_ID' or 'ID', so we modify them to make sure design matrices are in right order
   
+  #(additional notes in 09/09/2022: we may not include animal_ID level covariates, there are quite a few reasons,
+  #for example, if we add it, the simulation will not work as animal_ID is an item to be simulated, the output
+  #animal_ID will be random, we cannot assign any covariate to it. But since the model works
+  #no need to change this part.)
+  
   #in the 'convert_natural_number()', the key component is as.numeric(as.factor(xxx)). Both 'data.full' and
   #'data.ID_mask' contains the same combination of 'animal_ID' and 'ID', but they may be in different order,
   #to make sure as.numeric(as.factor(xxx)) output the same numeric value to the same 'animal_ID' or 'ID',
@@ -616,7 +621,7 @@ fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, ma
 #' Title
 #'
 #' @param captures 
-#' @param traps 
+#' @param traps
 #' @param detfn 
 #' @param sv 
 #' @param bounds 
@@ -633,12 +638,13 @@ fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, ma
 #' @param sound.speed 
 #' @param sv_link a list; this is mostly for development purpose, not recommended to use
 #' @param ...
+#' 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-read.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
+read.ascr = function(captures, traps, mask = NULL, detfn = NULL, sv = NULL, bounds = NULL, fix = NULL, ss.opts = NULL,
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
                     control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL,
                     cue.rates = NULL, survey.length = NULL, sound.speed = 331, sv_link = NULL,...){
@@ -674,10 +680,21 @@ read.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fi
   
   traps = df_to_list(traps, n.sessions)
   
-  stopifnot(!is.null(control_create_mask$buffer))
-  control_create_mask$traps = traps
-  mask = do.call('create.mask', control_create_mask)
+  if(!is.null(mask)){
+    mask = df_to_list(mask, n.sessions)
+    
+    for(i in 1:n.sessions){
+      mask[[i]] = convert_one_mask(mask[[i]], traps[[i]])
+    }
+
+  } else {
+    stopifnot(!is.null(control_create_mask$buffer))
+    control_create_mask$traps = traps
+    mask = do.call('create.mask', control_create_mask)
+  }
   
+
+
   #if par_extend_model is assigned, we need to construct "par.extend" for model fitting
   par.extend = par_extend_create(loc_cov = loc_cov, mask = mask,
                                  control_convert_loc2mask = control_convert_loc2mask,
@@ -695,9 +712,6 @@ read.ascr = function(captures, traps, detfn = NULL, sv = NULL, bounds = NULL, fi
   output$cue.rates = cue.rates
   output$survey.length = survey.length
   output$sound.speed = sound.speed
-  output$local = local
-  output$tracing = tracing
-  output$gr_skip = gr_skip
   output$sv_link = sv_link
   #arg.input is not used for fit_og, but we need this to be passed to the final model fit object
   output$arg.input = arg.input

@@ -4,7 +4,7 @@
 \alias{boot.ascr}
 \title{Title}
 \usage{
-boot.ascr(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NULL)
+boot.ascr(fit, N = 30, n.cores = 1, infotypes = NULL, seed = NULL)
 }
 \arguments{
 \item{fit}{}
@@ -13,9 +13,9 @@ boot.ascr(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NULL)
 
 \item{n.cores}{}
 
-\item{M}{}
-
-\item{infotypes}{}
+\item{infotypes}{a character vector contains the infotypes will be simulated in the additional bootstraps;
+or a list with each element as a character vector, used for doing multiple additional
+bootstraps with different settings of infotypes.}
 
 \item{seed}{}
 }

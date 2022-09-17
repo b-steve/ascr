@@ -3,16 +3,17 @@
 #' @param fit 
 #' @param N 
 #' @param n.cores 
-#' @param M 
-#' @param infotypes 
+#' @param infotypes a character vector contains the infotypes will be simulated in the additional bootstraps;
+#'                  or a list with each element as a character vector, used for doing multiple additional
+#'                  bootstraps with different settings of infotypes. 
 #' @param seed 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NULL){
- 
+boot.ascr = function(fit, N = 30, n.cores = 1, infotypes = NULL, seed = NULL){
+  stopifnot(N > 2)
   fit.og = fit
   arguments = fit$args
   
@@ -53,9 +54,6 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
   traps = arguments$traps
   masks = arguments$mask
   
-  ##cue.rate, when cue.rate is NULL, length(cue.rates) return 0.
-  cue.rates <- arguments$cue.rates
-  is_sim_cue <- (length(cue.rates) > 1)
   
   
   ###############################################################################
@@ -105,14 +103,11 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
   }
   
   seed_boot = sample(1:1e8, size = N)
-  seed_mce = sample(1:1e8, size = 1)
   
   
   if(n.cores == 1){
-    ncol_res = n_pars + 1
-    colnames_res = c(par_names, 'maxgrad')
-    res = matrix(NA, nrow = N, ncol = ncol_res)
-    colnames(res) = colnames_res
+    ncol_res = n_pars + 1 + dims$n.sessions
+    colnames_res = c(par_names, 'maxgrad', paste('esa', seq(dims$n.sessions), sep = "_"))
     
 
     ########################################################
@@ -122,8 +117,6 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
                     arguments = arguments,
                     dims = dims,
                     infotypes = fit$infotypes,
-                    is_sim_cue = is_sim_cue,
-                    cue.rates = cue.rates,
                     len_output = ncol_res,
                     name_output = colnames_res)
     ########################################################
@@ -139,13 +132,9 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
         new_args$capt <- arguments$capt[c("bincapt", infotypes[[i]])]
         new_fit <- suppressWarnings(do.call("fit_og", new_args))
         tem = coef(new_fit, 'linked')
-        
-        new_ncol_res = length(tem) + 1
+        new_ncol_res = length(tem) + 1 + dims$n.sessions
         new_colnames_res = c(names(tem), 'maxgrad')
-        extra.res[[i]] <- matrix(NA, nrow = N, ncol = new_ncol_res)
-        colnames(extra.res[[i]]) <- new_colnames_res
         
- 
         ####################################################################################  
         extra.res[[i]] <- suppressWarnings(boot_step(seed = seed_boot,
                                                      N = N,
@@ -153,12 +142,10 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
                                                      arguments = new_args,
                                                      dims = dims,
                                                      infotypes = infotypes[[i]],
-                                                     is_sim_cue = is_sim_cue,
-                                                     cue.rates = cue.rates,
                                                      len_output = new_ncol_res,
                                                      name_output = new_colnames_res))
         ####################################################################################
-        
+        colnames(extra.res[[i]]) <- new_colnames_res
         
       }
       
@@ -168,71 +155,40 @@ boot.ascr = function(fit, N, n.cores = 1, M = 10000, infotypes = NULL, seed = NU
     }
     
     #end of n.core == 1
-  }
-  
-  
-  ## Calculating bootstrapped standard errors, correlations and
-  ## covariances.
-  maxgrads <- res[, ncol(res)]
-  ## Removing maximum gradient component.
-  res <- res[, -ncol(res), drop = FALSE]
-  se <- apply(res, 2, sd, na.rm = TRUE)
-  names(se) <- par_names
-  colnames(res) <- par_names
-  corr <- diag(n_pars)
-  dimnames(corr) <- list(par_names, par_names)
-  vcov <- diag(se^2)
-  dimnames(vcov) <- list(par_names, par_names)
-  for (i in 1:(n_pars - 1)){
-    for (j in (i + 1):n_pars){
-      corr[i, j] <- corr[j, i] <- cor(res[, i], res[, j], use = "na.or.complete")
-      vcov[i, j] <- vcov[j, i] <- corr[i, j]*se[i]*se[j]
-    }
-  }
-  bias <- apply(res, 2, mean, na.rm = TRUE) - coefs
-  ## Bootstrap to calculate MCE for bias and standard errors.
-  bias.mce <- se.mce <- numeric(n_pars)
-  names(bias.mce) <- names(se.mce) <- par_names
-  if (M > 0){
-    set.seed(seed_mce)
-    converged <- which(!is.na(res[, 1]))
-    n.converged <- length(converged)
-    mce.boot <- matrix(sample(converged, size = n.converged*M,
-                              replace = TRUE), nrow = M,
-                       ncol = n.converged)
-    #browser()
-    for (i in par_names){
-      par.boot <- matrix(res[mce.boot, i], nrow = M, ncol = n.converged)
-      bias.mce[i] <- sd(apply(par.boot, 1, mean) - coefs[i] - bias[i])
-      se.mce[i] <- sd(apply(par.boot, 1, sd))
-    }
   } else {
-    bias.mce <- NA
-    se.mce <- NA
+    stop('parallel computing is not avaiable yet.')
   }
+  
+  #"res" contains all covariates under "link" scale
+  #browser()
+  tem = res_split(res, dims$n.sessions)
+  res= tem$res
+  maxgrads = tem$maxgrads
+  res_esa = tem$res_esa
+  
   out <- fit.og
-  boot <- list(boots = res, se = se, se.mce = se.mce, cor = corr, vcov = vcov,
-               bias = bias, bias.mce = bias.mce, maxgrads = maxgrads,
-               extra.boots = extra.res)
+  boot <- list(boots = res, maxgrads = maxgrads, res_esa = res_esa, extra.boots = extra.res)
   out$boot <- boot
-  class(out) <- c("ascr.boot", class(fit))
+  class(out) <- c("ascr_boot", class(fit))
   return(out)
 }
 
-#continue from here========================================================================
-boot_step = function(seed, N, fit, arguments, dims, infotypes, is_sim_cue, 
-                     cue.rates, len_output, name_output){
+
+boot_step = function(seed, N, fit, arguments, dims, infotypes, len_output, name_output){
+  animal.model = "mu" %in% names(get_coef(fit))
   set.seed(seed)
   output = matrix(NA, nrow = N, ncol = len_output)
   #main bootstrap
-  capture_sim = sim.capt(fit = fit, n.rand = N)$capt
+  tem = suppressMessages(sim.capt(fit = fit, n.rand = N))
+  capture_sim = tem$capt
+  cue_rates_sim = tem$sim_cue_rates
+  #browser()
+  
   for(n in 1:N){
     if(nrow(capture_sim[[n]]) > 0){
-      arguments$capt = get_capt_for_boot(capture_sim[[n]], dims, infotypes)
-      if(is_sim_cue){
-        arguments$cue.rates = sample(cue.rates, replace = TRUE)
-      }
-      
+      #browser()
+      arguments$capt = get_capt_for_boot(capture_sim[[n]], dims, infotypes, animal.model)
+      arguments$cue.rates = cue_rates_sim[[n]]
       fit_boot = suppressWarnings(try(do.call('fit_og', arguments), silent = TRUE))
       #If unconverged, refit model with default start values.
       if ("try-error" %in% class(fit_boot) || fit_boot$maxgrad < -0.01){
@@ -242,7 +198,7 @@ boot_step = function(seed, N, fit, arguments, dims, infotypes, is_sim_cue,
       #If still unconverged, give up and report NA, which is the default value of the output,
       #so we need to do nothing. And if it converged, assign result to the output
       if (!("try-error" %in% class(fit_boot) || fit_boot$maxgrad < -0.01)){
-        output[n,] = c(coef(fit_boot, 'linked'), fit_boot$maxgrad)
+        output[n, ] = c(coef(fit_boot, 'linked'), fit_boot$maxgrad, coef(fit_boot, 'derived'))
       } 
       
     } else {
@@ -255,9 +211,12 @@ boot_step = function(seed, N, fit, arguments, dims, infotypes, is_sim_cue,
     }
   }
   
-  
+  colnames(output) = name_output
   
   return(output)
 }
+
+
+
 
 

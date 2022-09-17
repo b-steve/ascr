@@ -1,7 +1,7 @@
 
 test_that("joint bearing/dist fitting -- half normal", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[1])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[1])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -90,7 +90,7 @@ test_that("joint bearing/dist fitting -- half normal", {
 
 test_that("heterogeneous density model with sigma extended -- half normal", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[5])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[5])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -187,7 +187,7 @@ test_that("heterogeneous density model with sigma extended -- half normal", {
 
 test_that("joint bearing/dist model with 2 sessions and g0 & sigma extended -- half normal", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[7])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[7])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -282,7 +282,7 @@ test_that("joint bearing/dist model with 2 sessions and g0 & sigma extended -- h
 
 test_that("cue rate included -- hazard half normal", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[9])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[9])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -361,7 +361,7 @@ test_that("cue rate included -- hazard half normal", {
 
 test_that("Signal strength & toa model", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[12])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[12])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -445,7 +445,7 @@ test_that("Signal strength & toa model", {
 
 test_that("heterogeneous density & toa model with individual identity -- hazard half normal", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[14])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[14])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -543,7 +543,7 @@ test_that("heterogeneous density & toa model with individual identity -- hazard 
 
 test_that("signal strength model with log link and individual identity", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[16])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[16])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -628,7 +628,7 @@ test_that("signal strength model with log link and individual identity", {
 
 test_that("signal strength model with spherical link and individual identity", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[17])$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[17])$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -713,7 +713,7 @@ test_that("signal strength model with spherical link and individual identity", {
 
 test_that("heterogeneous density model with sigma extended -- half normal - no gradient", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[5], gradient_free = TRUE)$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[5], gradient_free = TRUE)$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -809,7 +809,7 @@ test_that("heterogeneous density model with sigma extended -- half normal - no g
 
 test_that("Signal strength & toa model - no gradient", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[12], gradient_free = TRUE)$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[12], gradient_free = TRUE)$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -893,7 +893,7 @@ test_that("Signal strength & toa model - no gradient", {
 
 test_that("heterogeneous density & toa model with individual identity -- hazard half normal - no gradient", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[14], gradient_free = TRUE)$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[14], gradient_free = TRUE)$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation
@@ -991,7 +991,7 @@ test_that("heterogeneous density & toa model with individual identity -- hazard 
 
 test_that("signal strength model with spherical link and individual identity - no gradient", {
   #fit the model using 'demo_fit'
-  fit = demo_fit(show_demo_options(table_print = F)[17], gradient_free = TRUE)$model_output
+  fit = demo_fit(show_demo_options(table_return = F)[17], gradient_free = TRUE)$fit
   
   ##########################################################################################################
   #check coefficients estimations without back transformation

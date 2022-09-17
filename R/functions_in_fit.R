@@ -52,8 +52,7 @@ capture.fun = function(capt, animal.model){
   #####################################################################################################          
   } else {
   #####################################################################################################
-            #according to the data cleaning process in "create.capt()", all these indices will be
-            #successive natural numbers, so take its max is equivalent to take length(unique(xxx))
+            
             
             base_cols = c('session', 'animal_ID', 'ID', 'trap', 'bincapt')
             all_cols = c(base_cols, 'mrds_x', 'mrds_y', all.types)
@@ -65,6 +64,8 @@ capture.fun = function(capt, animal.model){
             #for animal included model, since there is no compatible concern, the "create.capt()" has
             #already sorted out the data structure, here we just need to extract some basic information
             
+            #according to the data cleaning process in "create.capt()", session and trap will be
+            #successive natural numbers, so take its max is equivalent to take length(unique(xxx))
             n.sessions = max(capt$session)
             n.traps = agg_sort(capt, 'trap', 'session', max)$x
             

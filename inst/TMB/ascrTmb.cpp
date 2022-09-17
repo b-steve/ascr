@@ -638,9 +638,6 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(D_bound);
   DATA_MATRIX(mu_bound);
   
-  std::cout << "is_ss_origin: " << is_ss_origin << std::endl;
-  std::cout << "detfn_index: " << detfn_index << std::endl;
-  std::cout << "ss.link: " << ss_link << std::endl;
 
 
   //define a pointer variable which point to a detect function
@@ -1179,9 +1176,6 @@ Type objective_function<Type>::operator() ()
     servey_len = survey_length(s - 1);
     n_uid = n_uid_session(s - 1);
 	
-	//if(s == 105){
-	//	std::cout << "session " << s << ", check point1, nll: " << *pointer_nll << std::endl;
-	//}
 	
     //firstly calculate lambda(theta), the rate of Poisson distribution
     

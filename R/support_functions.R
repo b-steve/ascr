@@ -17,7 +17,7 @@ natural_number_check = function(session, key){
   return(output)
 }
 
-convert_natural_number = function(dat, is.animalID, which.convert){
+convert_natural_number = function(dat, is.animalID, which.convert = 'both'){
   
   dat.na = subset(dat, is.na(ID))
   dat = subset(dat, !is.na(ID))
@@ -1011,8 +1011,9 @@ ori_name = function(char){
                    'shape.2', 'shape', 'scale', 'b0.ss', 'b1.ss',
                    'b2.ss', 'sigma.ss', 'kappa', 'alpha', 'sigma.toa',
                    "sigma.b0.ss", 'D', 'sigma', 'mu')
-  #the pattern is the original parameter names followed by a dot
-  pattern = paste(fulllist.par, ".", sep = "")
+  #the pattern is the original parameter names at start
+  fulllist_reg_exp = gsub("\\.", "\\\\\\.", fulllist.par)
+  pattern = paste("^", fulllist_reg_exp, sep = "")
   n = length(char)
   output = character(n)
   for(i in 1:n){
@@ -1433,7 +1434,7 @@ sim_args_generator = function(sim_name){
     n.sessions = 2
     
   } else if(sim_name == 'ind_ss'){
-    param = list(b0.ss = c(4.72, 0.14), b1.ss = 0.8872, sigma.ss = 10.1, D = c(4.3, -0.1), mu = 8.3)
+    param = list(b0.ss = c(4.3, 0.1), b1.ss = 0.8872, sigma.ss = 10.1, D = c(4.3, -0.1), mu = 8.3)
     detfn = 'ss'
     control_create_mask = list(buffer = 15)
     session_cov = NULL
@@ -1634,3 +1635,199 @@ homo_digit = function(x){
   output = paste(y, x, sep = "")
   return(output)
 }
+
+
+res_split = function(res, n.sessions){
+  n_pars = ncol(res) - 1 - n.sessions
+  ## extracting and removing maximum gradient component.
+  maxgrads <- res[, n_pars + 1]
+  res_esa = res[, (n_pars + 2):ncol(res)]
+  res <- res[, 1:n_pars, drop = FALSE]
+  
+  
+  return(list(res = res, maxgrads = maxgrads, res_esa = res_esa))
+}
+
+
+var_from_res = function(res){
+  n_pars = ncol(res)
+  par_names = colnames(res)
+
+  se <- apply(res, 2, sd, na.rm = TRUE)
+  names(se) <- par_names
+  
+  corr <- diag(n_pars)
+  dimnames(corr) <- list(par_names, par_names)
+  vcov <- diag(se^2)
+  dimnames(vcov) <- list(par_names, par_names)
+  for (i in 1:(n_pars - 1)){
+    for (j in (i + 1):n_pars){
+      corr[i, j] <- corr[j, i] <- cor(res[, i], res[, j], use = "na.or.complete")
+      vcov[i, j] <- vcov[j, i] <- corr[i, j]*se[i]*se[j]
+    }
+  }
+  
+  return(list(res = res, se = se, corr = corr, vcov = vcov))
+  
+}
+
+
+mce_from_res = function(res, coefs, M, seed_mce){
+  n_pars = ncol(res)
+  par_names = colnames(res)
+  bias <- apply(res, 2, mean, na.rm = TRUE) - as.vector(coefs)
+  ## Bootstrap to calculate MCE for bias and standard errors.
+  bias.mce <- numeric(n_pars)
+  se.mce <- numeric(n_pars)
+  names(bias.mce) <- par_names
+  names(se.mce) <- par_names
+  if (M > 0){
+    set.seed(seed_mce)
+    converged <- which(!is.na(res[, 1]))
+    n.converged <- length(converged)
+    mce.boot <- matrix(sample(converged, size = n.converged*M,
+                              replace = TRUE), nrow = M,
+                       ncol = n.converged)
+    #browser()
+    for (i in par_names){
+      par.boot <- matrix(res[mce.boot, i], nrow = M, ncol = n.converged)
+      bias.mce[i] <- sd(apply(par.boot, 1, mean) - coefs[i] - bias[i])
+      se.mce[i] <- sd(apply(par.boot, 1, sd))
+    }
+  } else {
+    bias.mce <- NA
+    se.mce <- NA
+  }
+  
+  return(list(bias = bias, bias.mce = bias.mce, se.mce = se.mce))
+}
+
+
+#used for solving the issue of determination of "types" and "pars" in kinds of methods
+types_pars_sol = function(types, pars, new_covariates){
+
+  #if new_covariates is provided, we need "fitted"
+  if(!is.null(new_covariates) & (!"fitted" %in% types)) types = c(types, 'fitted')
+  #if types is still nothing, set it as 'linked'
+  if(is.null(types)) types = 'linked'
+  
+  #confirm types is within the valid set of options
+  if(any(!types %in% c('all', 'fitted', 'linked', 'derived'))){
+    stop("Argument 'types' must be a subset of {'fitted', 'linked', 'derived', 'all'}.")
+  } 
+  
+  if('esa' %in% pars){
+    pars = pars[-which(pars == 'esa')]
+    #if pars = 'esa' only, then regard it as NULL, force types to 'derived' only.
+    if(length(pars) == 0){
+      pars = NULL
+      types = 'derived'
+    } else {
+      
+      #if user assigns any other "pars" and only assigns types = "derived", add "linked" to types
+      if(length(types) == 1){
+        if(types == 'derived') types = c(types, 'linked')
+      }
+      if(!'derived' %in% types) types = c(types, 'derived')
+    }
+    
+    
+  }
+
+  if ("all" %in% types){
+    types <- c("fitted", "derived", "linked")
+  }
+
+  
+  
+  return(list(types = types, pars = pars))
+  
+}
+
+#convert the "linked full pars" bootstrapped matrix (or "res") into
+#several matrices based on assigned "types", "pars" and "new_covariates"
+#currently this is not used
+
+boot_res_convert = function(object, types, pars, new_covariates){
+  #get foundation information needed for this method
+  name_og = get_param_og(object)
+  res = get_boot_res(object)
+  res_esa = get_boot_res_esa(object)
+  name_extend = get_par_extend_name(object)
+  df_param = get_data_param(object)
+  
+  
+  #check which parameter will be displayed
+  if(is.null(pars)){
+    pars = name_og
+  } else {
+    if(any(!pars %in% name_og)) stop("Argument 'pars' only accept parameters' name in this model.")
+  }
+  
+  #obtain column names and their original parameters' names
+  col_name_link = colnames(res)
+  col_name_og = ori_name(col_name_link)
+  
+  #filter these data by "pars" and update column names
+  tem = which(col_name_og %in% pars)
+  col_name_link = col_name_link[tem]
+  col_name_og = col_name_og[tem]
+  res = res[,tem, drop = FALSE]
+  
+  res_output = vector('list', length = length(types))
+  names(res_output) = types
+  
+  for(i in types){
+    if(i == 'linked'){
+      res_output[[i]] = res
+    } else if(i == 'fitted') {
+      res_fitted = res
+      colnames(res_fitted) = gsub("_link$", "", colnames(res))
+      res_ftted_split = vector('list', length = length(pars))
+      names(res_ftted_split) = pars
+      for(j in pars){
+        par_info = subset(df_param, par == j)
+        link = par_info$link
+        tem = res_fitted[, which(col_name_og == j), drop = FALSE]
+        
+        if(j %in% name_extend){
+          if(is.null(new_covariates)){
+            #for any extended parameters, if "new_covariates" is not provided,
+            #just use the "linked" values as "fitted" values, do nothing but
+            #forcing the link to be "identity"
+            
+            link = 'identity'
+          } else {
+            
+            if(nrow(new_covariates) != 1) stop('Argument "new_covariates" can only accept 1 row.')
+            gam = get_gam(object, j)
+            try_it = try({tem = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask,
+                                                       tem, new_covariates, matrix_par_value = TRUE)})
+            if(is(try_it, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
+                                             Defaulty all parameters are assigned as "par".
+                                             And please make sure all categorical variables do not contain any new category.')
+            colnames(tem) = j
+          }
+          
+        } #else do nothing
+        
+        #back-transform the value based on the link function
+        tem = unlink.fun(link = link, value = tem)
+        
+        res_ftted_split[[j]] = tem
+      }
+      
+      res_output[[i]] = do.call('cbind', res_ftted_split)
+      
+    } else {
+      #finally, if i is "derived", add res_esa to the output, nothing else need to be done
+      res_output[[i]] = res_esa
+    }
+  }
+  
+  
+  return(res_output)
+  
+}
+
+

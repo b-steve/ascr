@@ -343,11 +343,12 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
         a_id = 0
         #we cannot plot with call ID but without animal_ID
         if(!is.null(control$ID)) stop("Please provide information about animal_ID.")
-      }  else {
+      } else {
         a_id = control$animal_ID
+        stopifnot(length(a_id) == 1)
         if(anime){
-          a_id = 0
-          message("Assigned animal_ID will be ignored as animated capture history will be generated.")
+          anime = FALSE
+          message("Animation will not be generated as animal_ID is provided.")
         }
       }
     }
@@ -357,8 +358,8 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
     } else {
       c_id = control$ID
       if(anime){
-        c_id = 0
-        message("Assigned ID will be ignored as animated capture history will be generated.")
+        anime = FALSE
+        message("Animation will not be generated as ID is provided.")
       }
     } 
     
@@ -404,8 +405,8 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
         base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
           coord_quickmap(xlim = xlim, ylim = ylim)
         
-        point_out_plot = c(max(masks$x) + 0.3 * (max(masks$x) - min(masks$y)),
-                           max(masks$y) + 0.3 * (max(masks$y) - min(masks$y)))
+        point_out_plot = c(max(masks$x) + 100 * (max(masks$x) - min(masks$y)),
+                           max(masks$y) + 100 * (max(masks$y) - min(masks$y)))
         
         base_plot = base_plot + 
           geom_point(data = capt_session, mapping = aes(x = point_out_plot[1], y = point_out_plot[2], colour = ss)) +
@@ -422,6 +423,7 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
       
       
       if(is.ss){
+        #browser()
         capt_plot = trap_plot +
           geom_point(data = capt_session, mapping = aes(x = trap_x, y = trap_y, group = keys, colour = ss),
                      size = cex_capt)
@@ -511,17 +513,19 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
         if(animal.model){
           if(a_id != 0){
             capt_session = subset(capt_session, animal_ID %in% a_id)
-            if(c_id != 0){
+            if(all(c_id != 0)){
               capt_session = subset(capt_session, ID %in% c_id)
             }
           }
           keys = paste(capt_session$animal_ID, capt_session$ID)
         } else {
-          if(c_id != 0){
+          if(all(c_id != 0)){
             capt_session = subset(capt_session, ID %in% c_id)
           }
           keys = capt_session$ID
         }
+
+        if(length(keys) == 0) stop("Nothing to plot, please double check the assigned animal_ID or ID.")
         
         u_keys = unique(keys)
         
@@ -544,8 +548,8 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
           base_plot = ggplot(data = masks, mapping = aes(x = x, y = y)) + 
             coord_quickmap(xlim = xlim_plot, ylim = ylim_plot)
           
-          point_out_plot = c(max(masks$x) + 0.3 * (max(masks$x) - min(masks$y)),
-                             max(masks$y) + 0.3 * (max(masks$y) - min(masks$y)))
+          point_out_plot = c(max(masks$x) + 100 * (max(masks$x) - min(masks$y)),
+                             max(masks$y) + 100 * (max(masks$y) - min(masks$y)))
           
           base_plot = base_plot + 
             geom_point(data = capt_session, mapping = aes(x = point_out_plot[1], y = point_out_plot[2], colour = ss)) +
@@ -728,16 +732,20 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
 #' @param session 
 #' @param types 
 #' @param control 
-#' @param main 
+#' @param anime 
+#' @param ask 
+#' @param xlim 
+#' @param ylim 
 #' @param ... 
-#'  
-#'
+#' 
 #' @return
 #' @export
 #'
 #' @examples
-plot.ascr_tmb = function(fit, session = 1, types = NULL, control = NULL, main = NULL, ...){
+plot.ascr_tmb = function(fit, types = NULL, session = NULL, anime = FALSE, control = NULL,
+                         ask = TRUE, xlim = NULL, ylim = NULL, ...){
   if(types %in% c('survey', 'capt', 'D_covariates')){
-    plot.ascr_data(fit$args, session = session, types = types, control = control, ...)
+    plot.ascr_data(fit$args, session = session, types = types, control = control, anime = anime,
+                   ask = ask, xlim = xlim, ylim = ylim, ...)
   }
 }

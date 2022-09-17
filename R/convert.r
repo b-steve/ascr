@@ -22,7 +22,7 @@
 #' @export
 create.mask <- function(traps, buffer, ...){
     ## Changing data frame to matrix to avoid is.list() issues.
-    if (is.data.frame(traps)){
+    if (is(traps, 'data.frame')){
         traps <- as.matrix(traps)
     }
     if (is.list(traps)){
@@ -715,3 +715,40 @@ allocate.calls <- function(mics, dets, sound.speed){
     }
     find_incomplete_blocks(final.mat)
 }
+
+
+convert_one_mask = function(x, trap){
+  stopifnot(any(is(x, 'data.frame'), is(x, 'matrix')))
+  
+  if(is(x, 'data.frame')){
+    x = as.matrix(x)
+  }
+  
+  stopifnot(ncol(x) == 2)
+  stopifnot(is.numeric(x))
+  colnames(x) = c('x', 'y')
+  
+  if(is.null(attr(x, "buffer"))){
+    stopifnot(any(is(trap, 'data.frame'), is(trap, 'matrix')))
+    trap = as.matrix(trap)
+    stopifnot(is.numeric(trap))
+    colnames(trap) = c('x', 'y')
+    
+    d = distances(trap, x)
+    d_closet_trap = apply(d, 2, min)
+    buffer = max(d_closet_trap)
+    attr(x, "buffer") = buffer
+  }
+  
+  if(is.null(attr(x, "area"))){
+    sp = as.matrix(dist(x))
+    spacing = apply(sp, 1, function(x) min(x[x > 0]))
+    spacing = median(spacing, na.rm = T)
+    area = spacing^2/10000
+    attr(x, "area") = area
+  }
+  
+  return(x)
+  
+}
+

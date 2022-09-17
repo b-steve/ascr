@@ -247,7 +247,8 @@ get_DX_new_gam = function(mod, newdata){
   return(output)
 }
 
-get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked, new_covariates, DX_output = FALSE){
+get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked, new_covariates,
+                                  DX_output = FALSE, matrix_par_value = FALSE){
   if(n_col_full > 1){
     gam.model = gam$gam_non_mask
     DX_full_new = get_DX_new_gam(gam.model, new_covariates)
@@ -265,7 +266,12 @@ get_extended_par_value = function(gam, n_col_full, n_col_mask, par_value_linked,
   }
   
   DX_new = cbind(DX_full_new, DX_mask_new)
-  output = as.vector(DX_new %*% as.matrix(par_value_linked, ncol = 1))
+  if(!matrix_par_value){
+    output = as.vector(DX_new %*% as.matrix(par_value_linked, ncol = 1))
+  } else {
+    output = par_value_linked %*% t(DX_new)
+  }
+  
   if(DX_output){
     return(list(output = output, DX = DX_new))
   } else {
@@ -329,59 +335,96 @@ get_sv_for_boot = function(fit){
 
 #a simple version of "create.capt()", input is the simulated capture history if there is any,
 #which means nrow(capture) > 0
-get_capt_for_boot = function(captures, dims, infotypes){
-  #dims$n.IDs is not valid here, do not use it
+get_capt_for_boot = function(captures, dims, infotypes, animal.model){
+  #since captures is the simulated data instead of original capture history used in the original model fitting
+  #dims$n.IDs and dims$animal_ID are not valid here, do not use it
   n.sessions = dims$n.sessions
   n.traps = dims$n.traps
-
   #deal with irregular IDs and remove useless info types
-  captures = captures[,c('session', 'ID', 'trap', infotypes)]
-  tem_capt = vector('list', n.sessions)
-  n.IDs = numeric(n.sessions)
+  captures = captures[,c('session', 'animal_ID'[animal.model], 'ID', 'trap', infotypes)]
+  #convert ID and animal_ID to natural number to make the later process to build head data easier
+  captures = convert_natural_number(captures, animal.model)
+  captures$bincapt = 1
+  
+  #prepare a head data which contains all combinations of session-animal_ID[animal.model]-ID-trap
+
+  
   tem_data_head = vector('list', n.sessions)
   for(s in 1:n.sessions){
-    tem_capt[[s]] = subset(captures, captures$session == s)
-    if(nrow(tem_capt[[s]] > 0)){
-      tem_capt[[s]]$ID = as.numeric(as.factor(tem_capt[[s]]$ID))
-      n.IDs[s] = max(tem_capt[[s]]$ID)
-      tem_data_head[[s]] = data.frame(session = s, ID = rep(seq(n.IDs[s]), each = n.traps[s]), 
-                                      trap = rep(seq(n.traps[s]), n.IDs[s]))
+    capt_session = subset(captures, session == s)
+    if(nrow(capt_session) > 0){
+      if(animal.model){
+        n.animal = max(capt_session$animal_ID)
+        tem = vector('list', n.animal)
+        for(a in 1:n.animal){
+          n.ID = max(subset(capt_session, animal_ID == a)$ID)
+          tem[[a]] = data.frame(session = s, ID = rep(seq(n.ID), each = n.traps[s]), 
+                                trap = rep(seq(n.traps[s]), n.ID), animal_ID = a)
+        }
+        
+        tem_data_head[[s]] = do.call('rbind', tem)
+        
+      } else {
+        n.ID = max(capt_session$ID)
+        tem_data_head[[s]] = data.frame(session = s, ID = rep(seq(n.ID), each = n.traps[s]), 
+                                        trap = rep(seq(n.traps[s]), n.ID))
+        
+      }
+      
     } else {
-      n.IDs[s] = 0
+      tem_data_head[[s]] = data.frame(session = s, ID = NA, trap = 1:n.traps[s])
+      if(animal.model) tem_data_head[[s]]$animal_ID = NA
     }
 
   }
-  captures = do.call('rbind', tem_capt)
-  captures$bincapt = 1
+
   data_head = do.call('rbind', tem_data_head)
   
-  o = merge(data_head, captures, by = c('session', 'ID', 'trap'), all.x = TRUE)
-  o = sort.data(o, 'data.full')
-  for(i in c('bincapt', infotypes)) o[,i] = ifelse(is.na(o[,i]), 0, o[,i])
-  #prepare the structure of the output
-  if(n.sessions == 1){
-    output = vector('list', length(infotypes) + 1)
-    names(output) = c('bincapt', infotypes)
-    for(i in names(output)){
-      output[[i]] = matrix(o[,i], ncol = n.traps, byrow = TRUE)
-      rownames(output[[i]]) = seq(n.IDs)
-    }
+  if(animal.model){
+    o = merge(data_head, captures, by = c('session', 'ID', 'trap', 'animal_ID'), all.x = TRUE)
   } else {
-    output = vector('list', n.sessions)
+    o = merge(data_head, captures, by = c('session', 'ID', 'trap'), all.x = TRUE)
+  }
+  
+  o = sort.data(o, 'data.full')
+  for(i in c('bincapt', infotypes)) o[,i] = ifelse(is.na(o[,i]) & !is.na(o[,'ID']), 0, o[,i])
+  
+  if(!animal.model){
+    n.IDs = numeric(n.sessions)
     for(s in 1:n.sessions){
-      output[[s]] = vector('list', length(infotypes) + 1)
-      names(output[[s]]) = c('bincapt', infotypes)
-      tem = subset(o, o$session == s)
-      for(i in names(output[[s]])){
-        if(n.IDs[s] > 0){
-          output[[s]][[i]] = matrix(tem[,i], ncol = n.traps[s], byrow = TRUE)
-          rownames(output[[s]][[i]]) = seq(n.IDs[s])
-        } else {
-          output[[s]][[i]] = matrix(nrow = 0, ncol = n.traps[s])
+      tem = subset(captures, session == s)
+      if(nrow(tem) > 0) n.IDs[s] = max(tem$ID)
+    }
+    
+    
+    #prepare the structure of the output
+    if(n.sessions == 1){
+      output = vector('list', length(infotypes) + 1)
+      names(output) = c('bincapt', infotypes)
+      for(i in names(output)){
+        output[[i]] = matrix(o[,i], ncol = n.traps, byrow = TRUE)
+        rownames(output[[i]]) = seq(n.IDs)
+      }
+    } else {
+      output = vector('list', n.sessions)
+      for(s in 1:n.sessions){
+        output[[s]] = vector('list', length(infotypes) + 1)
+        names(output[[s]]) = c('bincapt', infotypes)
+        tem = subset(o, o$session == s)
+        for(i in names(output[[s]])){
+          if(n.IDs[s] > 0){
+            output[[s]][[i]] = matrix(tem[,i], ncol = n.traps[s], byrow = TRUE)
+            rownames(output[[s]][[i]]) = seq(n.IDs[s])
+          } else {
+            output[[s]][[i]] = matrix(nrow = 0, ncol = n.traps[s])
+          }
         }
       }
     }
+  } else {
+    output = o
   }
+  
   
   return(output)
   
@@ -453,3 +496,50 @@ get_capt_for_plot = function(dat){
   return(data.capt)
 }
 
+
+get_boot_res = function(fit, pars){
+  output = fit$boot$boots
+  if(!is.null(pars)){
+    name_og = ori_name(colnames(output))
+    output = output[, which(name_og %in% pars), drop = FALSE]
+  }
+  
+  return(output)
+}
+
+get_boot_res_esa = function(fit){
+  output = fit$boot$res_esa
+  return(output)
+}
+
+
+#get bias from a single bootstrapped matrix
+get_bias <- function(res, coefs){
+  f = function(x) mean(x, na.rm = T)
+  bias = apply(res, 2, f) - coefs
+
+  return(bias)
+}
+
+#obtain a subset of coefs, which is generated by coef.ascr_tmb(), based on "type"
+#currently is not used
+get_coef_base_type = function(coefs, type){
+  coef_name = names(coefs)
+  
+  if(type == 'linked'){
+    output = coefs[grepl('_link$', coef_name)]
+  } else if(type == 'fitted'){
+    is.link = grepl('_link$', coef_name)
+    is.derived = grepl('^esa', coef_name)
+    output = coefs[!(is.link | is.derived)]
+
+  } else {
+    output = coefs[grepl('^esa', coef_name)]
+  }
+  
+  return(output)
+  
+}
+
+
+###################################################################################################

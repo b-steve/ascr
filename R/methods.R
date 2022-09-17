@@ -9,34 +9,11 @@
 #' @export
 #'
 coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
-  #source('get_funs.r', local = TRUE)
-  #source('support_functions.r', local = TRUE)
   
   #deal with default setting for 'types'
-  if(any(!types %in% c('all', 'fitted', 'linked', 'derived'))){
-    stop("Argument 'types' must be a subset of {'fitted', 'linked', 'derived', 'all'}.")
-  } 
-  
-  if('esa' %in% pars){
-    pars = pars[-which(pars == 'esa')]
-    #if pars = 'esa' only, then regard it as NULL and add 'derived' to 'types'
-    if(length(pars) == 0){
-      pars = NULL
-    } else {
-      #if also other parameters be assigned, we need to add the default setting for 'types' here
-      #because after this step 'types' will not be NULL anyway, the default setting later will not work
-      types = c(types, 'linked')
-    }
-    types = c(types, 'derived')
-  }
-  
-  if(!is.null(new_covariates) & (!"fitted" %in% types)) types = c(types, 'fitted')
-  
-  if ("all" %in% types){
-    types <- c("fitted", "derived", "linked")
-  }
-  
-  if(is.null(types)) types = 'linked'
+  tem = types_pars_sol(types, pars, new_covariates)
+  types = tem$types
+  pars = tem$pars
   
   is.fitted = 'fitted' %in% types
   is.linked = 'linked' %in% types
@@ -88,16 +65,16 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
           names(values_fitted) = gsub("_link", "", names(values_fitted))
           link = 'identity'
         } else {
-          if(nrow(new_covariates) != 1){
-            stop('Argument "new_covariates" can only accept 1 row.')
-          } else {
-            gam = get_gam(object, i)
-            tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask, values_link, new_covariates)})
-            if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
-                                          Defaulty all parameters are assigned as "par".
-                                          And please make sure all categorical variables do not contain any new category.')
-            names(values_fitted) = i
-          }
+          if(nrow(new_covariates) != 1) stop('Argument "new_covariates" can only accept 1 row.')
+          
+          gam = get_gam(object, i)
+          tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full,
+                                                            par_info$n_col_mask, values_link, new_covariates)})
+          if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
+                                        Defaulty all parameters are assigned as "par".
+                                        And please make sure all categorical variables do not contain any new category.')
+          names(values_fitted) = i
+          
         }
       } else {
         values_fitted = values_link
@@ -118,6 +95,121 @@ coef.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
   
   return(output)
 }
+
+
+#' Title
+#'
+#' @param object 
+#' @param types 
+#' @param pars 
+#' @param new_covariates 
+#' @param correct_bias 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+coef.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NULL, correct_bias = TRUE, ...){
+
+  #deal with default setting for 'types'
+  tem = types_pars_sol(types, pars, new_covariates)
+  types = tem$types
+  pars = tem$pars
+  name_og = get_param_og(object)
+  #check which parameter will be displayed
+  if(is.null(pars)){
+    pars = name_og
+  } else {
+    if(any(!pars %in% name_og)) stop("Argument 'pars' only accept parameters' name in this model.")
+  }
+  
+  
+  o = coef.ascr_tmb(object, types, pars, new_covariates)
+  
+  
+  if(correct_bias){
+    res = get_boot_res(object, pars)
+    coefs = coef.ascr_tmb(object, types = 'linked', pars)
+    bias = get_bias(res, coefs)
+    coefs_linked_bias_corrected = coefs - bias
+    output = vector('list', length(types))
+    names(output) = types
+    
+    for(i in types){
+      
+      if(i == 'linked'){
+        output[[i]] = coefs_linked_bias_corrected
+      } else if (i == 'derived'){
+        coefs_esa = coef(object, types = 'derived')
+        res_esa = get_boot_res_esa(object)
+        bias_esa = get_bias(res_esa, coefs_esa)
+        output[[i]] = coefs_esa - bias_esa
+        
+      } else {
+        #when types is 'fitted', use the 'coefs_linked_bias_corrected' and new_covariates to
+        #calculate the estimations.
+        
+        #get foundation information needed for this method
+        name_extend = get_par_extend_name(object)
+        df_param = get_data_param(object)
+        
+        linked_name = names(coefs_linked_bias_corrected)
+        original_name = ori_name(linked_name)
+        
+        for(j in pars){
+          values_link = coefs_linked_bias_corrected[original_name == j]
+          
+          par_info = subset(df_param, par == j)
+          link = par_info$link
+          
+          if(j %in% name_extend){
+            if(is.null(new_covariates)){
+              #if there is no new covariates assigned and the parameter is extended, then regards all of the
+              #relevant beta as identity linked parameters
+              values_fitted = values_link
+              names(values_fitted) = gsub("_link", "", names(values_fitted))
+              link = 'identity'
+            } else {
+              if(nrow(new_covariates) != 1) stop('Argument "new_covariates" can only accept 1 row.')
+              
+              gam = get_gam(object, j)
+              tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full,
+                                                                par_info$n_col_mask, values_link, new_covariates)})
+              if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
+                                        Defaulty all parameters are assigned as "par".
+                                        And please make sure all categorical variables do not contain any new category.')
+              names(values_fitted) = j
+              
+            }
+          } else {
+            values_fitted = values_link
+            names(values_fitted) = j
+          }
+          
+          values_fitted = unlink.fun(link = link, value = values_fitted)
+          output[[i]] = c(output[[i]], values_fitted)
+        }
+        #end of if(i == 'fitted')
+      }
+      
+      #end of for i in types
+    }
+
+    names(output) = NULL
+    output = do.call('c', output)
+    
+  } else {
+    output = o
+  }
+  
+  class(output) = "coef_ascr_tmb"
+  return(output)
+  
+}
+
+
+
 
 ##################################################################################################################
 
@@ -143,30 +235,12 @@ print.coef_ascr_tmb = function(x){
 #' @return a list with matrices as its elements if multiple 'types'. a matrix if only one 'types'.
 #' @export
 vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
-  #source('get_funs.r', local = TRUE)
-  #source('support_functions.r', local = TRUE)
-  if(any(!types %in% c('all', 'fitted', 'linked', 'derived'))) stop("Argument 'types' must be a subset of {'fitted', 'linked', 'derived', 'all'}.")
   
-  if ("all" %in% types){
-    types <- c("fitted", "derived", "linked")
-  }
+  #deal with default setting for 'types'
+  tem = types_pars_sol(types, pars, new_covariates)
+  types = tem$types
+  pars = tem$pars
   
-  if('esa' %in% pars){
-    pars = pars[-which(pars == 'esa')]
-    #if pars = 'esa' only, then regard it as NULL and add 'derived' to 'types'
-    if(length(pars) == 0){
-      pars = NULL
-    } else {
-      #if also other parameters be assigned, we need to add the default setting for 'types' here
-      #because after this step 'types' will not be NULL anyway, the default setting later will not work
-      types = c(types, 'linked')
-    }
-    types = c(types, 'derived')
-  }
-  
-  if(!is.null(new_covariates) & (!"fitted" %in% types)) types = c(types, 'fitted')
-  
-  if(is.null(types)) types = 'linked'
   
   # 'og' below means original output from the object
   param_values_og = get_coef(object)
@@ -227,7 +301,6 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
   link_funs = link_funs[index_par]
   param_values = param_values[index_par]
   
-  types = unique(types)
   output = vector('list', length(types))
   names(output) = types
   
@@ -248,7 +321,8 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
         tem = try({output[[type]] = delta_method_ascr_tmb(cov_linked, param_values, new_covariates = new_covariates, pars = pars,
                                                           name_og = name_og, name_extend = name_extend, df_param = df_param,
                                                           gam.output = gam.output)})
-        if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided. Defaulty all parameters are assigned as "par".')
+        if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
+                                      Defaulty all parameters are assigned as "par".')
         dimnames(output[[type]]) = list(pars, pars)
       }
     }
@@ -325,35 +399,11 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'defaul
   if(method != 'default') stop('Please apply bootstrap to the output of the model before using other methods.')
   
   #############################################################################################
-  if(any(!types %in% c('all', 'fitted', 'linked', 'derived'))) stop("Argument 'types' must be a subset of {'fitted', 'linked', 'derived', 'all'}.")
-  
-  if ("all" %in% types){
-    types <- c("fitted", "derived", "linked")
-  }
-  
-  if('esa' %in% pars){
-    pars = pars[-which(pars == 'esa')]
-    #if pars = 'esa' only, then regard it as NULL and add 'derived' to 'types'
-    if(length(pars) == 0){
-      pars = NULL
-    } else {
-      #if also other parameters be assigned, we need to add the default setting for 'types' here
-      #because after this step 'types' will not be NULL anyway, the default setting later will not work
-      types = c(types, 'linked')
-    }
-    types = c(types, 'derived')
-  }
-  
-  if(!is.null(new_covariates) & linked){
-    warning('Argument "linked" is set to TRUE, "new_covariates" will be ignored.')
-    new_covariates = NULL
-  }
-  
-  if(!is.null(new_covariates) & (!"fitted" %in% types)) types = c(types, 'fitted')
-  if(linked & (!'fitted' %in% types)) types = c(types, 'fitted')
-  if(is.null(types)) types = 'linked'
-  
-  types = unique(types)
+  #deal with default setting for 'types'
+  tem = types_pars_sol(types, pars, new_covariates)
+  types = tem$types
+  pars = tem$pars
+
   
   stopifnot(all(level < 1 & level > 0))
   p_upper = 0.5 + 0.5 * level
@@ -423,7 +473,8 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, method = 'defaul
 #' @examples
 AIC.ascr_tmb = function(object, k = 2){
   if(object$fit.freqs){
-    message("NOTE: Use of AIC for this model relies on independence between locations of calls from the same animal, which may not be appropriate.")
+    message("NOTE: Use of AIC for this model relies on independence between locations of
+            calls from the same animal, which may not be appropriate.")
     return(NA)
   }
   return(k * length(coef(object)) - 2 * object$loglik)
@@ -449,7 +500,8 @@ AIC.ascr_tmb = function(object, k = 2){
 #' @export
 #'
 #' @examples
-predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link', se.fit = FALSE, confidence = FALSE, level = 0.95, linked = FALSE, ...){
+predict.ascr_tmb = function(object, newdata = NULL, session = NULL, type = 'link', se.fit = FALSE, 
+                            confidence = FALSE, level = 0.95, linked = FALSE, ...){
   
   if(is.null(newdata) & is.null(session)) session = 1
   if(!is.null(newdata) & !is.null(session)){
@@ -764,7 +816,8 @@ predict_with_location = function(fit, session_select = 1, new_data = NULL, D_cov
     values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
     if(!is.null(set_zero)) values_link[set_zero] = 0
 
-    tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask, values_link, old_covariates, DX_output = TRUE)
+    tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask,
+                                 values_link, old_covariates, DX_output = TRUE)
     D.mask = unlink.fun(link = par_info$link, value = tem$output)
     
     if(se_fit){
@@ -896,3 +949,6 @@ print.summary_ascr_tmb = function(x, ...){
     cat("link function:", ss_link, "\n")
   }
 }
+
+
+

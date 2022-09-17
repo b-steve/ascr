@@ -11,18 +11,20 @@ demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE, sv_link = NULL
   dat = get(data_name)
   par_extend_model = dat$par_extend_model
   dat$par_extend_model = NULL
-  dat$gr_skip = gradient_free
   dat$sv_link = sv_link
+
   
   dat_model = list()
   
   dat_model$dat = do.call('read.ascr', dat)
   dat_model$par_extend_model = par_extend_model
+  dat_model$gr_skip = gradient_free
+  
   if(fit){
     model_output = do.call('fit.ascr', dat_model)
-    return(list(data_input = dat, data_for_model = dat_model$dat, par_extend_model = par_extend_model, model_output = model_output))
+    return(list(read_input = dat, read_output = dat_model$dat, dat_model = dat_model, fit = model_output))
   } else {
-    return(list(data_input = dat, data_for_model = dat_model$dat, par_extend_model = par_extend_model, model_output = NULL))
+    return(list(read_input = dat, read_output = dat_model$dat, dat_model = dat_model, fit = NULL))
   }
 }
 
