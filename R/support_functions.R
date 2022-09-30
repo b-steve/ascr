@@ -991,10 +991,17 @@ vector_to_df = function(vec){
 }
 
 confint_gaussian_cal = function(object, types, pars, new_covariates, q_lower, q_upper){
-  df_est = vector_to_df(coef(object, types = types, pars = pars, new_covariates = new_covariates))
-  df_std = vector_to_df(stdEr(object, types = types, pars = pars, new_covariates = new_covariates))
+
+  df_est = vector_to_df(coef.ascr_tmb(object, types = types, pars = pars, new_covariates = new_covariates))
+  df_std = vector_to_df(stdEr.ascr_tmb(object, types = types, pars = pars, new_covariates = new_covariates))
   
+  #keep the order of df_est
+  df_est$index = seq(nrow(df_est))
+  
+  #browser()
   output = merge(df_est, df_std, by = 'name', all.x = TRUE)
+  output = output[order(output$index),]
+  output = output[,-which(colnames(output) == 'index')]
   colnames(output) = c('par', 'est', 'std')
   output$std = ifelse(is.na(output$std), 0, output$std)
   output$lower = output$est + q_lower * output$std
@@ -1641,7 +1648,7 @@ res_split = function(res, n.sessions){
   n_pars = ncol(res) - 1 - n.sessions
   ## extracting and removing maximum gradient component.
   maxgrads <- res[, n_pars + 1]
-  res_esa = res[, (n_pars + 2):ncol(res)]
+  res_esa = res[, (n_pars + 2):ncol(res), drop = FALSE]
   res <- res[, 1:n_pars, drop = FALSE]
   
   
@@ -1649,25 +1656,37 @@ res_split = function(res, n.sessions){
 }
 
 
-var_from_res = function(res){
-  n_pars = ncol(res)
+var_from_res = function(res, fixed = NULL){
   par_names = colnames(res)
+  
+  if(!grepl('^esa', par_names[1])){
+    to_be_rm = which(ori_name(par_names) %in% fixed)
+    if(length(to_be_rm) != 0){
+      res = res[,-to_be_rm, drop = FALSE]
+      par_names = par_names[-to_be_rm]
+    }
+  }
 
+  n_pars = ncol(res)
+  
   se <- apply(res, 2, sd, na.rm = TRUE)
   names(se) <- par_names
   
   corr <- diag(n_pars)
   dimnames(corr) <- list(par_names, par_names)
-  vcov <- diag(se^2)
+  vcov <- diag(n_pars)
+  diag(vcov) = se^2
   dimnames(vcov) <- list(par_names, par_names)
-  for (i in 1:(n_pars - 1)){
-    for (j in (i + 1):n_pars){
-      corr[i, j] <- corr[j, i] <- cor(res[, i], res[, j], use = "na.or.complete")
-      vcov[i, j] <- vcov[j, i] <- corr[i, j]*se[i]*se[j]
+  if(n_pars > 1){
+    for (i in 1:(n_pars - 1)){
+      for (j in (i + 1):n_pars){
+        corr[i, j] <- corr[j, i] <- cor(res[, i], res[, j], use = "na.or.complete")
+        vcov[i, j] <- vcov[j, i] <- corr[i, j]*se[i]*se[j]
+      }
     }
   }
   
-  return(list(res = res, se = se, corr = corr, vcov = vcov))
+  return(vcov)
   
 }
 
@@ -1718,7 +1737,8 @@ types_pars_sol = function(types, pars, new_covariates){
   
   if('esa' %in% pars){
     pars = pars[-which(pars == 'esa')]
-    #if pars = 'esa' only, then regard it as NULL, force types to 'derived' only.
+    #if pars = 'esa' only, then regard it as NULL, force types to 'derived' only no matter
+    #what it is assigned.
     if(length(pars) == 0){
       pars = NULL
       types = 'derived'
@@ -1730,104 +1750,42 @@ types_pars_sol = function(types, pars, new_covariates){
       }
       if(!'derived' %in% types) types = c(types, 'derived')
     }
-    
-    
   }
+  
+  #after 'esa' modification, if we still have assigned 'pars', but types is assigned as
+  #"derived" only, we need to add the default setting "linked" to it
+  #together with the 'esa' modification above, the basic logic is that "pars" has priority
+  #comparing to "types"
+  if(length(pars) > 0 & all(types == 'derived')) types = c(types, 'linked')
 
   if ("all" %in% types){
     types <- c("fitted", "derived", "linked")
   }
 
-  
-  
   return(list(types = types, pars = pars))
   
 }
 
-#convert the "linked full pars" bootstrapped matrix (or "res") into
-#several matrices based on assigned "types", "pars" and "new_covariates"
-#currently this is not used
+################################################################################################################################
 
-boot_res_convert = function(object, types, pars, new_covariates){
-  #get foundation information needed for this method
-  name_og = get_param_og(object)
-  res = get_boot_res(object)
-  res_esa = get_boot_res_esa(object)
-  name_extend = get_par_extend_name(object)
-  df_param = get_data_param(object)
+
+boot_res_to_CI = function(res, level){
+  n_par = ncol(res)
   
+  p_upper = 0.5 + 0.5 * level
+  p_lower = 0.5 - 0.5 * level
   
-  #check which parameter will be displayed
-  if(is.null(pars)){
-    pars = name_og
-  } else {
-    if(any(!pars %in% name_og)) stop("Argument 'pars' only accept parameters' name in this model.")
+  output = matrix(0, nrow = n_par, ncol = 2)
+  colnames(output) = paste(c(p_lower, p_upper) * 100, "%", sep = " ")
+  rownames(output) = colnames(res)
+  
+  for(i in 1:n_par){
+    output[i,] = quantile(res[,i], c(p_lower, p_upper))
   }
   
-  #obtain column names and their original parameters' names
-  col_name_link = colnames(res)
-  col_name_og = ori_name(col_name_link)
-  
-  #filter these data by "pars" and update column names
-  tem = which(col_name_og %in% pars)
-  col_name_link = col_name_link[tem]
-  col_name_og = col_name_og[tem]
-  res = res[,tem, drop = FALSE]
-  
-  res_output = vector('list', length = length(types))
-  names(res_output) = types
-  
-  for(i in types){
-    if(i == 'linked'){
-      res_output[[i]] = res
-    } else if(i == 'fitted') {
-      res_fitted = res
-      colnames(res_fitted) = gsub("_link$", "", colnames(res))
-      res_ftted_split = vector('list', length = length(pars))
-      names(res_ftted_split) = pars
-      for(j in pars){
-        par_info = subset(df_param, par == j)
-        link = par_info$link
-        tem = res_fitted[, which(col_name_og == j), drop = FALSE]
-        
-        if(j %in% name_extend){
-          if(is.null(new_covariates)){
-            #for any extended parameters, if "new_covariates" is not provided,
-            #just use the "linked" values as "fitted" values, do nothing but
-            #forcing the link to be "identity"
-            
-            link = 'identity'
-          } else {
-            
-            if(nrow(new_covariates) != 1) stop('Argument "new_covariates" can only accept 1 row.')
-            gam = get_gam(object, j)
-            try_it = try({tem = get_extended_par_value(gam, par_info$n_col_full, par_info$n_col_mask,
-                                                       tem, new_covariates, matrix_par_value = TRUE)})
-            if(is(try_it, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
-                                             Defaulty all parameters are assigned as "par".
-                                             And please make sure all categorical variables do not contain any new category.')
-            colnames(tem) = j
-          }
-          
-        } #else do nothing
-        
-        #back-transform the value based on the link function
-        tem = unlink.fun(link = link, value = tem)
-        
-        res_ftted_split[[j]] = tem
-      }
-      
-      res_output[[i]] = do.call('cbind', res_ftted_split)
-      
-    } else {
-      #finally, if i is "derived", add res_esa to the output, nothing else need to be done
-      res_output[[i]] = res_esa
-    }
-  }
-  
-  
-  return(res_output)
-  
+  return(output)
 }
+
+
 
 

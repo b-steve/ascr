@@ -8,12 +8,9 @@
   object,
   types = NULL,
   level = 0.95,
-  method = "default",
   linked = FALSE,
   pars = NULL,
   new_covariates = NULL,
-  qqplot = FALSE,
-  ask = FALSE,
   ...
 )
 }
@@ -24,8 +21,6 @@
 
 \item{level}{confident level, default is 0.95}
 
-\item{method}{'default' only}
-
 \item{linked}{logical value. if set to be TRUE, inverse of linked function will be applied to parameters confident 
 intervals as the 'fitted' confidence interval. if FALSE, delta method will be applied to obtain the 
 'fitted' confidence interval}
@@ -33,10 +28,6 @@ intervals as the 'fitted' confidence interval. if FALSE, delta method will be ap
 \item{pars}{a character vector containing any parameter names}
 
 \item{new_covariates}{a data frame containing the values of covariates of any extended parameter}
-
-\item{qqplot}{Not available yet}
-
-\item{ask}{Not available yet}
 }
 \value{
 a matrix

@@ -572,6 +572,9 @@ fit.ascr = function(dat, par_extend_model = NULL, control_create_mask = NULL, ma
     if(!is.null(control_create_mask)){
       warning("Argument of 'mask' is provided, 'control_create_mask' will be ignored.")
     }
+    
+    #if buffer is missing, it will be added in the fit_og(), so no worries about it.
+    
     mask_override = TRUE
   } else if(!is.null(control_create_mask)){
     stopifnot(!is.null(control_create_mask$buffer))

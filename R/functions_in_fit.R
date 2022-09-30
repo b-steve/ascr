@@ -1166,6 +1166,9 @@ param.detfn.fun = function(animal.model, sv, fix, bounds, name.extend.par, detfn
   
   if(animal.model) param.og = c(param.og, "mu")
   
+  #re-order param.og to make sure its order is consistent with "fulllist.par.generator()"
+  param.og = fulllist.par.generator()[fulllist.par.generator() %in% param.og]
+  
   #generate all DATA_MATRIX for every each parameter
   #and in the loop, we also do some basic conflict checking
   data.full = sort.data(data.full, "data.full")
