@@ -513,9 +513,11 @@ get_boot_res = function(fit, pars){
   return(output)
 }
 
+
 get_boot_res_esa = function(fit){
   output = fit$boot$res_esa
   colnames(output) = gsub("_", "\\.", colnames(output))
+
   return(output)
 }
 

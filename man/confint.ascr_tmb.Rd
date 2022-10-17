@@ -8,7 +8,6 @@
   object,
   types = NULL,
   level = 0.95,
-  linked = FALSE,
   pars = NULL,
   new_covariates = NULL,
   ...
@@ -21,13 +20,11 @@
 
 \item{level}{confident level, default is 0.95}
 
-\item{linked}{logical value. if set to be TRUE, inverse of linked function will be applied to parameters confident 
-intervals as the 'fitted' confidence interval. if FALSE, delta method will be applied to obtain the 
-'fitted' confidence interval}
-
 \item{pars}{a character vector containing any parameter names}
 
 \item{new_covariates}{a data frame containing the values of covariates of any extended parameter}
+
+\item{...}{}
 }
 \value{
 a matrix

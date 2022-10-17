@@ -182,11 +182,11 @@ show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_
                         add = FALSE, control_convert_loc2mask= NULL, arg_col = list(n = 100), ...){
   extra_args = list(...)
   
-  pred = predict_with_location(fit, session_select = ifelse(is.null(session), 1, session), 
-                               new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
-                                x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv,
-                               control_convert_loc2mask= control_convert_loc2mask)
-  
+  pred = predict_D_for_plot(fit, session_select = ifelse(is.null(session), 1, session), 
+                            new_data = new_data, D_cov = D_cov, xlim = xlim, ylim = ylim,
+                            x_pixels = x_pixels, y_pixels = y_pixels, se_fit = show.cv,
+                            control_convert_loc2mask= control_convert_loc2mask)
+  #browser()
   mask = as.matrix(pred[, c('x', 'y')])
   if(!show.cv){
     D.mask = pred[,'est']
@@ -270,7 +270,7 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
   if(is.null(types)) stop('please specify the argument "types".')
   n.sessions = length(dat$traps)
   extra_args = list(...)
-  
+  stopifnot(types %in% c('survey', 'capt', 'covariates'))
   ################################################################################################
   if(types == 'survey'){
     if(is.null(session)){
@@ -744,7 +744,7 @@ plot.ascr_data <- function(dat, types = NULL, session = NULL, anime = FALSE, con
 #' @examples
 plot.ascr_tmb = function(fit, types = NULL, session = NULL, anime = FALSE, control = NULL,
                          ask = TRUE, xlim = NULL, ylim = NULL, ...){
-  if(types %in% c('survey', 'capt', 'D_covariates')){
+  if(types %in% c('survey', 'capt', 'covariates')){
     plot.ascr_data(fit$args, session = session, types = types, control = control, anime = anime,
                    ask = ask, xlim = xlim, ylim = ylim, ...)
   }

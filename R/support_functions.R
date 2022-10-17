@@ -582,18 +582,18 @@ unlink.fun = function(link, value){
   if(link == "logit") return(cus_logit_unlink(value))
 }
 
-delta.fun = function(link, sd, est){
-  if(link == "identity") return(sd)
+#delta.fun = function(link, sd, est){
+#  if(link == "identity") return(sd)
   
   #for link == 'log', we are calculating std(exp(x)) with x_hat = est and x_sd = sd
-  if(link == "log") return(sd * exp(est))
+#  if(link == "log") return(sd * exp(est))
   
   #for link == 'logit' we are calculating std(exp(x)/(exp(x) + 1))
-  if(link == 'logit'){
-    fx_grad = exp(est)/(exp(est) + 1) ^ 2
-    return(sd * fx_grad)
-  }
-}
+#  if(link == 'logit'){
+#    fx_grad = exp(est)/(exp(est) + 1) ^ 2
+#    return(sd * fx_grad)
+#  }
+#}
 
 sort.data = function(dat,  name){
   is.animal_ID = "animal_ID" %in% colnames(dat)
@@ -842,7 +842,7 @@ list_2vector_4value = function(param){
 
 delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new_covariates = NULL,
                                  pars = NULL, name_og = NULL, name_extend = NULL, df_param = NULL,
-                                 gam.model.full = NULL, gam.output = NULL){
+                                 gam.model.full = NULL, gam.output = NULL, back_trans = TRUE){
   #delta method, G(x) is a vector of n functions, where x is a vector of m variables
   #then VAR(G(x)) = G'(x) %*% VAR(x) %*% t[G'(x)]
   #VAR(x) is m*m matrix, G'(x) is n*m matrix, G'(x)[i, j] = d(g[i])/d(x[j])
@@ -851,14 +851,18 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
   m = length(param_values)
   
   #for simple case, no new covariates involved, in which case, "link_funs" should be provided
-  #otherwise, "new_covariates", "name_og", "object" will be used together
+  #otherwise, "new_covariates", "name_og", "df_param" will be used together, and "link_funs" should be NULL
   if(!is.null(link_funs)){
     #in this case, G'(x) is a n*n diagonal matrix
     n = length(link_funs)
     G_grad = matrix(0, nrow = n, ncol = n)
     for(i in 1:n){
+      if(back_trans){
+        link = link_funs[i]
+      } else {
+        link = 'identity'
+      }
       
-      link = link_funs[i]
       x = param_values[i]
       if(link == 'identity'){
         G_grad[i, i] = 1
@@ -892,7 +896,15 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
       
       
       tem = subset(df_param, par == par_name)
-      link = tem[, 'link']
+      if(back_trans){
+        link = tem[, 'link']
+      } else {
+        #if we do not do back transformation, it means, for example "D" has "D_int" and "D_beta1",
+        #then we just use delta method to calculate var(D_int + D_beta1 * x1), instead of
+        #var(exp(D_int + D_beta1 * x1))
+        link = 'identity'
+      }
+      
       n_col_full = tem[, 'n_col_full']
       n_col_mask = tem[, 'n_col_mask']
       
@@ -928,7 +940,7 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
       
       if(link == 'identity'){
         for(j in 1:len_p){
-          G_grad[i, index_p[j]] = 1
+          G_grad[i, index_p[j]] = w[j]
         }
       } else if(link == 'log'){
         common_component = exp(sum(w * x))
@@ -950,7 +962,7 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
   #print('for test use only, display the G\'(x) matrix')
   #print(G_grad)
   #print('end of test display')
-  
+  #browser()
   return(G_grad %*% cov_linked %*% t(G_grad))
   
 }
@@ -991,21 +1003,42 @@ vector_to_df = function(vec){
 }
 
 confint_gaussian_cal = function(object, types, pars, new_covariates, q_lower, q_upper){
-
-  df_est = vector_to_df(coef.ascr_tmb(object, types = types, pars = pars, new_covariates = new_covariates))
-  df_std = vector_to_df(stdEr.ascr_tmb(object, types = types, pars = pars, new_covariates = new_covariates))
+  output = vector('list', length(types))
+  names(output) = types
+  for(i in types){
+    if(i == 'linked'){
+      df_est = vector_to_df(coef.ascr_tmb(object, types = 'linked', pars = pars))
+      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'linked', pars = pars))
+    }
+    
+    if(i == 'fitted'){
+      df_est = vector_to_df(coef.ascr_tmb(object, types = 'fitted', pars = pars, new_covariates = new_covariates,
+                                          back_trans = FALSE))
+      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'fitted', pars = pars, new_covariates = new_covariates,
+                                           back_trans = FALSE))
+    }
+    
+    if(i == 'derived'){
+      df_est = vector_to_df(coef.ascr_tmb(object, types = 'derived'))
+      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'derived'))
+    }
+    
+    #keep the order of df_est
+    df_est$index = seq(nrow(df_est))
+    
+    #browser()
+    tem = merge(df_est, df_std, by = 'name', all.x = TRUE)
+    tem = tem[order(tem$index),]
+    tem = tem[,-which(colnames(tem) == 'index')]
+    colnames(tem) = c('par', 'est', 'std')
+    tem$std = ifelse(is.na(tem$std), 0, tem$std)
+    tem$lower = tem$est + q_lower * tem$std
+    tem$upper = tem$est + q_upper * tem$std
+    
+    output[[i]] = tem
+    
+  }
   
-  #keep the order of df_est
-  df_est$index = seq(nrow(df_est))
-  
-  #browser()
-  output = merge(df_est, df_std, by = 'name', all.x = TRUE)
-  output = output[order(output$index),]
-  output = output[,-which(colnames(output) == 'index')]
-  colnames(output) = c('par', 'est', 'std')
-  output$std = ifelse(is.na(output$std), 0, output$std)
-  output$lower = output$est + q_lower * output$std
-  output$upper = output$est + q_upper * output$std
   return(output)
 }
 
@@ -1644,6 +1677,243 @@ homo_digit = function(x){
 }
 
 
+
+
+#predict density with information of locations coordinates, only used in the plot currently
+
+predict_D_for_plot = function(fit, session_select = 1, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
+                                 x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, 
+                                 control_convert_loc2mask = NULL, ...){
+  
+  
+  if(!is.null(set_zero) & se_fit){
+    warning('when se_fit is TRUE, set_zero cannot be assigned.')
+    set_zero = NULL
+  }
+  
+  original_mask = FALSE
+  
+  if(is.null(new_data)){
+    
+    #if new_data is not provided, but xlim and ylim provided, we use xlim and ylim to build mask instead of 
+    #extracting mask from fit
+    if(any(!is.null(xlim), !is.null(ylim))){
+      if(!all(!is.null(xlim), !is.null(ylim))) stop('please provide both xlim and ylim.')
+      x = seq(from = xlim[1], to = xlim[2], length.out = x_pixels)
+      y = seq(from = ylim[1], to = ylim[2], length.out = y_pixels)
+      mask = data.frame(x = rep(x, each = y_pixels), y = rep(y, x_pixels))
+    } else {
+      mask = get_mask(fit)[[session_select]]
+      original_mask = TRUE
+    }
+    
+  } else {
+    #if new_data is provided, then xlim and ylim will just do what they are supposed to do,
+    #to trim the plot instead of building "mask"
+    stopifnot(any(is(new_data, 'data.frame'), is(new_data, 'matrix')))
+    stopifnot(all(c('x', 'y') %in% colnames(new_data)))
+    mask = new_data[, c('x', 'y')]
+  }
+  
+  
+  if('D' %in% get_par_extend_name(fit)){
+    
+    #build the old_covariates
+    ##we interpolate it again no matter there is new mask grid or not because in theory, user
+    ##could use the same mask grid but different control_convert_loc2mask
+    
+    old_covariates = as.data.frame(mask)
+    
+    old_loc_cov = get_loc_cov(fit)
+    
+    #when we cannot find loc_cov from the model fitting object, it is possible the D is
+    #not mask-level extended, it is also possible that the model fitting object comes
+    #from simulation_study
+    mask_level_dat_extract = FALSE
+    if(is.null(old_loc_cov)){
+      old_loc_cov = get_par_extend_data(fit)$mask
+      if(!is.null(old_loc_cov)){
+        mask_level_dat_extract = TRUE
+        if('session' %in% colnames(old_loc_cov)){
+          old_loc_cov = subset(old_loc_cov, session == session_select)
+        }
+        
+        #when locations/mask in prediction is assigned by xlim/ylim or new_data, we use
+        #the original mask_level data as loc_cov, otherwise, we do not need to do
+        #conversion in the first place
+        if(!original_mask){
+          
+          if('session' %in% colnames(old_loc_cov)){
+            old_loc_cov = old_loc_cov[,which(colnames(old_loc_cov)!='session'),drop = FALSE]
+          }
+          if('mask' %in% colnames(old_loc_cov)){
+            old_loc_cov = old_loc_cov[,which(colnames(old_loc_cov)!='mask'),drop = FALSE]
+          }
+          
+          tem_mask = get_mask(fit)
+          if(is(tem_mask, 'list')) tem_mask = tem_mask[[session_select]]
+          stopifnot(nrow(old_loc_cov) == nrow(tem_mask))
+          old_loc_cov = cbind(tem_mask, old_loc_cov)
+          
+        }
+      }
+      
+    }
+    
+    
+    if(!is.null(old_loc_cov)){
+      #like mentioned right above, if we are using original mask data, and mask-level covariates data
+      #we do not need to do conversion at all
+      if(mask_level_dat_extract & original_mask){
+        cov_mask = old_loc_cov
+      } else {
+        if(is.null(control_convert_loc2mask)){
+          control_convert_loc2mask = vector('list', 2)
+          names(control_convert_loc2mask) = c('mask', 'loc_cov')
+        }
+        control_convert_loc2mask$mask = list(mask)
+        control_convert_loc2mask$loc_cov = old_loc_cov
+        
+        cov_mask = do.call('location_cov_to_mask', control_convert_loc2mask)
+      }
+      
+      if(any(colnames(cov_mask) %in% c('session', 'mask'))){
+        old_covariates = cbind(old_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
+      } else {
+        old_covariates = cbind(old_covariates, cov_mask)
+      }
+      
+    }
+    
+    
+    
+    session_data_in_model = get_par_extend_data(fit)$session
+    ##for session related covariates, it is simple, just take them from the input argument of fit
+    
+    if(!is.null(session_data_in_model)){
+      tem = session_data_in_model[which(session_data_in_model$session == session_select), , drop = FALSE]
+      tem = tem[, -which(colnames(tem) == 'session'), drop = FALSE]
+      for(i in colnames(tem)) old_covariates[[i]] = tem[1,i]
+    }
+    
+    
+    if(!is.null(D_cov) | !is.null(new_data)){
+      #firstly deal with all scenarios that there may be any new covariate provided 
+      if(!is.null(D_cov)){
+        stopifnot(is(D_cov, 'list'))
+        stopifnot(any(c('session', 'location') %in% names(D_cov)))
+      }
+      
+      #considering the possibility that user may only want to change part of covariates and remains other as the same
+      #as the model, for example, 3 covariates related to D, 'weather' (session related), 'noise' and 'forest_type'(loc related)
+      #and user only want to change weather, or to change noise, or to change noise and forest_type, and etc.
+      
+      #so we create 2 data frame, one for all new covariates, and one for old covariates. We must make sure these two data frame
+      #contains the same mask points, and then replace the covariates in the "old" data frame with the same column in the "new",
+      #if the same covariate appears in the "new" data frame.
+      if(!is.null(new_data)){
+        #in new_data, user could include any location related covariates directly, and it also contains x and y,
+        #so we could directly use it instead of mask
+        new_covariates = as.data.frame(new_data)
+      } else {
+        new_covariates = as.data.frame(mask)
+      }
+      
+      
+      
+      #build the new_covariates based on all information we could have
+      if(!is.null(D_cov$location)){
+        if(is.null(control_convert_loc2mask)){
+          control_convert_loc2mask = vector('list', 2)
+          names(control_convert_loc2mask) = c('mask', 'loc_cov')
+        }
+        control_convert_loc2mask$mask = list(mask)
+        control_convert_loc2mask$loc_cov = D_cov$location
+        
+        
+        cov_mask = do.call('location_cov_to_mask', control_convert_loc2mask)
+        new_covariates = cbind(new_covariates, cov_mask[, -which(colnames(cov_mask) %in% c('session', 'mask')), drop = FALSE])
+      }
+      
+      
+      #since we only plot one session, the number of row for D_cov$session should be only 1
+      if(!is.null(D_cov$session)){
+        stopifnot(nrow(D_cov$session) == 1)
+        for(i in colnames(D_cov$session)) new_covariates[[i]] = D_cov$session[1,i]
+        
+      }
+      
+      #update the old_covariates by the new_covariates
+      
+      for(i in colnames(old_covariates)){
+        if(all(i != 'x', i != 'y', i %in% colnames(new_covariates))){
+          old_covariates[[i]] = new_covariates[[i]]
+        }
+      }
+    }
+    
+    par_info = get_data_param(fit)
+    par_info = subset(par_info, par == 'D')
+    gam.model = get_gam(fit, 'D')
+    values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
+    if(!is.null(set_zero)) values_link[set_zero] = 0
+    
+    
+    tem = get_extended_par_value(gam.model, par_info$n_col_full, par_info$n_col_mask,
+                                 values_link, old_covariates, DX_output = TRUE)
+    D.mask = unlink.fun(link = par_info$link, value = tem$output)
+    
+    if(se_fit){
+      DX = tem$DX
+      
+      if(is(fit, 'ascr_boot')){
+
+        
+        
+        
+        
+        
+        
+        
+        
+      } else {
+        vcov_matrix = vcov(fit, types = 'linked', pars = 'D')
+        D.se = sqrt(delta_for_pred(DX, values_link, vcov_matrix, log_scale))
+      }
+      
+
+    }
+    
+  } else {
+    #when D is not extended, it is literally a constant, just take the 'fitted' estimated D by coef() and stdEr()
+    D.mask <- rep(coef(fit, types = 'fitted', pars = 'D'), nrow(mask))
+    if(se_fit){
+      if(log_scale){
+        type = "linked"
+      } else {
+        type = "fitted"
+      }
+      D.se = as.vector(rep(stdEr(fit, types = type, pars = 'D'), nrow(mask)))
+    }
+    
+  }
+  
+  output = as.data.frame(mask)
+  output$est = D.mask
+  if(se_fit) output$std = D.se
+  
+  
+  return(output)
+}
+
+
+
+
+
+
+
+
+
 res_split = function(res, n.sessions){
   n_pars = ncol(res) - 1 - n.sessions
   ## extracting and removing maximum gradient component.
@@ -1786,6 +2056,60 @@ boot_res_to_CI = function(res, level){
   return(output)
 }
 
+#transform the linked boot result to fitted type
+res_transform = function(res, new_covariates, pars, object, back_trans = TRUE){
+  name_extend = get_par_extend_name(object)
+  df_param = get_data_param(object)
+  col_name_og = ori_name(colnames(res))
+  output = vector('list', length(pars))
+  names(output) = pars
+  for(j in pars){
+    values_link = res[, which(col_name_og == j), drop = FALSE]
+    par_info = subset(df_param, par == j)
+    link = par_info$link
+    if(j %in% name_extend){
+      if(is.null(new_covariates)){
+        #if there is no new covariates assigned and the parameter is extended, then regards all of the
+        #relevant beta as identity linked parameters
+        values_fitted = values_link
+        colnames(values_fitted) = gsub("_link$", "", colnames(values_fitted))
+        link = 'identity'
+      } else {
+        if(nrow(new_covariates) != 1) stop('Argument "new_covariates" can only accept 1 row.')
+        
+        gam = get_gam(object, j)
+        tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full,
+                                                          par_info$n_col_mask, values_link, new_covariates,
+                                                          matrix_par_value = TRUE)})
+        if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
+                                        Defaulty all parameters are assigned as "par".
+                                        And please make sure all categorical variables do not contain any new category.')
+        colnames(values_fitted) = j
+        
+      }
+    } else {
+      values_fitted = values_link
+      colnames(values_fitted) = j
+    }
+    
+    if(back_trans){
+      output[[j]] = unlink.fun(link = link, value = values_fitted)
+    } else {
+      output[[j]] = values_fitted
+    }
+    
+  }
+  
+  output = do.call('cbind', output)
+  return(output)
+}
 
-
-
+#a method to do bias correction for parametric bootstrap
+#see https://math.mit.edu/~dav/05.dir/class25-slides-all.pdf
+res_mod_for_CI = function(res, est, correct_bias){
+  if(correct_bias){
+    res = -1 * res
+    res = sweep(res, 2, 2 * est, FUN = "+")
+  }
+  return(res)
+}
