@@ -87,6 +87,19 @@ get_par_extend_name = function(fit){
   return(output)
 }
 
+
+get_par_extend_covariate = function(fit){
+  ext_name = get_par_extend_name(fit)
+  #if there is no parameter be extended, just return NULL
+  if(is.null(ext_name)) return(ext_name)
+  
+  output = get_par_extend(fit)[['model']]
+  for(i in names(output)){
+    output[[i]] = all.vars(output[[i]])
+  }
+  return(output)
+}
+
 get_area_unit_tmb = function(fit){
   output = fit$output.tmb$area_unit
   return(output)

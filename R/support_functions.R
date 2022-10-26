@@ -839,9 +839,24 @@ list_2vector_4value = function(param){
 }
 
 
+ext_par_in_new_df = function(par_ext, new_covariates, extend_par_covariates){
+  output = NULL
+  if(!is.null(par_ext)){
+    for(i in par_ext){
+      if(all(extend_par_covariates[[i]] %in% colnames(new_covariates))){
+        output = c(output, i)
+      }
+    }
+  }
+
+  return(output)
+}
+
+
+
 
 delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new_covariates = NULL,
-                                 pars = NULL, name_og = NULL, name_extend = NULL, df_param = NULL,
+                                 name_og = NULL, name_extend = NULL, par_ext_cov_provided = NULL, df_param = NULL,
                                  gam.model.full = NULL, gam.output = NULL, back_trans = TRUE){
   #delta method, G(x) is a vector of n functions, where x is a vector of m variables
   #then VAR(G(x)) = G'(x) %*% VAR(x) %*% t[G'(x)]
@@ -875,14 +890,15 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
     }
     
   } else {
-    if(nrow(new_covariates) != 1) stop('Only 1 row in new_covariates is accepted.')
+    #if(nrow(new_covariates) != 1) stop('Only 1 row in new_covariates is accepted.')
     #if "new_covariates" is provided, then we are going to calculate the covariance matrix
     #for all original parameters used in this model, let "n" be length(unique(name_og))
     #and the G'(x) will be a n * m matrix
     unique_name_og = unique(name_og)
     n = length(unique_name_og)
-    
-    G_grad = matrix(0, nrow = n, ncol = m)
+    G_grad = vector('list', n)
+    n_new_df = nrow(new_covariates)
+    #G_grad = matrix(0, nrow = n, ncol = m)
     
     
     for(i in 1:n){
@@ -893,11 +909,18 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
       #original parameter names of each column of cov_linked
       index_p = which(name_og == par_name)
       x = param_values[index_p]
-      
+      len_p = length(index_p)
       
       tem = subset(df_param, par == par_name)
       if(back_trans){
-        link = tem[, 'link']
+        #when a par is extended but not all covariates provided, assign the link as 'identity' as well
+        #becuase in this case, we will show such as "D_int_link", "D_beta1_link"
+        if((par_name %in% name_extend) & !(par_name %in% par_ext_cov_provided)){
+          link = 'identity'
+        } else {
+          link = tem[, 'link']
+        }
+        
       } else {
         #if we do not do back transformation, it means, for example "D" has "D_int" and "D_beta1",
         #then we just use delta method to calculate var(D_int + D_beta1 * x1), instead of
@@ -909,53 +932,61 @@ delta_method_ascr_tmb = function(cov_linked, param_values, link_funs = NULL, new
       n_col_mask = tem[, 'n_col_mask']
       
       #let w be the covariates value for each parameter
-      w = numeric(n_col_full + n_col_mask)
+      #w = numeric(n_col_full + n_col_mask)
       
-      if(length(w) != length(x)){
-        stop('Critical Error.')
-      }
-      
-      if(par_name %in% name_extend & par_name %in% pars){
-        
+      if((par_name %in% name_extend) & (par_name %in% par_ext_cov_provided)){
+        G_grad[[i]] = matrix(0, nrow = n_new_df, ncol = m)
+        w = matrix(0, nrow = n_new_df, ncol = n_col_full + n_col_mask)
         if(n_col_full > 1){
           gam.model = gam.output[[par_name]][["gam_non_mask"]]
-          w[1:n_col_full] = as.vector(get_DX_new_gam(gam.model, new_covariates))
+          #browser()
+          w[, 1:n_col_full] = get_DX_new_gam(gam.model, new_covariates)
         } else {
-          w[1] = 1
+          w[, 1] = matrix(1, nrow = n_new_df, ncol = 1)
         }
         
         if(n_col_mask > 0){
           gam.model = gam.output[[par_name]][["gam_mask"]]
           tem = get_DX_new_gam(gam.model, new_covariates)
           #get rid of the first column since the intercept is not here
-          tem = tem[, -1, drop = FALSE]
-          w[(n_col_full + 1):(n_col_full + n_col_mask)] = as.vector(tem)
+          w[, (n_col_full + 1):(n_col_full + n_col_mask)] = tem[, -1]
         }
         
       } else {
-        w = 1
+        G_grad[[i]] = matrix(0, nrow = len_p, ncol = m)
+        w = diag(len_p)
       }
+
       
-      len_p = length(index_p)
+      n_row = nrow(w)
       
       if(link == 'identity'){
-        for(j in 1:len_p){
-          G_grad[i, index_p[j]] = w[j]
+        for(k in 1:n_row){
+          for(j in 1:len_p){
+            G_grad[[i]][k, index_p[j]] = w[k, j]
+          }
         }
       } else if(link == 'log'){
-        common_component = exp(sum(w * x))
-        for(j in 1:len_p){
-          G_grad[i, index_p[j]] = common_component * w[j]
+        for(k in 1:n_row){
+          common_component = exp(sum(w[k,] * x))
+          for(j in 1:len_p){
+            G_grad[[i]][k, index_p[j]] = common_component * w[k, j]
+          }
         }
+
       } else if(link == 'logit'){
-        common_component = exp(sum(w * x))
-        for(j in 1:len_p){
-          G_grad[i, index_p[j]] = common_component * w[j] / (common_component + 1) ^ 2
+        for(k in 1:n_row){
+          common_component = exp(sum(w[k,] * x))
+          for(j in 1:len_p){
+            G_grad[[i]][k, index_p[j]] = common_component * w[k, j] / (common_component + 1) ^ 2
+          }
         }
       }
       
     }
+    #browser()
     
+    G_grad = do.call('rbind', G_grad)
   }
   
   #for test purpose
@@ -1003,37 +1034,45 @@ vector_to_df = function(vec){
 }
 
 confint_gaussian_cal = function(object, types, pars, new_covariates, q_lower, q_upper){
+  
   output = vector('list', length(types))
   names(output) = types
   for(i in types){
-    if(i == 'linked'){
-      df_est = vector_to_df(coef.ascr_tmb(object, types = 'linked', pars = pars))
-      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'linked', pars = pars))
-    }
+    #if(i == 'linked'){
+    #  df_est = vector_to_df(coef.ascr_tmb(object, types = 'linked', pars = pars))
+    #  df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'linked', pars = pars))
+    #}
     
-    if(i == 'fitted'){
-      df_est = vector_to_df(coef.ascr_tmb(object, types = 'fitted', pars = pars, new_covariates = new_covariates,
-                                          back_trans = FALSE))
-      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'fitted', pars = pars, new_covariates = new_covariates,
-                                           back_trans = FALSE))
+    if(i == 'fitted' | i == 'linked'){
+      #browser()
+      #"fitted" is just back transformed from "linked" confidence interval
+      df_est = vector_to_df(coef.ascr_tmb(object, types = 'linked', pars = pars, new_covariates = new_covariates))
+      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'linked', pars = pars, new_covariates = new_covariates))
     }
     
     if(i == 'derived'){
       df_est = vector_to_df(coef.ascr_tmb(object, types = 'derived'))
       df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'derived'))
     }
-    
-    #keep the order of df_est
-    df_est$index = seq(nrow(df_est))
-    
     #browser()
-    tem = merge(df_est, df_std, by = 'name', all.x = TRUE)
-    tem = tem[order(tem$index),]
-    tem = tem[,-which(colnames(tem) == 'index')]
-    colnames(tem) = c('par', 'est', 'std')
-    tem$std = ifelse(is.na(tem$std), 0, tem$std)
+    colnames(df_est) = c('par', 'est')
+    df_est$std = 0
+    u_name = unique(df_est$par)
+    tem = vector('list', length(u_name))
+    names(tem) = u_name
+    for(k in u_name){
+      tem_est = subset(df_est, df_est$par == k)
+      tem_std = subset(df_std, df_std$name == k)
+      if(nrow(tem_std) > 0) tem_est$std = tem_std$value
+      tem[[k]] = tem_est
+    }
+    #browser()
+    tem = do.call('rbind', tem)
     tem$lower = tem$est + q_lower * tem$std
     tem$upper = tem$est + q_upper * tem$std
+    
+    
+    if(i == 'fitted') tem$par = gsub("_link", "", tem$par)
     
     output[[i]] = tem
     
@@ -1996,7 +2035,7 @@ mce_from_res = function(res, coefs, M, seed_mce){
 types_pars_sol = function(types, pars, new_covariates){
 
   #if new_covariates is provided, we need "fitted"
-  if(!is.null(new_covariates) & (!"fitted" %in% types)) types = c(types, 'fitted')
+  #if(!is.null(new_covariates) & (!"fitted" %in% types)) types = c(types, 'fitted')
   #if types is still nothing, set it as 'linked'
   if(is.null(types)) types = 'linked'
   
@@ -2063,33 +2102,53 @@ res_transform = function(res, new_covariates, pars, object, back_trans = TRUE){
   col_name_og = ori_name(colnames(res))
   output = vector('list', length(pars))
   names(output) = pars
+  
+  extend_par_covariates = get_par_extend_covariate(object)
+  
+  if(is.null(name_extend) & !is.null(new_covariates)){
+    warning('No parameter is extended, argument "new_covariates" will be ignored.')
+    new_covariates = NULL
+  }
+  
+  name_extned_covariate_provided = ext_par_in_new_df(name_extend, new_covariates, extend_par_covariates)
+  
+  
   for(j in pars){
     values_link = res[, which(col_name_og == j), drop = FALSE]
     par_info = subset(df_param, par == j)
     link = par_info$link
+    
     if(j %in% name_extend){
-      if(is.null(new_covariates)){
-        #if there is no new covariates assigned and the parameter is extended, then regards all of the
-        #relevant beta as identity linked parameters
-        values_fitted = values_link
-        colnames(values_fitted) = gsub("_link$", "", colnames(values_fitted))
-        link = 'identity'
-      } else {
-        if(nrow(new_covariates) != 1) stop('Argument "new_covariates" can only accept 1 row.')
-        
+
+      if(!is.null(new_covariates) & (j %in% name_extned_covariate_provided)){
         gam = get_gam(object, j)
-        tem = try({values_fitted = get_extended_par_value(gam, par_info$n_col_full,
-                                                          par_info$n_col_mask, values_link, new_covariates,
-                                                          matrix_par_value = TRUE)})
-        if(is(tem, 'try-error')) stop('Please make sure all covariates needed for assigned "par" are provided.
-                                        Defaulty all parameters are assigned as "par".
-                                        And please make sure all categorical variables do not contain any new category.')
-        colnames(values_fitted) = j
-        
+        values_fitted = get_extended_par_value(gam, par_info$n_col_full,
+                                               par_info$n_col_mask, values_link, new_covariates,
+                                               matrix_par_value = TRUE)
+        colnames(values_fitted) = rep(j, ncol(values_fitted))
+        if(!back_trans){
+          colnames(values_fitted) = paste(colnames(values_fitted), "link", sep = "_")
+        }
+      } else {
+          #if there is no new covariates assigned to this extended parameter (maybe no new_covariates at all,
+          #or at least one of the covariates for this parameter is not provided), 
+          #then regards all of the relevant beta as identity linked parameters
+          values_fitted = values_link
+          if(back_trans){
+            colnames(values_fitted) = gsub("_link$", "", colnames(values_fitted))
+          }
+          link = 'identity'
       }
+      
+      
     } else {
       values_fitted = values_link
-      colnames(values_fitted) = j
+      if(back_trans){
+        colnames(values_fitted) = j
+      } else {
+        colnames(values_fitted) = paste(j, "link", sep = "_")
+      }
+      
     }
     
     if(back_trans){
@@ -2113,3 +2172,4 @@ res_mod_for_CI = function(res, est, correct_bias){
   }
   return(res)
 }
+
