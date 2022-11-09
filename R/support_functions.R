@@ -582,18 +582,18 @@ unlink.fun = function(link, value){
   if(link == "logit") return(cus_logit_unlink(value))
 }
 
-#delta.fun = function(link, sd, est){
-#  if(link == "identity") return(sd)
+delta.fun = function(link, sd, est){
+  if(link == "identity") return(sd)
   
   #for link == 'log', we are calculating std(exp(x)) with x_hat = est and x_sd = sd
-#  if(link == "log") return(sd * exp(est))
+  if(link == "log") return(sd * exp(est))
   
   #for link == 'logit' we are calculating std(exp(x)/(exp(x) + 1))
-#  if(link == 'logit'){
-#    fx_grad = exp(est)/(exp(est) + 1) ^ 2
-#    return(sd * fx_grad)
-#  }
-#}
+  if(link == 'logit'){
+    fx_grad = exp(est)/(exp(est) + 1) ^ 2
+    return(sd * fx_grad)
+  }
+}
 
 sort.data = function(dat,  name){
   is.animal_ID = "animal_ID" %in% colnames(dat)
@@ -1025,6 +1025,53 @@ delta_for_pred = function(DX, par_value_linked, vcov_matrix, log_scale){
 }
 
 
+vcov_fixed_par_add = function(m, p, type){
+  #when p is NULL, n_added will be zero
+  n_added = length(p)
+  if(n_added == 0){
+    output = m
+  } else {
+    if(type == 'linked') p = paste(p, "link", sep = "_")
+    
+    m_new = matrix(0, nrow = nrow(m) + n_added, ncol = ncol(m) + n_added)
+    
+    new_name = c(rownames(m), p)
+    rownames(m_new) = new_name
+    colnames(m_new) = new_name
+    m_new[1:nrow(m), 1:ncol(m)] = m
+    
+    dim_m = data.frame(par = ori_name(new_name), dim_name = new_name, order_og = 1:nrow(m_new))
+    full_par = fulllist.par.generator()
+    full_par = data.frame(par = full_par, o = 1:length(full_par))
+    dim_m = merge(dim_m, full_par, by = 'par')
+    dim_m = dim_m[order(dim_m$o, dim_m$order_og),,drop = FALSE]
+    
+    output = matrix(0, nrow = nrow(m_new), ncol = ncol(m_new))
+    rownames(output) = dim_m$dim_name
+    colnames(output) = dim_m$dim_name
+    
+    tem = matrix(0, nrow = nrow(m_new), ncol = ncol(m_new))
+    for(i in 1:nrow(m_new)){
+      i_m_new = dim_m$order_og[i]
+      tem[i, ] = m_new[i_m_new, ]
+    }
+    
+    for(i in 1:ncol(m_new)){
+      i_m_new = dim_m$order_og[i]
+      output[, i] = tem[, i_m_new]
+    }
+    
+  }
+  
+  return(output)
+  
+}
+
+
+
+
+
+
 
 vector_to_df = function(vec){
   name = names(vec)
@@ -1047,12 +1094,12 @@ confint_gaussian_cal = function(object, types, pars, new_covariates, q_lower, q_
       #browser()
       #"fitted" is just back transformed from "linked" confidence interval
       df_est = vector_to_df(coef.ascr_tmb(object, types = 'linked', pars = pars, new_covariates = new_covariates))
-      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'linked', pars = pars, new_covariates = new_covariates))
+      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'linked', pars = pars, new_covariates = new_covariates, show_fixed_par = FALSE))
     }
     
     if(i == 'derived'){
       df_est = vector_to_df(coef.ascr_tmb(object, types = 'derived'))
-      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'derived'))
+      df_std = vector_to_df(stdEr.ascr_tmb(object, types = 'derived', show_fixed_par = FALSE))
     }
     #browser()
     colnames(df_est) = c('par', 'est')
@@ -1721,13 +1768,13 @@ homo_digit = function(x){
 #predict density with information of locations coordinates, only used in the plot currently
 
 predict_D_for_plot = function(fit, session_select = 1, new_data = NULL, D_cov = NULL, xlim = NULL, ylim = NULL,
-                                 x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, 
-                                 control_convert_loc2mask = NULL, ...){
+                              x_pixels = 50, y_pixels = 50, se_fit = FALSE, log_scale = FALSE, set_zero = NULL, 
+                              control_convert_loc2mask = NULL,
+                              control_boot = list(correct_bias = FALSE, from_boot = TRUE), ...){
   
   
   if(!is.null(set_zero) & se_fit){
-    warning('when se_fit is TRUE, set_zero cannot be assigned.')
-    set_zero = NULL
+    warning('During the calculation of standard error, std_zero will be ignored.')
   }
   
   original_mask = FALSE
@@ -1894,7 +1941,14 @@ predict_D_for_plot = function(fit, session_select = 1, new_data = NULL, D_cov = 
     par_info = get_data_param(fit)
     par_info = subset(par_info, par == 'D')
     gam.model = get_gam(fit, 'D')
-    values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
+    if(is(fit, 'ascr_boot')){
+      values_link = as.vector(coef(fit, types = 'linked', pars = 'D', correct_bias = control_boot$correct_bias))
+    } else {
+      values_link = as.vector(coef(fit, types = 'linked', pars = 'D'))
+    }
+    
+    values_link_og = values_link
+    
     if(!is.null(set_zero)) values_link[set_zero] = 0
     
     
@@ -1906,18 +1960,18 @@ predict_D_for_plot = function(fit, session_select = 1, new_data = NULL, D_cov = 
       DX = tem$DX
       
       if(is(fit, 'ascr_boot')){
-
+        if(log_scale){
+          type = 'linked'
+        } else {
+          type = 'fitted'
+        }
         
-        
-        
-        
-        
-        
-        
+        D.se = as.vector(stdEr(fit, types = type, new_covariates = old_covariates, pars = 'D',
+                               from_boot = control_boot$from_boot, show_fixed_par = FALSE))
         
       } else {
-        vcov_matrix = vcov(fit, types = 'linked', pars = 'D')
-        D.se = sqrt(delta_for_pred(DX, values_link, vcov_matrix, log_scale))
+        vcov_matrix = vcov(fit, types = 'linked', pars = 'D', show_fixed_par = FALSE)
+        D.se = sqrt(delta_for_pred(DX, values_link_og, vcov_matrix, log_scale))
       }
       
 
@@ -1925,14 +1979,15 @@ predict_D_for_plot = function(fit, session_select = 1, new_data = NULL, D_cov = 
     
   } else {
     #when D is not extended, it is literally a constant, just take the 'fitted' estimated D by coef() and stdEr()
-    D.mask <- rep(coef(fit, types = 'fitted', pars = 'D'), nrow(mask))
+    D.mask <- rep(coef(fit, types = "fitted", pars = 'D'), nrow(mask))
     if(se_fit){
       if(log_scale){
         type = "linked"
       } else {
         type = "fitted"
       }
-      D.se = as.vector(rep(stdEr(fit, types = type, pars = 'D'), nrow(mask)))
+
+      D.se = as.vector(rep(stdEr(fit, types = type, pars = 'D', show_fixed_par = FALSE), nrow(mask)))
     }
     
   }
@@ -1944,12 +1999,6 @@ predict_D_for_plot = function(fit, session_select = 1, new_data = NULL, D_cov = 
   
   return(output)
 }
-
-
-
-
-
-
 
 
 

@@ -4,7 +4,14 @@
 \alias{stdEr.ascr_tmb}
 \title{Extract standard errors of the estimated parameters from ascr.tmb models}
 \usage{
-\method{stdEr}{ascr_tmb}(object, types = NULL, pars = NULL, new_covariates = NULL, ...)
+\method{stdEr}{ascr_tmb}(
+  object,
+  types = NULL,
+  pars = NULL,
+  new_covariates = NULL,
+  show_fixed_par = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{a fitted model from fit.ascr.tmb}
@@ -14,6 +21,10 @@
 \item{pars}{a character vector containing any parameter names}
 
 \item{new_covariates}{a data frame containing the values of covariates of any extended parameter}
+
+\item{show_fixed_par}{}
+
+\item{...}{}
 }
 \value{
 a named numeric vector

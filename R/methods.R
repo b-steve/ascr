@@ -291,10 +291,12 @@ print.coef_ascr_tmb = function(x){
 #' @param types a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'
 #' @param pars a character vector containing any parameter names
 #' @param new_covariates a data frame containing the values of covariates of any extended parameter
+#' @param show_fixed_par 
+#' @param ... 
 #'
 #' @return a list with matrices as its elements if multiple 'types'. a matrix if only one 'types'.
 #' @export
-vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
+vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, show_fixed_par = TRUE, ...){
   
   #deal with default setting for 'types'
   tem = types_pars_sol(types, pars, new_covariates)
@@ -369,6 +371,8 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
   cov_linked = cov_linked[index_par, index_par, drop = FALSE]
   link_funs = link_funs[index_par]
   param_values = param_values[index_par]
+  fixed_par = get_fixed_par_name(object)
+  
   
   output = vector('list', length(types))
   names(output) = types
@@ -404,6 +408,11 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
         dimnames(output[[type]]) = list(new_name, new_name)
         
       }
+      
+      
+      if(show_fixed_par){
+        output[[type]] = vcov_fixed_par_add(output[[type]], fixed_par, type)
+      }
 
     } else if(type == 'derived'){
       output[[type]] = cov_derived
@@ -436,6 +445,11 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
         
         dimnames(output[[type]]) = list(new_name, new_name)
       }
+      
+      if(show_fixed_par){
+        output[[type]] = vcov_fixed_par_add(output[[type]], fixed_par, type)
+      }
+      
     }
   }
   
@@ -454,16 +468,17 @@ vcov.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NUL
 #' @param pars 
 #' @param new_covariates 
 #' @param from_boot 
+#' @param show_fixed_par 
 #' @param ... 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-vcov.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NULL, from_boot = TRUE, ...){
+vcov.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NULL, from_boot = TRUE, show_fixed_par = TRUE, ...){
   
   if(!from_boot){
-    output = vcov.ascr_tmb(object = object, types = types, pars = pars, new_covariates = new_covariates)
+    output = vcov.ascr_tmb(object = object, types = types, pars = pars, new_covariates = new_covariates, show_fixed_par = show_fixed_par)
     return(output)
   }
   
@@ -499,6 +514,11 @@ vcov.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NU
     if(i == 'linked'){
       res_linked = res_transform(res, new_covariates, pars, object, back_trans = FALSE)
       output[[i]] = var_from_res(res_linked, fixed_par)
+      
+      if(show_fixed_par){
+        output[[i]] = vcov_fixed_par_add(output[[i]], fixed_par, i)
+      }
+      
     } else if(i == 'derived'){
       #browser()
       res_esa = get_boot_res_esa(object)
@@ -506,6 +526,11 @@ vcov.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NU
     } else {
       res_fitted = res_transform(res, new_covariates, pars, object, back_trans = TRUE)
       output[[i]] = var_from_res(res_fitted, fixed_par)
+      
+      if(show_fixed_par){
+        output[[i]] = vcov_fixed_par_add(output[[i]], fixed_par, i)
+      }
+      
     }
   }
   
@@ -527,12 +552,15 @@ vcov.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NU
 #' @param types a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'
 #' @param pars a character vector containing any parameter names
 #' @param new_covariates a data frame containing the values of covariates of any extended parameter
+#' @param show_fixed_par 
+#' @param ... 
 #'
 #' @return a named numeric vector
 #' @export
-stdEr.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, ...){
+stdEr.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NULL, show_fixed_par = TRUE, ...){
   
-  output_vcov = vcov.ascr_tmb(object = object, types = types, pars = pars, new_covariates = new_covariates)
+  output_vcov = vcov.ascr_tmb(object = object, types = types, pars = pars, new_covariates = new_covariates,
+                              show_fixed_par = show_fixed_par)
   if(is(output_vcov, 'list')){
     output = NULL
     for(i in names(output_vcov)){
@@ -553,16 +581,17 @@ stdEr.ascr_tmb = function(object, types = NULL, pars = NULL, new_covariates = NU
 #' @param pars 
 #' @param new_covariates 
 #' @param from_boot 
-#' @param ... 
+#' @param show_fixed_par 
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-stdEr.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NULL, from_boot = TRUE, ...){
+stdEr.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NULL, from_boot = TRUE, show_fixed_par = TRUE, ...){
 
   output_vcov = vcov.ascr_boot(object = object, types = types, pars = pars, new_covariates = new_covariates,
-                               from_boot = from_boot)
+                               from_boot = from_boot, show_fixed_par = show_fixed_par)
   
   if(is(output_vcov, 'list')){
     output = NULL
@@ -620,10 +649,6 @@ confint.ascr_tmb = function(object, types = NULL, level = 0.95, pars = NULL, new
   col_name = paste(c(p_lower, p_upper) * 100, "%", sep = " ")
   q_upper = qnorm(p_upper)
   q_lower = qnorm(p_lower)
-  
-  #if linked = FALSE, use coef(fit, 'fitted') + 1.96 * stdEr(fit, 'fitted')
-  #if linked = TRUE, use unlink.fun(coef(fit, 'linked') + 1.96 * stdEr(fit, 'linked'))
-  
 
   output = confint_gaussian_cal(object = object, types = types, pars = pars,
                                 new_covariates = new_covariates, q_lower = q_lower,
@@ -758,7 +783,10 @@ AIC.ascr_tmb = function(object, k = 2){
             calls from the same animal, which may not be appropriate.")
     return(NA)
   }
-  return(k * length(coef(object)) - 2 * object$loglik)
+  
+  n_fixed = length(get_fixed_par_name(object))
+  
+  return(k * (length(coef(object)) - n_fixed) - 2 * object$loglik)
 }
 
 
@@ -825,14 +853,14 @@ predict.ascr_tmb = function(fit, type = 'response', newdata = NULL, se.fit = TRU
     
     if(n_row != 0){
       output[[i]] = data.frame(Estimate = numeric(n_row))
-      
+
       output[[i]]$Estimate = as.vector(coef(fit, types = type, new_covariates = newdata, pars = i))
       
       if(se.fit){
         if(i %in% par_fixed_name){
           output[[i]]$StdError = 0
         } else {
-          output[[i]]$StdError = as.vector(stdEr(fit, types = type, new_covariates = newdata, pars = i))
+          output[[i]]$StdError = as.vector(stdEr(fit, types = type, new_covariates = newdata, pars = i, show_fixed_par = FALSE))
         }
         
       } 
@@ -929,7 +957,7 @@ predict.ascr_boot = function(fit, type = 'response', newdata = NULL, se.fit = TR
     
     if(n_row != 0){
       output[[i]] = data.frame(Estimate = numeric(n_row))
-      
+
       output[[i]]$Estimate = as.vector(coef(fit, types = type, new_covariates = newdata, pars = i, correct_bias = correct_bias))
       
       if(se.fit){
@@ -937,7 +965,7 @@ predict.ascr_boot = function(fit, type = 'response', newdata = NULL, se.fit = TR
         if(i %in% par_fixed_name){
           output[[i]]$StdError = 0
         } else {
-          output[[i]]$StdError = as.vector(stdEr(fit, types = type, new_covariates = newdata, pars = i, from_boot = from_boot))
+          output[[i]]$StdError = as.vector(stdEr(fit, types = type, new_covariates = newdata, pars = i, from_boot = from_boot, show_fixed_par = FALSE))
         }
         
       }
@@ -976,10 +1004,11 @@ print.predict_ascr_tmb = function(x, ...){
   for(i in names(x)){
     cat(paste0(i, ": \n"))
     if(is(x[[i]], 'data.frame')){
-      print(x[[i]])
+      print(x[[i]], row.names = FALSE)
       cat("\n")
     } else {
       cat(paste0(x[[i]], "\n"))
+      cat("\n")
     }
   }
 }
@@ -990,17 +1019,18 @@ print.predict_ascr_tmb = function(x, ...){
 #' Title
 #'
 #' @param object 
-#' @param ... 
+#' @param derived_print 
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-summary.ascr_tmb = function(object, ...){
+summary.ascr_tmb = function(object, derived_print = FALSE, ...){
   coefs = coef(object, types = 'fitted')
   derived = coef(object, types = 'derived')
-  coefs_se = stdEr(object, types = 'fitted')
-  derived_se = stdEr(object, types = 'derived')
+  coefs_se = stdEr(object, types = 'fitted', show_fixed_par = FALSE)
+  derived_se = stdEr(object, types = 'derived', show_fixed_par = FALSE)
   CI = confint(object, types = 'fitted')
   CI_derived = confint(object, types = 'derived')
   is_boot = is(object, 'ascr_boot')
@@ -1033,7 +1063,7 @@ summary.ascr_tmb = function(object, ...){
                 CI = CI, CI_derived = CI_derived,
                 is_boot = is_boot, infotypes = infotypes, detfn = detfn,
                 n.sessions = n.sessions, pars_ext_links = pars_ext_links,
-                ss_opts = ss_opts)
+                ss_opts = ss_opts, derived_print = derived_print)
   class(output) = c("summary_ascr_tmb", class(output))
   return(output)
 }
@@ -1042,13 +1072,16 @@ summary.ascr_tmb = function(object, ...){
 #' Title
 #'
 #' @param x 
-#' @param ... 
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
 print.summary_ascr_tmb = function(x, ...){
+  
+  derived_print = x$derived_print
+  
   n.coefs <- length(x$coefs)
   n.derived <- length(x$derived)
   mat <- matrix(0, nrow = n.coefs + n.derived + 1, ncol = 4)
@@ -1070,6 +1103,12 @@ print.summary_ascr_tmb = function(x, ...){
   mat[(n.coefs + 2):(n.coefs + n.derived + 1), 3:4] <- x$CI_derived
   rownames(mat) <- c(names(x$coefs), "---", names(x$derived))
   colnames(mat) <- c("Estimate", "Std. Error", colnames(x$CI))
+  
+  if(!derived_print){
+    mat = mat[1:n.coefs,,drop = FALSE]
+  }
+  
+  
   detfn <- c(hn = "Halfnormal", hhn = "Hazard halfnormal", hr = "Hazard rate", th = "Threshold",
              lth = "Log-link threshold", ss = "Signal strength")[x$detfn]
   infotypes <- c(bearing = "Bearings", dist = "Distances", ss = "Signal strengths",
@@ -1084,7 +1123,14 @@ print.summary_ascr_tmb = function(x, ...){
   cat("Detection function:", detfn, "\n")
   cat("Number of sessions:", x$n.sessions, "\n")
   cat("Information types: ")
-  cat(infotypes, sep = ", ")
+
+  if(length(infotypes) != 0){
+    cat(infotypes, sep = ", ")
+  } else {
+    cat("NULL")
+  }
+  
+  
   cat("\n")
   cat("Confidence interval method:", CI_method, "\n")
   
