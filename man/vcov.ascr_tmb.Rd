@@ -9,7 +9,7 @@
   types = NULL,
   pars = NULL,
   new_covariates = NULL,
-  show_fixed_par = FALSE,
+  show_fixed_par = TRUE,
   ...
 )
 }

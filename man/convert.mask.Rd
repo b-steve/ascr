@@ -7,7 +7,9 @@
 convert.mask(mask)
 }
 \arguments{
-\item{mask}{}
+\item{mask}{a list or a data frame. If it is provided, it will be passed to the modelling process directly, please make
+it satisfies the requirements of the modelling. It is recommended to use argument "control_create_mask",
+or the function "create.mask()" to create it.}
 }
 \value{
 An object of class \code{mask}.
