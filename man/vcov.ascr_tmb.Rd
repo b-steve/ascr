@@ -2,7 +2,7 @@
 % Please edit documentation in R/methods.R
 \name{vcov.ascr_tmb}
 \alias{vcov.ascr_tmb}
-\title{Extract variance covariance matrix of the estimated parameters from ascr.tmb models}
+\title{Extract variance covariance matrix of the estimated parameters from ascr models}
 \usage{
 \method{vcov}{ascr_tmb}(
   object,
@@ -14,15 +14,16 @@
 )
 }
 \arguments{
-\item{object}{a fitted model from fit.ascr.tmb}
+\item{object}{a fitted model from fit.ascr().}
 
-\item{types}{a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'}
+\item{types}{a character vector, the same as "coef.ascr_tmb()".}
 
-\item{pars}{a character vector containing any parameter names}
+\item{pars}{a character vector, the same as "coef.ascr_tmb()".}
 
-\item{new_covariates}{a data frame containing the values of covariates of any extended parameter}
+\item{new_covariates}{a data frame, the same as "coef.ascr_tmb()".}
 
-\item{show_fixed_par}{}
+\item{show_fixed_par}{a logical value. To control whether to include the fixed parameters in the covariance matrix.
+It is TRUE by default.}
 
 \item{...}{}
 }
@@ -30,5 +31,5 @@
 a list with matrices as its elements if multiple 'types'. a matrix if only one 'types'.
 }
 \description{
-Extract variance covariance matrix of the estimated parameters from ascr.tmb models
+Extract variance covariance matrix of the estimated parameters from ascr models
 }

@@ -1,16 +1,17 @@
 
 #' Title
 #'
-#' @param fit 
+#' @param fit an object generated from the model fitting function "fit.ascr_tmb()" or
+#'            the bootstrap process "boot.ascr()".
 #' @param new_covariates data.frame; contains any covariates will be used for all extended parameters (if not be skipped)
 #' @param param_extend_skip character; skip extended parameter, for skipped extended parameters,
-#' use its intercept as the value for this parameter
-#' @param xlim 
-#' @param ylim 
-#' @param main 
-#' @param xlab 
-#' @param ylab 
-#' @param col 
+#'                          use its intercept as the value for this parameter
+#' @param xlim a numeric vector with two elements as the range of x-axis.
+#' @param ylim a numeric vector with two elements as the range of y-axis.
+#' @param main a string as the main title of the plot.
+#' @param xlab a string as the sub-title of x-axis.
+#' @param ylab a string as the sub-title of y-axis.
+#' @param col a string or a numeric value indicates the color of the plotted line.
 #' @param add 
 #' @param ... 
 #'

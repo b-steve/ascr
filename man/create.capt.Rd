@@ -17,14 +17,16 @@ create.capt(
 \item{captures}{a list or a data frame with at least 4 columns. The column 1, 2, 4 will be fixed as "session", "ID" and "trap",
 each row will be regarded as one detection. Extra information could be provided as columns "bearing", "dist"
 ,"ss", "toa". And "animal_ID" could be provided if individuals could be distinguished from their acoustic detection.
-In addition, any individuals from different sessions will be treated as independent ones.}
+In addition, any individuals from different sessions will be treated as independent ones. The defualt unit for any
+distance related value should be 'meter', and for time related value should be 'seconds'.}
 
 \item{traps}{a list or a matrix or a data frame. If it is a data frame or a matrix, it should contains only two columns with the
 Cartesian coordinates of the traps. If it is a list, its length will be treated as the number of sessions, and each
 element is a data frame or a matrix contains the Cartesian coordinates of the traps in the corresponding session.
 If it is a list with only one element, or a data frame, or a matrix, the number of session will be determined
 by the argument "n.sessions" or max(captures$session) if "n.sessions" is not provided. This setting is prepared 
-for the scenario that the survey is conducted with the same detectors for multiple sessions.}
+for the scenario that the survey is conducted with the same detectors for multiple sessions. The unit of the
+coordinates should be 'meter' by default.}
 
 \item{ind_model}{a logical value indicates whether to include individual identification which should be recorded as "animal_ID",
 a column in the argument "captures". By default, it will be NULL, so the model will determine it automatically
