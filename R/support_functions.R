@@ -1239,6 +1239,7 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
   if(is(loc_cov, 'data.frame') | is(loc_cov, 'matrix')){
     stopifnot(all(c('x', 'y') %in% colnames(loc_cov)))
     stopifnot(ncol(loc_cov) > 2)
+    loc_cov = loc_cov[!duplicated(loc_cov[,c('x', 'y')]), ]
     n_loc_cov = 1
     name_cov = colnames(loc_cov)[-which(colnames(loc_cov) %in% c('x', 'y'))]
     #this is the index to indicate which covariate is extracted from which element of loc_cov
@@ -1253,6 +1254,7 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
     for(i in 1:n_loc_cov){
       stopifnot(all(c('x', 'y') %in% colnames(loc_cov[[i]])))
       stopifnot(ncol(loc_cov[[i]]) > 2)
+      loc_cov[[i]] = loc_cov[[i]][!duplicated(loc_cov[[i]][,c('x', 'y')]), ]
       name_cov[[i]] = colnames(loc_cov[[i]])[-which(colnames(loc_cov[[i]]) %in% c('x', 'y'))]
       index_name_cov[[i]] = rep(i, length(name_cov[[i]]))
     }
@@ -1356,6 +1358,11 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
         w[[i]] = w[[i]] / apply(w[[i]], 1, sum)
       } else {
         stop('weight method only suppors "Shepard" and "Modified" currently.')
+      }
+      
+      #if any location with covariates provided right on a mask point, it will return NaN, convert it to 1.
+      if(any(is.nan(w[[i]]))){
+        w[[i]][is.nan(w[[i]])] = 1
       }
 
     }
@@ -2262,5 +2269,11 @@ res_mod_for_CI = function(res, est, correct_bias){
     res = sweep(res, 2, 2 * est, FUN = "+")
   }
   return(res)
+}
+
+
+
+erf <- function(x){
+  2*pnorm(x*sqrt(2)) - 1
 }
 

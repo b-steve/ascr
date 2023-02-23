@@ -461,7 +461,7 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
 
   
   #browser()
-  
+  tmb_output_og = list(est = o$value, vcov = o$cov)
   #if is.scale, restore the estimated parameters' estimation and variance matrix to original scale
   if(is.scale){
     est_names = names(o$value)
@@ -519,6 +519,7 @@ fit_og = function(capt, traps, mask, detfn = NULL, sv = NULL, bounds = NULL, fix
                param.og = param.og,
                param.og.4cpp = param.og.4cpp,
                o = o,
+               tmb_output_og = tmb_output_og,
                opt = opt,
                name.fixed.par = name.fixed.par,
                name.extend.par = name.extend.par,

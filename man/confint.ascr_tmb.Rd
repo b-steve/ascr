@@ -14,15 +14,15 @@
 )
 }
 \arguments{
-\item{object}{a fitted model from fit.ascr.tmb}
+\item{object}{a fitted model from "fit.ascr()".}
 
-\item{types}{a character vector, accept any subset from <'all', 'fitted', 'linked', 'derived'>, default is 'linked'}
+\item{types}{a character vector, the same as "coef.ascr_tmb()".}
 
-\item{level}{confident level, default is 0.95}
+\item{level}{a numeric value indicates the confident level, default is 0.95.}
 
-\item{pars}{a character vector containing any parameter names}
+\item{pars}{a character vector, the same as "coef.ascr_tmb()".}
 
-\item{new_covariates}{a data frame containing the values of covariates of any extended parameter}
+\item{new_covariates}{a data frame, the same as "coef.ascr_tmb()".}
 
 \item{...}{}
 }

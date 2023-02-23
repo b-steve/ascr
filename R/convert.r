@@ -412,6 +412,36 @@ create.capt <- function(captures, traps = NULL, ind_model = NULL, n.sessions = N
 }
 
 
+
+#' A helper function to obtain the distances of the nearest points from a data frame
+#'
+#' @param from a matrix or a data frame with columns "x" and "y" contains the coordinates of the start points. 
+#' @param to a matrix or a data frame with columns "x" and "y" contains the coordinates of the end points.
+#' @param col_name a character, contains the new column name for the distances in the output, default is
+#'                 dist_nearest.
+#'
+#' @return a data frame as the same as "from", but with an extra column with assigned column name. For each row,
+#'         it contains the distance to the nearest point in the "to" data set.
+#' @export
+#'
+#' @examples
+dist_nearest = function(from, to, col_name = 'dist_nearest'){
+  stopifnot(all(c('x', 'y') %in% colnames(from)))
+  stopifnot(all(c('x', 'y') %in% colnames(to)))
+  output = as.data.frame(from)
+  from = from[, c('x', 'y')]
+  to = to[, c('x', 'y')]
+  
+  nearest.point = RANN::nn2(to, from, k = 1)
+  
+  output[[col_name]] = as.vector(nearest.point$nn.dists)
+  return(output)
+}
+
+
+
+
+
 #' Convert traps object
 #'
 #' Converts an \code{ascr} traps matrix to a \code{secr} traps

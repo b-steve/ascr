@@ -1049,13 +1049,18 @@ CR_SL = function(cue.rates, survey.length, bucket_info, dims){
   if (is.null(survey.length)){
     survey.length <- rep(1, n.sessions)
     if (!is.null(cue.rates)){
-      stop("The use of `cue.rates' without `survey.length' is no longer supported.
-           Please provide `survey.length', and ensure `cue.rates' is measured in the same time units.")
+      warning("The argument `survey.length' is not provided, so it will be assumed to be 1.
+              Please ensure `cue.rates' is measured in the same time units.")
     }
   } else {
-    if (length(survey.length) != n.sessions){
-      stop("The argument `survey.length' must have a value for each session.")
+    if(length(survey.length) != 1){
+      if (length(survey.length) != n.sessions){
+        stop("The argument `survey.length' must have a value for each session.")
+      }
+    } else {
+      survey.length <- rep(survey.length, n.sessions)
     }
+
   }
   
   if (!is.null(cue.rates)){
@@ -1434,22 +1439,23 @@ gr_free_o_restore = function(fn, opt, H, parameters, param.og.4cpp, n.sessions){
 
 
 
-outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas, detfn, param.og, param.og.4cpp, o, opt,
+outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas, detfn, param.og, param.og.4cpp, o, tmb_output_og, opt,
                   name.fixed.par, name.extend.par, dims, DX.full, DX.mask, fix.input, bucket_info, cue.rates, mean.cue.rates, A,
                   survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, is.scale, ss.link, cutoff){
   ###################################################################################################################
   #sort out output for the function
-  out = vector('list', 35)
-  names(out) = c("fn", "coefficients", "coeflist", "se", "loglik", "maxgrad", "cor", "vcov", "npar", "npar_re",
+  out = vector('list', 36)
+  names(out) = c("fn", "coefficients", "coeflist", "se", "loglik", "opt_output", "maxgrad", "cor", "vcov", "npar", "npar_re",
                  "npar_sdrpt", "npar_rep", "npar_total", "hes", "eratio", "D.mask", "mm.ihd", "args", "n.sessions",
                  "fit.types", "infotypes", "detpars", "suppars", "D.betapars", "phases", "par.links", "par.unlinks",
                  "fit.ihd", "re.detfn", "fit.freqs", "first.calls", "model.formula", "fgam", "all.covariates",
                  "output.tmb")
   #create output for TMB model
-  out[['output.tmb']] = vector('list', 20)
+  out[['output.tmb']] = vector('list', 21)
   names(out[['output.tmb']]) = c('coef_link', 'se_link', 'DX', 'detfn', 'param.og', 'param.extend', 'param.fix',
                                  'param.info.table', 'data.traps', 'data.full', 'data.mask', 'data.dists.thetas', 'dims',
-                                 'avg_cue_rates', 'sound.speed', 'area_unit', 'survey.length', 'ss.link', 'cutoff', 'gam_output')
+                                 'avg_cue_rates', 'sound.speed', 'area_unit', 'survey.length', 'ss.link', 'cutoff', 'gam_output',
+                                 'tmb_output_og')
   
   #give an index to each parameter, to make it easier to find it in "data.par"
   par.id = 1:nrow(data.par)
@@ -1711,9 +1717,12 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
   out[['output.tmb']][['cutoff']] = cutoff
   out[['output.tmb']][['sound.speed']] = sound.speed
   out[['output.tmb']][['gam_output']] = gam_output
+  out[['output.tmb']][['tmb_output_og']] = tmb_output_og
   ######################################################################################################
   #the 5th component: "loglik"
   out$loglik = -1 * opt$objective
+  
+  out$opt_output = opt
   
   #####################################################################################################
   #the 6th component: "maxgrad"

@@ -11,8 +11,8 @@
 #' @param main a string as the main title of the plot.
 #' @param xlab a string as the sub-title of x-axis.
 #' @param ylab a string as the sub-title of y-axis.
-#' @param col a string or a numeric value indicates the color of the plotted line.
-#' @param add 
+#' @param col a string or a numeric vector indicates the color of the plotted line.
+#' @param add a logical value indicates whether to add the lines into the existing plot.
 #' @param ... 
 #'
 #' @return
@@ -68,13 +68,6 @@ show_detfn <- function(fit, new_covariates = NULL, param_extend_skip = NULL, xli
     }
   }
   
-  if(!is.null(new_covariates)){
-    #standardize new_covariates first
-    new_covariates = fit$scale.covs(new_covariates)
-    message(paste0("Covariates for detect function's parameters are provided. Please make sure that, ",
-                 "for each extended parameter which are not included in the argument 'param_extend_skip',",
-                 "all covariates are provided"))
-  }
   
   #set the values of every each detection function parameters
   det_param_input = vector('list', length(param_name))
