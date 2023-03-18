@@ -136,12 +136,12 @@ get_detfn = function(fit){
 }
 
 get_DX_full = function(fit){
-  output = fit$output.tmb$DX$DX_non_mask
+  output = fit$output.tmb$DX_standardized$DX_non_mask
   return(output)
 }
 
 get_DX_mask = function(fit){
-  output = fit$output.tmb$DX$DX_mask
+  output = fit$output.tmb$DX_standardized$DX_mask
   return(output)
 }
 

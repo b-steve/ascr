@@ -9,16 +9,32 @@
 #' @export
 demo_fit = function(data_name, fit = TRUE, gradient_free = FALSE, sv_link = NULL){
   dat = get(data_name)
+  
   par_extend_model = dat$par_extend_model
-  dat$par_extend_model = NULL
-  dat$sv_link = sv_link
+  sv = dat$sv
+  fix = dat$fix
+  bounds = dat$bounds
+  detfn = dat$detfn
+  ss_opts = dat$ss.opts
+  
+  dat[c('par_extend_model', 'sv', 'fix', 'bounds', 'detfn', 'ss.opts')] = NULL
+  
+  
 
   
   dat_model = list()
   
   dat_model$dat = do.call('read.ascr', dat)
   dat_model$par_extend_model = par_extend_model
+  dat_model$detfn = detfn
+  dat_model$sv = sv
+  dat_model$fix = fix
+  dat_model$bounds = bounds  
+  dat_model$ss.opts = ss_opts
   dat_model$gr_skip = gradient_free
+  dat_model$sv_link = sv_link
+  
+  
   
   if(fit){
     model_output = do.call('fit.ascr', dat_model)

@@ -14,6 +14,7 @@ outFUN(
   param.og,
   param.og.4cpp,
   o,
+  tmb_output_og,
   opt,
   name.fixed.par,
   name.extend.par,

@@ -1441,7 +1441,7 @@ gr_free_o_restore = function(fn, opt, H, parameters, param.og.4cpp, n.sessions){
 
 outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas, detfn, param.og, param.og.4cpp, o, tmb_output_og, opt,
                   name.fixed.par, name.extend.par, dims, DX.full, DX.mask, fix.input, bucket_info, cue.rates, mean.cue.rates, A,
-                  survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, is.scale, ss.link, cutoff){
+                  survey.length, sound.speed, par.extend, arg.input, fgam, gam_output, lst_mean_std, is.scale, ss.link, cutoff){
   ###################################################################################################################
   #sort out output for the function
   out = vector('list', 36)
@@ -1451,11 +1451,11 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
                  "fit.ihd", "re.detfn", "fit.freqs", "first.calls", "model.formula", "fgam", "all.covariates",
                  "output.tmb")
   #create output for TMB model
-  out[['output.tmb']] = vector('list', 21)
-  names(out[['output.tmb']]) = c('coef_link', 'se_link', 'DX', 'detfn', 'param.og', 'param.extend', 'param.fix',
+  out[['output.tmb']] = vector('list', 22)
+  names(out[['output.tmb']]) = c('coef_link', 'se_link', 'DX_standardized', 'detfn', 'param.og', 'param.extend', 'param.fix',
                                  'param.info.table', 'data.traps', 'data.full', 'data.mask', 'data.dists.thetas', 'dims',
                                  'avg_cue_rates', 'sound.speed', 'area_unit', 'survey.length', 'ss.link', 'cutoff', 'gam_output',
-                                 'tmb_output_og')
+                                 'tmb_output_og', 'mean_std_for_standardizing')
   
   #give an index to each parameter, to make it easier to find it in "data.par"
   par.id = 1:nrow(data.par)
@@ -1610,10 +1610,12 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
       out$coeflist[[tem_name]] = rep(out$coeflist[['D']], dims$n.masks[i])
     }
   } else {
+    #browser()
     tem_n_col = data.par[par.id['D'], c('n_col_full', 'n_col_mask')]
-    tem_full = DX.full[['D']] %*% val(o_value[['D']])[1:tem_n_col[1, 1]]
+    D_est_tmb_og = tmb_output_og$est[which(names(tmb_output_og$est) == 'D')]
+    tem_full = DX.full[['D']] %*% val(D_est_tmb_og)[1:tem_n_col[1, 1]]
     if(tem_n_col[1, 2] > 0){
-      tem_mask = DX.mask[['D']] %*% val(o_value[['D']])[(tem_n_col[1, 1] + 1):sum(tem_n_col)]
+      tem_mask = DX.mask[['D']] %*% val(D_est_tmb_og)[(tem_n_col[1, 1] + 1):sum(tem_n_col)]
     } else {
       tem_mask = rep(0, sum(dims$n.masks))
     }
@@ -1691,7 +1693,7 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
   tem[['DX_non_mask']] = DX.full
   tem[['DX_mask']] = DX.mask
   
-  out[['output.tmb']][['DX']] = tem
+  out[['output.tmb']][['DX_standardized']] = tem
   
   tem = vector('list', 2)
   names(tem) = c('value', 'std')
@@ -1718,6 +1720,8 @@ outFUN = function(data.par, data.full, data.traps, data.mask, data.dists.thetas,
   out[['output.tmb']][['sound.speed']] = sound.speed
   out[['output.tmb']][['gam_output']] = gam_output
   out[['output.tmb']][['tmb_output_og']] = tmb_output_og
+  out[['output.tmb']][['mean_std_for_standardizing']] = lst_mean_std
+  
   ######################################################################################################
   #the 5th component: "loglik"
   out$loglik = -1 * opt$objective
