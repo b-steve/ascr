@@ -702,6 +702,10 @@ fit.ascr = function(dat, par_extend_model = NULL, detfn = NULL, sv = NULL, bound
 #' @param trap_cov a data frame. It is recommended to have columns of "session" and "trap" together, as well as 
 #'                 any trap related covariates as extra columns. If all sessions share the same set of traps,
 #'                 the column of "session" could be skipped.
+#' @param dist_cov a list with named elements. Each element is a data frame contains columns "x" and "y", recording
+#'                 the edge of an area. The nearest distance from each mask to this area will be calculated and
+#'                 assigned to the "masks - level" covariates, and the name of this element will be assigned as the
+#'                 name of this covariate.
 #' @param cue.rates a numeric vector. contains the recorded cue rates in a series of time periods with identical
 #'                  length. The length should be equal to the unit length in the "survey.length".
 #' @param survey.length a numeric vector or a scalar, contains the length of each session. If it is a scalar and
@@ -718,6 +722,7 @@ fit.ascr = function(dat, par_extend_model = NULL, detfn = NULL, sv = NULL, bound
 #'                          time unit in data is "millisecond", then assign 0.001 here.
 #' @param ...
 #'
+ 
 #'
 #' @return
 #' @export
@@ -725,7 +730,7 @@ fit.ascr = function(dat, par_extend_model = NULL, detfn = NULL, sv = NULL, bound
 #' @examples
 read.ascr = function(captures, traps, mask = NULL, 
                     control_create_mask = list(), control_create_capt = list(), loc_cov = NULL, 
-                    control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL,
+                    control_convert_loc2mask = list(), session_cov = NULL, trap_cov = NULL, dist_cov = NULL,
                     cue.rates = NULL, survey.length = NULL, sound.speed = 331, unit_convert_dist = 1,
                     unit_convert_time = 1, ...){
   #keep all original input arguments
@@ -775,8 +780,8 @@ read.ascr = function(captures, traps, mask = NULL,
   
 
 
-  #if par_extend_model is assigned, we need to construct "par.extend" for model fitting
-  par.extend = par_extend_create(loc_cov = loc_cov, mask = mask,
+  #set up the data for par.extend
+  par.extend = par_extend_create(loc_cov = loc_cov, dist_cov = dist_cov, mask = mask,
                                  control_convert_loc2mask = control_convert_loc2mask,
                                  session_cov = session_cov, trap_cov = trap_cov)
   

@@ -32,6 +32,7 @@ outFUN(
   arg.input,
   fgam,
   gam_output,
+  lst_mean_std,
   is.scale,
   ss.link,
   cutoff

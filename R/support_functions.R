@@ -1431,11 +1431,49 @@ location_cov_to_mask = function(mask, loc_cov, control_nn2 = NULL, control_weigh
 
 
 par_extend_create = function(loc_cov = NULL, mask = NULL, control_convert_loc2mask = list(),
-                             session_cov = NULL, trap_cov = NULL){
+                             dist_cov = NULL, session_cov = NULL, trap_cov = NULL){
   
   
-  if(any(!is.null(loc_cov), !is.null(session_cov), !is.null(trap_cov))){
+  if(any(!is.null(loc_cov), !is.null(session_cov), !is.null(trap_cov), !is.null(dist_cov))){
     par.extend = list()
+    
+    #for the covariates with area edge, nearest distance to each mask point will be assigned
+    #as mask - level covariates. Here calculate the distances and assign to loc_cov, then
+    #they will be solved together with other location related covariates.
+    if(!is.null(dist_cov)){
+      n = length(dist_cov)
+      cov_names = names(dist_cov)
+      
+      
+      if(is.null(loc_cov)){
+        n_loc_cov = 0
+        loc_cov = vector('list', n)
+      } else {
+        if(is(loc_cov, 'data.frame')){
+          tem = loc_cov
+          loc_cov = vector('list', n + 1)
+          loc_cov[[1]] = tem
+          n_loc_cov = 1
+        } else if(is(loc_cov, 'list')){
+          n_loc_cov = length(loc_cov)
+        } else {
+          stop('invlid input of the argument loc_cov.')
+        }
+      }
+      
+      
+      for(i in 1:n){
+        cov_name = cov_names[i]
+        stopifnot(all(c('x', 'y') %in% colnames(dist_cov[[cov_name]])))
+        
+        tem = dist_nearest(from = do.call('rbind', mask),
+                           to = dist_cov[[cov_name]][, c('x', 'y')], col_name = cov_name)
+        
+        loc_cov[[n_loc_cov + i]] = tem[!duplicated(tem[, c('x', 'y')]),]
+      }
+      
+    }
+    
     
     #if location related covariates provided, convert it to mask-level data frame
     if(!is.null(loc_cov)){
@@ -1447,6 +1485,10 @@ par_extend_create = function(loc_cov = NULL, mask = NULL, control_convert_loc2ma
       mask_cov = NULL
     }
 
+
+    
+    
+    
     par.extend$data = list()
     par.extend$data$session = session_cov
     par.extend$data$trap = trap_cov
