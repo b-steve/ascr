@@ -212,7 +212,8 @@ show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_
   levels <- pretty(zlim, 10)
   
   col_fn = viridis::viridis
-  
+
+
   if (!add){
     #plot(mask, type = "n", asp = 1, xlab = "", ylab = "", xlim = xlim, ylim = ylim)
     fields::image.plot(x = unique.x, y = unique.y, z = z, zlim = zlim, col = do.call("col_fn", arg_col), 
@@ -234,9 +235,10 @@ show_Dsurf <- function(fit, session = NULL, show.cv = FALSE, new_data = NULL, D_
   
   
   if (plot_contours){
-    contour(x = unique.x, y = unique.y, z = z, levels = levels,
-            drawlabels = TRUE, add = TRUE)
+    suppressWarnings(contour(x = unique.x, y = unique.y, z = z, levels = levels,
+            drawlabels = TRUE, add = TRUE))
   }
+
   invisible(pred)
 }
 

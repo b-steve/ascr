@@ -558,6 +558,21 @@ vcov.ascr_boot = function(object, types = NULL, pars = NULL, new_covariates = NU
 }
 
 
+#' Title
+#'
+#' @param object 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+stdEr = function(object, ...){
+  UseMethod("stdEr")
+}
+
+
+
 
 ##################################################################################################################
 
