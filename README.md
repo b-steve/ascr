@@ -1,6 +1,6 @@
 # ascr
 
- Spatial capture-recapture (SCR) models estimate animal density from records of when and were individuals were detected. The first SCR methods for acoustic data were developed by Efford, Dawson, and Borchers (2009).
+ Spatial capture-recapture (SCR) models estimate animal density from records of when and where individuals were detected. The first SCR methods for acoustic data were developed by Efford, Dawson, and Borchers (2009).
 
  The ascr package fits SCR models to estimate animal density from acoustic surveys. In particular, these models can incorporate additional data like received signal strengths, times of arrival, estimated distances, and estimated bearings, which are informative about animals' locations. Other more general software packages exist for SCR (e.g., the comprehensive secr R package), but they cannot handle all data types listed above.
 
